@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 		display(res);
 		newline();
 		exps = cdr(exps);
-		//cleanup(cons(exps, env));
+		cleanup(cons(exps, env));
 	}
 	cleanup(nil);
 	return 0;

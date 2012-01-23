@@ -2,8 +2,8 @@
 #define OBJECT_H
 
 #define nil				NULL
-#define true			symbol("true")
-#define false			symbol("false")
+#define true			symbol("#t")
+#define false			symbol("#f")
 
 #define is_eq(x, y)		((x) == (y))
 #define is_null(x)		is_eq(x, nil)
@@ -58,7 +58,6 @@
 #define list(...)		list_(__VA_ARGS__, nil)
 
 #define is_compound_procedure(p)	is_tagged_list(p, "procedure")
-//#define is_primitive_procedure(p)	is_tagged_list(p, "primitive")
 #define is_primitive_procedure(p)	is_type(p, T_PRIMITIVE_PROCEDURE)
 #define procedure_parameters(p)		cadr(p)
 #define procedure_body(p)			caddr(p)

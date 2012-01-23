@@ -164,55 +164,145 @@ object *lookup_variable_value(object *var, object *env) {
 object *p_cons(object *args) {
 	object *x = car(args);
 	object *y = cadr(args);
+
 	return cons(x, y);
 }
 
 object *p_car(object *args) {
 	object *p = car(args);
+
 	return car(p);
 }
 
 object *p_cdr(object *args) {
 	object *p = car(args);
+
 	return cdr(p);
-}
-
-object *p_add(object *args) {
-	object *x = car(args);
-	object *y = cadr(args);
-	return number(to_number(x) + to_number(y));
-}
-
-object *p_sub(object *args) {
-	object *x = car(args);
-	object *y = cadr(args);
-	return number(to_number(x) - to_number(y));
-}
-
-object *p_mul(object *args) {
-	object *x = car(args);
-	object *y = cadr(args);
-	return number(to_number(x) * to_number(y));
-}
-
-object *p_div(object *args) {
-	object *x = car(args);
-	object *y = cadr(args);
-	return number(to_number(x) / to_number(y));
 }
 
 #define boolean(x)		(x ? true : false)
 
+object *p_not(object *args) {
+	if (is_false(car(args)))
+		return true;
+	else
+		return false;
+}
+
+object *p_and(object *args) {
+	object *x = true;
+
+	while (args) {
+		x = car(args);
+		if (is_false(x))
+			return false;
+		args = cdr(args);
+	}
+	return x;
+}
+
+object *p_or(object *args) {
+	while (args) {
+		if (is_true(car(args)))
+			return car(args);
+		args = cdr(args);
+	}
+	return false;
+}
+
 object *p_eq(object *args) {
 	object *x = car(args);
 	object *y = cadr(args);
+
 	return boolean(to_number(x) == to_number(y));
+}
+
+object *p_gt(object *args) {
+	object *x = car(args);
+	object *y = cadr(args);
+
+	return boolean(to_number(x) > to_number(y));
 }
 
 object *p_lt(object *args) {
 	object *x = car(args);
 	object *y = cadr(args);
+
 	return boolean(to_number(x) < to_number(y));
+}
+
+#define not(x)	is_true(x) ? false : true
+
+object *p_le(object *args) {
+	return not(p_gt(args));
+}
+
+object *p_ge(object *args) {
+	return not(p_lt(args));
+}
+
+object *p_add(object *args) {
+	double result = 0;
+
+	while (args) {
+		if (!is_number(car(args)))
+			return error("Not a number", car(args));
+		result += to_number(car(args));
+		args = cdr(args);
+	}
+	return number(result);
+}
+
+object *p_sub(object *args) {
+	double result;
+
+	if (!args)
+		return error("Too few arguments", args);
+	if (!is_number(car(args)))
+		return error("Not a number", car(args));
+	result = to_number(car(args));
+	args = cdr(args);
+	if (!args)
+		result = -result;
+	while (args) {
+		if (!is_number(car(args)))
+			return error("Not a number", car(args));
+		result -= to_number(car(args));
+		args = cdr(args);
+	}
+	return number(result);
+}
+
+object *p_mul(object *args) {
+	double result = 1.0;
+
+	while (args) {
+		if (!is_number(car(args)))
+			return error("Not a number", car(args));
+		result *= to_number(car(args));
+		args = cdr(args);
+	}
+	return number(result);
+}
+
+object *p_div(object *args) {
+	double result;
+
+	if (!args)
+		return error("Too few arguments", args);
+	if (!is_number(car(args)))
+		return error("Not a number", car(args));
+	result = to_number(car(args));
+	args = cdr(args);
+	if (!args)
+		result = 1 / result;
+	while (args) {
+		if (!is_number(car(args)))
+			return error("Not a number", car(args));
+		result /= to_number(car(args));
+		args = cdr(args);
+	}
+	return number(result);
 }
 
 typedef struct reg reg;
@@ -224,8 +314,14 @@ struct reg {
 	{ "cons", p_cons },
 	{ "car", p_car },
 	{ "cdr", p_cdr },
+	{ "not", p_not },
+	{ "and", p_and },
+	{ "or", p_or },
 	{ "=", p_eq },
 	{ "<", p_lt },
+	{ ">", p_gt },
+	{ "<=", p_le },
+	{ ">=", p_ge },
 	{ "+", p_add },
 	{ "-", p_sub },
 	{ "*", p_mul },
@@ -237,8 +333,8 @@ object *setup_environment(void) {
 	object *env = nil;
 	reg *iter;
 
-	env = cons(cons(symbol("true"), true), env);
-	env = cons(cons(symbol("false"), false), env);
+	env = cons(cons(true, true), env);
+	env = cons(cons(false, false), env);
 	for (iter = primitive_procedures; iter->name; iter++) {
 		object *var = symbol(iter->name);
 		object *val = procedure(iter->func);
