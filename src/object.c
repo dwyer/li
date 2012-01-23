@@ -1,9 +1,18 @@
+#include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "object.h"
 
-static object *symbols = nil;
+typedef struct node node;
+
+static struct {
+	struct node {
+		object *obj;
+		node *next;
+		node *prev;
+	} *first;
+} heap = { .first = nil };
 
 int is_tagged_list(object *exp, char *tag) {
 	if (is_pair(exp))
@@ -11,51 +20,72 @@ int is_tagged_list(object *exp, char *tag) {
 	return 0;
 }
 
-object *new(int type) {
-	object *o;
+void preprend_to_heap(object *obj) {
+	node *n;
 
-	o = malloc(sizeof(*o));
-	o->type = type;
-	o->locked = 0;
-	return o;
+	assert(obj);
+	n = malloc(sizeof(*n));
+	n->obj = obj;
+	n->prev = nil;
+	n->next = heap.first;
+	if (heap.first)
+		heap.first->prev = n;
+	heap.first = n;
+}
+
+object *new(int type) {
+	object *obj;
+
+	obj = malloc(sizeof(*obj));
+	obj->type = type;
+	obj->locked = 0;
+	preprend_to_heap(obj);
+	return obj;
 }
 
 object *cons(object *car, object *cdr) {
-	object *o;
+	object *obj;
 
-	o = new(T_PAIR); 
-	o->data.pair.car = car;
-	o->data.pair.cdr = cdr;
-	return o;
+	obj = new(T_PAIR); 
+	obj->data.pair.car = car;
+	obj->data.pair.cdr = cdr;
+	return obj;
 }
 
 object *number(double n) {
-	object *o;
+	object *obj;
 
-	o = new(T_NUMBER);
-	o->data.number = n;
+	obj = new(T_NUMBER);
+	obj->data.number = n;
 }
 
 object *string(char *s) {
-	object *o;
+	object *obj;
 
-	o = new(T_STRING);
-	o->data.string = strdup(s);
-	return o;
+	obj = new(T_STRING);
+	obj->data.string = strdup(s);
+	return obj;
 }
 
+/**
+ *
+ */
 object *symbol(char *s) {
-	object *o;
+	object *obj;
+	node *iter;
 
-	for (o = symbols; !is_null(o); o = cdr(o))
-		if (!strcmp(s, to_string(car(o))))
-			return car(o);
-	o = new(T_SYMBOL);
-	o->data.symbol = strdup(s);
-	symbols = cons(o, symbols);
-	return o;
+	for (iter = heap.first; iter; iter = iter->next)
+		if (is_symbol(iter->obj) && !strcmp(s, to_symbol(iter->obj)))
+			return iter->obj;
+	obj = new(T_SYMBOL);
+	obj->data.symbol = strdup(s);
+	return obj;
 }
 
+/**
+ * Creates a nil terminated list. Don't call this directly, use the list()
+ * macro instead.
+ */
 object *list_(object *obj, ...) {
 	object *ls, *node;
 	va_list ap;
@@ -77,11 +107,6 @@ object *list_(object *obj, ...) {
 void delete(object *obj) {
 	if (!obj || obj->locked)
 		return;
-	obj->locked = 1;
-	if (is_pair(obj)) {
-		delete(car(obj));
-		delete(cdr(obj));
-	}
 	if (is_string(obj))
 		free(to_string(obj));
 	if (is_symbol(obj))
@@ -113,12 +138,25 @@ void unlock(object *obj) {
  * \param obj Object to collect garbage from.
  * \param env Object not to collect garbage from.
  */
-void cleanup(object *obj, object *env) {
-	lock(symbols);
+void cleanup(object *env) {
+	node *iter, *tmp;
+
 	lock(env);
-	delete(obj);
+	iter = heap.first;
+	while (iter) {
+		if (!is_locked(iter->obj)) {
+			delete(iter->obj);
+			if (iter->prev)
+				iter->prev->next = iter->next;
+			else
+				heap.first = iter->next;
+			if (iter->next)
+				iter->next->prev = iter->prev;
+			tmp = iter;
+			iter = tmp->next;
+			free(tmp);
+		} else
+			iter = iter->next;
+	}
 	unlock(env);
-	unlock(symbols);
-	if (!env)
-		delete(symbols);
 }

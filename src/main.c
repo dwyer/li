@@ -19,12 +19,9 @@ int main(int argc, char *argv[]) {
 		res = eval(exp, env);
 		display(res);
 		newline();
-		res = cons(exp, res);
-		exp = exps;
 		exps = cdr(exps);
-		set_cdr(exp, res);
-		cleanup(exp, env);
+		cleanup(cons(exps, env));
 	}
-	cleanup(env, nil);
+	cleanup(nil);
 	return 0;
 }

@@ -82,7 +82,7 @@ object *list_(object *car, ...);
 void lock(object *obj);
 void unlock(object *obj);
 void delete(object *obj);
-void cleanup(object *obj, object *env);
+void cleanup(object *env);
 
 int is_tagged_list(object *exp, char *tag);
 
