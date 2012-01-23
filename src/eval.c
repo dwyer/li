@@ -183,10 +183,11 @@ object *p_cdr(object *args) {
 #define boolean(x)		(x ? true : false)
 
 object *p_not(object *args) {
+	if (!args || cdr(args))
+		return error("not excepts exactly one argument", nil);
 	if (is_false(car(args)))
 		return true;
-	else
-		return false;
+	return false;
 }
 
 object *p_and(object *args) {

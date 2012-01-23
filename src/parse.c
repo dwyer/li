@@ -9,19 +9,25 @@
 #define iseol(c)		(c == '\n')
 #define iseos(c)		(c == '\0')
 #define isstring(c)		(c == '"')
-#define isspecial(c)	(isspace(c) || isopener(c) || iscloser(c) || iseof(c))
+#define isspecial(c)	(isspace(c) || isopener(c) || iscloser(c) || \
+						 iscomment(c) || iseof(c))
 
 int token_is_number(const char *token) {
 	int c;
+	int isfirst;
 	int isfloat;
 
+	isfirst = 1;
 	while ((c = *token++) != '\0') {
 		if (isdigit(c))
-			continue;
+			;
+		else if (c == '-' && isfirst)
+			;
 		else if (c == '.' && !isfloat)
 			isfloat = 1;
 		else
 			return 0;
+		isfirst = 0;
 	}
 	return 1;
 }
