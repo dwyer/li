@@ -27,11 +27,23 @@
 #define first_exp(seq)				car(seq)
 #define rest_exps(seq)				cdr(seq)
 
+#define is_if(exp)					is_tagged_list(exp, "if")
+#define if_predicate(exp)			cadr(exp)
+#define if_consequent(exp)			caddr(exp)
+
+object *if_alternative(object *exp) {
+	if (cdddr(exp))
+		return cadddr(exp);
+	else
+		return symbol("false");
+}
+
 object *apply(object *procedure, object *arguments);
 object *apply_primitive_procedure(object *proc, object *args);
 object *definition_value(object *exp);
 object *definition_variable(object *exp);
 object *eval_definition(object *exp, object *env);
+object *eval_if(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *list_of_values(object *exps, object *env);
@@ -53,12 +65,12 @@ object *apply_primitive_procedure(object *proc, object *args) {
 }
 
 void define_variable(object *var, object *val, object *env) {
-	for (env; !is_null(env); env = cdr(env)) {
-		if (is_eq(var, caar(env))) {
+	for (env; env; env = cdr(env)) {
+		if (var == caar(env)) {
 			set_cdr(car(env), val);
 			return;
 		}
-		if (is_null(cdr(env)))
+		if (!cdr(env))
 			break;
 	}
 	set_cdr(env, cons(cons(var, val), nil));
@@ -83,6 +95,8 @@ object *eval(object *exp, object *env) {
 		return lookup_variable_value(exp, env);
 	else if (is_definition(exp))
 		return eval_definition(exp, env);
+	else if (is_if(exp))
+		return eval_if(exp, env);
 	else if (is_lambda(exp))
 		return make_procedure(lambda_parameters(exp), lambda_body(exp), env);
 	else if (is_application(exp))
@@ -96,7 +110,14 @@ object *eval_definition(object *exp, object *env) {
 	define_variable(definition_variable(exp),
 					eval(definition_value(exp), env),
 					env);
-	return symbol("ok");
+	return definition_variable(exp);
+}
+
+object *eval_if(object *exp, object *env) {
+	if (is_true(eval(if_predicate(exp), env)))
+		return eval(if_consequent(exp), env);
+	else
+		return eval(if_alternative(exp), env);
 }
 
 object *eval_sequence(object *exps, object *env) {
@@ -112,7 +133,6 @@ object *extend_environment(object *vars, object *vals, object *base_env) {
 		vars = cdr(vars);
 		vals = cdr(vals);
 	}
-	/* TODO: check length *before* extending the env */
 	if (vars)
 		return error("Too few arguments supplied", nil);
 	if (vals)
@@ -137,5 +157,6 @@ object *lookup_variable_value(object *var, object *env) {
 }
 
 object *setup_environment(void) {
-	return nil;
+	return list(cons(symbol("true"), true),
+				cons(symbol("false"), false));
 }

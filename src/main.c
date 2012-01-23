@@ -11,9 +11,8 @@ int main(int argc, char *argv[]) {
 	object *env;
 	object *res;
 
+	env = setup_environment();
 	exps = parse(stdin);
-	env = list(cons(symbol("true"), number(1)),
-			   cons(symbol("false"), number(0)));
 	while (exps) {
 		exp = car(exps);
 		res = eval(exp, env);

@@ -2,57 +2,58 @@
 #define OBJECT_H
 
 #define nil				NULL
+#define true			symbol("true")
+#define false			symbol("false")
 
-#define not(x)			!(x)
-#define is_eq(o, p)		((o) == (p))
-#define is_null(o)		is_eq(o, nil)
-#define is_type(o, t)	(!is_null(o) && (o)->type == t)
-#define is_number(o)	is_type(o, T_NUMBER)
-#define is_string(o)	is_type(o, T_STRING)
-#define is_symbol(o)	is_type(o, T_SYMBOL)
-#define is_pair(o)		is_type(o, T_PAIR)
-#define is_list(o)		(is_null(o) || (is_pair(o) && is_pair(cdr(o))))
+#define is_eq(x, y)		((x) == (y))
+#define is_null(x)		is_eq(x, nil)
 #define is_false(x)		is_eq(x, false)
-#define is_true(x)		not(is_false(x))
+#define is_true(x)		!is_false(x)
+#define is_type(x, t)	(!is_null(x) && (x)->type == t)
+#define is_number(x)	is_type(x, T_NUMBER)
+#define is_string(x)	is_type(x, T_STRING)
+#define is_symbol(x)	is_type(x, T_SYMBOL)
+#define is_pair(x)		is_type(x, T_PAIR)
+#define is_list(x)		(is_null(x) || (is_pair(x) && is_pair(cdr(x))))
 
-#define to_pair(o)		(o)->data.pair
-#define to_number(o)	(o)->data.number
-#define to_string(o)	(o)->data.string
-#define to_symbol(o)	(o)->data.symbol
+#define to_pair(x)		(x)->data.pair
+#define to_number(x)	(x)->data.number
+#define to_string(x)	(x)->data.string
+#define to_symbol(x)	(x)->data.symbol
 
-#define car(o)			to_pair(o).car
-#define cdr(o)			to_pair(o).cdr
-#define caar(o)			car(car(o))
-#define cadr(o)			car(cdr(o))
-#define cdar(o)			cdr(car(o))
-#define cddr(o)			cdr(cdr(o))
-#define caaar(o)		car(car(car(o)))
-#define caadr(o)		car(car(cdr(o)))
-#define cadar(o)		car(cdr(car(o)))
-#define caddr(o)		car(cdr(cdr(o)))
-#define cdaar(o)		cdr(car(car(o)))
-#define cdadr(o)		cdr(car(cdr(o)))
-#define cddar(o)		cdr(cdr(car(o)))
-#define cdddr(o)		cdr(cdr(cdr(o)))
-#define caaaar(o)		car(car(car(car(o))))
-#define caaadr(o)		car(car(car(cdr(o))))
-#define caadar(o)		car(car(cdr(car(o))))
-#define caaddr(o)		car(car(cdr(cdr(o))))
-#define cadaar(o)		car(cdr(car(car(o))))
-#define cadadr(o)		car(cdr(car(cdr(o))))
-#define caddar(o)		car(cdr(cdr(car(o))))
-#define cadddr(o)		car(cdr(cdr(cdr(o))))
-#define cdaaar(o)		cdr(car(car(car(o))))
-#define cdaadr(o)		cdr(car(car(cdr(o))))
-#define cdadar(o)		cdr(car(cdr(car(o))))
-#define cdaddr(o)		cdr(car(cdr(cdr(o))))
-#define cddaar(o)		cdr(cdr(car(car(o))))
-#define cddadr(o)		cdr(cdr(car(cdr(o))))
-#define cdddar(o)		cdr(cdr(cdr(car(o))))
-#define cddddr(o)		cdr(cdr(cdr(cdr(o))))
+#define car(x)			to_pair(x).car
+#define cdr(x)			to_pair(x).cdr
+#define caar(x)			car(car(x))
+#define cadr(x)			car(cdr(x))
+#define cdar(x)			cdr(car(x))
+#define cddr(x)			cdr(cdr(x))
+#define caaar(x)		car(car(car(x)))
+#define caadr(x)		car(car(cdr(x)))
+#define cadar(x)		car(cdr(car(x)))
+#define caddr(x)		car(cdr(cdr(x)))
+#define cdaar(x)		cdr(car(car(x)))
+#define cdadr(x)		cdr(car(cdr(x)))
+#define cddar(x)		cdr(cdr(car(x)))
+#define cdddr(x)		cdr(cdr(cdr(x)))
+#define caaaar(x)		car(car(car(car(x))))
+#define caaadr(x)		car(car(car(cdr(x))))
+#define caadar(x)		car(car(cdr(car(x))))
+#define caaddr(x)		car(car(cdr(cdr(x))))
+#define cadaar(x)		car(cdr(car(car(x))))
+#define cadadr(x)		car(cdr(car(cdr(x))))
+#define caddar(x)		car(cdr(cdr(car(x))))
+#define cadddr(x)		car(cdr(cdr(cdr(x))))
+#define cdaaar(x)		cdr(car(car(car(x))))
+#define cdaadr(x)		cdr(car(car(cdr(x))))
+#define cdadar(x)		cdr(car(cdr(car(x))))
+#define cdaddr(x)		cdr(car(cdr(cdr(x))))
+#define cddaar(x)		cdr(cdr(car(car(x))))
+#define cddadr(x)		cdr(cdr(car(cdr(x))))
+#define cdddar(x)		cdr(cdr(cdr(car(x))))
+#define cddddr(x)		cdr(cdr(cdr(cdr(x))))
 
-#define set_car(p, o)	(car(p) = o)
-#define set_cdr(p, o)	(cdr(p) = o)
+#define set_car(x, y)	(car(x) = y)
+#define set_cdr(x, y)	(cdr(x) = y)
 
 #define list(...)		list_(__VA_ARGS__, nil)
 
