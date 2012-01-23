@@ -31,13 +31,6 @@
 #define if_predicate(exp)			cadr(exp)
 #define if_consequent(exp)			caddr(exp)
 
-object *if_alternative(object *exp) {
-	if (cdddr(exp))
-		return cadddr(exp);
-	else
-		return symbol("false");
-}
-
 object *apply(object *procedure, object *arguments);
 object *apply_primitive_procedure(object *proc, object *args);
 object *definition_value(object *exp);
@@ -46,6 +39,7 @@ object *eval_definition(object *exp, object *env);
 object *eval_if(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
+object *if_alternative(object *exp);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
 
@@ -61,7 +55,7 @@ object *apply(object *proc, object *args) {
 }
 
 object *apply_primitive_procedure(object *proc, object *args) {
-	return error("NOT IMPLEMENTED", proc);
+	return proc->data.proc(args);
 }
 
 void define_variable(object *var, object *val, object *env) {
@@ -140,6 +134,13 @@ object *extend_environment(object *vars, object *vals, object *base_env) {
 	return base_env;
 }
 
+object *if_alternative(object *exp) {
+	if (cdddr(exp))
+		return cadddr(exp);
+	else
+		return symbol("false");
+}
+
 object *list_of_values(object *exps, object *env) {
 	if (is_no_operands(exps))
 		return nil;
@@ -156,7 +157,92 @@ object *lookup_variable_value(object *var, object *env) {
 	return error("Unbound variable", var);
 }
 
+/*****************************************************************************
+ * PRIMITIVES
+ ****************************************************************************/
+
+object *p_cons(object *args) {
+	object *x = car(args);
+	object *y = cadr(args);
+	return cons(x, y);
+}
+
+object *p_car(object *args) {
+	object *p = car(args);
+	return car(p);
+}
+
+object *p_cdr(object *args) {
+	object *p = car(args);
+	return cdr(p);
+}
+
+object *p_add(object *args) {
+	object *x = car(args);
+	object *y = cadr(args);
+	return number(to_number(x) + to_number(y));
+}
+
+object *p_sub(object *args) {
+	object *x = car(args);
+	object *y = cadr(args);
+	return number(to_number(x) - to_number(y));
+}
+
+object *p_mul(object *args) {
+	object *x = car(args);
+	object *y = cadr(args);
+	return number(to_number(x) * to_number(y));
+}
+
+object *p_div(object *args) {
+	object *x = car(args);
+	object *y = cadr(args);
+	return number(to_number(x) / to_number(y));
+}
+
+#define boolean(x)		(x ? true : false)
+
+object *p_eq(object *args) {
+	object *x = car(args);
+	object *y = cadr(args);
+	return boolean(to_number(x) == to_number(y));
+}
+
+object *p_lt(object *args) {
+	object *x = car(args);
+	object *y = cadr(args);
+	return boolean(to_number(x) < to_number(y));
+}
+
+typedef struct reg reg;
+
+struct reg {
+	char *name;
+	object *(*func)(object *);
+} primitive_procedures[] = {
+	{ "cons", p_cons },
+	{ "car", p_car },
+	{ "cdr", p_cdr },
+	{ "=", p_eq },
+	{ "<", p_lt },
+	{ "+", p_add },
+	{ "-", p_sub },
+	{ "*", p_mul },
+	{ "/", p_div },
+	{ nil, nil }
+};
+
 object *setup_environment(void) {
-	return list(cons(symbol("true"), true),
-				cons(symbol("false"), false));
+	object *env = nil;
+	reg *iter;
+
+	env = cons(cons(symbol("true"), true), env);
+	env = cons(cons(symbol("false"), false), env);
+	for (iter = primitive_procedures; iter->name; iter++) {
+		object *var = symbol(iter->name);
+		object *val = procedure(iter->func);
+		env = cons(cons(var, val), env);
+	}
+	return env;
 }

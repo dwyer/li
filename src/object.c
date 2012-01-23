@@ -82,6 +82,14 @@ object *symbol(char *s) {
 	return obj;
 }
 
+object *procedure(object *(*proc)(object *)) {
+	object *obj;
+
+	obj = new(T_PRIMITIVE_PROCEDURE);
+	obj->data.proc = proc;
+	return obj;
+}
+
 /**
  * Creates a nil terminated list. Don't call this directly, use the list()
  * macro instead.

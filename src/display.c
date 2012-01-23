@@ -17,7 +17,7 @@ void display(object *exp) {
 		printf("\"%s\"", to_string(exp));
 	else if (is_symbol(exp))
 		printf("%s", to_symbol(exp));
-	else if (is_tagged_list(exp, "primitive"))
+	else if (is_primitive_procedure(exp))
 		printf("#[primitive]");
 	else if (is_tagged_list(exp, "procedure"))
 		printf("#[procedure]");
@@ -44,11 +44,4 @@ void display_pair(object *exp) {
 	}
 	printf(")");
 	exp->locked = 0;
-}
-
-object *error(char *s, object *o) {
-	fprintf(stderr, "%s ", s);
-	display(o);
-	newline();
-	return nil;
 }

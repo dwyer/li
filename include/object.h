@@ -58,7 +58,8 @@
 #define list(...)		list_(__VA_ARGS__, nil)
 
 #define is_compound_procedure(p)	is_tagged_list(p, "procedure")
-#define is_primitive_procedure(p)	is_tagged_list(p, "primitive")
+//#define is_primitive_procedure(p)	is_tagged_list(p, "primitive")
+#define is_primitive_procedure(p)	is_type(p, T_PRIMITIVE_PROCEDURE)
 #define procedure_parameters(p)		cadr(p)
 #define procedure_body(p)			caddr(p)
 #define procedure_environment(p)	cadddr(p)
@@ -70,6 +71,7 @@ enum {
 	T_STRING,
 	T_SYMBOL,
 	T_PAIR,
+	T_PRIMITIVE_PROCEDURE,
 	N_TYPES
 };
 
@@ -79,6 +81,7 @@ object *cons(object *car, object *cdr);
 object *number(double n);
 object *string(char *s);
 object *symbol(char *s);
+object *procedure(object *(*proc)(object *));
 object *list_(object *car, ...);
 void lock(object *obj);
 void unlock(object *obj);
@@ -96,6 +99,7 @@ struct object {
 		double number;
 		char *string;
 		char *symbol;
+		object *(*proc)(object *);
 	} data;
 	int type;
 	int locked;
