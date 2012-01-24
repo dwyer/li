@@ -59,7 +59,7 @@ object *apply_primitive_procedure(object *proc, object *args) {
 }
 
 void define_variable(object *var, object *val, object *env) {
-	for (env; env; env = cdr(env)) {
+	for (; env; env = cdr(env)) {
 		if (var == caar(env)) {
 			set_cdr(car(env), val);
 			return;
@@ -128,9 +128,9 @@ object *extend_environment(object *vars, object *vals, object *base_env) {
 		vals = cdr(vals);
 	}
 	if (vars)
-		return error("Too few arguments supplied", nil);
+		return error("Too few arguments supplied", vars);
 	if (vals)
-		return error("Too many arguments supplied", nil);
+		return error("Too many arguments supplied", vars);
 	return base_env;
 }
 
@@ -138,7 +138,7 @@ object *if_alternative(object *exp) {
 	if (cdddr(exp))
 		return cadddr(exp);
 	else
-		return symbol("false");
+		return false;
 }
 
 object *list_of_values(object *exps, object *env) {
@@ -149,8 +149,8 @@ object *list_of_values(object *exps, object *env) {
 }
 
 object *lookup_variable_value(object *var, object *env) {
-	while (!is_null(env)) {
-		if (is_eq(var, caar(env)))
+	while (env) {
+		if (var == caar(env))
 			return cdar(env);
 		env = cdr(env);
 	}

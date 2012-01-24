@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
 	object *exp;
 	object *env;
 	object *res;
-	int is_error;
 
 	env = setup_environment();
 	exps = parse(stdin);

@@ -4,15 +4,11 @@
 #include <string.h>
 #include "object.h"
 
-typedef struct node node;
-
 static struct {
-	struct node {
-		object *obj;
-		node *next;
-		node *prev;
-	} *first;
-} heap = { .first = nil };
+	object **list;
+	int size;
+	int cap;
+} heap = { .list = nil, .size = 0, .cap = 0 };
 
 int is_tagged_list(object *exp, char *tag) {
 	if (is_pair(exp))
@@ -20,17 +16,39 @@ int is_tagged_list(object *exp, char *tag) {
 	return 0;
 }
 
-void preprend_to_heap(object *obj) {
-	node *n;
+void init_heap(int cap) {
+	heap.cap = cap;
+	heap.size = 0;
+	heap.list = calloc(cap, sizeof(*heap.list));
+	for (cap--; cap >= 0; cap--)
+		heap.list[cap] = nil;
+}
 
-	assert(obj);
-	n = malloc(sizeof(*n));
-	n->obj = obj;
-	n->prev = nil;
-	n->next = heap.first;
-	if (heap.first)
-		heap.first->prev = n;
-	heap.first = n;
+void double_heap(void) {
+	int i;
+
+	i = heap.cap;
+	heap.cap *= 2;
+	heap.list = realloc(heap.list, heap.cap * sizeof(*heap.list));
+	for (; i < heap.cap; i++)
+		heap.list[i] = nil;
+}
+
+void add_to_heap(object *obj) {
+	int i;
+
+	if (!heap.list) {
+		init_heap(32);
+	}
+	if (heap.size == heap.cap) {
+		double_heap();
+	}
+	for (i = 0; i < heap.cap; i++)
+		if (!heap.list[i]) {
+			heap.list[i] = obj;
+			heap.size++;
+			return;
+		}
 }
 
 object *new(int type) {
@@ -39,7 +57,7 @@ object *new(int type) {
 	obj = malloc(sizeof(*obj));
 	obj->type = type;
 	obj->locked = 0;
-	preprend_to_heap(obj);
+	add_to_heap(obj);
 	return obj;
 }
 
@@ -57,6 +75,7 @@ object *number(double n) {
 
 	obj = new(T_NUMBER);
 	obj->data.number = n;
+	return obj;
 }
 
 object *string(char *s) {
@@ -72,11 +91,13 @@ object *string(char *s) {
  */
 object *symbol(char *s) {
 	object *obj;
-	node *iter;
+	int i;
 
-	for (iter = heap.first; iter; iter = iter->next)
-		if (is_symbol(iter->obj) && !strcmp(s, to_symbol(iter->obj)))
-			return iter->obj;
+	for (i = 0; i < heap.cap; i++) {
+		obj = heap.list[i];
+		if (obj && is_symbol(obj) && !strcmp(s, to_symbol(obj)))
+			return heap.list[i];
+	}
 	obj = new(T_SYMBOL);
 	obj->data.symbol = strdup(s);
 	return obj;
@@ -143,28 +164,24 @@ void unlock(object *obj) {
 }
 
 /* Garbage collector. 
- * \param obj Object to collect garbage from.
  * \param env Object not to collect garbage from.
  */
 void cleanup(object *env) {
-	node *iter, *tmp;
+	int i;
 
 	lock(env);
-	iter = heap.first;
-	while (iter) {
-		if (!is_locked(iter->obj)) {
-			delete(iter->obj);
-			if (iter->prev)
-				iter->prev->next = iter->next;
-			else
-				heap.first = iter->next;
-			if (iter->next)
-				iter->next->prev = iter->prev;
-			tmp = iter;
-			iter = tmp->next;
-			free(tmp);
-		} else
-			iter = iter->next;
+	for (i = 0; i < heap.cap; i++) {
+		if (heap.list[i] && !is_locked(heap.list[i])) {
+			delete(heap.list[i]);
+			heap.list[i] = nil;
+			heap.size--;
+		}
+	}
+	if (!env) {
+		free(heap.list);
+		heap.list = nil;
+		heap.size = 0;
+		heap.cap = 0;
 	}
 	unlock(env);
 }

@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "object.h"
@@ -12,24 +13,24 @@
 #define isspecial(c)	(isspace(c) || isopener(c) || iscloser(c) || \
 						 iscomment(c) || iseof(c))
 
-int token_is_number(const char *token) {
+int token_is_number(const char *tok) {
+	int ret;
 	int c;
-	int isfirst;
 	int isfloat;
 
-	isfirst = 1;
-	while ((c = *token++) != '\0') {
+	ret = 0;
+	if (*tok== '-')
+		tok++;
+	while ((c = *tok++) != '\0') {
 		if (isdigit(c))
-			;
-		else if (c == '-' && isfirst)
 			;
 		else if (c == '.' && !isfloat)
 			isfloat = 1;
 		else
 			return 0;
-		isfirst = 0;
+		ret = 1;
 	}
-	return 1;
+	return ret;
 }
 
 object *parse_comment(FILE *f) {
@@ -54,18 +55,29 @@ object *parse_string(FILE *f) {
 }
 
 object *parse_token(FILE *f) {
-	char buf[1000]; /* TODO: remove limit */
+	object *ret;
+	char *buf;
+	int buf_sz;
 	int i, c;
 
 	i = 0;
+	buf_sz = 256; /* we can make this bigger once we're sure it works */
+	buf = calloc(buf_sz, sizeof(*buf));
 	do {
 		buf[i++] = c = getc(f);
+		if (i == buf_sz) {
+			buf_sz *= 2;
+			buf = realloc(buf, buf_sz * sizeof(*buf));
+		}
 	} while (!isspecial(c));
 	buf[i-1] = '\0';
 	ungetc(c, f);
 	if (token_is_number(buf))
-		return number(atof(buf));
-	return symbol(buf);
+		ret = number(atof(buf));
+	else
+		ret = symbol(buf);
+	free(buf);
+	return ret;
 }
 
 object *parse(FILE *f) {
