@@ -16,19 +16,30 @@ object *error(char *msg, object *obj) {
 	return nil;
 }
 
+void usage(void) {
+	puts("usage: ./scm <file");
+}
+
 int main(int argc, char *argv[]) {
 	object *exps;
-	object *exp;
 	object *env;
 	object *res;
 
+	while (--argc)
+		if (*argv[argc] == '-')
+			while (*argv[argc]++)
+				switch (*argv[argc]) {
+					case 'h':
+						usage();
+						return 0;
+						break;
+				}
 	env = setup_environment();
 	exps = parse(stdin);
 	if (setjmp(buf))
 		exps = cdr(exps);
 	while (exps) {
-		exp = car(exps);
-		res = eval(exp, env);
+		res = eval(car(exps), env);
 		display(res);
 		newline();
 		exps = cdr(exps);

@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include "object.h"
 
-#define iscomment(c)	(c == ';')
-#define isopener(c)		(c == '(')
-#define iscloser(c)		(c == ')')
-#define iseof(c)		(c == EOF)
-#define iseol(c)		(c == '\n')
-#define iseos(c)		(c == '\0')
-#define isstring(c)		(c == '"')
+#define iscomment(c)	((c) == ';')
+#define isopener(c)		((c) == '(')
+#define iscloser(c)		((c) == ')')
+#define isquote(c)		((c) == '\'')
+#define iseof(c)		((c) == EOF)
+#define iseol(c)		((c) == '\n')
+#define iseos(c)		((c) == '\0')
+#define isstring(c)		((c) == '"')
 #define isspecial(c)	(isspace(c) || isopener(c) || iscloser(c) || \
 						 iscomment(c) || iseof(c))
 
@@ -19,7 +20,8 @@ int token_is_number(const char *tok) {
 	int isfloat;
 
 	ret = 0;
-	if (*tok== '-')
+	isfloat = 0;
+	if (*tok == '-')
 		tok++;
 	while ((c = *tok++) != '\0') {
 		if (isdigit(c))
@@ -93,6 +95,14 @@ object *parse(FILE *f) {
 			return NULL;
 		} else if (isopener(c)) {
 			o = parse(f);
+			return cons(o, parse(f));
+		} else if (isquote(c)) {
+			if (isopener(c = getc(f))) {
+				o = cons(symbol("quote"), cons(parse(f), nil));
+			} else {
+				ungetc(c, f);
+				o = cons(symbol("quote"), cons(parse_token(f), nil));
+			}
 			return cons(o, parse(f));
 		} else if (isstring(c)) {
 			o = parse_string(f);

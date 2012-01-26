@@ -8,6 +8,7 @@
 #define is_definition(exp)			is_tagged_list(exp, "define")
 #define is_lambda(exp)				is_tagged_list(exp, "lambda")
 #define is_self_evaluating(exp)		(is_number(exp) || is_string(exp))
+#define is_quoted(exp)				is_tagged_list(exp, "quote")
 #define is_variable(exp)			is_symbol(exp)
 
 #define lambda_parameters(exp)		cadr(exp)
@@ -87,6 +88,8 @@ object *eval(object *exp, object *env) {
 		return exp;
 	else if (is_variable(exp))
 		return lookup_variable_value(exp, env);
+	else if (is_quoted(exp))
+		return cadr(exp);
 	else if (is_definition(exp))
 		return eval_definition(exp, env);
 	else if (is_if(exp))
@@ -161,6 +164,12 @@ object *lookup_variable_value(object *var, object *env) {
  * PRIMITIVES
  ****************************************************************************/
 
+#define boolean(x)		(x ? true : false)
+
+object *p_is_pair(object *args) {
+	return boolean(is_pair(car(args)));
+}
+
 object *p_cons(object *args) {
 	object *x = car(args);
 	object *y = cadr(args);
@@ -179,8 +188,6 @@ object *p_cdr(object *args) {
 
 	return cdr(p);
 }
-
-#define boolean(x)		(x ? true : false)
 
 object *p_not(object *args) {
 	if (!args || cdr(args))
