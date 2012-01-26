@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "object.h"
+#include "parse.h"
+
+#define BUF_SZ 1
 
 #define iscomment(c)	((c) == ';')
 #define isopener(c)		((c) == '(')
@@ -45,14 +48,23 @@ object *parse_comment(FILE *f) {
 }
 
 object *parse_string(FILE *f) {
-	char buf[1000]; /* TODO: remove limit */
+	char *buf;
+	int buf_sz;
 	int i, c;
 
+	buf_sz = BUF_SZ;
+	buf = calloc(buf_sz, sizeof(*buf));
 	i = 0;
-	do
+	do {
 		buf[i++] = c = getc(f);
-	while (!isstring(c) && !iseof(c) && !iseos(c));
+		if (i == buf_sz) {
+			buf_sz *= 2;
+			buf = realloc(buf, buf_sz * sizeof(*buf));
+		}
+	} while (!isstring(c) && !iseof(c) && !iseos(c));
 	buf[i-1] = '\0';
+	if (iseof(c))
+		ungetc(c, f);
 	return string(buf);
 }
 
@@ -63,7 +75,7 @@ object *parse_token(FILE *f) {
 	int i, c;
 
 	i = 0;
-	buf_sz = 256; /* we can make this bigger once we're sure it works */
+	buf_sz = BUF_SZ; /* we can make this bigger once we're sure it works */
 	buf = calloc(buf_sz, sizeof(*buf));
 	do {
 		buf[i++] = c = getc(f);
@@ -82,6 +94,19 @@ object *parse_token(FILE *f) {
 	return ret;
 }
 
+object *parse_quote(FILE *f) {
+	object *obj;
+	int c;
+
+	if (isopener(c = getc(f))) {
+		obj = parse(f);
+	} else {
+		ungetc(c, f);
+		obj = parse_token(f);
+	}
+	return cons(symbol("quote"), cons(obj, nil));
+}
+
 object *parse(FILE *f) {
 	object *o;
 	int c;
@@ -96,16 +121,11 @@ object *parse(FILE *f) {
 		} else if (isopener(c)) {
 			o = parse(f);
 			return cons(o, parse(f));
-		} else if (isquote(c)) {
-			if (isopener(c = getc(f))) {
-				o = cons(symbol("quote"), cons(parse(f), nil));
-			} else {
-				ungetc(c, f);
-				o = cons(symbol("quote"), cons(parse_token(f), nil));
-			}
-			return cons(o, parse(f));
 		} else if (isstring(c)) {
 			o = parse_string(f);
+			return cons(o, parse(f));
+		} else if (isquote(c)) {
+			o = parse_quote(f);
 			return cons(o, parse(f));
 		} else {
 			ungetc(c, f);
@@ -113,5 +133,5 @@ object *parse(FILE *f) {
 			return cons(o, parse(f));
 		}
 	}
-	return NULL;
+	return nil;
 }

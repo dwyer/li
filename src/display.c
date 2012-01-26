@@ -14,7 +14,7 @@ void display(object *exp) {
 	else if (is_number(exp))
 		printf("%g", to_number(exp));
 	else if (is_string(exp))
-		printf("\"%s\"", to_string(exp));
+		printf("%s", to_string(exp));
 	else if (is_symbol(exp))
 		printf("%s", to_symbol(exp));
 	else if (is_primitive_procedure(exp))

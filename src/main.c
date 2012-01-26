@@ -29,10 +29,10 @@ int main(int argc, char *argv[]) {
 		if (*argv[argc] == '-')
 			while (*argv[argc]++)
 				switch (*argv[argc]) {
-					case 'h':
-						usage();
-						return 0;
-						break;
+				case 'h':
+					usage();
+					return 0;
+					break;
 				}
 	env = setup_environment();
 	exps = parse(stdin);
@@ -40,8 +40,10 @@ int main(int argc, char *argv[]) {
 		exps = cdr(exps);
 	while (exps) {
 		res = eval(car(exps), env);
-		display(res);
-		newline();
+		if (res) {
+			display(res);
+			newline();
+		}
 		exps = cdr(exps);
 		cleanup(cons(exps, env));
 	}
