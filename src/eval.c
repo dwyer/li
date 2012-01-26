@@ -89,6 +89,11 @@ object *eval(object *exp, object *env) {
 		return exp;
 	else if (is_variable(exp))
 		return lookup_variable_value(exp, env);
+	else if (is_tagged_list(exp, "assert"))
+		if (is_true(eval(cadr(exp), env)))
+			return symbol("OK");
+		else
+			return error("Assertion failed", cadr(exp));
 	else if (is_quoted(exp))
 		return cadr(exp);
 	else if (is_definition(exp))
@@ -164,7 +169,8 @@ object *lookup_variable_value(object *var, object *env) {
 object *setup_environment(void) {
 	object *env;
 
-	env = primitive_procedures();
+	env = nil;
+	env = primitive_procedures(env);
 	env = cons(cons(true, true), env);
 	env = cons(cons(false, false), env);
 	return env;

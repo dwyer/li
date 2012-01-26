@@ -10,11 +10,15 @@
 #define is_false(x)		is_eq(x, false)
 #define is_true(x)		!is_false(x)
 #define is_type(x, t)	(!is_null(x) && (x)->type == t)
+#define is_boolean(x)	((x) == false || (x) == true)
 #define is_number(x)	is_type(x, T_NUMBER)
 #define is_string(x)	is_type(x, T_STRING)
 #define is_symbol(x)	is_type(x, T_SYMBOL)
 #define is_pair(x)		is_type(x, T_PAIR)
+#define is_procedure(x)	is_type(x, T_PRIMITIVE_PROCEDURE)
 #define is_list(x)		(is_null(x) || (is_pair(x) && is_pair(cdr(x))))
+
+#define boolean(x)		(x ? true : false)
 
 #define to_pair(x)		(x)->data.pair
 #define to_number(x)	(x)->data.number
