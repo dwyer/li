@@ -6,66 +6,66 @@
 #define false           symbol("#f")
 
 /* TODO change x to obj and indent some more. */
-#define not(x)          is_false(x) ? true : false
-#define is_eq(x, y)     ((x) == (y))
-#define is_null(x)      is_eq(x, nil)
-#define is_false(x)     is_eq(x, false)
-#define is_true(x)      !is_false(x)
-#define is_type(x, t)   (!is_null(x) && (x)->type == t)
-#define is_boolean(x)   ((x) == false || (x) == true)
-#define is_compound(x)  is_type(x, T_COMPOUND)
-#define is_number(x)    is_type(x, T_NUMBER)
-#define is_string(x)    is_type(x, T_STRING)
-#define is_symbol(x)    is_type(x, T_SYMBOL)
-#define is_pair(x)      is_type(x, T_PAIR)
-#define is_primitive(x) is_type(x, T_PRIMITIVE)
-#define is_procedure(x) (is_primitive(x) || is_compound(x))
+#define not(obj)            is_false(obj) ? true : false
+#define is_eq(obj1, obj2)   ((obj1) == (obj2))
+#define is_null(obj)        is_eq(obj, nil)
+#define is_false(obj)       is_eq(obj, false)
+#define is_true(obj)        !is_false(obj)
+#define is_type(obj, t)     (!is_null(obj) && (obj)->type == t)
+#define is_boolean(obj)     ((obj) == false || (obj) == true)
+#define is_compound(obj)    is_type(obj, T_COMPOUND)
+#define is_number(obj)      is_type(obj, T_NUMBER)
+#define is_string(obj)      is_type(obj, T_STRING)
+#define is_symbol(obj)      is_type(obj, T_SYMBOL)
+#define is_pair(obj)        is_type(obj, T_PAIR)
+#define is_primitive(obj)   is_type(obj, T_PRIMITIVE)
+#define is_procedure(obj)   (is_primitive(obj) || is_compound(obj))
 
-#define is_locked(x)    (x)->locked
+#define is_locked(obj)      (obj)->locked
 
-#define to_number(x)    (x)->data.number
-#define to_pair(x)      (x)->data.pair
-#define to_primitive(x) (x)->data.primitive
-#define to_compound(x)  (x)->data.compound
-#define to_string(x)    (x)->data.string
-#define to_symbol(x)    (x)->data.symbol
+#define to_number(obj)      (obj)->data.number
+#define to_pair(obj)        (obj)->data.pair
+#define to_primitive(obj)   (obj)->data.primitive
+#define to_compound(obj)    (obj)->data.compound
+#define to_string(obj)      (obj)->data.string
+#define to_symbol(obj)      (obj)->data.symbol
 
-#define car(x)          to_pair(x).car
-#define cdr(x)          to_pair(x).cdr
+#define car(obj)            to_pair(obj).car
+#define cdr(obj)            to_pair(obj).cdr
 
-#define caar(x)         car(car(x))
-#define cadr(x)         car(cdr(x))
-#define cdar(x)         cdr(car(x))
-#define cddr(x)         cdr(cdr(x))
-#define caaar(x)        car(car(car(x)))
-#define caadr(x)        car(car(cdr(x)))
-#define cadar(x)        car(cdr(car(x)))
-#define caddr(x)        car(cdr(cdr(x)))
-#define cdaar(x)        cdr(car(car(x)))
-#define cdadr(x)        cdr(car(cdr(x)))
-#define cddar(x)        cdr(cdr(car(x)))
-#define cdddr(x)        cdr(cdr(cdr(x)))
-#define caaaar(x)       car(car(car(car(x))))
-#define caaadr(x)       car(car(car(cdr(x))))
-#define caadar(x)       car(car(cdr(car(x))))
-#define caaddr(x)       car(car(cdr(cdr(x))))
-#define cadaar(x)       car(cdr(car(car(x))))
-#define cadadr(x)       car(cdr(car(cdr(x))))
-#define caddar(x)       car(cdr(cdr(car(x))))
-#define cadddr(x)       car(cdr(cdr(cdr(x))))
-#define cdaaar(x)       cdr(car(car(car(x))))
-#define cdaadr(x)       cdr(car(car(cdr(x))))
-#define cdadar(x)       cdr(car(cdr(car(x))))
-#define cdaddr(x)       cdr(car(cdr(cdr(x))))
-#define cddaar(x)       cdr(cdr(car(car(x))))
-#define cddadr(x)       cdr(cdr(car(cdr(x))))
-#define cdddar(x)       cdr(cdr(cdr(car(x))))
-#define cddddr(x)       cdr(cdr(cdr(cdr(x))))
+#define caar(obj)           car(car(obj))
+#define cadr(obj)           car(cdr(obj))
+#define cdar(obj)           cdr(car(obj))
+#define cddr(obj)           cdr(cdr(obj))
+#define caaar(obj)          car(car(car(obj)))
+#define caadr(obj)          car(car(cdr(obj)))
+#define cadar(obj)          car(cdr(car(obj)))
+#define caddr(obj)          car(cdr(cdr(obj)))
+#define cdaar(obj)          cdr(car(car(obj)))
+#define cdadr(obj)          cdr(car(cdr(obj)))
+#define cddar(obj)          cdr(cdr(car(obj)))
+#define cdddr(obj)          cdr(cdr(cdr(obj)))
+#define caaaar(obj)         car(car(car(car(obj))))
+#define caaadr(obj)         car(car(car(cdr(obj))))
+#define caadar(obj)         car(car(cdr(car(obj))))
+#define caaddr(obj)         car(car(cdr(cdr(obj))))
+#define cadaar(obj)         car(cdr(car(car(obj))))
+#define cadadr(obj)         car(cdr(car(cdr(obj))))
+#define caddar(obj)         car(cdr(cdr(car(obj))))
+#define cadddr(obj)         car(cdr(cdr(cdr(obj))))
+#define cdaaar(obj)         cdr(car(car(car(obj))))
+#define cdaadr(obj)         cdr(car(car(cdr(obj))))
+#define cdadar(obj)         cdr(car(cdr(car(obj))))
+#define cdaddr(obj)         cdr(car(cdr(cdr(obj))))
+#define cddaar(obj)         cdr(cdr(car(car(obj))))
+#define cddadr(obj)         cdr(cdr(car(cdr(obj))))
+#define cdddar(obj)         cdr(cdr(cdr(car(obj))))
+#define cddddr(obj)         cdr(cdr(cdr(cdr(obj))))
 
-#define set_car(x, y)   (car(x) = y)
-#define set_cdr(x, y)   (cdr(x) = y)
+#define set_car(obj1, obj2) (car(obj1) = obj2)
+#define set_cdr(obj1, obj2) (cdr(obj1) = obj2)
 
-#define boolean(x)      (x ? true : false)
+#define boolean(obj)        (obj ? true : false)
 
 enum {
     T_CHAR, /* TODO (maybe): implement */
