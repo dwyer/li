@@ -1,4 +1,5 @@
 #include <setjmp.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "object.h"
@@ -8,10 +9,16 @@
 
 static jmp_buf buf;
 
-object *error(char *msg, object *obj) {
+object *_error(char *msg, ...) {
+    va_list ap;
+    object *obj;
+
+    va_start(ap, msg);
     printf("%s ", msg);
-    display(obj);
+    for (obj = va_arg(ap, object *); obj; obj = va_arg(ap, object *))
+        display(obj);
     newline();
+    va_end(ap);
     longjmp(buf, 1);
     return nil;
 }

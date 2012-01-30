@@ -37,6 +37,7 @@ object *apply(object *procedure, object *arguments);
 object *apply_primitive_procedure(object *proc, object *args);
 object *definition_value(object *exp);
 object *definition_variable(object *exp);
+object *eval_and(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
 object *eval_if(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
@@ -94,6 +95,8 @@ object *eval(object *exp, object *env) {
             return symbol("OK");
         else
             return error("Assertion failed", cadr(exp));
+    else if (is_tagged_list(exp, "and"))
+        return eval_and(cdr(exp), env);
     else if (is_quoted(exp))
         return cadr(exp);
     else if (is_definition(exp))
@@ -107,6 +110,19 @@ object *eval(object *exp, object *env) {
                      list_of_values(operands(exp), env));
     else
         return error("Unknown expression type -- EVAL", exp);
+}
+
+object *eval_and(object *exp, object *env) {
+    object *ret;
+
+    ret = true;
+    while (exp) {
+        ret = eval(car(exp), env);
+        if (is_false(ret))
+            return false;
+        exp = cdr(exp);
+    }
+    return ret;
 }
 
 object *eval_definition(object *exp, object *env) {

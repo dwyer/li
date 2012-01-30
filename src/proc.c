@@ -8,7 +8,6 @@
 typedef struct reg reg;
 
 object *p_add(object *args);
-object *p_and(object *args);
 object *p_car(object *args);
 object *p_cdr(object *args);
 object *p_cons(object *args);
@@ -58,7 +57,6 @@ struct reg {
     { "display", p_display },
     { "newline", p_newline },
     /* logic */
-    { "and", p_and },
     { "not", p_not },
     { "or", p_or },
     /* data structures */
@@ -226,20 +224,6 @@ object *p_not(object *args) {
     if (is_false(car(args)))
         return true;
     return false;
-}
-
-/* TODO: make this a special form */
-object *p_and(object *args) {
-    object *x;
-
-    x = true;
-    while (args) {
-        x = car(args);
-        if (is_false(x))
-            return false;
-        args = cdr(args);
-    }
-    return x;
 }
 
 /* TODO: make this a special form */
