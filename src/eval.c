@@ -28,6 +28,8 @@
 
 #define cond_to_if(exp)             expand_clauses(cdr(exp))
 
+int is_tagged_list(object *exp, char *tag);
+
 object *apply(object *procedure, object *arguments);
 object *apply_primitive_procedure(object *proc, object *args);
 object *definition_value(object *exp);
@@ -67,8 +69,10 @@ object *apply_primitive_procedure(object *proc, object *args) {
     return to_primitive(proc)(args);
 }
 
-object *define_variable(object *var, object *val, object *env) {
+object *define_variable_(object *var, object *val, object *env) {
     for (; env; env = cdr(env)) {
+        if (!car(env))
+            break;
         if (var == caar(env)) {
             set_cdr(car(env), val);
             return var;
@@ -76,7 +80,26 @@ object *define_variable(object *var, object *val, object *env) {
         if (!cdr(env))
             break;
     }
-    set_cdr(env, cons(cons(var, val), nil));
+    set_cdr(env, cons(cons(var, val), cdr(env)));
+    return var;
+}
+
+object *define_variable(object *var, object *val, object *env) {
+    do {
+        if (!env) {
+            break;
+        } else if (!car(env)) {
+            set_car(env, cons(var, val));
+            set_cdr(env, cons(nil, cdr(env)));
+            break;
+        } else if (is_eq(caar(env), var)) {
+            set_cdr(car(env), val);
+        } else if (!cdr(env)) {
+            set_cdr(env, cons(cons(var, val), nil));
+            break;
+        }
+        env = cdr(env);
+    } while (env);
     return var;
 }
 
@@ -180,7 +203,7 @@ object *eval_or(object *exp, object *env) {
 object *eval_sequence(object *exps, object *env) {
     if (!cdr(exps))
         return eval(car(exps), env);
-    eval(cdr(exps), env);
+    eval(car(exps), env);
     return eval_sequence(cdr(exps), env);
 }
 
@@ -218,6 +241,7 @@ object *expand_clauses(object *clauses) {
 }
 
 object *extend_environment(object *vars, object *vals, object *base_env) {
+    base_env = cons(nil, base_env);
     while (vars && vals) {
         base_env = cons(cons(car(vars), car(vals)), base_env);
         vars = cdr(vars);
@@ -246,7 +270,7 @@ object *list_of_values(object *exps, object *env) {
 
 object *lookup_variable_value(object *var, object *env) {
     while (env) {
-        if (var == caar(env))
+        if (car(env) && var == caar(env))
             return cdar(env);
         env = cdr(env);
     }

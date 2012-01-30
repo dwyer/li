@@ -91,8 +91,6 @@ void unlock(object *obj);
 void delete(object *obj);
 void cleanup(object *env);
 
-int is_tagged_list(object *exp, char *tag);
-
 struct object {
     union {
         struct {

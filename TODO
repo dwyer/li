@@ -1,5 +1,4 @@
 General:
-* Support lexical scope. Very important.
 * Improve garbage collector: I have no formal education on GC. The current
   implementation is based on my intuition alone. It's probably not even a real
   garbage collector so I personally just call it my "heap management system."
@@ -25,9 +24,6 @@ Parser:
   however, so...
 
 Data types:
-* Compound procedures: these should be a native type and should support
-  closures. Perhaps that could be best implemented by supporting a native
-  'environment' type.
 * Booleans: currently I'm using symbols #f and #t to represent booleans. Guile
   seems to do the same thing, that is, (eq? #f '#f) returns true, while
   (symbol? '#f) return false, which is should do, and which mine doesn't do.

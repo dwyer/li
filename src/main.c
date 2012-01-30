@@ -9,6 +9,7 @@
 
 static jmp_buf buf;
 
+/* TODO: rewrite this to the R6RS spec */
 object *_error(char *msg, ...) {
     va_list ap;
     object *obj;
@@ -21,10 +22,6 @@ object *_error(char *msg, ...) {
     va_end(ap);
     longjmp(buf, 1);
     return nil;
-}
-
-void usage(void) {
-    puts("usage: ./scm <file");
 }
 
 int main(int argc, char *argv[]) {

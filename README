@@ -5,6 +5,5 @@ the most useful.  My ultimate goal is ease of extensibility so that I may use
 it as an embedded configuration and scripting lanaguge in future projects.
 
 Currently, it's just a toy.  It's capable of running simple programs and
-algorithms so long as they're purely functional and don't depend on lexical
-scoping.  It supports compound procedures but not closures.  It's hardly even
+algorithms so long as they're purely functional. It's hardly even
 worth looking at until these issues in particular are resolved.  :)
