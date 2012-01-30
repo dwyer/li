@@ -33,6 +33,8 @@ object *p_remainder(object *args);
 object *p_mul(object *args);
 object *p_not(object *args);
 object *p_newline(object *args);
+object *p_set_car(object *args);
+object *p_set_cdr(object *args);
 object *p_sub(object *args);
 
 object *p_exp(object *args);
@@ -64,6 +66,9 @@ struct reg {
     { "cons", p_cons },
     { "eq?", p_is_eq },
     { "eqv?", p_is_eqv },
+    /* mutators */
+    { "set-car!", p_set_car },
+    { "set-cdr!", p_set_cdr },
     /* base types */
     { "boolean?", p_is_boolean },
     { "char?", p_nimp },
@@ -220,6 +225,24 @@ object *p_cdr(object *args) {
     if (!is_pair(car(args)))
         return error("Wrong type of arg", car(args));
     return cdar(args);
+}
+
+object *p_set_car(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        return error("Wrong number of args", args);
+    if (!is_pair(car(args)))
+        return error("Wrong type of arg", car(args));
+    set_car(car(args), cadr(args));
+    return nil;
+}
+
+object *p_set_cdr(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        return error("Wrong number of args", args);
+    if (!is_pair(car(args)))
+        return error("Wrong type of arg", car(args));
+    set_cdr(car(args), cadr(args));
+    return nil;
 }
 
 object *p_display(object *args) {
