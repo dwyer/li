@@ -18,7 +18,6 @@ object *p_gt(object *args);
 object *p_is_boolean(object *args);
 object *p_is_eq(object *args);
 object *p_is_eqv(object *args);
-object *p_is_list(object *args);
 object *p_is_null(object *args);
 object *p_is_number(object *args);
 object *p_is_pair(object *args);
@@ -26,10 +25,8 @@ object *p_is_procedure(object *args);
 object *p_is_string(object *args);
 object *p_is_symbol(object *args);
 object *p_le(object *args);
-object *p_list(object *args);
 object *p_lt(object *args);
 object *p_modulo(object *args);
-object *p_remainder(object *args);
 object *p_mul(object *args);
 object *p_not(object *args);
 object *p_newline(object *args);
@@ -48,7 +45,9 @@ object *p_atan(object *args);
 object *p_sqrt(object *args);
 object *p_expt(object *args);
 
-object *p_nimp(object *args);
+/* TODO: implement these in scm */
+object *p_is_list(object *args);
+object *p_list(object *args);
 
 struct reg {
     char *var;
@@ -71,14 +70,12 @@ struct reg {
     { "set-cdr!", p_set_cdr },
     /* base types */
     { "boolean?", p_is_boolean },
-    { "char?", p_nimp },
     { "null?", p_is_null },
     { "number?", p_is_number },
     { "pair?", p_is_pair },
     { "procedure?", p_is_procedure },
     { "string?", p_is_string },
     { "symbol?", p_is_symbol },
-    { "vector?", p_nimp },
     /* extended base types */
     { "list", p_list },
     { "list?", p_is_list },
@@ -93,7 +90,6 @@ struct reg {
     { "-", p_sub },
     { "/", p_div },
     { "modulo", p_modulo },
-    { "remainder", p_remainder },
     { "exp", p_exp },
     { "log", p_log },
     { "sin", p_sin },
@@ -116,10 +112,6 @@ object *primitive_procedures(object *env) {
         env = cons(cons(var, val), env);
     }
     return env;
-}
-
-object *p_nimp(object *args) {
-    return error("Not implemented");
 }
 
 object *p_error(object *args) {
@@ -410,14 +402,6 @@ object *p_div(object *args) {
  */
 
 object *p_modulo(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        return error("Wrong number of arguments", args);
-    if (!is_number(car(args)) || !is_number(cadr(args)))
-        return error("Wrong type of arguments", args);
-    return number((int)to_number(car(args)) % (int)to_number(cadr(args)));
-}
-
-object *p_remainder(object *args) {
     if (!args || !cdr(args) || cddr(args))
         return error("Wrong number of arguments", args);
     if (!is_number(car(args)) || !is_number(cadr(args)))

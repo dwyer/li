@@ -33,6 +33,8 @@
 int is_tagged_list(object *exp, char *tag);
 
 object *apply(object *procedure, object *arguments);
+object *apply_compound_procedure(object *proc, object *args);
+object *apply_macro(object *proc, object *args);
 object *apply_primitive_procedure(object *proc, object *args);
 object *definition_value(object *exp);
 object *definition_variable(object *exp);
@@ -45,7 +47,6 @@ object *eval_let(object *exp, object *env);
 object *eval_or(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
 object *eval_syntax_definition(object *exp, object *env);
-object *eval_syntax_rules(object *exp, object *env);
 object *expand_clauses(object *clauses);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *if_alternative(object *exp);
@@ -63,15 +64,25 @@ object *apply(object *proc, object *args) {
     if (is_primitive(proc))
         return apply_primitive_procedure(proc, args);
     else if (is_compound(proc))
-        return eval_sequence(cadr(to_compound(proc)),
-                             extend_environment(car(to_compound(proc)),
-                                                args,
-                                                caddr(to_compound(proc))));
+        return apply_compound_procedure(proc, args);
+    else if (is_syntax_rules(proc))
+        return apply_macro(proc, args);
     return error("Apply: Unknown procedure type:", proc);
 }
 
 object *apply_primitive_procedure(object *proc, object *args) {
     return to_primitive(proc)(args);
+}
+
+object *apply_compound_procedure(object *proc, object *args) {
+    object *params = car(to_compound(proc));
+    object *body = cadr(to_compound(proc));
+    object *env = caddr(to_compound(proc));
+    return eval_sequence(body, extend_environment(params, args, env));
+}
+
+object *apply_macro(object *proc, object *args) {
+    return nil;
 }
 
 object *define_variable_(object *var, object *val, object *env) {
@@ -151,8 +162,6 @@ object *eval(object *exp, object *env) {
     /* macros */
     else if (is_syntax_definition(exp))
         return eval_syntax_definition(exp, env);
-    else if (is_syntax_rules(exp))
-        return eval_syntax_rules(exp, env);
     /* apply */
     else if (is_application(exp))
         return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
@@ -240,12 +249,8 @@ object *eval_sequence(object *exps, object *env) {
 
 object *eval_syntax_definition(object *exp, object *env) {
     return define_variable(cadr(exp),
-                           eval(caddr(exp), env),
+                           caddr(exp),
                            env);
-}
-
-object *eval_syntax_rules(object *exp, object *env) {
-    return error("nimp");
 }
 
 object *sequence_to_exp(object *seq) {

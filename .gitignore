@@ -1,5 +1,5 @@
 *~
 *.o
 scm
-test.scm
+test
 .git
