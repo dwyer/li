@@ -15,6 +15,7 @@
 #define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_if(exp)                  is_tagged_list(exp, "if")
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
+#define is_let(exp)                 is_tagged_list(exp, "let")
 #define is_or(exp)                  is_tagged_list(exp, "or")
 #define is_self_evaluating(exp)     (is_number(exp) || is_string(exp))
 #define is_syntax_definition(exp)   is_tagged_list(exp, "define-syntax")
@@ -40,6 +41,7 @@ object *eval_assert(object *exp, object *env);
 object *eval_assignment(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
 object *eval_if(object *exp, object *env);
+object *eval_let(object *exp, object *env);
 object *eval_or(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
 object *eval_syntax_definition(object *exp, object *env);
@@ -142,6 +144,8 @@ object *eval(object *exp, object *env) {
         return eval_and(cdr(exp), env);
     else if (is_assert(exp))
         return eval_assert(cadr(exp), env);
+    else if (is_let(exp))
+        return eval_let(cdr(exp), env);
     else if (is_or(exp))
         return eval_or(cdr(exp), env);
     /* macros */
@@ -196,6 +200,22 @@ object *eval_if(object *exp, object *env) {
         return eval(caddr(exp), env);
     else
         return eval(if_alternative(exp), env);
+}
+
+object *eval_let(object *exp, object *env) {
+    object *bind;
+    object *vars;
+    object *vals;
+
+    bind = car(exp);
+    vars = nil;
+    vals = nil;
+    while (bind) {
+        vars = cons(caar(bind), vars);
+        vals = cons(eval(cadar(bind), env), vals);
+        bind = cdr(bind);
+    }
+    return eval_sequence(cdr(exp), extend_environment(vars, vals, env));
 }
 
 object *eval_or(object *exp, object *env) {

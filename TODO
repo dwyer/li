@@ -4,11 +4,10 @@ General:
   garbage collector so I personally just call it my "heap management system."
   Anyways, it *does* collect garbage, and does it rather well, but I'd like for
   it to be a little simpler and perhaps a little faster.
-* Support macros.
 
 Special forms:
-* let
-* set!
+* define-syntax
+* syntax-rules
 
 Parser:
 * Dotted pairs: currently the parser interprets (1 . 2) as a list containing
