@@ -5,6 +5,7 @@
 #define true            symbol("#t")
 #define false           symbol("#f")
 
+/* TODO change x to obj and indent some more. */
 #define not(x)          is_false(x) ? true : false
 #define is_eq(x, y)     ((x) == (y))
 #define is_null(x)      is_eq(x, nil)
@@ -12,20 +13,20 @@
 #define is_true(x)      !is_false(x)
 #define is_type(x, t)   (!is_null(x) && (x)->type == t)
 #define is_boolean(x)   ((x) == false || (x) == true)
-#define is_compound(p)  is_tagged_list(p, "procedure")
+#define is_compound(x)  is_type(x, T_COMPOUND)
 #define is_number(x)    is_type(x, T_NUMBER)
 #define is_string(x)    is_type(x, T_STRING)
 #define is_symbol(x)    is_type(x, T_SYMBOL)
 #define is_pair(x)      is_type(x, T_PAIR)
-#define is_primitive(p) is_type(p, T_PRIMITIVE)
+#define is_primitive(x) is_type(x, T_PRIMITIVE)
 #define is_procedure(x) (is_primitive(x) || is_compound(x))
 
 #define is_locked(x)    (x)->locked
 
 #define to_number(x)    (x)->data.number
 #define to_pair(x)      (x)->data.pair
-#define to_primitive(x)     (x)->data.primitive
-#define to_compound(x)     (x)->data.compound
+#define to_primitive(x) (x)->data.primitive
+#define to_compound(x)  (x)->data.compound
 #define to_string(x)    (x)->data.string
 #define to_symbol(x)    (x)->data.symbol
 
@@ -102,12 +103,8 @@ struct object {
         double number;
         char *string;
         char *symbol;
+        object *compound;
         object *(*primitive)(object *);
-        struct {
-            object *args;
-            object *body;
-            object *env;
-        } compound;
     } data;
     int type;
     int locked;

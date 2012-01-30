@@ -48,6 +48,7 @@ object *parse_comment(FILE *f) {
 }
 
 object *parse_string(FILE *f) {
+    object *ret;
     char *buf;
     int buf_sz;
     int i, c;
@@ -65,7 +66,9 @@ object *parse_string(FILE *f) {
     buf[i-1] = '\0';
     if (iseof(c))
         ungetc(c, f);
-    return string(buf);
+    ret = string(buf);
+    free(buf);
+    return ret;
 }
 
 object *parse_token(FILE *f) {

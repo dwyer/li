@@ -25,8 +25,6 @@
 #define make_if(pred, con, alt)     cons(symbol("if"), \
                                          cons(pred, cons(con, cons(alt, nil))))
 #define make_lambda(p, b)           cons(symbol("lambda"), cons(p, b))
-#define make_procedure(p, b, e)     cons(symbol("procedure"), \
-                                         cons(p, cons(b, cons(e, nil))))
 
 #define cond_to_if(exp)             expand_clauses(cdr(exp))
 
@@ -58,10 +56,10 @@ object *apply(object *proc, object *args) {
     if (is_primitive(proc))
         return apply_primitive_procedure(proc, args);
     else if (is_compound(proc))
-        return eval_sequence(caddr(proc),
-                             extend_environment(cadr(proc),
+        return eval_sequence(cadr(to_compound(proc)),
+                             extend_environment(car(to_compound(proc)),
                                                 args,
-                                                cadddr(proc)));
+                                                caddr(to_compound(proc))));
     return error("Apply: Unknown procedure type:", proc);
 }
 
@@ -106,7 +104,7 @@ object *eval(object *exp, object *env) {
     else if (is_if(exp))
         return eval_if(exp, env);
     else if (is_lambda(exp))
-        return make_procedure(cadr(exp), cddr(exp), env);
+        return compound(cadr(exp), cddr(exp), env);
     else if (is_begin(exp))
         return eval_sequence(cdr(exp), env);
     else if (is_cond(exp))

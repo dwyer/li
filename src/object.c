@@ -98,7 +98,11 @@ object *symbol(char *s) {
 }
 
 object *compound(object *args, object *body, object *env) {
-    return nil;
+    object *obj;
+
+    obj = new(T_COMPOUND);
+    obj->data.compound = cons(args, cons(body, cons(env, nil)));
+    return obj;
 }
 
 object *procedure(object *(*proc)(object *)) {
@@ -126,6 +130,8 @@ void lock(object *obj) {
     if (is_pair(obj)) {
         lock(car(obj));
         lock(cdr(obj));
+    } else if (is_compound(obj)) {
+        lock(to_compound(obj));
     }
 }
 
@@ -136,6 +142,8 @@ void unlock(object *obj) {
     if (is_pair(obj)) {
         unlock(car(obj));
         unlock(cdr(obj));
+    } else if (is_compound(obj)) {
+        unlock(to_compound(obj));
     }
 }
 

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "object.h"
 #include "display.h"
-#include "eval.h"
 
 void display_pair(object *exp);
 
@@ -19,7 +18,7 @@ void display(object *exp) {
         printf("%s", to_symbol(exp));
     else if (is_primitive(exp))
         printf("#[primitive]");
-    else if (is_tagged_list(exp, "procedure"))
+    else if (is_compound(exp))
         printf("#[procedure]");
     else if (is_pair(exp))
         display_pair(exp);
