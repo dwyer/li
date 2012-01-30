@@ -80,9 +80,6 @@ object *string(char *s) {
     return obj;
 }
 
-/**
- *
- */
 object *symbol(char *s) {
     object *obj;
     int i;
@@ -94,6 +91,17 @@ object *symbol(char *s) {
     }
     obj = new(T_SYMBOL);
     obj->data.symbol = strdup(s);
+    return obj;
+}
+
+object *vector(int k, object *fill) {
+    object *obj;
+
+    obj = new(T_VECTOR);
+    obj->data.vector.data = calloc(k, sizeof(*obj->data.vector.data));
+    obj->data.vector.length = k;
+    while (k--)
+        obj->data.vector.data[k] = fill;
     return obj;
 }
 
@@ -113,6 +121,55 @@ object *procedure(object *(*proc)(object *)) {
     return obj;
 }
 
+int is_equal_vectors(object *obj1, object *obj2) {
+    int k;
+
+    if (vector_length(obj1) != vector_length(obj2))
+        return 0;
+    for (k = 0; k < vector_length(obj1); k++)
+        if (!is_equal(vector_ref(obj1, k), vector_ref(obj2, k)))
+            return 0;
+    return 1;
+}
+
+int is_equal(object *obj1, object *obj2) {
+    if (is_pair(obj1) && is_pair(obj2))
+        return (is_equal(car(obj1), car(obj2)) &&
+                is_equal(cdr(obj2), cdr(obj2)));
+    else if (is_string(obj1) && is_string(obj2))
+        return !strcmp(to_string(obj1), to_string(obj2));
+    else if (is_vector(obj1) && is_vector(obj2))
+        return is_equal_vectors(obj1, obj2);
+    return is_eqv(obj1, obj2);
+}
+
+int is_eqv(object *obj1, object *obj2) {
+    if (is_number(obj1) && is_number(obj2))
+        return to_number(obj1) == to_number(obj2);
+    return is_eq(obj1, obj2);
+}
+
+int is_list(object *list) {
+    while (list) {
+        if (!is_pair(list))
+            return 0;
+        list = cdr(list);
+    }
+    return 1;
+}
+
+int length(object *list) {
+    int k;
+
+    k = 0;
+    assert(is_list(list));
+    while (list) {
+        k++;
+        list = cdr(list);
+    }
+    return k;
+}
+
 void delete(object *obj) {
     if (!obj || obj->locked)
         return;
@@ -130,6 +187,10 @@ void lock(object *obj) {
     if (is_pair(obj)) {
         lock(car(obj));
         lock(cdr(obj));
+    } else if (is_vector(obj)) {
+        int k;
+        for (k = 0; k < vector_length(obj); k++)
+            lock(vector_ref(obj, k));
     } else if (is_compound(obj)) {
         lock(to_compound(obj));
     }
@@ -142,6 +203,10 @@ void unlock(object *obj) {
     if (is_pair(obj)) {
         unlock(car(obj));
         unlock(cdr(obj));
+    } else if (is_vector(obj)) {
+        int k;
+        for (k = 0; k < vector_length(obj); k++)
+            unlock(vector_ref(obj, k));
     } else if (is_compound(obj)) {
         unlock(to_compound(obj));
     }

@@ -16,6 +16,7 @@
 #define is_number(obj)      is_type(obj, T_NUMBER)
 #define is_string(obj)      is_type(obj, T_STRING)
 #define is_symbol(obj)      is_type(obj, T_SYMBOL)
+#define is_vector(obj)      is_type(obj, T_VECTOR)
 #define is_pair(obj)        is_type(obj, T_PAIR)
 #define is_primitive(obj)   is_type(obj, T_PRIMITIVE)
 #define is_procedure(obj)   (is_primitive(obj) || is_compound(obj))
@@ -28,6 +29,13 @@
 #define to_compound(obj)    (obj)->data.compound
 #define to_string(obj)      (obj)->data.string
 #define to_symbol(obj)      (obj)->data.symbol
+#define to_vector(obj)      (obj)->data.vector
+
+#define to_integer(obj)     (int)to_number(obj)
+
+#define vector_length(obj)  to_vector(obj).length
+#define vector_ref(obj, k)  to_vector(obj).data[k]
+#define vector_set(vec, k, obj) (vector_ref(vec, k) = obj)
 
 #define car(obj)            to_pair(obj).car
 #define cdr(obj)            to_pair(obj).cdr
@@ -72,7 +80,7 @@ enum {
     T_STRING,
     T_SYMBOL,
     T_PAIR,
-    T_VECTOR, /* TODO: implement */
+    T_VECTOR,
     T_PRIMITIVE,
     T_COMPOUND,
     N_TYPES
@@ -84,12 +92,18 @@ object *cons(object *car, object *cdr);
 object *number(double n);
 object *string(char *s);
 object *symbol(char *s);
+object *vector(int k, object *fill);
 object *compound(object *args, object *body, object *env);
 object *procedure(object *(*proc)(object *));
+
 void lock(object *obj);
 void unlock(object *obj);
 void delete(object *obj);
 void cleanup(object *env);
+
+int is_equal(object *obj1, object *obj2);
+int is_eqv(object *obj1, object *obj2);
+int length(object *list);
 
 struct object {
     union {
@@ -100,6 +114,10 @@ struct object {
         double number;
         char *string;
         char *symbol;
+        struct {
+            object **data;
+            int length;
+        } vector;
         object *compound;
         object *(*primitive)(object *);
     } data;

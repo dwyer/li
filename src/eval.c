@@ -34,8 +34,8 @@ int is_tagged_list(object *exp, char *tag);
 
 object *apply(object *procedure, object *arguments);
 object *apply_compound_procedure(object *proc, object *args);
-object *apply_macro(object *proc, object *args);
 object *apply_primitive_procedure(object *proc, object *args);
+object *apply_syntax(object *proc, object *args);
 object *definition_value(object *exp);
 object *definition_variable(object *exp);
 object *eval_and(object *exp, object *env);
@@ -65,13 +65,7 @@ object *apply(object *proc, object *args) {
         return apply_primitive_procedure(proc, args);
     else if (is_compound(proc))
         return apply_compound_procedure(proc, args);
-    else if (is_syntax_rules(proc))
-        return apply_macro(proc, args);
     return error("Apply: Unknown procedure type:", proc);
-}
-
-object *apply_primitive_procedure(object *proc, object *args) {
-    return to_primitive(proc)(args);
 }
 
 object *apply_compound_procedure(object *proc, object *args) {
@@ -81,8 +75,12 @@ object *apply_compound_procedure(object *proc, object *args) {
     return eval_sequence(body, extend_environment(params, args, env));
 }
 
-object *apply_macro(object *proc, object *args) {
-    return nil;
+object *apply_primitive_procedure(object *proc, object *args) {
+    return to_primitive(proc)(args);
+}
+
+object *apply_syntax(object *proc, object *args) {
+    return args;
 }
 
 object *define_variable_(object *var, object *val, object *env) {

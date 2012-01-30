@@ -4,6 +4,7 @@
 #include "display.h"
 
 void display_pair(object *exp);
+void display_vector(object *exp);
 
 void display(object *exp) {
     if (is_null(exp))
@@ -22,6 +23,8 @@ void display(object *exp) {
         printf("#[procedure]");
     else if (is_pair(exp))
         display_pair(exp);
+    else if (is_vector(exp))
+        display_vector(exp);
 }
 
 void display_pair(object *exp) {
@@ -43,4 +46,16 @@ void display_pair(object *exp) {
     }
     printf(")");
     exp->locked = 0;
+}
+
+void display_vector(object *obj) {
+    int k;
+
+    printf("#(");
+    for (k = 0; k < vector_length(obj); k++) {
+        display(vector_ref(obj, k));
+        if (k < vector_length(obj) - 1)
+            printf(" ");
+    }
+    printf(")");
 }

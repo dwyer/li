@@ -17,6 +17,7 @@ object *p_ge(object *args);
 object *p_gt(object *args);
 object *p_is_boolean(object *args);
 object *p_is_eq(object *args);
+object *p_is_equal(object *args);
 object *p_is_eqv(object *args);
 object *p_is_null(object *args);
 object *p_is_number(object *args);
@@ -26,6 +27,7 @@ object *p_is_string(object *args);
 object *p_is_symbol(object *args);
 object *p_le(object *args);
 object *p_lt(object *args);
+object *p_make_vector(object *args);
 object *p_modulo(object *args);
 object *p_mul(object *args);
 object *p_not(object *args);
@@ -33,6 +35,10 @@ object *p_newline(object *args);
 object *p_set_car(object *args);
 object *p_set_cdr(object *args);
 object *p_sub(object *args);
+object *p_vector(object *args);
+object *p_vector_length(object *args);
+object *p_vector_ref(object *args);
+object *p_vector_set(object *args);
 
 object *p_exp(object *args);
 object *p_log(object *args);
@@ -63,7 +69,14 @@ struct reg {
     { "car", p_car },
     { "cdr", p_cdr },
     { "cons", p_cons },
+    { "list", p_list },
+    { "make-vector", p_make_vector },
+    { "vector", p_vector },
+    { "vector-length", p_vector_length },
+    { "vector-ref", p_vector_ref },
+    { "vector-set!", p_vector_set },
     { "eq?", p_is_eq },
+    { "equal?", p_is_equal },
     { "eqv?", p_is_eqv },
     /* mutators */
     { "set-car!", p_set_car },
@@ -77,7 +90,6 @@ struct reg {
     { "string?", p_is_string },
     { "symbol?", p_is_symbol },
     /* extended base types */
-    { "list", p_list },
     { "list?", p_is_list },
     /* operations */
     { "=", p_eq },
@@ -129,10 +141,13 @@ object *p_is_eq(object *args) {
 object *p_is_eqv(object *args) {
     if (!args || !cdr(args) || cddr(args))
         return error("Wrong number of args", args);
-    if (is_number(car(args)) && is_number(cadr(args)))
-        return p_eq(args);
-    else
-        return p_is_eq(args);
+    return boolean(is_eqv(car(args), cadr(args)));
+}
+
+object *p_is_equal(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        return error("Wrong number of args", args);
+    return boolean(is_equal(car(args), cadr(args)));
 }
 
 /* (null? x) */
@@ -192,6 +207,58 @@ object *p_is_symbol(object *args) {
 
 object *p_list(object *args) {
     return args;
+}
+
+object *p_make_vector(object *args) {
+    if (!args || (cdr(args) && cddr(args)))
+        return error("Wrong number of args", args);
+    if (!is_number(car(args)))
+        return error("Wrong type of arg", car(args));
+    return vector(to_number(car(args)), cdr(args) ? cadr(args) : nil);
+}
+
+object *p_vector(object *args) {
+    object *vec;
+    int k;
+
+    vec = vector(length(args), nil);
+    for (k = 0; k < vector_length(vec); k++, args = cdr(args))
+        vector_set(vec, k, car(args));
+    return vec;
+}
+
+object *p_vector_length(object *args) {
+    if (!args || cdr(args))
+        return error("Wrong number of args", args);
+    if (!is_vector(car(args)))
+        return error("Wrong type of arg", car(args));
+    return number(vector_length(car(args)));
+}
+
+object *p_vector_ref(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        return error("Wrong number of args", args);
+    if (!is_vector(car(args)))
+        return error("Wrong type of arg", car(args));
+    if (!is_number(cadr(args)))
+        return error("Wrong type of arg", cdar(args));
+    if (to_number(cadr(args)) < 0 ||
+        to_number(cadr(args)) >= vector_length(car(args)))
+        return error("Out of range", cadr(args));
+    return vector_ref(car(args), to_integer(cadr(args)));
+}
+
+object *p_vector_set(object *args) {
+    if (!args || !cdr(args) || !cddr(args) || cdddr(args))
+        return error("Wrong number of args", args);
+    if (!is_vector(car(args)))
+        return error("Wrong type of arg", car(args));
+    if (!is_number(cadr(args)))
+        return error("Wrong type of arg", cdar(args));
+    if (to_number(cadr(args)) < 0 ||
+        to_number(cadr(args)) >= vector_length(car(args)))
+        return error("Out of range", cadr(args));
+    return vector_set(car(args), to_integer(cadr(args)), caddr(args));
 }
 
 object *p_cons(object *args) {

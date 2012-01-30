@@ -1,9 +1,5 @@
 General:
-* Improve garbage collector: I have no formal education on GC. The current
-  implementation is based on my intuition alone. It's probably not even a real
-  garbage collector so I personally just call it my "heap management system."
-  Anyways, it *does* collect garbage, and does it rather well, but I'd like for
-  it to be a little simpler and perhaps a little faster.
+* Improve garbage collector.
 
 Special forms:
 * define-syntax
@@ -13,21 +9,11 @@ Parser:
 * Dotted pairs: currently the parser interprets (1 . 2) as a list containing
   the number 1, the symbol ., and the number 2, whereas it should be a pair
   containing 1 and 2. This should be fixed immediately.
-* Vectors: vectors are not implemented yet, but once they are the parser will
-  need to be extended to support them. I imagine this will be slightly
-  non-trivial.
-* Multi-word symbols: R5RS supports multi-word symbols (that is, symbols
-  containing a space) in the form of |this is a symbol|. This is simple
-  enough to implement. In fact, I could simply reuse the code for parsing a
-  string, replacing the token " with |. It's kind of a useless feature IMO,
-  however, so...
+* Vectors.
 
 Data types:
-* Booleans: currently I'm using symbols #f and #t to represent booleans. Guile
-  seems to do the same thing, that is, (eq? #f '#f) returns true, while
-  (symbol? '#f) return false, which is should do, and which mine doesn't do.
-* Vectors: these are useful and would be fun to implement, but not a top
-  priority.
+* Booleans: implemented as symbols, but (symbol? #t) and (symbol? #f) should
+  return false.
 * Promises: whatever.
 * Chars: kinda pointless but simple enough to implement.
 * Bignums: nice, but are they worth the added complexity and overhead?
