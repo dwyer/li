@@ -1,11 +1,10 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#define nil             NULL
-#define true            symbol("#t")
-#define false           symbol("#f")
+#define nil                 NULL
+#define true                symbol("#t")
+#define false               symbol("#f")
 
-/* TODO change x to obj and indent some more. */
 #define not(obj)            is_false(obj) ? true : false
 #define is_eq(obj1, obj2)   ((obj1) == (obj2))
 #define is_null(obj)        is_eq(obj, nil)
