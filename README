@@ -1,0 +1,10 @@
+subscm, pronounced subscheme, is, as the name is meant to imply, an interpreter
+for a small subset of the Scheme programming language.  That is, it's not meant
+to be a full-featured R5RS implementation, just a subset of the features I find
+the most useful.  My ultimate goal is ease of extensibility so that I may use
+it as an embedded configuration and scripting lanaguge in future projects.
+
+Currently, it's just a toy.  It's capable of running simple programs and
+algorithms as long as they're purely functional and don't depend on lexical
+scoping.  It supports compound procedures but not closures.  It's hardly even
+worth looking at until I have time to resolve these issues.  :)

@@ -31,6 +31,7 @@ object *p_le(object *args);
 object *p_list(object *args);
 object *p_lt(object *args);
 object *p_modulo(object *args);
+object *p_remainder(object *args);
 object *p_mul(object *args);
 object *p_not(object *args);
 object *p_newline(object *args);
@@ -85,6 +86,7 @@ struct reg {
     { "-", p_sub },
     { "/", p_div },
     { "modulo", p_modulo },
+    { "remainder", p_remainder },
     { "exp", p_exp },
     { "log", p_log },
     { "sin", p_sin },
@@ -393,6 +395,14 @@ object *p_div(object *args) {
  */
 
 object *p_modulo(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        return error("Wrong number of arguments", args);
+    if (!is_number(car(args)) || !is_number(cadr(args)))
+        return error("Wrong type of arguments", args);
+    return number((int)to_number(car(args)) % (int)to_number(cadr(args)));
+}
+
+object *p_remainder(object *args) {
     if (!args || !cdr(args) || cddr(args))
         return error("Wrong number of arguments", args);
     if (!is_number(car(args)) || !is_number(cadr(args)))

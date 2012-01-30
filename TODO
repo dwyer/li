@@ -1,4 +1,5 @@
-* More efficient garbage collector.
-* Macros (maybe)
+* Better garbage collector.
 * Proper and/or.
-* Parse pairs.
+* Parse pairs e.g. (1 . 2)
+* Lexical scope.
+* Macros (maybe)
