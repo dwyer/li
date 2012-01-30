@@ -97,34 +97,16 @@ object *symbol(char *s) {
     return obj;
 }
 
+object *compound(object *args, object *body, object *env) {
+    return nil;
+}
+
 object *procedure(object *(*proc)(object *)) {
     object *obj;
 
-    obj = new(T_PRIMITIVE_PROCEDURE);
-    obj->data.proc = proc;
+    obj = new(T_PRIMITIVE);
+    obj->data.primitive = proc;
     return obj;
-}
-
-/**
- * Creates a nil terminated list. Don't call this directly, use the list()
- * macro instead.
- */
-object *list_(object *obj, ...) {
-    object *ls, *node;
-    va_list ap;
-
-    va_start(ap, obj);
-    for (ls = nil; !is_null(obj); obj = va_arg(ap, object *)) {
-        if (is_null(ls)) {
-            ls = cons(obj, nil);
-            node = ls;
-        } else {
-            set_cdr(node, cons(obj, nil));
-            node = cdr(node);
-        }
-    }
-    va_end(ap);
-    return ls;
 }
 
 void delete(object *obj) {

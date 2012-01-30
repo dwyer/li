@@ -17,7 +17,7 @@ void display(object *exp) {
         printf("%s", to_string(exp));
     else if (is_symbol(exp))
         printf("%s", to_symbol(exp));
-    else if (is_primitive_procedure(exp))
+    else if (is_primitive(exp))
         printf("#[primitive]");
     else if (is_tagged_list(exp, "procedure"))
         printf("#[procedure]");

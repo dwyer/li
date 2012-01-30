@@ -16,6 +16,8 @@
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
 #define is_or(exp)                  is_tagged_list(exp, "or")
 #define is_self_evaluating(exp)     (is_number(exp) || is_string(exp))
+#define is_syntax_definition(exp)   is_tagged_list(exp, "define-syntax")
+#define is_syntax_rules(exp)        is_tagged_list(exp, "syntax-rules")
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
 #define is_variable(exp)            is_symbol(exp)
 
@@ -38,6 +40,8 @@ object *eval_definition(object *exp, object *env);
 object *eval_if(object *exp, object *env);
 object *eval_or(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
+object *eval_syntax_definition(object *exp, object *env);
+object *eval_syntax_rules(object *exp, object *env);
 object *expand_clauses(object *clauses);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *if_alternative(object *exp);
@@ -51,18 +55,18 @@ int is_tagged_list(object *exp, char *tag) {
 }
 
 object *apply(object *proc, object *args) {
-    if (is_primitive_procedure(proc))
+    if (is_primitive(proc))
         return apply_primitive_procedure(proc, args);
-    else if (is_compound_procedure(proc))
-        return eval_sequence(procedure_body(proc),
-                             extend_environment(procedure_parameters(proc),
+    else if (is_compound(proc))
+        return eval_sequence(caddr(proc),
+                             extend_environment(cadr(proc),
                                                 args,
-                                                procedure_environment(proc)));
-    return error("Unknown procedure type -- APPLY", proc);
+                                                cadddr(proc)));
+    return error("Apply: Unknown procedure type:", proc);
 }
 
 object *apply_primitive_procedure(object *proc, object *args) {
-    return proc->data.proc(args);
+    return to_primitive(proc)(args);
 }
 
 object *define_variable(object *var, object *val, object *env) {
@@ -110,11 +114,15 @@ object *eval(object *exp, object *env) {
     /* logic */
     else if (is_and(exp))
         return eval_and(cdr(exp), env);
-    else if (is_or(exp))
-        return eval_or(cdr(exp), env);
-    /* non-standard special form for unit testing */
     else if (is_assert(exp))
         return eval_assert(cadr(exp), env);
+    else if (is_or(exp))
+        return eval_or(cdr(exp), env);
+    /* macros */
+    else if (is_syntax_definition(exp))
+        return eval_syntax_definition(exp, env);
+    else if (is_syntax_rules(exp))
+        return eval_syntax_rules(exp, env);
     /* apply */
     else if (is_application(exp))
         return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
@@ -137,9 +145,12 @@ object *eval_and(object *exp, object *env) {
 }
 
 object *eval_assert(object *exp, object *env) {
-    if (is_false(eval(exp, env)))
+    object *ret;
+
+    ret = eval(exp, env);
+    if (is_false(ret))
         return error("Assertion failed", exp);
-    return nil;
+    return nil; /* R6RS suggests this return the evaluated expression */
 }
 
 object *eval_definition(object *exp, object *env) {
@@ -173,6 +184,16 @@ object *eval_sequence(object *exps, object *env) {
         return eval(car(exps), env);
     eval(cdr(exps), env);
     return eval_sequence(cdr(exps), env);
+}
+
+object *eval_syntax_definition(object *exp, object *env) {
+    return define_variable(cadr(exp),
+                           eval(caddr(exp), env),
+                           env);
+}
+
+object *eval_syntax_rules(object *exp, object *env) {
+    return error("nimp");
 }
 
 object *sequence_to_exp(object *seq) {

@@ -159,9 +159,14 @@ object *p_is_number(object *args) {
 }
 
 object *p_is_list(object *args) {
+    object *obj;
+
     if (!args || cdr(args))
         return error("Wrong number of args", args);
-    return boolean(is_list(car(args)));
+    for (obj = car(args); obj; obj = cdr(obj))
+        if (!is_pair(obj))
+            return false;
+    return true;
 }
 
 object *p_is_pair(object *args) {

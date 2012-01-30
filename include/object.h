@@ -5,30 +5,33 @@
 #define true            symbol("#t")
 #define false           symbol("#f")
 
-#define not(x)          is_true(x) ? false : true
+#define not(x)          is_false(x) ? true : false
 #define is_eq(x, y)     ((x) == (y))
 #define is_null(x)      is_eq(x, nil)
 #define is_false(x)     is_eq(x, false)
 #define is_true(x)      !is_false(x)
 #define is_type(x, t)   (!is_null(x) && (x)->type == t)
 #define is_boolean(x)   ((x) == false || (x) == true)
+#define is_compound(p)  is_tagged_list(p, "procedure")
 #define is_number(x)    is_type(x, T_NUMBER)
 #define is_string(x)    is_type(x, T_STRING)
 #define is_symbol(x)    is_type(x, T_SYMBOL)
 #define is_pair(x)      is_type(x, T_PAIR)
-#define is_procedure(x) is_type(x, T_PRIMITIVE_PROCEDURE)
-#define is_list(x)      (is_null(x) || (is_pair(x) && is_pair(cdr(x))))
+#define is_primitive(p) is_type(p, T_PRIMITIVE)
+#define is_procedure(x) (is_primitive(x) || is_compound(x))
+
+#define is_locked(x)    (x)->locked
 
 #define to_number(x)    (x)->data.number
 #define to_pair(x)      (x)->data.pair
-#define to_proc(x)      (x)->data.proc
+#define to_primitive(x)     (x)->data.primitive
+#define to_compound(x)     (x)->data.compound
 #define to_string(x)    (x)->data.string
 #define to_symbol(x)    (x)->data.symbol
 
-#define boolean(x)      (x ? true : false)
-
 #define car(x)          to_pair(x).car
 #define cdr(x)          to_pair(x).cdr
+
 #define caar(x)         car(car(x))
 #define cadr(x)         car(cdr(x))
 #define cdar(x)         cdr(car(x))
@@ -61,22 +64,17 @@
 #define set_car(x, y)   (car(x) = y)
 #define set_cdr(x, y)   (cdr(x) = y)
 
-#define list(...)       list_(__VA_ARGS__, nil)
-
-#define is_compound_procedure(p)    is_tagged_list(p, "procedure")
-#define is_primitive_procedure(p)   is_type(p, T_PRIMITIVE_PROCEDURE)
-#define procedure_parameters(p)     cadr(p)
-#define procedure_body(p)           caddr(p)
-#define procedure_environment(p)    cadddr(p)
-
-#define is_locked(obj)              (obj->locked)
+#define boolean(x)      (x ? true : false)
 
 enum {
+    T_CHAR, /* TODO (maybe): implement */
     T_NUMBER,
     T_STRING,
     T_SYMBOL,
     T_PAIR,
-    T_PRIMITIVE_PROCEDURE,
+    T_VECTOR, /* TODO: implement */
+    T_PRIMITIVE,
+    T_COMPOUND,
     N_TYPES
 };
 
@@ -86,8 +84,8 @@ object *cons(object *car, object *cdr);
 object *number(double n);
 object *string(char *s);
 object *symbol(char *s);
+object *compound(object *args, object *body, object *env);
 object *procedure(object *(*proc)(object *));
-object *list_(object *car, ...);
 void lock(object *obj);
 void unlock(object *obj);
 void delete(object *obj);
@@ -104,7 +102,12 @@ struct object {
         double number;
         char *string;
         char *symbol;
-        object *(*proc)(object *);
+        object *(*primitive)(object *);
+        struct {
+            object *args;
+            object *body;
+            object *env;
+        } compound;
     } data;
     int type;
     int locked;
