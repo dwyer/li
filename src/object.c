@@ -177,6 +177,8 @@ void delete(object *obj) {
         free(to_string(obj));
     if (is_symbol(obj))
         free(to_symbol(obj));
+    if (is_vector(obj))
+        free(to_vector(obj).data);
     free(obj);
 }
 
