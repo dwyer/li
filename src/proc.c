@@ -3,8 +3,6 @@
 #include "object.h"
 #include "display.h"
 
-#define not(x)          is_true(x) ? false : true
-
 typedef struct reg reg;
 
 object *p_add(object *args);
@@ -19,6 +17,7 @@ object *p_ge(object *args);
 object *p_gt(object *args);
 object *p_is_boolean(object *args);
 object *p_is_eq(object *args);
+object *p_is_eqv(object *args);
 object *p_is_list(object *args);
 object *p_is_null(object *args);
 object *p_is_number(object *args);
@@ -47,6 +46,8 @@ object *p_atan(object *args);
 object *p_sqrt(object *args);
 object *p_expt(object *args);
 
+object *p_nimp(object *args);
+
 struct reg {
     char *var;
     object *(*val)(object *);
@@ -62,15 +63,20 @@ struct reg {
     { "cdr", p_cdr },
     { "cons", p_cons },
     { "eq?", p_is_eq },
+    { "eqv?", p_is_eqv },
+    /* base types */
     { "boolean?", p_is_boolean },
-    { "list", p_list },
-    { "list?", p_is_list },
+    { "char?", p_nimp },
     { "null?", p_is_null },
     { "number?", p_is_number },
     { "pair?", p_is_pair },
     { "procedure?", p_is_procedure },
     { "string?", p_is_string },
     { "symbol?", p_is_symbol },
+    { "vector?", p_nimp },
+    /* extended base types */
+    { "list", p_list },
+    { "list?", p_is_list },
     /* operations */
     { "=", p_eq },
     { "<", p_lt },
@@ -107,19 +113,29 @@ object *primitive_procedures(object *env) {
     return env;
 }
 
+object *p_nimp(object *args) {
+    return error("Not implemented");
+}
+
 object *p_error(object *args) {
     return error(to_string(car(args)), cdr(args));
 }
 
-/* (eq? . x) */
+/* (eq? obj1 obj2) */
 object *p_is_eq(object *args) {
-    while (args) {
-        if (cdr(args))
-            if (!is_eq(car(args), cadr(args)))
-                return false;
-        args = cdr(args);
-    }
-    return true;
+    if (!args || !cdr(args) || cddr(args))
+        return error("Wrong number of args", args);
+    return boolean(is_eq(car(args), cadr(args)));
+}
+
+/* (eqv? obj1 obj2) */
+object *p_is_eqv(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        return error("Wrong number of args", args);
+    if (is_number(car(args)) && is_number(cadr(args)))
+        return p_eq(args);
+    else
+        return p_is_eq(args);
 }
 
 /* (null? x) */
@@ -133,8 +149,7 @@ object *p_is_null(object *args) {
 object *p_is_boolean(object *args) {
     if (!args || cdr(args))
         return error("Wrong number of args", args);
-    return boolean(car(args) == true ||
-                   car(args) == true);
+    return boolean(is_boolean(car(args)));
 }
 
 object *p_is_number(object *args) {

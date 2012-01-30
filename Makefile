@@ -1,7 +1,7 @@
 CC=gcc
 RM=rm
 CFILES=eval.c main.c object.c parse.c display.c proc.c
-CFLAGS=-c -Wall -Wextra -I./include
+CFLAGS=-c -Wall -I./include
 LDFLAGS=-lm
 OBJDIR=obj
 SRCDIR=src

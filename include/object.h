@@ -5,6 +5,7 @@
 #define true            symbol("#t")
 #define false           symbol("#f")
 
+#define not(x)          is_true(x) ? false : true
 #define is_eq(x, y)     ((x) == (y))
 #define is_null(x)      is_eq(x, nil)
 #define is_false(x)     is_eq(x, false)
@@ -18,12 +19,13 @@
 #define is_procedure(x) is_type(x, T_PRIMITIVE_PROCEDURE)
 #define is_list(x)      (is_null(x) || (is_pair(x) && is_pair(cdr(x))))
 
-#define boolean(x)      (x ? true : false)
-
-#define to_pair(x)      (x)->data.pair
 #define to_number(x)    (x)->data.number
+#define to_pair(x)      (x)->data.pair
+#define to_proc(x)      (x)->data.proc
 #define to_string(x)    (x)->data.string
 #define to_symbol(x)    (x)->data.symbol
+
+#define boolean(x)      (x ? true : false)
 
 #define car(x)          to_pair(x).car
 #define cdr(x)          to_pair(x).cdr

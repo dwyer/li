@@ -7,6 +7,10 @@ General:
   it to be a little simpler and perhaps a little faster.
 * Support macros.
 
+Special forms:
+* let
+* set!
+
 Parser:
 * Dotted pairs: currently the parser interprets (1 . 2) as a list containing
   the number 1, the symbol ., and the number 2, whereas it should be a pair
@@ -29,4 +33,6 @@ Data types:
   (symbol? '#f) return false, which is should do, and which mine doesn't do.
 * Vectors: these are useful and would be fun to implement, but not a top
   priority.
+* Promises: whatever.
 * Chars: kinda pointless but simple enough to implement.
+* Bignums: nice, but are they worth the added complexity and overhead?

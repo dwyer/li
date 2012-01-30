@@ -32,15 +32,6 @@ int main(int argc, char *argv[]) {
     object *env;
     object *res;
 
-    while (--argc)
-        if (*argv[argc] == '-')
-            while (*argv[argc]++)
-                switch (*argv[argc]) {
-                case 'h':
-                    usage();
-                    return 0;
-                    break;
-                }
     env = setup_environment();
     exps = parse(stdin);
     if (setjmp(buf))

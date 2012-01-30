@@ -10,12 +10,6 @@ static struct {
     int cap;
 } heap = { .list = nil, .size = 0, .cap = 0 };
 
-int is_tagged_list(object *exp, char *tag) {
-    if (is_pair(exp))
-        return is_eq(car(exp), symbol(tag));
-    return 0;
-}
-
 void init_heap(int cap) {
     heap.cap = cap;
     heap.size = 0;

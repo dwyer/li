@@ -1,7 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-#define error(s, ...)   _error(s, __VA_ARGS__, nil)
+#define error(...)   _error(__VA_ARGS__, nil)
 #define newline()       printf("\n")
 
 void display(object *exp);

@@ -5,47 +5,50 @@
 #include "display.h"
 #include "proc.h"
 
+#define is_and(exp)                 is_tagged_list(exp, "and")
 #define is_application(exp)         is_pair(exp)
+#define is_assert(exp)              is_tagged_list(exp, "and")
+#define is_begin(exp)               is_tagged_list(exp, "begin")
+#define is_cond(exp)                is_tagged_list(exp, "cond")
+#define is_cond_else_clause(exp)    is_tagged_list(exp, "else")
 #define is_definition(exp)          is_tagged_list(exp, "define")
+#define is_if(exp)                  is_tagged_list(exp, "if")
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
+#define is_or(exp)                  is_tagged_list(exp, "or")
 #define is_self_evaluating(exp)     (is_number(exp) || is_string(exp))
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
 #define is_variable(exp)            is_symbol(exp)
 
-#define lambda_parameters(exp)      cadr(exp)
-#define lambda_body(exp)            cddr(exp)
+#define make_begin(seq)             cons(symbol("begin"), seq)
+#define make_if(pred, con, alt)     cons(symbol("if"), \
+                                         cons(pred, cons(con, cons(alt, nil))))
 #define make_lambda(p, b)           cons(symbol("lambda"), cons(p, b))
+#define make_procedure(p, b, e)     cons(symbol("procedure"), \
+                                         cons(p, cons(b, cons(e, nil))))
 
-#define operator(exp)               car(exp)
-#define operands(exp)               cdr(exp)
-#define is_no_operands(ops)         is_null(ops)
-#define first_operand(ops)          car(ops)
-#define rest_operands(ops)          cdr(ops)
-
-#define make_procedure(p, b, e) \
-    cons(symbol("procedure"), cons(p, cons(b, cons(e, nil))))
-
-#define is_last_exp(seq)            is_null(cdr(seq))
-#define first_exp(seq)              car(seq)
-#define rest_exps(seq)              cdr(seq)
-
-#define is_if(exp)                  is_tagged_list(exp, "if")
-#define if_predicate(exp)           cadr(exp)
-#define if_consequent(exp)          caddr(exp)
+#define cond_to_if(exp)             expand_clauses(cdr(exp))
 
 object *apply(object *procedure, object *arguments);
 object *apply_primitive_procedure(object *proc, object *args);
 object *definition_value(object *exp);
 object *definition_variable(object *exp);
 object *eval_and(object *exp, object *env);
+object *eval_assert(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
 object *eval_if(object *exp, object *env);
 object *eval_or(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
+object *expand_clauses(object *clauses);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *if_alternative(object *exp);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
+
+int is_tagged_list(object *exp, char *tag) {
+    if (is_pair(exp))
+        return is_eq(car(exp), symbol(tag));
+    return 0;
+}
 
 object *apply(object *proc, object *args) {
     if (is_primitive_procedure(proc))
@@ -92,15 +95,6 @@ object *eval(object *exp, object *env) {
         return exp;
     else if (is_variable(exp))
         return lookup_variable_value(exp, env);
-    else if (is_tagged_list(exp, "assert"))
-        if (is_true(eval(cadr(exp), env)))
-            return symbol("OK");
-        else
-            return error("Assertion failed", cadr(exp));
-    else if (is_tagged_list(exp, "and"))
-        return eval_and(cdr(exp), env);
-    else if (is_tagged_list(exp, "or"))
-        return eval_or(cdr(exp), env);
     else if (is_quoted(exp))
         return cadr(exp);
     else if (is_definition(exp))
@@ -108,10 +102,23 @@ object *eval(object *exp, object *env) {
     else if (is_if(exp))
         return eval_if(exp, env);
     else if (is_lambda(exp))
-        return make_procedure(lambda_parameters(exp), lambda_body(exp), env);
+        return make_procedure(cadr(exp), cddr(exp), env);
+    else if (is_begin(exp))
+        return eval_sequence(cdr(exp), env);
+    else if (is_cond(exp))
+        return eval(cond_to_if(exp), env);
+    /* logic */
+    else if (is_and(exp))
+        return eval_and(cdr(exp), env);
+    else if (is_or(exp))
+        return eval_or(cdr(exp), env);
+    /* non-standard special form for unit testing */
+    else if (is_assert(exp))
+        return eval_assert(cadr(exp), env);
+    /* apply */
     else if (is_application(exp))
-        return apply(eval(operator(exp), env),
-                     list_of_values(operands(exp), env));
+        return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
+    /* error */
     else
         return error("Unknown expression type -- EVAL", exp);
 }
@@ -129,6 +136,12 @@ object *eval_and(object *exp, object *env) {
     return ret;
 }
 
+object *eval_assert(object *exp, object *env) {
+    if (is_false(eval(exp, env)))
+        return error("Assertion failed", exp);
+    return nil;
+}
+
 object *eval_definition(object *exp, object *env) {
     return define_variable(definition_variable(exp),
                            eval(definition_value(exp), env),
@@ -136,8 +149,8 @@ object *eval_definition(object *exp, object *env) {
 }
 
 object *eval_if(object *exp, object *env) {
-    if (is_true(eval(if_predicate(exp), env)))
-        return eval(if_consequent(exp), env);
+    if (is_true(eval(cadr(exp), env)))
+        return eval(caddr(exp), env);
     else
         return eval(if_alternative(exp), env);
 }
@@ -156,10 +169,33 @@ object *eval_or(object *exp, object *env) {
 }
 
 object *eval_sequence(object *exps, object *env) {
-    if (is_last_exp(exps))
-        return eval(first_exp(exps), env);
-    eval(first_exp(exps), env);
-    return eval_sequence(rest_exps(exps), env);
+    if (!cdr(exps))
+        return eval(car(exps), env);
+    eval(cdr(exps), env);
+    return eval_sequence(cdr(exps), env);
+}
+
+object *sequence_to_exp(object *seq) {
+    if (!seq)
+        return seq;
+    else if (!cdr(seq))
+        return car(seq);
+    else
+        return make_begin(seq);
+}
+
+object *expand_clauses(object *clauses) {
+    if (is_null(clauses))
+        return false;
+    if (is_cond_else_clause(car(clauses)))
+        if (is_null(cdr(clauses)))
+            return sequence_to_exp(cdr(car(clauses)));
+        else
+            return error("else clauses isn't last", clauses);
+    else
+        return make_if(car(car(clauses)),
+                       sequence_to_exp(cdr(car(clauses))),
+                       expand_clauses(cdr(clauses)));
 }
 
 object *extend_environment(object *vars, object *vals, object *base_env) {
@@ -183,10 +219,10 @@ object *if_alternative(object *exp) {
 }
 
 object *list_of_values(object *exps, object *env) {
-    if (is_no_operands(exps))
+    if (!exps)
         return nil;
-    return cons(eval(first_operand(exps), env),
-                list_of_values(rest_operands(exps), env));
+    return cons(eval(car(exps), env),
+                list_of_values(cdr(exps), env));
 }
 
 object *lookup_variable_value(object *var, object *env) {
@@ -195,7 +231,7 @@ object *lookup_variable_value(object *var, object *env) {
             return cdar(env);
         env = cdr(env);
     }
-    return error("Unbound variable", var);
+    return error("Unbound variable:", var);
 }
 
 object *setup_environment(void) {
