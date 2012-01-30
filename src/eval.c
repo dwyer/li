@@ -8,6 +8,7 @@
 #define is_and(exp)                 is_tagged_list(exp, "and")
 #define is_application(exp)         is_pair(exp)
 #define is_assert(exp)              is_tagged_list(exp, "assert")
+#define is_assignment(exp)          is_tagged_list(exp, "set!")
 #define is_begin(exp)               is_tagged_list(exp, "begin")
 #define is_cond(exp)                is_tagged_list(exp, "cond")
 #define is_cond_else_clause(exp)    is_tagged_list(exp, "else")
@@ -36,6 +37,7 @@ object *definition_value(object *exp);
 object *definition_variable(object *exp);
 object *eval_and(object *exp, object *env);
 object *eval_assert(object *exp, object *env);
+object *eval_assignment(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
 object *eval_if(object *exp, object *env);
 object *eval_or(object *exp, object *env);
@@ -47,6 +49,7 @@ object *extend_environment(object *vars, object *vals, object *base_env);
 object *if_alternative(object *exp);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
+object *set_variable_value(object *var, object *val, object *env);
 
 int is_tagged_list(object *exp, char *tag) {
     if (is_pair(exp))
@@ -122,6 +125,8 @@ object *eval(object *exp, object *env) {
         return lookup_variable_value(exp, env);
     else if (is_quoted(exp))
         return cadr(exp);
+    else if (is_assignment(exp))
+        return eval_assignment(exp, env);
     else if (is_definition(exp))
         return eval_definition(exp, env);
     else if (is_if(exp))
@@ -163,6 +168,12 @@ object *eval_and(object *exp, object *env) {
         exp = cdr(exp);
     }
     return ret;
+}
+
+object *eval_assignment(object *exp, object *env) {
+    return set_variable_value(cadr(exp),
+                              eval(caddr(exp), env),
+                              env);
 }
 
 object *eval_assert(object *exp, object *env) {
@@ -275,6 +286,17 @@ object *lookup_variable_value(object *var, object *env) {
         env = cdr(env);
     }
     return error("Unbound variable:", var);
+}
+
+object *set_variable_value(object *var, object *val, object *env) {
+    while (env) {
+        if (car(env) && is_eq(caar(env), var)) {
+            set_cdr(car(env), val);
+            return var;
+        }
+        env = cdr(env);
+    }
+    return error("Unbound variable", var);
 }
 
 object *setup_environment(void) {
