@@ -62,16 +62,17 @@ object *apply_primitive_procedure(object *proc, object *args) {
     return proc->data.proc(args);
 }
 
-void define_variable(object *var, object *val, object *env) {
+object *define_variable(object *var, object *val, object *env) {
     for (; env; env = cdr(env)) {
         if (var == caar(env)) {
             set_cdr(car(env), val);
-            return;
+            return var;
         }
         if (!cdr(env))
             break;
     }
     set_cdr(env, cons(cons(var, val), nil));
+    return var;
 }
 
 object *definition_variable(object *exp) {
@@ -129,10 +130,9 @@ object *eval_and(object *exp, object *env) {
 }
 
 object *eval_definition(object *exp, object *env) {
-    define_variable(definition_variable(exp),
-                    eval(definition_value(exp), env),
-                    env);
-    return definition_variable(exp);
+    return define_variable(definition_variable(exp),
+                           eval(definition_value(exp), env),
+                           env);
 }
 
 object *eval_if(object *exp, object *env) {
