@@ -7,7 +7,7 @@
 
 #define is_and(exp)                 is_tagged_list(exp, "and")
 #define is_application(exp)         is_pair(exp)
-#define is_assert(exp)              is_tagged_list(exp, "and")
+#define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_begin(exp)               is_tagged_list(exp, "begin")
 #define is_cond(exp)                is_tagged_list(exp, "cond")
 #define is_cond_else_clause(exp)    is_tagged_list(exp, "else")
