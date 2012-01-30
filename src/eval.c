@@ -40,6 +40,7 @@ object *definition_variable(object *exp);
 object *eval_and(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
 object *eval_if(object *exp, object *env);
+object *eval_or(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *if_alternative(object *exp);
@@ -97,6 +98,8 @@ object *eval(object *exp, object *env) {
             return error("Assertion failed", cadr(exp));
     else if (is_tagged_list(exp, "and"))
         return eval_and(cdr(exp), env);
+    else if (is_tagged_list(exp, "or"))
+        return eval_or(cdr(exp), env);
     else if (is_quoted(exp))
         return cadr(exp);
     else if (is_definition(exp))
@@ -137,6 +140,19 @@ object *eval_if(object *exp, object *env) {
         return eval(if_consequent(exp), env);
     else
         return eval(if_alternative(exp), env);
+}
+
+object *eval_or(object *exp, object *env) {
+    object *ret;
+
+    ret = false;
+    while (exp) {
+        ret = eval(car(exp), env);
+        if (is_true(ret))
+            break;
+        exp = cdr(exp);
+    }
+    return ret;
 }
 
 object *eval_sequence(object *exps, object *env) {

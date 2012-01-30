@@ -34,7 +34,6 @@ object *p_remainder(object *args);
 object *p_mul(object *args);
 object *p_not(object *args);
 object *p_newline(object *args);
-object *p_or(object *args);
 object *p_sub(object *args);
 
 object *p_exp(object *args);
@@ -58,7 +57,6 @@ struct reg {
     { "newline", p_newline },
     /* logic */
     { "not", p_not },
-    { "or", p_or },
     /* data structures */
     { "car", p_car },
     { "cdr", p_cdr },
@@ -223,16 +221,6 @@ object *p_not(object *args) {
         return error("Wrong number of args", args);
     if (is_false(car(args)))
         return true;
-    return false;
-}
-
-/* TODO: make this a special form */
-object *p_or(object *args) {
-    while (args) {
-        if (is_true(car(args)))
-            return car(args);
-        args = cdr(args);
-    }
     return false;
 }
 
