@@ -227,12 +227,6 @@
     (cons (apply proc (cars lists))
           (apply map (cons proc (cdrs lists))))))
 
-(display (let ((count 0))
-  (map (lambda (ignored)
-         (set! count (+ count 1))
-         count)
-       '(a b))))
-
 ;(define (for-each proc . lists) lists)
 
 ;(let ((v (make-vector 5)))
