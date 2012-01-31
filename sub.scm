@@ -48,7 +48,7 @@
 (define (boolean? obj) (or (eq? obj #f) (eq? obj #t)))
 (define (null? obj) (eq? obj '()))
 (define (list? obj) (if (null? obj) #t (and (pair? obj) (list? (cdr obj)))))
-; PARSE PAIRS (define (list . objs) objs)
+(define (list . objs) objs)
 (define (length lst) (assert (list? lst)) ; TODO: proper error checking
   (if (null? lst) 0 (if (null? (cdr lst)) 1 (+ 1 (length (cdr lst))))))
 (define (append lst . objs) (not-impl))
@@ -91,7 +91,7 @@
 
 (define (string . chars) (not-impl))
 
-;(define (vector . objs) (list->vector objs));
+(define (vector . objs) (list->vector objs));
 
 (define (vector->list vec)
   (define (iter k)

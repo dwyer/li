@@ -22,6 +22,7 @@ object *p_is_pair(object *args);
 object *p_is_procedure(object *args);
 object *p_is_string(object *args);
 object *p_is_symbol(object *args);
+object *p_is_vector(object *args);
 object *p_le(object *args);
 object *p_lt(object *args);
 object *p_make_vector(object *args);
@@ -51,44 +52,44 @@ object *p_is_boolean(object *args);
 object *p_is_equal(object *args);
 object *p_is_list(object *args);
 object *p_is_null(object *args);
-object *p_list(object *args);
 object *p_not(object *args);
 
 struct reg {
     char *var;
     object *(*val)(object *);
 } regs[] = {
+    /* library procedures */
+    /*
+    { "boolean?", p_is_boolean },
+    { "equal?", p_is_equal },
+    { "list?", p_is_list },
+    { "not", p_not },
+    { "null?", p_is_null },
+    */
     /* io */
     { "error", p_error },
     { "display", p_display },
     { "newline", p_newline },
-    /* logic */
-    { "not", p_not },
     /* data structures */
     { "car", p_car },
     { "cdr", p_cdr },
     { "cons", p_cons },
-    { "list", p_list },
     { "make-vector", p_make_vector },
     { "vector-length", p_vector_length },
     { "vector-ref", p_vector_ref },
     { "vector-set!", p_vector_set },
     { "eq?", p_is_eq },
-    { "equal?", p_is_equal },
     { "eqv?", p_is_eqv },
     /* mutators */
     { "set-car!", p_set_car },
     { "set-cdr!", p_set_cdr },
     /* base types */
-    { "boolean?", p_is_boolean },
-    { "null?", p_is_null },
     { "number?", p_is_number },
     { "pair?", p_is_pair },
     { "procedure?", p_is_procedure },
     { "string?", p_is_string },
     { "symbol?", p_is_symbol },
-    /* extended base types */
-    { "list?", p_is_list },
+    { "vector?", p_is_vector },
     /* operations */
     { "=", p_eq },
     { "<", p_lt },
@@ -203,8 +204,10 @@ object *p_is_symbol(object *args) {
     return boolean(is_symbol(car(args)));
 }
 
-object *p_list(object *args) {
-    return args;
+object *p_is_vector(object *args) {
+    if (!args || cdr(args))
+        return error("vector?", "Wrong number of args", args);
+    return boolean(is_vector(car(args)));
 }
 
 object *p_make_vector(object *args) {

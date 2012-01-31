@@ -22,21 +22,23 @@ int token_is_number(const char *tok) {
     int ret;
     int c;
     int isfloat;
+    int hasdigit;
 
     ret = 0;
     isfloat = 0;
+    hasdigit = 0;
     if (*tok == '-')
         tok++;
     while ((c = *tok++) != '\0') {
         if (isdigit(c))
-            ;
+            hasdigit = 1;
         else if (c == '.' && !isfloat)
             isfloat = 1;
         else
             return 0;
         ret = 1;
     }
-    return ret;
+    return ret && hasdigit;
 }
 
 object *parse_comment(FILE *f) {
@@ -155,6 +157,10 @@ object *parse(FILE *f) {
         } else {
             ungetc(c, f);
             o = parse_token(f);
+            if (o == dot) {
+                o = parse(f);
+                return car(o);
+            }
             return cons(o, parse(f));
         }
     }

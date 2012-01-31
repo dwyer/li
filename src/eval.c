@@ -84,21 +84,6 @@ object *apply_syntax(object *proc, object *args) {
     return args;
 }
 
-object *define_variable_(object *var, object *val, object *env) {
-    for (; env; env = cdr(env)) {
-        if (!car(env))
-            break;
-        if (var == caar(env)) {
-            set_cdr(car(env), val);
-            return var;
-        }
-        if (!cdr(env))
-            break;
-    }
-    set_cdr(env, cons(cons(var, val), cdr(env)));
-    return var;
-}
-
 object *define_variable(object *var, object *val, object *env) {
     do {
         if (!env) {
@@ -149,7 +134,6 @@ object *eval(object *exp, object *env) {
         return eval_sequence(cdr(exp), env);
     else if (is_cond(exp))
         return eval(cond_to_if(exp), env);
-    /* logic */
     else if (is_and(exp))
         return eval_and(cdr(exp), env);
     else if (is_assert(exp))
@@ -277,7 +261,11 @@ object *expand_clauses(object *clauses) {
 
 object *extend_environment(object *vars, object *vals, object *base_env) {
     base_env = cons(nil, base_env);
-    while (vars && vals) {
+    while (vars) {
+        if (is_symbol(vars))
+            return cons(cons(vars, vals), base_env);
+        if (!vals)
+            break;
         base_env = cons(cons(car(vars), car(vals)), base_env);
         vars = cdr(vars);
         vals = cdr(vals);

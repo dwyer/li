@@ -2,6 +2,7 @@
 #define OBJECT_H
 
 #define nil                 NULL
+#define dot                 symbol(".")
 #define true                symbol("#t")
 #define false               symbol("#f")
 
