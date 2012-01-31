@@ -1,3 +1,7 @@
+; These are functions described in R5RS as ``library procedures'' meaning they
+; can be implemented in Scheme with primitive procedures, so that's what I've
+; done. There is of course no requirement that they must be. 
+
 (define (caar obj) (car (car obj)))
 
 (define (cadr obj) (car (cdr obj)))
@@ -88,7 +92,9 @@
       (min x (car lst) (cdr lst)))))
 
 (define (abs x)
-  (if (< x 0) (- x) x))
+  (if (< x 0)
+    (- x)
+    x))
 
 ;(define (gcd . nn)
 ;  (if (null? nn)
@@ -112,14 +118,18 @@
   (eq? obj '()))
 
 (define (list? obj)
-  (if (null? obj) #t (and (pair? obj) (list? (cdr obj)))))
+  (if (null? obj)
+    #t
+    (and (pair? obj) (list? (cdr obj)))))
 
+; Greatest function ever.
 (define (list . objs)
   objs)
 
 (define (length lst)
-  (assert (list? lst)) ; TODO: proper error checking
-  (if (null? lst) 0 (if (null? (cdr lst)) 1 (+ 1 (length (cdr lst))))))
+  (if (null? lst)
+    0
+    (+ 1 (length (cdr lst)))))
 
 ;(define (append . lst) ...)
 
@@ -129,64 +139,76 @@
 ;    (if (null? (cdr lst)) lst
 ;      (cons (car (reverse (cdr lst))) (cons (car lst) '())))))
 
+; Taken from R5RS
 (define (list-tail lst k)
-  (if (zero? k) lst (list-tail (cdr lst) (- k 1))))
+  (if (= k 0)
+    lst
+    (list-tail (cdr lst) (- k 1))))
 
 (define (list-ref lst k)
   (car (list-tail lst k)))
 
 (define (memq obj lst)
-  (assert (list? lst))
-  (if (null? lst)
-    #f
-    (if (eq? obj (car lst))
-      lst
-      (memq obj (cdr lst)))))
+  (cond ((null? lst) #f)
+        ((not (pair? lst))
+         (error 'memq "arg2 must be a list"))
+        ((eq? obj (car lst)) lst)
+        (else (memq obj (cdr lst)))))
 
 (define (memv obj lst)
-  (assert (list? lst))
-  (if (null? lst) 
-    #f 
-    (if (eqv? obj (car lst)) 
-      lst 
-      (memv obj (cdr lst)))))
+  (cond ((null? lst) #f)
+        ((not (pair? lst))
+         (error 'memv "arg2 must be a list"))
+        ((eqv? obj (car lst)) lst)
+        (else (memv obj (cdr lst)))))
 
 (define (member obj lst)
-  (assert (list? lst))
-  (if (null? lst) 
-    #f 
-    (if (equal? obj (car lst)) 
-      lst 
-      (member obj (cdr lst)))))
+  (cond ((null? lst) #f)
+        ((not (pair? lst))
+         (error 'member "arg2 must be a list"))
+        ((equal? obj (car lst)) lst)
+        (else (member obj (cdr lst)))))
 
 (define (assq obj lst)
-  (if (null? lst) #f
-    (if (pair? (car lst))
-      (if (eq? obj (caar lst))
-        (car lst)
-        (assq obj (cdr lst)))
-      (error 'assq "alist must be list of pairs"))))
+  (cond ((null? lst) #f)
+        ((not (and (pair? lst) (pair? (car lst))))
+         (error 'assq "arg2 must be a list of pairs"))
+        ((eq? obj (caar lst)) (car lst))
+        (else (assq obj (cdr lst)))))
 
 (define (assv obj lst)
-  (if (null? lst) #f
-    (if (pair? (car lst))
-      (if (eqv? obj (caar lst))
-        (car lst)
-        (assv obj (cdr lst)))
-      (error 'assv "alist must be list of pairs"))))
+  (cond ((null? lst) #f)
+        ((not (and (pair? lst) (pair? (car lst))))
+         (error 'assv "arg2 must be a list of pairs"))
+        ((eqv? obj (caar lst)) (car lst))
+        (else (assv obj (cdr lst)))))
 
 (define (assoc obj lst)
-  (if (null? lst) #f
-    (if (pair? (car lst))
-      (if (equal? obj (caar lst))
-        (car lst)
-        (assoc obj (cdr lst)))
-      (error 'assoc "alist must be list of pairs"))))
+  (cond ((null? lst) #f)
+        ((not (and (pair? lst) (pair? (car lst))))
+         (error 'assoc "arg2 must be a list of pairs"))
+        ((equal? obj (caar lst)) (car lst))
+        (else (assoc obj (cdr lst)))))
 
+; chars are not yet supported
 ;(define (string . chars) ...)
 
-(define (vector . objs)
-  (list->vector objs));
+; implemented internally
+;(define (vector . objs)
+;  (list->vector objs));
+
+; This is supposed to be implemented internally but I chose to implement
+; vector / list->vector instead.
+(define (make-vector k . fills)
+  (if (and (not (null? fills)) (not (null? (cdr fills))))
+    (error 'make-vector "too many arguments"))
+  (if (or (not (integer? k)) (< k 0))
+    (error 'make-vector "k must be a positive integer" k))
+  (define (make-list k fill)
+    (if (= k 0)
+      '()
+      (cons fill (make-list (- k 1) fill))))
+  (list->vector (make-list k (if (null? fills) '() (car fills)))))
 
 (define (vector->list vec)
   (define (iter k)
@@ -196,13 +218,7 @@
   (iter 0))
 
 (define (list->vector lst)
-  (let ((vec (make-vector (length lst))))
-    (define (iter lst k)
-      (if (< k (vector-length vec))
-        (begin (vector-set! vec k (car lst))
-               (iter (cdr lst) (+ k 1)))
-        vec))
-    (iter lst 0)))
+  (apply vector lst))
 
 (define (vector-fill! vec fill)
   (let ((len (vector-length vec)))

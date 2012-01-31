@@ -19,6 +19,7 @@ object *p_ge(object *args);
 object *p_gt(object *args);
 object *p_is_eq(object *args);
 object *p_is_eqv(object *args);
+object *p_is_integer(object *args);
 object *p_is_number(object *args);
 object *p_is_pair(object *args);
 object *p_is_procedure(object *args);
@@ -34,6 +35,7 @@ object *p_newline(object *args);
 object *p_set_car(object *args);
 object *p_set_cdr(object *args);
 object *p_sub(object *args);
+object *p_vector(object *args);
 object *p_vector_length(object *args);
 object *p_vector_ref(object *args);
 object *p_vector_set(object *args);
@@ -77,6 +79,7 @@ struct reg {
     { "cdr", p_cdr },
     { "cons", p_cons },
     { "make-vector", p_make_vector },
+    { "vector", p_vector },
     { "vector-length", p_vector_length },
     { "vector-ref", p_vector_ref },
     { "vector-set!", p_vector_set },
@@ -86,6 +89,7 @@ struct reg {
     { "set-car!", p_set_car },
     { "set-cdr!", p_set_cdr },
     /* base types */
+    { "integer?", p_is_integer },
     { "number?", p_is_number },
     { "pair?", p_is_pair },
     { "procedure?", p_is_procedure },
@@ -137,7 +141,7 @@ object *p_apply(object *args) {
 }
 
 object *p_error(object *args) {
-    return error("p_error", to_string(car(args)), cdr(args));
+    return error(to_symbol(car(args)), to_string(cadr(args)), cddr(args));
 }
 
 /* (eq? obj1 obj2) */
@@ -172,6 +176,13 @@ object *p_is_boolean(object *args) {
     if (!args || cdr(args))
         return error("boolean?", "Wrong number of args", args);
     return boolean(is_boolean(car(args)));
+}
+
+object *p_is_integer(object *args) {
+    if (!args || cdr(args))
+        return error("integer?", "Wrong number of args", args);
+    return boolean(is_number(car(args)) &&
+                   to_number(car(args)) == (int)to_number(car(args)));
 }
 
 object *p_is_number(object *args) {
@@ -227,6 +238,10 @@ object *p_make_vector(object *args) {
     if (!is_number(car(args)))
         return error("make-vector", "Wrong type of arg", car(args));
     return vector(to_number(car(args)), cdr(args) ? cadr(args) : nil);
+}
+
+object *p_vector(object *args) {
+    return list_to_vector(args);
 }
 
 object *p_vector_length(object *args) {

@@ -14,8 +14,7 @@ object *_error(char *who, char *msg, ...) {
     object *obj;
 
     va_start(ap, msg);
-    printf("%s: ", who);
-    printf("%s: ", msg);
+    printf("error: %s: %s: irritants: ", who, msg);
     for (obj = va_arg(ap, object *); obj; obj = va_arg(ap, object *))
         display(obj);
     newline();
