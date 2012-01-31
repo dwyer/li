@@ -1,11 +1,13 @@
 #include <math.h>
 #include <stdio.h>
 #include "object.h"
+#include "eval.h"
 #include "display.h"
 
 typedef struct reg reg;
 
 object *p_add(object *args);
+object *p_apply(object *args);
 object *p_car(object *args);
 object *p_cdr(object *args);
 object *p_cons(object *args);
@@ -111,6 +113,7 @@ struct reg {
     { "atan", p_atan },
     { "sqrt", p_sqrt },
     { "expt", p_expt },
+    { "apply", p_apply },
     { nil, nil }
 };
 
@@ -123,6 +126,14 @@ object *primitive_procedures(object *env) {
         env = cons(cons(var, val), env);
     }
     return env;
+}
+
+object *p_apply(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        return error("apply", "Wrong number of args", args);
+    if (!is_procedure(car(args)))
+        return error("apply", "arg 1 should be a proc", car(args));
+    return apply(car(args), cadr(args));
 }
 
 object *p_error(object *args) {

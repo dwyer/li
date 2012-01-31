@@ -178,7 +178,7 @@ object *eval_assert(object *exp, object *env) {
     ret = eval(exp, env);
     if (is_false(ret))
         return error("assert", "Assertion failed", exp);
-    return nil; /* R6RS suggests this return the evaluated expression */
+    return ret;
 }
 
 object *eval_definition(object *exp, object *env) {
