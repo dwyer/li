@@ -15,11 +15,8 @@ object *p_eq(object *args);
 object *p_error(object *args);
 object *p_ge(object *args);
 object *p_gt(object *args);
-object *p_is_boolean(object *args);
 object *p_is_eq(object *args);
-object *p_is_equal(object *args);
 object *p_is_eqv(object *args);
-object *p_is_null(object *args);
 object *p_is_number(object *args);
 object *p_is_pair(object *args);
 object *p_is_procedure(object *args);
@@ -30,12 +27,10 @@ object *p_lt(object *args);
 object *p_make_vector(object *args);
 object *p_modulo(object *args);
 object *p_mul(object *args);
-object *p_not(object *args);
 object *p_newline(object *args);
 object *p_set_car(object *args);
 object *p_set_cdr(object *args);
 object *p_sub(object *args);
-object *p_vector(object *args);
 object *p_vector_length(object *args);
 object *p_vector_ref(object *args);
 object *p_vector_set(object *args);
@@ -52,8 +47,12 @@ object *p_sqrt(object *args);
 object *p_expt(object *args);
 
 /* TODO: implement these in scm */
+object *p_is_boolean(object *args);
+object *p_is_equal(object *args);
 object *p_is_list(object *args);
+object *p_is_null(object *args);
 object *p_list(object *args);
+object *p_not(object *args);
 
 struct reg {
     char *var;
@@ -71,7 +70,6 @@ struct reg {
     { "cons", p_cons },
     { "list", p_list },
     { "make-vector", p_make_vector },
-    { "vector", p_vector },
     { "vector-length", p_vector_length },
     { "vector-ref", p_vector_ref },
     { "vector-set!", p_vector_set },
@@ -215,16 +213,6 @@ object *p_make_vector(object *args) {
     if (!is_number(car(args)))
         return error("Wrong type of arg", car(args));
     return vector(to_number(car(args)), cdr(args) ? cadr(args) : nil);
-}
-
-object *p_vector(object *args) {
-    object *vec;
-    int k;
-
-    vec = vector(length(args), nil);
-    for (k = 0; k < vector_length(vec); k++, args = cdr(args))
-        vector_set(vec, k, car(args));
-    return vec;
 }
 
 object *p_vector_length(object *args) {

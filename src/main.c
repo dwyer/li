@@ -24,12 +24,29 @@ object *_error(char *msg, ...) {
     return nil;
 }
 
+void load(const char *filename, object *env) {
+    FILE *f;
+    object *exps;
+
+    f = fopen(filename, "r");
+    exps = parse(f);
+    fclose(f);
+    if (setjmp(buf))
+        exps = cdr(exps);
+    while (exps) {
+        eval(car(exps), env);
+        exps = cdr(exps);
+    }
+    cleanup(env);
+}
+
 int main(int argc, char *argv[]) {
     object *exps;
     object *env;
     object *res;
 
     env = setup_environment();
+    load("sub.scm", env);
     exps = parse(stdin);
     if (setjmp(buf))
         exps = cdr(exps);
