@@ -10,6 +10,7 @@
 #define isopener(c)     ((c) == '(')
 #define iscloser(c)     ((c) == ')')
 #define isquote(c)      ((c) == '\'')
+#define issharp(c)       ((c) == '#')
 #define iseof(c)        ((c) == EOF)
 #define iseol(c)        ((c) == '\n')
 #define iseos(c)        ((c) == '\0')
@@ -110,6 +111,24 @@ object *parse_quote(FILE *f) {
     return cons(symbol("quote"), cons(obj, nil));
 }
 
+object *parse_vector(FILE *f) {
+    return list_to_vector(parse(f));
+}
+
+object *parse_sharp(FILE *f) {
+    int c;
+
+    c = getc(f);
+    if (c == 't')
+        return true;
+    else if (c == 'f')
+        return false;
+    else if (isopener(c))
+        return parse_vector(f);
+    else
+        return nil; /* TODO: something better */
+}
+
 object *parse(FILE *f) {
     object *o;
     int c;
@@ -129,6 +148,9 @@ object *parse(FILE *f) {
             return cons(o, parse(f));
         } else if (isquote(c)) {
             o = parse_quote(f);
+            return cons(o, parse(f));
+        } else if (issharp(c)) {
+            o = parse_sharp(f);
             return cons(o, parse(f));
         } else {
             ungetc(c, f);

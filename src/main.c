@@ -9,13 +9,13 @@
 
 static jmp_buf buf;
 
-/* TODO: rewrite this to the R6RS spec */
-object *_error(char *msg, ...) {
+object *_error(char *who, char *msg, ...) {
     va_list ap;
     object *obj;
 
     va_start(ap, msg);
-    printf("%s ", msg);
+    printf("%s: ", who);
+    printf("%s: ", msg);
     for (obj = va_arg(ap, object *); obj; obj = va_arg(ap, object *))
         display(obj);
     newline();

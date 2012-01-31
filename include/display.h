@@ -5,6 +5,6 @@
 #define newline()       printf("\n")
 
 void display(object *exp);
-object *_error(char *s, ...);
+object *_error(char *who, char *msg, ...);
 
 #endif

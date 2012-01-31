@@ -17,7 +17,8 @@
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
 #define is_let(exp)                 is_tagged_list(exp, "let")
 #define is_or(exp)                  is_tagged_list(exp, "or")
-#define is_self_evaluating(exp)     (is_number(exp) || is_string(exp))
+#define is_self_evaluating(exp)     (is_number(exp) || is_string(exp) || \
+                                     is_vector(exp))
 #define is_syntax_definition(exp)   is_tagged_list(exp, "define-syntax")
 #define is_syntax_rules(exp)        is_tagged_list(exp, "syntax-rules")
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
@@ -65,7 +66,7 @@ object *apply(object *proc, object *args) {
         return apply_primitive_procedure(proc, args);
     else if (is_compound(proc))
         return apply_compound_procedure(proc, args);
-    return error("Apply: Unknown procedure type:", proc);
+    return error("apply", "Unknown procedure type:", proc);
 }
 
 object *apply_compound_procedure(object *proc, object *args) {
@@ -165,7 +166,7 @@ object *eval(object *exp, object *env) {
         return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
     /* error */
     else
-        return error("Unknown expression type -- EVAL", exp);
+        return error("eval", "Unknown expression type", exp);
 }
 
 object *eval_and(object *exp, object *env) {
@@ -192,7 +193,7 @@ object *eval_assert(object *exp, object *env) {
 
     ret = eval(exp, env);
     if (is_false(ret))
-        return error("Assertion failed", exp);
+        return error("assert", "Assertion failed", exp);
     return nil; /* R6RS suggests this return the evaluated expression */
 }
 
@@ -267,7 +268,7 @@ object *expand_clauses(object *clauses) {
         if (is_null(cdr(clauses)))
             return sequence_to_exp(cdr(car(clauses)));
         else
-            return error("else clauses isn't last", clauses);
+            return error("cond", "else clause isn't last", clauses);
     else
         return make_if(car(car(clauses)),
                        sequence_to_exp(cdr(car(clauses))),
@@ -282,9 +283,9 @@ object *extend_environment(object *vars, object *vals, object *base_env) {
         vals = cdr(vals);
     }
     if (vars)
-        return error("Too few arguments supplied", vars);
+        return error("ext-env", "Too few arguments supplied", vars);
     if (vals)
-        return error("Too many arguments supplied", vars);
+        return error("ext-env", "Too many arguments supplied", vars);
     return base_env;
 }
 
@@ -308,7 +309,7 @@ object *lookup_variable_value(object *var, object *env) {
             return cdar(env);
         env = cdr(env);
     }
-    return error("Unbound variable:", var);
+    return error("?", "Unbound variable:", var);
 }
 
 object *set_variable_value(object *var, object *val, object *env) {
@@ -319,7 +320,7 @@ object *set_variable_value(object *var, object *val, object *env) {
         }
         env = cdr(env);
     }
-    return error("Unbound variable", var);
+    return error("?", "Unbound variable", var);
 }
 
 object *setup_environment(void) {

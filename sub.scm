@@ -71,7 +71,7 @@
       (if (eq? obj (caar lst))
         (car lst)
         (assq obj (cdr lst)))
-      (error "alist must be list of pairs"))))
+      (error 'assq "alist must be list of pairs"))))
 
 (define (assv obj lst)
   (if (null? lst) #f
@@ -79,7 +79,7 @@
       (if (eqv? obj (caar lst))
         (car lst)
         (assv obj (cdr lst)))
-      (error "alist must be list of pairs"))))
+      (error 'assv "alist must be list of pairs"))))
 
 (define (assoc obj lst)
   (if (null? lst) #f
@@ -87,11 +87,11 @@
       (if (equal? obj (caar lst))
         (car lst)
         (assoc obj (cdr lst)))
-      (error "alist must be list of pairs"))))
+      (error 'assoc "alist must be list of pairs"))))
 
 (define (string . chars) (not-impl))
 
-(define (vector . objs) (not-impl))
+;(define (vector . objs) (list->vector objs));
 
 (define (vector->list vec)
   (define (iter k)
@@ -122,4 +122,4 @@
 (define (for-each proc . lsts) (not-impl))
 (define (force promise) (not-impl))
 
-(define (not-impl) (error "not implemented"))
+(define (not-impl) (error 'not-impl "not implemented"))

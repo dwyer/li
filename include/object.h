@@ -96,6 +96,8 @@ object *vector(int k, object *fill);
 object *compound(object *args, object *body, object *env);
 object *procedure(object *(*proc)(object *));
 
+object *list_to_vector(object *lst);
+
 void lock(object *obj);
 void unlock(object *obj);
 void delete(object *obj);
