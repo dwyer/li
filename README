@@ -3,3 +3,37 @@ for a small subset of the Scheme programming language.  That is, it's not meant
 to be a full-featured R5RS implementation, just a subset of the features I find
 the most useful.  My ultimate goal is ease of extensibility so that I may use
 it as an embedded configuration and scripting lanaguge in future projects.
+
+What's not supported
+====================
+Scheme is a language by mathematicans not-necessarily-for mathematicans. I'm
+sure its authors couldn't help themselves but to implement the full numerical
+tower, but I personally doubt many people find it useful. Therefore, I choose
+not to natively implement rationals, complex numbers, infinity, or any 
+procedures that depend on them.
+
+The following are not yet supported, but may be in the future:
+* Bignums
+* Chars
+* Continuations
+* Macros (define-syntax, syntax-rules, etc.)
+* Ports
+* Promises (delay, promise, make-promise, etc.)
+
+What is supported
+=================
+Data types:
+* Booleans
+* Numbers
+* Strings
+* Vectors
+
+Procedures:
+* Any procedure that appears in Structure and Interpretation of Computer
+  Programs should be implemented at the very least as a library procedure. 
+
+Bugs
+====
+* There's currently no syntax checking. Illegal syntax results in unknown
+  behavior ranging from segfaults to mysterious errors to nothing at all.
+* (symbol? #f) and (symbol? #t) return #t.

@@ -32,6 +32,7 @@ object *p_make_vector(object *args);
 object *p_modulo(object *args);
 object *p_mul(object *args);
 object *p_newline(object *args);
+object *p_remainder(object *args);
 object *p_set_car(object *args);
 object *p_set_cdr(object *args);
 object *p_sub(object *args);
@@ -107,6 +108,7 @@ struct reg {
     { "-", p_sub },
     { "/", p_div },
     { "modulo", p_modulo },
+    { "remainder", p_remainder },
     { "exp", p_exp },
     { "log", p_log },
     { "sin", p_sin },
@@ -343,13 +345,6 @@ object *p_not(object *args) {
     return false;
 }
 
-/*
- * These procedures return #t if their arguments are (respec-
- * tively): equal, monotonically increasing, monotonically de-
- * creasing, monotonically nondecreasing, or monotonically
- * nonincreasing.
- */
-
 object *p_eq(object *args) {
     while (args) {
         if (!is_number(car(args)))
@@ -479,18 +474,30 @@ object *p_div(object *args) {
     return number(result);
 }
 
-/*
- * These procedures implement number-theoretic (integer) di-
- * vision. n2 should be non-zero. All three procedures return
- * integers.
- */
-
 object *p_modulo(object *args) {
+    int x, y, z;
+
     if (!args || !cdr(args) || cddr(args))
         return error("modulo", "Wrong number of arguments", args);
-    if (!is_number(car(args)) || !is_number(cadr(args)))
-        return error("modulo", "Wrong type of arguments", args);
-    return number((int)to_number(car(args)) % (int)to_number(cadr(args)));
+    if (!is_integer(car(args)) || !is_integer(cadr(args)))
+        return error("modulo", "args must be integers", args);
+    if (!to_integer(cadr(args)))
+        return error("modulo", "arg2 must be non-zero", args);
+    x = to_integer(car(args));
+    y = to_integer(cadr(args));
+    z = x % y;
+    return number(z);
+    return number(to_integer(car(args)) % to_integer(cadr(args)));
+}
+
+object *p_remainder(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        return error("modulo", "Wrong number of arguments", args);
+    if (!is_integer(car(args)) || !is_integer(cadr(args)))
+        return error("modulo", "args must be integers", args);
+    if (!to_integer(cadr(args)))
+        return error("modulo", "arg2 must be non-zero", args);
+    return number(to_integer(car(args)) % to_integer(cadr(args)));
 }
 
 object *p_exp(object *args) {
