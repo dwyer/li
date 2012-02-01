@@ -18,7 +18,7 @@ The following are not yet supported, but may be in the future:
 * Continuations
 * Macros (define-syntax, syntax-rules, etc.)
 * Ports
-* Promises (delay, promise, make-promise, etc.)
+* Promises (delay, force)
 
 What is supported
 =================
