@@ -118,11 +118,10 @@
           (apply append (cons (iter (car args) (cadr args))
                               (cddr args))))))
 
-;(define (reverse lst)
-;  (assert (list? lst))
-;  (if (null? lst) lst
-;    (if (null? (cdr lst)) lst
-;      (cons (car (reverse (cdr lst))) (cons (car lst) '())))))
+(define (reverse lst)
+  (cond ((null? lst) '())
+        ((null? (cdr lst)) lst)
+        (else (append (reverse (cdr lst)) (list (car lst))))))
 
 ; Taken from R5RS
 (define (list-tail lst k)
