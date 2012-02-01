@@ -177,7 +177,7 @@ object *eval_assert(object *exp, object *env) {
 
     ret = eval(exp, env);
     if (is_false(ret))
-        return error("assert", "Assertion failed", exp);
+        return error("assert", "assertion violated", exp);
     return nil;
     return ret;
 }
@@ -261,6 +261,7 @@ object *expand_clauses(object *clauses) {
 }
 
 object *extend_environment(object *vars, object *vals, object *base_env) {
+    /* create a barrier between this and the base environment */
     base_env = cons(nil, base_env);
     while (vars) {
         if (is_symbol(vars))
@@ -272,9 +273,9 @@ object *extend_environment(object *vars, object *vals, object *base_env) {
         vals = cdr(vals);
     }
     if (vars)
-        return error("ext-env", "Too few arguments supplied", vars);
+        return error("#[anonymous procedure]", "Too few arguments supplied", vars);
     if (vals)
-        return error("ext-env", "Too many arguments supplied", vars);
+        return error("#[anonymous procedure]", "Too many arguments supplied", vars);
     return base_env;
 }
 
@@ -298,7 +299,7 @@ object *lookup_variable_value(object *var, object *env) {
             return cdar(env);
         env = cdr(env);
     }
-    return error("?", "Unbound variable:", var);
+    return error("eval", "unbound variable", var);
 }
 
 object *set_variable_value(object *var, object *val, object *env) {
@@ -309,7 +310,7 @@ object *set_variable_value(object *var, object *val, object *env) {
         }
         env = cdr(env);
     }
-    return error("?", "Unbound variable", var);
+    return error("eval", "unbound variable", var);
 }
 
 object *setup_environment(void) {
