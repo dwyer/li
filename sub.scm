@@ -60,11 +60,6 @@
     (- x)
     x))
 
-;(define (gcd . nn)
-;  (if (null? nn)
-;    0
-;    ...))
-
 ; Returns the greatest common divisor or of its arguments.
 ; The result is always non-negative.
 (define (gcd . args)
@@ -180,15 +175,6 @@
         ((equal? obj (caar lst)) (car lst))
         (else (assoc obj (cdr lst)))))
 
-; chars are not yet supported
-;(define (string . chars) ...)
-
-; implemented internally
-;(define (vector . objs)
-;  (list->vector objs));
-
-; This is supposed to be implemented internally but I chose to implement
-; vector / list->vector instead.
 (define (make-vector k . fills)
   (if (and (not (null? fills)) (not (null? (cdr fills))))
     (error 'make-vector "too many arguments"))
@@ -244,8 +230,6 @@
 (define (for-each proc . lsts)
   (apply map (cons proc lsts))
   '())
-
-;(define (force promise) ...)
 
 (define (caar obj)
   (car (car obj)))
