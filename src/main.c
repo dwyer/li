@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     for (i = 1; i < argc; i++)
         load(argv[i], env);
     if (argc > 1)
-        return 0;
+        goto exit;
     if (setjmp(buf))
         cleanup(env);
     while ((exp = prompt(stdin)) != eof) {
@@ -68,6 +68,7 @@ int main(int argc, char *argv[]) {
         }
         cleanup(env);
     }
+exit:
     cleanup(nil);
     return 0;
 }
