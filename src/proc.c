@@ -70,22 +70,10 @@ object *p_expt(object *args);
 object *p_display(object *args);
 object *p_newline(object *args);
 
-/* implemented in scm */
-object *p_is_boolean(object *args);
-object *p_is_list(object *args);
-object *p_is_null(object *args);
-object *p_not(object *args);
-
 struct reg {
     char *var;
     object *(*val)(object *);
 } regs[] = {
-    /* library procs
-    { "boolean?", p_is_boolean },
-    { "list?", p_is_list },
-    { "not", p_not },
-    { "null?", p_is_null },
-    */
     /* pairs and lists */
     { "cons", p_cons },
     { "car", p_car },
@@ -693,39 +681,4 @@ object *p_apply(object *args) {
     if (!is_procedure(car(args)))
         return error("apply", "arg 1 should be a proc", car(args));
     return apply(car(args), cadr(args));
-}
-
-/********************************
- * REDUNDENT LIBRARY PROCEDURES *
- ********************************/
-
-object *p_is_boolean(object *args) {
-    if (!args || cdr(args))
-        return error("boolean?", "Wrong number of args", args);
-    return boolean(is_boolean(car(args)));
-}
-
-object *p_is_list(object *args) {
-    object *obj;
-
-    if (!args || cdr(args))
-        return error("list?", "Wrong number of args", args);
-    for (obj = car(args); obj; obj = cdr(obj))
-        if (!is_pair(obj))
-            return false;
-    return true;
-}
-
-object *p_not(object *args) {
-    if (!args || cdr(args))
-        return error("not", "Wrong number of args", args);
-    if (is_false(car(args)))
-        return true;
-    return false;
-}
-
-object *p_is_null(object *args) {
-    if (!args || cdr(args))
-        return error("null?", "Wrong number of args", args);
-    return boolean(is_null(car(args)));
 }
