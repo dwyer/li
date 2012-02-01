@@ -662,7 +662,7 @@ object *p_expt(object *args) {
 object *p_display(object *args) {
     if (!args || cdr(args))
         return error("display", "Wrong number of args", args);
-    display(car(args));
+    display(car(args), stdout);
     return nil;
 }
 

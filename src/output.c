@@ -3,59 +3,59 @@
 #include "object.h"
 #include "output.h"
 
-void display_pair(object *exp);
-void display_vector(object *exp);
+void display_pair(object *exp, FILE *f);
+void display_vector(object *exp, FILE *f);
 
-void display(object *exp) {
+void display(object *exp, FILE *f) {
     if (is_null(exp))
-        printf("()");
+        fprintf(f, "()");
     else if (is_locked(exp))
-        printf("...");
+        fprintf(f, "...");
     else if (is_number(exp))
-        printf("%g", to_number(exp));
+        fprintf(f, "%g", to_number(exp));
     else if (is_string(exp))
-        printf("%s", to_string(exp));
+        fprintf(f, "%s", to_string(exp));
     else if (is_symbol(exp))
-        printf("%s", to_symbol(exp));
+        fprintf(f, "%s", to_symbol(exp));
     else if (is_primitive(exp))
-        printf("#[primitive]");
+        fprintf(f, "#[primitive]");
     else if (is_compound(exp))
-        printf("#[procedure]");
+        fprintf(f, "#[procedure]");
     else if (is_pair(exp))
-        display_pair(exp);
+        display_pair(exp, f);
     else if (is_vector(exp))
-        display_vector(exp);
+        display_vector(exp, f);
 }
 
-void display_pair(object *exp) {
+void display_pair(object *exp, FILE *f) {
     object *iter;
 
     exp->locked = 1;
     iter = exp;
-    printf("(");
+    fprintf(f, "(");
     do {
-        display(car(iter));
+        display(car(iter), f);
         iter = cdr(iter);
         if (iter)
-            putchar(' ');
+            fputc(' ', f);
     } while (is_pair(iter));
     if (iter) {
-        putchar('.');
-        putchar(' ');
-        display(iter);
+        fputc('.', f);
+        fputc(' ', f);
+        display(iter, f);
     }
-    printf(")");
+    fprintf(f, ")");
     exp->locked = 0;
 }
 
-void display_vector(object *obj) {
+void display_vector(object *obj, FILE *f) {
     int k;
 
-    printf("#(");
+    fprintf(f, "#(");
     for (k = 0; k < vector_length(obj); k++) {
-        display(vector_ref(obj, k));
+        display(vector_ref(obj, k), f);
         if (k < vector_length(obj) - 1)
-            printf(" ");
+            fprintf(f, " ");
     }
-    printf(")");
+    fprintf(f, ")");
 }

@@ -14,10 +14,10 @@ object *_error(char *who, char *msg, ...) {
     object *obj;
 
     va_start(ap, msg);
-    printf("; error: %s: %s: ", who, msg);
+    fprintf(stderr, "; error: %s: %s: ", who, msg);
     for (obj = va_arg(ap, object *); obj; obj = va_arg(ap, object *))
-        display(obj);
-    newline();
+        display(obj, stderr);
+    newline(stderr);
     va_end(ap);
     longjmp(buf, 1);
     return nil;
@@ -62,8 +62,8 @@ int main(int argc, char *argv[]) {
         if (exp) {
             exp = eval(exp, env);
             if (exp) {
-                display(exp);
-                newline();
+                display(exp, stdout);
+                newline(stdout);
             }
         }
         cleanup(env);
