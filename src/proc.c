@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "object.h"
 #include "eval.h"
-#include "display.h"
+#include "output.h"
 
 typedef struct reg reg;
 

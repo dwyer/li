@@ -1,6 +1,6 @@
 CC=gcc
 RM=rm
-CFILES=eval.c main.c object.c parse.c display.c proc.c
+CFILES=main.c input.c output.c object.c eval.c proc.c
 CFLAGS=-c -Wall -I./include
 LDFLAGS=-lm
 OBJDIR=obj

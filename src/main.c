@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "object.h"
-#include "display.h"
-#include "parse.h"
+#include "output.h"
+#include "input.h"
 #include "eval.h"
 
 static jmp_buf buf;
@@ -45,8 +45,6 @@ int main(int argc, char *argv[]) {
     object *env;
     object *res;
 
-    getchar();
-    return 0;
     env = setup_environment();
     load("sub.scm", env);
     exps = parse(stdin);

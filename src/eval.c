@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "object.h"
 #include "eval.h"
-#include "display.h"
+#include "output.h"
 #include "proc.h"
 
 #define is_and(exp)                 is_tagged_list(exp, "and")
