@@ -23,11 +23,12 @@ object *_error(char *who, char *msg, ...) {
     return nil;
 }
 
-void load(const char *filename, object *env) {
+void load(char *filename, object *env) {
     FILE *f;
     object *exps;
 
-    f = fopen(filename, "r");
+    if ((f = fopen(filename, "r")) == NULL)
+        error("load", "unable to read file", string(filename));
     exps = parse(f);
     fclose(f);
     if (setjmp(buf))
@@ -44,6 +45,8 @@ int main(int argc, char *argv[]) {
     object *env;
     object *res;
 
+    getchar();
+    return 0;
     env = setup_environment();
     load("sub.scm", env);
     exps = parse(stdin);

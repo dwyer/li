@@ -3,20 +3,20 @@
 #include <stdlib.h>
 #include "object.h"
 #include "parse.h"
+#include "display.h"
 
-#define BUF_SZ 1
+#define BUF_SZ 50
 
 #define iscomment(c)    ((c) == ';')
 #define isopener(c)     ((c) == '(')
 #define iscloser(c)     ((c) == ')')
 #define isquote(c)      ((c) == '\'')
-#define issharp(c)       ((c) == '#')
+#define issharp(c)      ((c) == '#')
 #define iseof(c)        ((c) == EOF)
 #define iseol(c)        ((c) == '\n')
-#define iseos(c)        ((c) == '\0')
 #define isstring(c)     ((c) == '"')
-#define isspecial(c)    (isspace(c) || isopener(c) || iscloser(c) || \
-                         iscomment(c) || iseof(c))
+#define isdelimiter(c)  (isspace(c) || isopener(c) || iscloser(c) || \
+                         isstring(c) || iscomment(c) || iseof(c))
 
 int token_is_number(const char *tok) {
     int ret;
@@ -46,7 +46,7 @@ object *parse_comment(FILE *f) {
 
     do
         c = getc(f);
-    while (!iseof(c) && !iseol(c) && !iseos(c));
+    while (!(iseol(c) || iseof(c)));
     return nil;
 }
 
@@ -65,7 +65,7 @@ object *parse_string(FILE *f) {
             buf_sz *= 2;
             buf = realloc(buf, buf_sz * sizeof(*buf));
         }
-    } while (!isstring(c) && !iseof(c) && !iseos(c));
+    } while (!isstring(c) && !iseof(c));
     buf[i-1] = '\0';
     if (iseof(c))
         ungetc(c, f);
@@ -89,7 +89,7 @@ object *parse_token(FILE *f) {
             buf_sz *= 2;
             buf = realloc(buf, buf_sz * sizeof(*buf));
         }
-    } while (!isspecial(c));
+    } while (!isdelimiter(c));
     buf[i-1] = '\0';
     ungetc(c, f);
     if (token_is_number(buf))
@@ -141,7 +141,7 @@ object *parse(FILE *f) {
         } else if (iscomment(c)) {
             parse_comment(f);
         } else if (iscloser(c)) {
-            return NULL;
+            return nil;
         } else if (isopener(c)) {
             o = parse(f);
             return cons(o, parse(f));
