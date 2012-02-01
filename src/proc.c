@@ -673,7 +673,7 @@ object *p_display(object *args) {
 object *p_newline(object *args) {
     if (args)
         return error("newline", "Wrong number of args", args);
-    puts("");
+    newline(stdout);
     return nil;
 }
 
