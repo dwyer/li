@@ -43,7 +43,7 @@ int token_is_number(const char *tok) {
     return ret && hasdigit;
 }
 
-object *parse_comment(FILE *f) {
+object *read_comment(FILE *f) {
     int c;
 
     do
@@ -52,7 +52,7 @@ object *parse_comment(FILE *f) {
     return nil;
 }
 
-object *parse_string(FILE *f) {
+object *read_string(FILE *f) {
     object *ret;
     char *buf;
     int buf_sz;
@@ -76,7 +76,7 @@ object *parse_string(FILE *f) {
     return ret;
 }
 
-object *parse_token(FILE *f) {
+object *read_token(FILE *f) {
     object *ret;
     char *buf;
     int buf_sz;
@@ -102,24 +102,24 @@ object *parse_token(FILE *f) {
     return ret;
 }
 
-object *parse_quote(FILE *f) {
+object *read_quote(FILE *f) {
     object *obj;
     int c;
 
     if (isopener(c = getc(f))) {
-        obj = parse(f);
+        obj = read(f);
     } else {
         ungetc(c, f);
-        obj = parse_token(f);
+        obj = read_token(f);
     }
     return cons(symbol("quote"), cons(obj, nil));
 }
 
-object *parse_vector(FILE *f) {
-    return list_to_vector(parse(f));
+object *read_vector(FILE *f) {
+    return list_to_vector(read(f));
 }
 
-object *parse_sharp(FILE *f) {
+object *read_sharp(FILE *f) {
     int c;
 
     c = getc(f);
@@ -128,12 +128,12 @@ object *parse_sharp(FILE *f) {
     else if (c == 'f')
         return false;
     else if (isopener(c))
-        return parse_vector(f);
+        return read_vector(f);
     else
         return nil; /* TODO: something better */
 }
 
-object *parse(FILE *f) {
+object *read(FILE *f) {
     object *o;
     int c;
 
@@ -141,29 +141,29 @@ object *parse(FILE *f) {
         if (isspace(c)) {
             ;
         } else if (iscomment(c)) {
-            parse_comment(f);
+            read_comment(f);
         } else if (iscloser(c)) {
             return nil;
         } else if (isopener(c)) {
-            o = parse(f);
-            return cons(o, parse(f));
+            o = read(f);
+            return cons(o, read(f));
         } else if (isstring(c)) {
-            o = parse_string(f);
-            return cons(o, parse(f));
+            o = read_string(f);
+            return cons(o, read(f));
         } else if (isquote(c)) {
-            o = parse_quote(f);
-            return cons(o, parse(f));
+            o = read_quote(f);
+            return cons(o, read(f));
         } else if (issharp(c)) {
-            o = parse_sharp(f);
-            return cons(o, parse(f));
+            o = read_sharp(f);
+            return cons(o, read(f));
         } else {
             ungetc(c, f);
-            o = parse_token(f);
+            o = read_token(f);
             if (o == dot) {
-                o = parse(f);
+                o = read(f);
                 return car(o);
             }
-            return cons(o, parse(f));
+            return cons(o, read(f));
         }
     }
     return nil;

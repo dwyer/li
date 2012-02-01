@@ -29,7 +29,7 @@ void load(char *filename, object *env) {
 
     if ((f = fopen(filename, "r")) == NULL)
         error("load", "unable to read file", string(filename));
-    exps = parse(f);
+    exps = read(f);
     fclose(f);
     if (setjmp(buf))
         exps = cdr(exps);
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
     env = setup_environment();
     load("sub.scm", env);
-    exps = parse(stdin);
+    exps = read(stdin);
     if (setjmp(buf))
         exps = cdr(exps);
     while (exps) {
