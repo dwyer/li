@@ -19,6 +19,7 @@ object *p_ge(object *args);
 object *p_gt(object *args);
 object *p_is_eq(object *args);
 object *p_is_eqv(object *args);
+object *p_is_equal(object *args);
 object *p_is_integer(object *args);
 object *p_is_number(object *args);
 object *p_is_pair(object *args);
@@ -52,9 +53,8 @@ object *p_atan(object *args);
 object *p_sqrt(object *args);
 object *p_expt(object *args);
 
-/* TODO: implement these in scm */
+/* implemented in scm */
 object *p_is_boolean(object *args);
-object *p_is_equal(object *args);
 object *p_is_list(object *args);
 object *p_is_null(object *args);
 object *p_not(object *args);
@@ -66,7 +66,6 @@ struct reg {
     /* library procedures */
     /*
     { "boolean?", p_is_boolean },
-    { "equal?", p_is_equal },
     { "list?", p_is_list },
     { "not", p_not },
     { "null?", p_is_null },
@@ -86,6 +85,7 @@ struct reg {
     { "vector-set!", p_vector_set },
     { "eq?", p_is_eq },
     { "eqv?", p_is_eqv },
+    { "equal?", p_is_equal },
     /* mutators */
     { "set-car!", p_set_car },
     { "set-cdr!", p_set_cdr },

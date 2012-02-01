@@ -10,13 +10,6 @@
   (if (not condition)
     (apply error (cons who (cons msg args)))))
 
-; This is horribly inefficient and should probably be a C function anyway.
-(define (equal? obj1 obj2)
-  (if (and (pair? obj1) (pair? obj2))
-    (and (equal? (car obj1) (car obj2))
-         (equal? (cdr obj1) (cdr obj2)))
-    (eqv? obj1 obj2)))
-
 (define (zero? z)
   (check (number? z) 'zero? "not a number" z)
   (= z 0))
