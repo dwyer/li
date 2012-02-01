@@ -7,8 +7,6 @@
 
 #define BUF_SZ 50
 
-#define eof             symbol("#eof")
-
 #define iscomment(c)    ((c) == ';')
 #define isopener(c)     ((c) == '(')
 #define iscloser(c)     ((c) == ')')
@@ -83,7 +81,7 @@ object *read_token(FILE *f) {
     int i, c;
 
     i = 0;
-    buf_sz = BUF_SZ; /* we can make this bigger once we're sure it works */
+    buf_sz = BUF_SZ;
     buf = calloc(buf_sz, sizeof(*buf));
     do {
         buf[i++] = c = getc(f);
@@ -115,10 +113,6 @@ object *read_quote(FILE *f) {
     return cons(symbol("quote"), cons(obj, nil));
 }
 
-object *read_vector(FILE *f) {
-    return list_to_vector(read(f));
-}
-
 object *read_sharp(FILE *f) {
     int c;
 
@@ -127,44 +121,53 @@ object *read_sharp(FILE *f) {
         return true;
     else if (c == 'f')
         return false;
-    else if (isopener(c))
-        return read_vector(f);
-    else
+    else if (isopener(c)) {
+        ungetc(c, f);
+        return list_to_vector(read(f));
+    } else
         return nil; /* TODO: something better */
 }
 
 object *read(FILE *f) {
-    object *o;
+    object *obj, *lst, *iter;
     int c;
 
     while ((c = getc(f)) != EOF) {
         if (isspace(c)) {
             ;
         } else if (iscomment(c)) {
-            read_comment(f);
-        } else if (iscloser(c)) {
-            return nil;
-        } else if (isopener(c)) {
-            o = read(f);
-            return cons(o, read(f));
-        } else if (isstring(c)) {
-            o = read_string(f);
-            return cons(o, read(f));
+            while (!iseol(c = getc(f)) && !iseof(c))
+                ;
+            ungetc(c, f);
         } else if (isquote(c)) {
-            o = read_quote(f);
-            return cons(o, read(f));
+            return cons(symbol("quote"), cons(read(f), nil));
         } else if (issharp(c)) {
-            o = read_sharp(f);
-            return cons(o, read(f));
+            return read_sharp(f);
+        } else if (isstring(c)) {
+            return read_string(f);
+        } else if (isopener(c)) {
+            lst = iter = nil;
+            while ((obj = read(f)) != eof) {
+                if (!lst) {
+                    lst = iter = cons(obj, nil);
+                } else if (obj == dot) {
+                    obj = read(f);
+                    if (!lst || !obj || read(f) != eof)
+                        return error("read", "ill-formed dotted list", lst);
+                    set_cdr(iter, obj);
+                    return lst;
+                } else {
+                    iter = set_cdr(iter, cons(obj, nil));
+                }
+            }
+            return lst;
+        } else if (iscloser(c)) {
+            return eof;
         } else {
             ungetc(c, f);
-            o = read_token(f);
-            if (o == dot) {
-                o = read(f);
-                return car(o);
-            }
-            return cons(o, read(f));
+            obj = read_token(f);
+            return obj;
         }
     }
-    return nil;
+    return eof;
 }

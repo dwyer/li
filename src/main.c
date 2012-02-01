@@ -14,7 +14,7 @@ object *_error(char *who, char *msg, ...) {
     object *obj;
 
     va_start(ap, msg);
-    printf("error: %s: %s: irritants: ", who, msg);
+    printf("; error: %s: %s: ", who, msg);
     for (obj = va_arg(ap, object *); obj; obj = va_arg(ap, object *))
         display(obj);
     newline();
@@ -25,39 +25,48 @@ object *_error(char *who, char *msg, ...) {
 
 void load(char *filename, object *env) {
     FILE *f;
-    object *exps;
+    object *exp;
 
     if ((f = fopen(filename, "r")) == NULL)
         error("load", "unable to read file", string(filename));
-    exps = read(f);
-    fclose(f);
-    if (setjmp(buf))
-        exps = cdr(exps);
-    while (exps) {
-        eval(car(exps), env);
-        exps = cdr(exps);
+    while ((exp = read(f)) != eof) {
+        exp = eval(exp, env);
+        cleanup(env);
     }
-    cleanup(env);
+    fclose(f);
+}
+
+object *prompt(FILE *f) {
+    printf("> ");
+    return read(f);
 }
 
 int main(int argc, char *argv[]) {
-    object *exps;
     object *env;
-    object *res;
+    object *exp;
+    int i;
 
     env = setup_environment();
+    if (setjmp(buf)) {
+        cleanup(nil);
+        return -1;
+    }
     load("sub.scm", env);
-    exps = read(stdin);
+    for (i = 1; i < argc; i++)
+        load(argv[i], env);
+    if (argc > 1)
+        return 0;
     if (setjmp(buf))
-        exps = cdr(exps);
-    while (exps) {
-        res = eval(car(exps), env);
-        if (res) {
-            display(res);
-            newline();
+        cleanup(env);
+    while ((exp = prompt(stdin)) != eof) {
+        if (exp) {
+            exp = eval(exp, env);
+            if (exp) {
+                display(exp);
+                newline();
+            }
         }
-        exps = cdr(exps);
-        cleanup(cons(exps, env));
+        cleanup(env);
     }
     cleanup(nil);
     return 0;

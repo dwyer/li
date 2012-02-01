@@ -3,6 +3,7 @@
 
 #define nil                     NULL
 #define dot                     symbol(".")
+#define eof                     symbol("#eof")
 #define true                    symbol("#t")
 #define false                   symbol("#f")
 
