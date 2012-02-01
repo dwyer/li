@@ -37,11 +37,10 @@ void display_pair(object *exp, FILE *f) {
         display(car(iter), f);
         iter = cdr(iter);
         if (iter)
-            fputc(' ', f);
+            fprintf(f, " ");
     } while (is_pair(iter));
     if (iter) {
-        fputc('.', f);
-        fputc(' ', f);
+        fprintf(f, ". ");
         display(iter, f);
     }
     fprintf(f, ")");
