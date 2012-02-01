@@ -123,7 +123,7 @@ object *read_sharp(FILE *f) {
         return false;
     else if (isopener(c)) {
         ungetc(c, f);
-        return list_to_vector(read(f));
+        return vector(read(f));
     } else
         return nil; /* TODO: something better */
 }

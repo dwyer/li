@@ -99,11 +99,10 @@ object *cons(object *car, object *cdr);
 object *number(double n);
 object *string(char *s);
 object *symbol(char *s);
-object *vector(int k, object *fill);
+object *vector(object *lst);
 object *compound(object *args, object *body, object *env);
 object *procedure(object *(*proc)(object *));
 
-object *list_to_vector(object *lst);
 
 void lock(object *obj);
 void unlock(object *obj);

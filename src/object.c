@@ -94,24 +94,16 @@ object *symbol(char *s) {
     return obj;
 }
 
-object *vector(int k, object *fill) {
-    object *obj;
-
-    obj = new(T_VECTOR);
-    obj->data.vector.data = calloc(k, sizeof(*obj->data.vector.data));
-    obj->data.vector.length = k;
-    while (k--)
-        vector_set(obj, k, fill);
-    return obj;
-}
-
-object *list_to_vector(object *lst) {
+object *vector(object *lst) {
     object *obj;
     object *iter;
     int k;
 
-    for (k = 0, iter = lst; iter; k++, iter = cdr(iter));
-    obj = vector(k, nil);
+    for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
+        ;
+    obj = new(T_VECTOR);
+    obj->data.vector.data = calloc(k, sizeof(*obj->data.vector.data));
+    obj->data.vector.length = k;
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
         vector_set(obj, k, car(iter));
     return obj;

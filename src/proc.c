@@ -33,7 +33,6 @@ object *p_set_cdr(object *args);
 
 /* vectors */
 object *p_is_vector(object *args);
-object *p_make_vector(object *args);
 object *p_vector(object *args);
 object *p_vector_length(object *args);
 object *p_vector_ref(object *args);
@@ -81,7 +80,6 @@ struct reg {
     { "set-car!", p_set_car },
     { "set-cdr!", p_set_cdr },
     /* data structures */
-    { "make-vector", p_make_vector },
     { "vector", p_vector },
     { "vector-length", p_vector_length },
     { "vector-ref", p_vector_ref },
@@ -336,26 +334,12 @@ object *p_is_vector(object *args) {
     return boolean(is_vector(car(args)));
 }
 
-/*
- * (make-vector k)
- * (make-vector k fill)
- * Returns a vector of length k. If fill is specified, every element of the
- * vector will contain the object fill. k must be a positive integer.
- */
-object *p_make_vector(object *args) {
-    if (!args || (cdr(args) && cddr(args)))
-        return error("make-vector", "Wrong number of args", args);
-    if (!is_number(car(args)))
-        return error("make-vector", "Wrong type of arg", car(args));
-    return vector(to_number(car(args)), cdr(args) ? cadr(args) : nil);
-}
-
 /* 
  * (vector . args)
  * Returns a vector containing the given args.
  */
 object *p_vector(object *args) {
-    return list_to_vector(args);
+    return vector(args);
 }
 
 /*
