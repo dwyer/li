@@ -97,8 +97,8 @@
     (and (pair? obj) (list? (cdr obj)))))
 
 ; Greatest function ever.
-(define (list . objs)
-  objs)
+(define (list . args)
+  args)
 
 (define (length lst)
   (cond ((null? lst) 0)
@@ -120,6 +120,7 @@
 
 (define (reverse lst)
   (cond ((null? lst) '())
+        ((not (pair? lst)) (error 'reverse "arg must be a list" lst))
         ((null? (cdr lst)) lst)
         (else (append (reverse (cdr lst)) (list (car lst))))))
 
@@ -174,8 +175,8 @@
         ((equal? obj (caar lst)) (car lst))
         (else (assoc obj (cdr lst)))))
 
-(define (make-vector k . fills)
-  (if (and (not (null? fills)) (not (null? (cdr fills))))
+(define (make-vector k . args)
+  (if (and (not (null? args)) (not (null? (cdr args))))
     (error 'make-vector "too many arguments"))
   (if (or (not (integer? k)) (< k 0))
     (error 'make-vector "arg1 must be a positive integer" k))
@@ -183,7 +184,7 @@
     (if (= k 0)
       '()
       (cons fill (make-list (- k 1) fill))))
-  (list->vector (make-list k (if (null? fills) '() (car fills)))))
+  (list->vector (make-list k (if (null? args) '() (car args)))))
 
 (define (vector->list vec)
   (if (not (vector? vec))
@@ -210,25 +211,24 @@
         vec))
     (iter 0)))
 
-(define (map proc . lsts)
+(define (map proc . args)
   (if (not (procedure? proc))
     (error 'map "arg1 must be a procedure" proc))
-  (define (cars lsts)
-    (if (null? lsts)
-      lsts
-      (cons (caar lsts) (cars (cdr lsts)))))
-  (define (cdrs lsts)
-    (if (null? lsts)
-      lsts
-      (cons (cdar lsts) (cdrs (cdr lsts)))))
-  (if (or (null? lsts) (null? (car lsts)))
+  (define (cars args)
+    (if (null? args)
+      args
+      (cons (caar args) (cars (cdr args)))))
+  (define (cdrs args)
+    (if (null? args)
+      args
+      (cons (cdar args) (cdrs (cdr args)))))
+  (if (or (null? args) (null? (car args)))
     '()
-    (cons (apply proc (cars lsts))
-          (apply map (cons proc (cdrs lsts))))))
+    (cons (apply proc (cars args))
+          (apply map (cons proc (cdrs args))))))
 
-(define (for-each proc . lsts)
-  (apply map (cons proc lsts))
-  '())
+; Is there a difference?
+(define for-each map)
 
 (define (caar obj)
   (car (car obj)))
