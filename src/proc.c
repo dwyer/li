@@ -264,10 +264,7 @@ object *p_is_symbol(object *args) {
 object *p_cons(object *args) {
     if (!args || !cdr(args) || cddr(args))
         return error("cons", "Wrong number of args", args);
-    object *x = car(args);
-    object *y = cadr(args);
-
-    return cons(x, y);
+    return cons(car(args), cadr(args));
 }
 
 /*
