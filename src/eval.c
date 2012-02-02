@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "object.h"
 #include "eval.h"
+#include "input.h"
 #include "output.h"
 #include "proc.h"
 
@@ -15,6 +16,7 @@
 #define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_if(exp)                  is_tagged_list(exp, "if")
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
+#define is_load(exp)                is_tagged_list(exp, "load")
 #define is_let(exp)                 is_tagged_list(exp, "let")
 #define is_or(exp)                  is_tagged_list(exp, "or")
 #define is_self_evaluating(exp)     (is_number(exp) || is_string(exp) || \
@@ -45,6 +47,7 @@ object *eval_assignment(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
 object *eval_if(object *exp, object *env);
 object *eval_let(object *exp, object *env);
+object *eval_load(object *exp, object *env);
 object *eval_or(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
 object *eval_syntax_definition(object *exp, object *env);
@@ -140,6 +143,8 @@ object *eval(object *exp, object *env) {
         return eval_assert(cadr(exp), env);
     else if (is_let(exp))
         return eval_let(cdr(exp), env);
+    else if (is_load(exp))
+        return eval_load(cdr(exp), env);
     else if (is_or(exp))
         return eval_or(cdr(exp), env);
     /* macros */
@@ -209,6 +214,15 @@ object *eval_let(object *exp, object *env) {
         bind = cdr(bind);
     }
     return eval_sequence(cdr(exp), extend_environment(vars, vals, env));
+}
+
+object *eval_load(object *exp, object *env) {
+    if (!exp || cdr(exp))
+        return error("load", "requires one argument", exp);
+    if (!is_string(car(exp)))
+        return error("load", "arg must be a string", exp);
+    load(to_string(car(exp)), env);
+    return nil;
 }
 
 object *eval_or(object *exp, object *env) {

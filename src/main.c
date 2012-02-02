@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
         cleanup(nil);
         return -1;
     }
-    load("sub.scm", env);
+    //load("sub.scm", env);
     for (i = 1; i < argc; i++)
         load(argv[i], env);
     if (argc > 1)
