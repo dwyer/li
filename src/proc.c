@@ -305,7 +305,7 @@ object *p_car(object *args) {
     if (!args || cdr(args))
         error("car", "wrong number of args", args);
     if (!is_pair(car(args)))
-        error("car", "wrong type of arg", car(args));
+        error("car", "not a pair", car(args));
     return caar(args);
 }
 
@@ -317,7 +317,7 @@ object *p_cdr(object *args) {
     if (!args || cdr(args))
         error("cdr", "wrong number of args", args);
     if (!is_pair(car(args)))
-        error("cdr", "wrong type of arg", car(args));
+        error("cdr", "not a pair", car(args));
     return cdar(args);
 }
 
@@ -329,7 +329,7 @@ object *p_set_car(object *args) {
     if (!args || !cdr(args) || cddr(args))
         error("set-car!", "wrong number of args", args);
     if (!is_pair(car(args)))
-        error("set-car!", "wrong type of arg", car(args));
+        error("set-car!", "not a pair", car(args));
     set_car(car(args), cadr(args));
     return nil;
 }
@@ -342,7 +342,7 @@ object *p_set_cdr(object *args) {
     if (!args || !cdr(args) || cddr(args))
         error("set-cdr!", "wrong number of args", args);
     if (!is_pair(car(args)))
-        error("set-cdr!", "wrong type of arg", car(args));
+        error("set-cdr!", "not a pair", car(args));
     set_cdr(car(args), cadr(args));
     return nil;
 }
@@ -377,7 +377,7 @@ object *p_vector_length(object *args) {
     if (!args || cdr(args))
         error("vector-length", "wrong number of args", args);
     if (!is_vector(car(args)))
-        error("vector-length", "wrong type of arg", car(args));
+        error("vector-length", "not a vector", car(args));
     return number(vector_length(car(args)));
 }
 
@@ -389,12 +389,12 @@ object *p_vector_ref(object *args) {
     if (!args || !cdr(args) || cddr(args))
         error("vector-ref", "wrong number of args", args);
     if (!is_vector(car(args)))
-        error("vector-ref", "wrong type of arg", car(args));
-    if (!is_number(cadr(args)))
-        error("vector-ref", "wrong type of arg", cdar(args));
+        error("vector-ref", "not a vector", car(args));
+    if (!is_integer(cadr(args)))
+        error("vector-ref", "not an integer", cdar(args));
     if (to_number(cadr(args)) < 0 ||
         to_number(cadr(args)) >= vector_length(car(args)))
-        error("vector-ref", "Out of range", cadr(args));
+        error("vector-ref", "out of range", cadr(args));
     return vector_ref(car(args), to_integer(cadr(args)));
 }
 
@@ -406,9 +406,9 @@ object *p_vector_set(object *args) {
     if (!args || !cdr(args) || !cddr(args) || cdddr(args))
         error("vector-set", "wrong number of args", args);
     if (!is_vector(car(args)))
-        error("vector-set", "wrong type of arg", car(args));
-    if (!is_number(cadr(args)))
-        error("vector-set", "wrong type of arg", cdar(args));
+        error("vector-set", "not a vector", car(args));
+    if (!is_integer(cadr(args)))
+        error("vector-set", "not an integer", cdar(args));
     if (to_number(cadr(args)) < 0 ||
         to_number(cadr(args)) >= vector_length(car(args)))
         error("vector-set", "Out of range", cadr(args));
@@ -422,11 +422,11 @@ object *p_vector_set(object *args) {
 object *p_eq(object *args) {
     while (args) {
         if (!is_number(car(args)))
-            error("=", "wrong type of arg", car(args));
+            error("=", "not a number", car(args));
         if (!cdr(args))
             return true;
         if (!is_number(cadr(args)))
-            error("=", "wrong type of arg", cadr(args));
+            error("=", "not a number", cadr(args));
         if (!(to_number(car(args)) == to_number(cadr(args))))
             return false;
         args = cdr(args);
@@ -437,11 +437,11 @@ object *p_eq(object *args) {
 object *p_lt(object *args) {
     while (args) {
         if (!is_number(car(args)))
-            error("<", "wrong type of arg", car(args));
+            error("<", "not a number", car(args));
         if (!cdr(args))
             return true;
         if (!is_number(cadr(args)))
-            error("<", "wrong type of arg", cadr(args));
+            error("<", "not a number", cadr(args));
         if (!(to_number(car(args)) < to_number(cadr(args))))
             return false;
         args = cdr(args);
@@ -452,11 +452,11 @@ object *p_lt(object *args) {
 object *p_gt(object *args) {
     while (args) {
         if (!is_number(car(args)))
-            error(">", "wrong type of arg", car(args));
+            error(">", "not a number", car(args));
         if (!cdr(args))
             return true;
         if (!is_number(cadr(args)))
-            error(">", "wrong type of arg", cadr(args));
+            error(">", "not a number", cadr(args));
         if (!(to_number(car(args)) > to_number(cadr(args))))
             return false;
         args = cdr(args);
@@ -585,7 +585,7 @@ object *p_exp(object *args) {
     if (!args || cdr(args))
         error("exp", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("exp", "wrong type of arg", car(args));
+        error("exp", "not a number", car(args));
     return number(exp(to_number(car(args))));
 }
 
@@ -593,7 +593,7 @@ object *p_log(object *args) {
     if (!args || cdr(args))
         error("log", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("log", "wrong type of arg", car(args));
+        error("log", "not a number", car(args));
     return number(log(to_number(car(args))));
 }
 
@@ -601,7 +601,7 @@ object *p_sin(object *args) {
     if (!args || cdr(args))
         error("sin", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("sin", "wrong type of arg", car(args));
+        error("sin", "not a number", car(args));
     return number(sin(to_number(car(args))));
 }
 
@@ -609,7 +609,7 @@ object *p_cos(object *args) {
     if (!args || cdr(args))
         error("cos", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("cos", "wrong type of arg", car(args));
+        error("cos", "not a number", car(args));
     return number(cos(to_number(car(args))));
 }
 
@@ -617,7 +617,7 @@ object *p_tan(object *args) {
     if (!args || cdr(args))
         error("tan", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("tan", "wrong type of arg", car(args));
+        error("tan", "not a number", car(args));
     return number(tan(to_number(car(args))));
 }
 
@@ -625,7 +625,7 @@ object *p_asin(object *args) {
     if (!args || cdr(args))
         error("asin", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("asin", "wrong type of arg", car(args));
+        error("asin", "not a number", car(args));
     return number(asin(to_number(car(args))));
 }
 
@@ -633,7 +633,7 @@ object *p_acos(object *args) {
     if (!args || cdr(args))
         error("acos", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("acos", "wrong type of arg", car(args));
+        error("acos", "not a number", car(args));
     return number(acos(to_number(car(args))));
 }
 
@@ -641,7 +641,7 @@ object *p_atan(object *args) {
     if (!args || cdr(args))
         error("atan", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("atan", "wrong type of arg", car(args));
+        error("atan", "not a number", car(args));
     return number(atan(to_number(car(args))));
 }
 
@@ -649,7 +649,7 @@ object *p_sqrt(object *args) {
     if (!args || cdr(args))
         error("sqrt", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("sqrt", "wrong type of arg", car(args));
+        error("sqrt", "not a number", car(args));
     return number(sqrt(to_number(car(args))));
 }
 
@@ -657,7 +657,7 @@ object *p_expt(object *args) {
     if (!args || !cdr(args) || cddr(args))
         error("expt", "wrong number of args", args);
     if (!is_number(car(args)) || !is_number(cadr(args)))
-        error("expt", "wrong type of arg", args);
+        error("expt", "not a number", args);
     return number(pow(to_number(car(args)), to_number(cadr(args))));
 }
 
