@@ -47,7 +47,7 @@ object *read_comment(FILE *f) {
     do
         c = getc(f);
     while (!(iseol(c) || iseof(c)));
-    return nil;
+    return cons(symbol("quote"), cons(nil, nil));
 }
 
 object *read_string(FILE *f) {
@@ -117,7 +117,9 @@ object *read_sharp(FILE *f) {
     int c;
 
     c = getc(f);
-    if (c == 't')
+    if (c == '!')
+        return read_comment(f);
+    else if (c == 't')
         return true;
     else if (c == 'f')
         return false;

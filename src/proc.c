@@ -53,8 +53,9 @@ object *p_add(object *args);
 object *p_mul(object *args);
 object *p_sub(object *args);
 object *p_div(object *args);
-object *p_modulo(object *args);
+object *p_quotient(object *args);
 object *p_remainder(object *args);
+object *p_modulo(object *args);
 
 /* transendental functions */
 object *p_exp(object *args);
@@ -113,8 +114,9 @@ struct reg {
     { "*", p_mul },
     { "-", p_sub },
     { "/", p_div },
-    { "modulo", p_modulo },
+    { "quotient", p_quotient },
     { "remainder", p_remainder },
+    { "modulo", p_modulo },
     /* transendentals */
     { "exp", p_exp },
     { "log", p_log },
@@ -532,6 +534,26 @@ object *p_div(object *args) {
     return number(result);
 }
 
+object *p_quotient(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        error("quotient", "wrong number of args", args);
+    if (!is_integer(car(args)) || !is_integer(cadr(args)))
+        error("quotient", "args must be integers", args);
+    if (!to_integer(cadr(args)))
+        error("quotient", "arg2 must be non-zero", args);
+    return number(to_integer(car(args)) / to_integer(cadr(args)));
+}
+
+object *p_remainder(object *args) {
+    if (!args || !cdr(args) || cddr(args))
+        error("modulo", "Wrong number of arguments", args);
+    if (!is_integer(car(args)) || !is_integer(cadr(args)))
+        error("modulo", "args must be integers", args);
+    if (!to_integer(cadr(args)))
+        error("modulo", "arg2 must be non-zero", args);
+    return number(to_integer(car(args)) % to_integer(cadr(args)));
+}
+
 object *p_modulo(object *args) {
     int n1, n2, nm;
 
@@ -547,16 +569,6 @@ object *p_modulo(object *args) {
     if (nm * n2 < 0)
         nm += n2;
     return number(nm);
-}
-
-object *p_remainder(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("modulo", "Wrong number of arguments", args);
-    if (!is_integer(car(args)) || !is_integer(cadr(args)))
-        error("modulo", "args must be integers", args);
-    if (!to_integer(cadr(args)))
-        error("modulo", "arg2 must be non-zero", args);
-    return number(to_integer(car(args)) % to_integer(cadr(args)));
 }
 
 /***************************
