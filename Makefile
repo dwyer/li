@@ -1,7 +1,7 @@
 CC=gcc
 RM=rm
 CFILES=main.c input.c output.c object.c eval.c proc.c
-CFLAGS=-c -Wall -I./include
+CFLAGS=-c -ansi -Wall -I./include
 LDFLAGS=-lm
 OBJDIR=obj
 SRCDIR=src

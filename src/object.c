@@ -1,8 +1,9 @@
 #include <assert.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "object.h"
+
+#define strdup(s)       strcpy(calloc(strlen(s)+1, sizeof(char)), s)
 
 static struct {
     object **list;
