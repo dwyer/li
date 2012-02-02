@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "object.h"
+#include "main.h"
 #include "eval.h"
 #include "input.h"
-#include "output.h"
 #include "proc.h"
 
 #define is_and(exp)                 is_tagged_list(exp, "and")

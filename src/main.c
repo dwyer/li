@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "object.h"
-#include "output.h"
-#include "input.h"
+#include "main.h"
 #include "eval.h"
+#include "input.h"
+#include "output.h"
 
 static jmp_buf buf;
 

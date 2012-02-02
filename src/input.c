@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "object.h"
 #include "input.h"
-#include "output.h"
+#include "main.h"
 
 #define BUF_SZ 50
 

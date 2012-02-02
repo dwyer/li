@@ -1,10 +1,8 @@
-#ifndef DISPLAY_H
-#define DISPLAY_H
+#ifndef OUTPUT_H
+#define OUTPUT_H
 
-#define error(...)      _error(__VA_ARGS__, nil)
 #define newline(f)      fprintf(f, "\n")
 
 void display(object *exp, FILE *f);
-void _error(char *who, char *msg, ...);
 
 #endif

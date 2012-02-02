@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "object.h"
+#include "main.h"
 #include "eval.h"
 #include "output.h"
 
