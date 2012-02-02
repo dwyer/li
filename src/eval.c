@@ -69,7 +69,7 @@ object *apply(object *proc, object *args) {
         return apply_primitive_procedure(proc, args);
     else if (is_compound(proc))
         return apply_compound_procedure(proc, args);
-    error("apply", "Unknown procedure type:", proc);
+    error("apply", "unknown procedure type", proc);
     return nil;
 }
 
@@ -156,7 +156,7 @@ object *eval(object *exp, object *env) {
         return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
     /* error */
     else
-        error("eval", "Unknown expression type", exp);
+        error("eval", "unknown expression type", exp);
     return nil;
 }
 

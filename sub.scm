@@ -92,7 +92,7 @@
   (cond ((null? lst) 0)
         ((pair? lst)
          (+ 1 (length (cdr lst))))
-        (else (error 'lst "arg must be a list" lst))))
+        (else (error 'length "arg must be a list" lst))))
 
 (define (append . args)
   (define (iter lst1 lst2)
