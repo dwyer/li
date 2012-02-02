@@ -14,35 +14,20 @@ void init_heap(int cap) {
     heap.cap = cap;
     heap.size = 0;
     heap.list = calloc(cap, sizeof(*heap.list));
-    for (cap--; cap >= 0; cap--)
-        heap.list[cap] = nil;
 }
 
 void double_heap(void) {
-    int i;
-
-    i = heap.cap;
     heap.cap *= 2;
     heap.list = realloc(heap.list, heap.cap * sizeof(*heap.list));
-    for (; i < heap.cap; i++)
-        heap.list[i] = nil;
 }
 
 void add_to_heap(object *obj) {
-    int i;
-
-    if (!heap.list) {
-        init_heap(32);
-    }
-    if (heap.size == heap.cap) {
+    if (!heap.list)
+        init_heap(4096);
+    if (heap.size == heap.cap)
         double_heap();
-    }
-    for (i = 0; i < heap.cap; i++)
-        if (!heap.list[i]) {
-            heap.list[i] = obj;
-            heap.size++;
-            return;
-        }
+    heap.list[heap.size] = obj;
+    heap.size++;
 }
 
 object *new(int type) {
@@ -84,10 +69,10 @@ object *symbol(char *s) {
     object *obj;
     int i;
 
-    for (i = 0; i < heap.cap; i++) {
+    for (i = 0; i < heap.size; i++) {
         obj = heap.list[i];
-        if (obj && is_symbol(obj) && !strcmp(s, to_symbol(obj)))
-            return heap.list[i];
+        if (is_symbol(obj) && !strcmp(s, to_symbol(obj)))
+            return obj;
     }
     obj = new(T_SYMBOL);
     obj->data.symbol = strdup(s);
@@ -201,14 +186,17 @@ void unlock(object *obj) {
  * \param env Object not to collect garbage from.
  */
 void cleanup(object *env) {
-    int i;
+    int i, j, k;
 
     lock(env);
-    for (i = 0; i < heap.cap; i++) {
-        if (heap.list[i] && !is_locked(heap.list[i])) {
+    k = heap.size;
+    for (i = j = 0; i < k; i++) {
+        if (!is_locked(heap.list[i])) {
             delete(heap.list[i]);
             heap.list[i] = nil;
             heap.size--;
+        } else {
+            heap.list[j++] = heap.list[i];
         }
     }
     if (!env) {

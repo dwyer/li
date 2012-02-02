@@ -103,7 +103,6 @@ object *vector(object *lst);
 object *compound(object *args, object *body, object *env);
 object *procedure(object *(*proc)(object *));
 
-
 void lock(object *obj);
 void unlock(object *obj);
 void delete(object *obj);
