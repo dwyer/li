@@ -18,6 +18,8 @@ object *p_is_eqv(object *args);
 object *p_is_equal(object *args);
 
 /* primitive types */
+object *p_not(object *args);
+object *p_is_null(object *args);
 object *p_is_number(object *args);
 object *p_is_integer(object *args);
 object *p_is_procedure(object *args);
@@ -74,28 +76,32 @@ struct reg {
     char *var;
     object *(*val)(object *);
 } regs[] = {
+    /* not */
+    { "not", p_not },
+    /* equivelence */
+    { "eq?", p_is_eq },
+    { "eqv?", p_is_eqv },
+    { "equal?", p_is_equal },
+    /* primitive types */
+    { "null?", p_is_null },
+    { "number?", p_is_number },
+    { "integer?", p_is_integer },
+    { "procedure?", p_is_procedure },
+    { "string?", p_is_string },
+    { "symbol?", p_is_symbol },
     /* pairs and lists */
+    { "pair?", p_is_pair },
     { "cons", p_cons },
     { "car", p_car },
     { "cdr", p_cdr },
     { "set-car!", p_set_car },
     { "set-cdr!", p_set_cdr },
-    /* data structures */
+    /* vectors */
+    { "vector?", p_is_vector },
     { "vector", p_vector },
     { "vector-length", p_vector_length },
     { "vector-ref", p_vector_ref },
     { "vector-set!", p_vector_set },
-    { "eq?", p_is_eq },
-    { "eqv?", p_is_eqv },
-    { "equal?", p_is_equal },
-    /* base types */
-    { "integer?", p_is_integer },
-    { "number?", p_is_number },
-    { "pair?", p_is_pair },
-    { "procedure?", p_is_procedure },
-    { "string?", p_is_string },
-    { "symbol?", p_is_symbol },
-    { "vector?", p_is_vector },
     /* artiy preds */
     { "=", p_eq },
     { "<", p_lt },
@@ -153,6 +159,12 @@ object *p_error(object *args) {
     return nil;
 }
 
+object *p_not(object *args) {
+    if (!args && cdr(args))
+        error("not", "wrong number of args", args);
+    return not(car(args));
+}
+
 /**************************
  * Equivelence predicates *
  **************************/
@@ -192,6 +204,14 @@ object *p_is_equal(object *args) {
 /************************
  * Primitive data types *
  ************************/
+
+/*
+ * (null? obj)
+ * Returns #t if the object is null AKA nil AKA the empty list
+ */
+object *p_is_null(object *args) {
+    return boolean(is_null(car(args)));
+}
 
 /* 
  * (number? obj)

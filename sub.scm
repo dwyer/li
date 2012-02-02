@@ -76,14 +76,8 @@
           (apply lcm (cons (algo (car args) (cadr args))
                            (cddr args))))))
 
-(define (not obj)
-  (if obj #f #t))
-
 (define (boolean? obj)
   (or (eq? obj #f) (eq? obj #t)))
-
-(define (null? obj)
-  (eq? obj '()))
 
 (define (list? obj)
   (if (null? obj)
