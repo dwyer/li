@@ -533,7 +533,7 @@ object *p_div(object *args) {
 }
 
 object *p_modulo(object *args) {
-    int x, y, z;
+    int n1, n2, nm;
 
     if (!args || !cdr(args) || cddr(args))
         error("modulo", "Wrong number of arguments", args);
@@ -541,11 +541,12 @@ object *p_modulo(object *args) {
         error("modulo", "args must be integers", args);
     if (!to_integer(cadr(args)))
         error("modulo", "arg2 must be non-zero", args);
-    x = to_integer(car(args));
-    y = to_integer(cadr(args));
-    z = x % y;
-    return number(z);
-    return number(to_integer(car(args)) % to_integer(cadr(args)));
+    n1 = to_integer(car(args));
+    n2 = to_integer(cadr(args));
+    nm = n1 % n2;
+    if (nm * n2 < 0)
+        nm += n2;
+    return number(nm);
 }
 
 object *p_remainder(object *args) {
