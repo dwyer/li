@@ -11,7 +11,13 @@ static jmp_buf buf;
 
 void error(char *who, char *msg, object *args) {
     fprintf(stderr, "; error: %s: %s: ", who, msg);
-    display(args, stderr);
+    if (!is_pair(args)) /* bad hack */
+        args = cons(args, nil);
+    while (args) {
+        display(car(args), stderr);
+        fputc(' ', stderr);
+        args = cdr(args);
+    }
     newline(stderr);
     longjmp(buf, 1);
 }
