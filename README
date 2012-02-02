@@ -31,6 +31,7 @@ Data types:
 Procedures:
 * Any procedure that appears in Structure and Interpretation of Computer
   Programs should be implemented at the very least as a library procedure. 
+  Library procedures can be imported with (load "sub.scm").
 
 Bugs
 ====

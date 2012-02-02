@@ -3,14 +3,13 @@
 #include "object.h"
 #include "main.h"
 #include "eval.h"
+#include "input.h"
 #include "output.h"
 
 typedef struct reg reg;
 
 /* non-standard */
 object *p_error(object *args);
-
-object *p_apply(object *args);
 
 /* equivilence predicates */
 object *p_is_eq(object *args);
@@ -70,13 +69,19 @@ object *p_sqrt(object *args);
 object *p_expt(object *args);
 
 /* I/O */
+object *p_read(object *args);
 object *p_display(object *args);
 object *p_newline(object *args);
+
+/* eval and applay */
+object *p_apply(object *args);
 
 struct reg {
     char *var;
     object *(*val)(object *);
 } regs[] = {
+    /* non-standard */
+    { "error", p_error },
     /* not */
     { "not", p_not },
     /* equivelence */
@@ -129,7 +134,8 @@ struct reg {
     { "sqrt", p_sqrt },
     { "expt", p_expt },
     /* io */
-    { "error", p_error },
+    { "read", p_read },
+    { "write", p_display },
     { "display", p_display },
     { "newline", p_newline },
     /* apply and eval */
@@ -658,6 +664,15 @@ object *p_expt(object *args) {
 /********************
  * INPUT AND OUTPUT *
  ********************/
+
+/* (read)
+ * Reads and returns the next evaluative object.
+ */
+object *p_read(object *args) {
+    if (args)
+        error("read", "wrong number of args", args);
+    return read(stdin);
+}
 
 /*
  * (display obj)
