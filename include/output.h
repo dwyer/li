@@ -5,6 +5,6 @@
 #define newline(f)      fprintf(f, "\n")
 
 void display(object *exp, FILE *f);
-object *_error(char *who, char *msg, ...);
+void _error(char *who, char *msg, ...);
 
 #endif

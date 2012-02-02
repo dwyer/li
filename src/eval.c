@@ -69,7 +69,8 @@ object *apply(object *proc, object *args) {
         return apply_primitive_procedure(proc, args);
     else if (is_compound(proc))
         return apply_compound_procedure(proc, args);
-    return error("apply", "Unknown procedure type:", proc);
+    error("apply", "Unknown procedure type:", proc);
+    return nil;
 }
 
 object *apply_compound_procedure(object *proc, object *args) {
@@ -155,7 +156,8 @@ object *eval(object *exp, object *env) {
         return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
     /* error */
     else
-        return error("eval", "Unknown expression type", exp);
+        error("eval", "Unknown expression type", exp);
+    return nil;
 }
 
 object *eval_and(object *exp, object *env) {
@@ -182,7 +184,7 @@ object *eval_assert(object *exp, object *env) {
 
     ret = eval(exp, env);
     if (is_false(ret))
-        return error("assert", "assertion violated", exp);
+        error("assert", "assertion violated", exp);
     return nil;
     return ret;
 }
@@ -218,9 +220,9 @@ object *eval_let(object *exp, object *env) {
 
 object *eval_load(object *exp, object *env) {
     if (!exp || cdr(exp))
-        return error("load", "requires one argument", exp);
+        error("load", "requires one argument", exp);
     if (!is_string(car(exp)))
-        return error("load", "arg must be a string", exp);
+        error("load", "arg must be a string", exp);
     load(to_string(car(exp)), env);
     return nil;
 }
@@ -267,11 +269,12 @@ object *expand_clauses(object *clauses) {
         if (is_null(cdr(clauses)))
             return sequence_to_exp(cdr(car(clauses)));
         else
-            return error("cond", "else clause isn't last", clauses);
+            error("cond", "else clause isn't last", clauses);
     else
         return make_if(car(car(clauses)),
                        sequence_to_exp(cdr(car(clauses))),
                        expand_clauses(cdr(clauses)));
+    return nil;
 }
 
 object *extend_environment(object *vars, object *vals, object *base_env) {
@@ -287,9 +290,9 @@ object *extend_environment(object *vars, object *vals, object *base_env) {
         vals = cdr(vals);
     }
     if (vars)
-        return error("#[anonymous procedure]", "Too few arguments supplied", vars);
+        error("#[anonymous procedure]", "Too few arguments supplied", vars);
     if (vals)
-        return error("#[anonymous procedure]", "Too many arguments supplied", vars);
+        error("#[anonymous procedure]", "Too many arguments supplied", vars);
     return base_env;
 }
 
@@ -313,7 +316,8 @@ object *lookup_variable_value(object *var, object *env) {
             return cdar(env);
         env = cdr(env);
     }
-    return error("eval", "unbound variable", var);
+    error("eval", "unbound variable", var);
+    return nil;
 }
 
 object *set_variable_value(object *var, object *val, object *env) {
@@ -324,7 +328,8 @@ object *set_variable_value(object *var, object *val, object *env) {
         }
         env = cdr(env);
     }
-    return error("eval", "unbound variable", var);
+    error("eval", "unbound variable", var);
+    return nil;
 }
 
 object *setup_environment(void) {

@@ -153,7 +153,7 @@ object *read(FILE *f) {
                 } else if (obj == dot) {
                     obj = read(f);
                     if (!lst || !obj || read(f) != eof)
-                        return error("read", "ill-formed dotted list", lst);
+                        error("read", "ill-formed dotted list", lst);
                     set_cdr(iter, obj);
                     return lst;
                 } else {

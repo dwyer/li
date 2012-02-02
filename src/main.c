@@ -9,7 +9,7 @@
 
 static jmp_buf buf;
 
-object *_error(char *who, char *msg, ...) {
+void _error(char *who, char *msg, ...) {
     va_list ap;
     object *obj;
 
@@ -20,7 +20,6 @@ object *_error(char *who, char *msg, ...) {
     newline(stderr);
     va_end(ap);
     longjmp(buf, 1);
-    return nil;
 }
 
 void load(char *filename, object *env) {
@@ -51,7 +50,6 @@ int main(int argc, char *argv[]) {
         cleanup(nil);
         return -1;
     }
-    //load("sub.scm", env);
     for (i = 1; i < argc; i++)
         load(argv[i], env);
     if (argc > 1)
