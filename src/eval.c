@@ -336,8 +336,8 @@ object *setup_environment(void) {
     object *env;
 
     env = nil;
-    env = primitive_procedures(env);
     env = cons(cons(true, true), env);
     env = cons(cons(false, false), env);
+    env = primitive_procedures(env);
     return env;
 }
