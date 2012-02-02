@@ -53,7 +53,7 @@
     (- x)
     x))
 
-; Returns the greatest common divisor or of its arguments.
+; Returns the greatest common divisor of its arguments.
 ; The result is always non-negative.
 (define (gcd . args)
   (define (euclid a b) ; Euclid's algoritm
@@ -75,6 +75,7 @@
         (else
           (apply lcm (cons (algo (car args) (cadr args))
                            (cddr args))))))
+
 (define (not obj)
   (if obj #f #t))
 
