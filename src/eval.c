@@ -6,6 +6,8 @@
 #include "input.h"
 #include "proc.h"
 
+#define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
+
 #define is_and(exp)                 is_tagged_list(exp, "and")
 #define is_application(exp)         is_pair(exp)
 #define is_assert(exp)              is_tagged_list(exp, "assert")
@@ -33,8 +35,6 @@
 
 #define cond_to_if(exp)             expand_clauses(cdr(exp))
 
-int is_tagged_list(object *exp, char *tag);
-
 object *apply(object *procedure, object *arguments);
 object *apply_compound_procedure(object *proc, object *args);
 object *apply_primitive_procedure(object *proc, object *args);
@@ -57,12 +57,6 @@ object *if_alternative(object *exp);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
 object *set_variable_value(object *var, object *val, object *env);
-
-int is_tagged_list(object *exp, char *tag) {
-    if (is_pair(exp))
-        return is_eq(car(exp), symbol(tag));
-    return 0;
-}
 
 object *apply(object *proc, object *args) {
     if (is_primitive(proc))
