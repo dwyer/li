@@ -103,36 +103,8 @@ object *procedure(object *(*proc)(object *)) {
     return obj;
 }
 
-int is_equal_vectors(object *obj1, object *obj2) {
-    int k;
-
-    if (vector_length(obj1) != vector_length(obj2))
-        return 0;
-    for (k = 0; k < vector_length(obj1); k++)
-        if (!is_equal(vector_ref(obj1, k), vector_ref(obj2, k)))
-            return 0;
-    return 1;
-}
-
-int is_equal(object *obj1, object *obj2) {
-    if (is_pair(obj1) && is_pair(obj2))
-        return (is_equal(car(obj1), car(obj2)) &&
-                is_equal(cdr(obj2), cdr(obj2)));
-    else if (is_string(obj1) && is_string(obj2))
-        return !strcmp(to_string(obj1), to_string(obj2));
-    else if (is_vector(obj1) && is_vector(obj2))
-        return is_equal_vectors(obj1, obj2);
-    return is_eqv(obj1, obj2);
-}
-
-int is_eqv(object *obj1, object *obj2) {
-    if (is_number(obj1) && is_number(obj2))
-        return to_number(obj1) == to_number(obj2);
-    return is_eq(obj1, obj2);
-}
-
 void delete(object *obj) {
-    if (!obj || obj->locked)
+    if (!obj || is_locked(obj))
         return;
     if (is_string(obj))
         free(to_string(obj));
@@ -143,37 +115,36 @@ void delete(object *obj) {
     free(obj);
 }
 
-void lock(object *obj) {
-    if (!obj || obj->locked)
+void mark(object *obj) {
+    if (!obj || is_locked(obj))
         return;
-    obj->locked = 1;
+    lock(obj);
     if (is_pair(obj)) {
-        lock(car(obj));
-        lock(cdr(obj));
+        mark(car(obj));
+        mark(cdr(obj));
     } else if (is_vector(obj)) {
         int k;
         for (k = 0; k < vector_length(obj); k++)
-            lock(vector_ref(obj, k));
+            mark(vector_ref(obj, k));
     } else if (is_compound(obj)) {
-        lock(to_compound(obj));
+        mark(to_compound(obj));
     }
 }
 
-/* Garbage collector. 
- * \param env Object not to collect garbage from.
+/* 
+ * Garbage collector. 
  */
 void cleanup(object *env) {
     int i, j, k;
 
-    lock(env);
+    mark(env);
     k = heap.size;
     for (i = j = 0; i < k; i++) {
         if (!is_locked(heap.list[i])) {
             delete(heap.list[i]);
-            heap.list[i] = nil;
             heap.size--;
         } else {
-            heap.list[i]->locked = 0;
+            unlock(heap.list[i]);
             heap.list[j++] = heap.list[i];
         }
     }
@@ -183,4 +154,32 @@ void cleanup(object *env) {
         heap.size = 0;
         heap.cap = 0;
     }
+}
+
+int is_equal_vectors(object *obj1, object *obj2) {
+    int k;
+
+    if (vector_length(obj1) != vector_length(obj2))
+        return false;
+    for (k = 0; k < vector_length(obj1); k++)
+        if (!is_equal(vector_ref(obj1, k), vector_ref(obj2, k)))
+            return false;
+    return true;
+}
+
+int is_equal(object *obj1, object *obj2) {
+    if (is_pair(obj1) && is_pair(obj2))
+        return (is_equal(car(obj1), car(obj2)) &&
+                is_equal(cdr(obj2), cdr(obj2)));
+    else if (is_string(obj1) && is_string(obj2))
+        return is_string_eq(obj1, obj2);
+    else if (is_vector(obj1) && is_vector(obj2))
+        return is_equal_vectors(obj1, obj2);
+    return is_eqv(obj1, obj2);
+}
+
+int is_eqv(object *obj1, object *obj2) {
+    if (is_number(obj1) && is_number(obj2))
+        return to_number(obj1) == to_number(obj2);
+    return is_eq(obj1, obj2);
 }

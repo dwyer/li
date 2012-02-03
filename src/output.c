@@ -41,7 +41,7 @@ void write_object(object *obj, FILE *f, int h) {
 void write_pair(object *obj, FILE *f, int h) {
     object *iter;
 
-    obj->locked = 1;
+    lock(obj);
     iter = obj;
     fprintf(f, "(");
     do {
@@ -55,7 +55,7 @@ void write_pair(object *obj, FILE *f, int h) {
         write_object(iter, f, h);
     }
     fprintf(f, ")");
-    obj->locked = 0;
+    unlock(obj);
 }
 
 void write_vector(object *obj, FILE *f, int h) {

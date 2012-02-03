@@ -30,6 +30,8 @@
 #define is_false(obj)           not(obj)
 #define is_true(obj)            !not(obj)
 
+#define lock(obj)               ((obj)->locked = true)
+#define unlock(obj)             ((obj)->locked = false)
 #define is_locked(obj)          (obj)->locked
 
 #define to_number(obj)          (obj)->data.number
@@ -44,6 +46,8 @@
 
 #define is_integer(obj)         (is_number(obj) && \
                                  to_number(obj) == to_integer(obj))
+
+#define is_string_eq(s1, s2)    (strcmp(to_string(s1), to_string(s2)) == 0)
 
 #define vector_length(obj)      to_vector(obj).length
 #define vector_ref(obj, k)      to_vector(obj).data[k]
@@ -107,8 +111,6 @@ object *vector(object *lst);
 object *compound(object *args, object *body, object *env);
 object *procedure(object *(*proc)(object *));
 
-void lock(object *obj);
-void unlock(object *obj);
 void delete(object *obj);
 void cleanup(object *env);
 

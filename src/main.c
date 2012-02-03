@@ -30,7 +30,7 @@ void load(char *filename, object *env) {
         error("load", "unable to read file", string(filename));
     while ((exp = read(f)) != eof) {
         exp = eval(exp, env);
-        cleanup(env);
+        /*cleanup(env);*/
     }
     fclose(f);
 }
