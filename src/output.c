@@ -3,17 +3,8 @@
 #include "object.h"
 #include "output.h"
 
-void write_object(object *obj, FILE *f, int h);
 void write_pair(object *obj, FILE *f, int h);
 void write_vector(object *obj, FILE *f, int h);
-
-void write(object *obj, FILE *f) {
-    write_object(obj, f, 0);
-}
-
-void display(object *obj, FILE *f) {
-    write_object(obj, f, 1);
-}
 
 void write_object(object *obj, FILE *f, int h) {
     if (is_null(obj))
