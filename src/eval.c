@@ -157,11 +157,11 @@ object *eval(object *exp, object *env) {
 object *eval_and(object *exp, object *env) {
     object *ret;
 
-    ret = true;
+    ret = boolean(true);
     while (exp) {
         ret = eval(car(exp), env);
         if (is_false(ret))
-            return false;
+            return boolean(false);
         exp = cdr(exp);
     }
     return ret;
@@ -258,7 +258,7 @@ object *sequence_to_exp(object *seq) {
 
 object *expand_clauses(object *clauses) {
     if (is_null(clauses))
-        return false;
+        return boolean(false);
     if (is_cond_else_clause(car(clauses)))
         if (is_null(cdr(clauses)))
             return sequence_to_exp(cdr(car(clauses)));
@@ -294,7 +294,7 @@ object *if_alternative(object *exp) {
     if (cdddr(exp))
         return cadddr(exp);
     else
-        return false;
+        return boolean(false);
 }
 
 object *list_of_values(object *exps, object *env) {
@@ -330,8 +330,8 @@ object *setup_environment(void) {
     object *env;
 
     env = nil;
-    env = cons(cons(true, true), env);
-    env = cons(cons(false, false), env);
+    env = cons(cons(boolean(true), boolean(true)), env);
+    env = cons(cons(boolean(false), boolean(false)), env);
     env = primitive_procedures(env);
     return env;
 }

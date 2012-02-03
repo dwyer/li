@@ -1,19 +1,18 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#define false 0
+#define true !false
+
 #define nil                     NULL
 #define dot                     symbol(".")
 #define eof                     symbol("#eof")
-#define true                    symbol("#t")
-#define false                   symbol("#f")
 
-#define boolean(obj)            (obj ? true : false)
 #define is_eq(obj1, obj2)       ((obj1) == (obj2))
 #define is_null(obj)            is_eq(obj, nil)
-#define is_false(obj)           is_eq(obj, false)
-#define is_true(obj)            !is_false(obj)
-#define is_type(obj, t)         (!is_null(obj) && (obj)->type == t)
-#define is_boolean(obj)         ((obj) == false || (obj) == true)
+
+/* Type checking. */
+#define is_type(obj, t)         ((obj) && (obj)->type == t)
 #define is_compound(obj)        is_type(obj, T_COMPOUND)
 #define is_number(obj)          is_type(obj, T_NUMBER)
 #define is_string(obj)          is_type(obj, T_STRING)
@@ -22,6 +21,14 @@
 #define is_pair(obj)            is_type(obj, T_PAIR)
 #define is_primitive(obj)       is_type(obj, T_PRIMITIVE)
 #define is_procedure(obj)       (is_primitive(obj) || is_compound(obj))
+
+/* Booleans */
+#define boolean(obj)            (obj ? symbol("#t") : symbol("#f"))
+#define not(obj)                is_eq(obj, boolean(false))
+#define is_boolean(obj)         (is_eq(obj, boolean(true)) || \
+                                 is_eq(obj, boolean(false)))
+#define is_false(obj)           not(obj)
+#define is_true(obj)            !not(obj)
 
 #define is_locked(obj)          (obj)->locked
 
@@ -78,9 +85,6 @@
 #define cdddar(obj)             cdr(cdr(cdr(car(obj))))
 #define cddddr(obj)             cdr(cdr(cdr(cdr(obj))))
 
-#define boolean(obj)            (obj ? true : false)
-#define not(obj)                is_false(obj) ? true : false
-
 enum {
     T_CHAR, /* TODO (maybe): implement */
     T_NUMBER,
@@ -110,7 +114,6 @@ void cleanup(object *env);
 
 int is_equal(object *obj1, object *obj2);
 int is_eqv(object *obj1, object *obj2);
-int length(object *list);
 
 struct object {
     union {

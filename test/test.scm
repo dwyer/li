@@ -315,3 +315,6 @@
 ;                         (loop (cdr numbers)
 ;                               nonneg
 ;                               (cons (car numbers) neg))))) '((6 1 3) (-5 -2))))
+
+(display "all tests passed!")
+(newline)

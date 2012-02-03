@@ -177,7 +177,7 @@ object *p_error(object *args) {
 object *p_not(object *args) {
     if (!args && cdr(args))
         error("not", "wrong number of args", args);
-    return not(car(args));
+    return boolean(not(car(args)));
 }
 
 /**************************
@@ -444,14 +444,14 @@ object *p_eq(object *args) {
         if (!is_number(car(args)))
             error("=", "not a number", car(args));
         if (!cdr(args))
-            return true;
+            return boolean(true);
         if (!is_number(cadr(args)))
             error("=", "not a number", cadr(args));
         if (!(to_number(car(args)) == to_number(cadr(args))))
-            return false;
+            return boolean(false);
         args = cdr(args);
     }
-    return true;
+    return boolean(true);
 }
 
 object *p_lt(object *args) {
@@ -459,14 +459,14 @@ object *p_lt(object *args) {
         if (!is_number(car(args)))
             error("<", "not a number", car(args));
         if (!cdr(args))
-            return true;
+            return boolean(true);
         if (!is_number(cadr(args)))
             error("<", "not a number", cadr(args));
         if (!(to_number(car(args)) < to_number(cadr(args))))
-            return false;
+            return boolean(false);
         args = cdr(args);
     }
-    return true;
+    return boolean(true);
 }
 
 object *p_gt(object *args) {
@@ -474,22 +474,22 @@ object *p_gt(object *args) {
         if (!is_number(car(args)))
             error(">", "not a number", car(args));
         if (!cdr(args))
-            return true;
+            return boolean(true);
         if (!is_number(cadr(args)))
             error(">", "not a number", cadr(args));
         if (!(to_number(car(args)) > to_number(cadr(args))))
-            return false;
+            return boolean(false);
         args = cdr(args);
     }
-    return true;
+    return boolean(true);
 }
 
 object *p_le(object *args) {
-    return not(p_gt(args));
+    return boolean(not(p_gt(args)));
 }
 
 object *p_ge(object *args) {
-    return not(p_lt(args));
+    return boolean(not(p_lt(args)));
 }
 
 /************************

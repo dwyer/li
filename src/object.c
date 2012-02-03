@@ -11,24 +11,16 @@ static struct {
     int cap;
 } heap = { .list = nil, .size = 0, .cap = 0 };
 
-void init_heap(int cap) {
-    heap.cap = cap;
-    heap.size = 0;
-    heap.list = calloc(cap, sizeof(*heap.list));
-}
-
-void double_heap(void) {
-    heap.cap *= 2;
-    heap.list = realloc(heap.list, heap.cap * sizeof(*heap.list));
-}
-
 void add_to_heap(object *obj) {
-    if (!heap.list)
-        init_heap(4096);
-    if (heap.size == heap.cap)
-        double_heap();
-    heap.list[heap.size] = obj;
-    heap.size++;
+    if (!heap.list) {
+        heap.cap = 4096;
+        heap.size = 0;
+        heap.list = calloc(heap.cap, sizeof(*heap.list));
+    } else if (heap.size == heap.cap) {
+        heap.cap *= 2;
+        heap.list = realloc(heap.list, heap.cap * sizeof(*heap.list));
+    }
+    heap.list[heap.size++] = obj;
 }
 
 object *new(int type) {

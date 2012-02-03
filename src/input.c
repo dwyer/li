@@ -120,9 +120,9 @@ object *read_sharp(FILE *f) {
     if (c == '!')
         return read_comment(f);
     else if (c == 't')
-        return true;
+        return boolean(true);
     else if (c == 'f')
-        return false;
+        return boolean(false);
     else if (isopener(c)) {
         ungetc(c, f);
         return vector(read(f));
