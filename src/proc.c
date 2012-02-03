@@ -411,7 +411,7 @@ object *p_vector_set(object *args) {
         error("vector-set", "not an integer", cdar(args));
     if (to_number(cadr(args)) < 0 ||
         to_number(cadr(args)) >= vector_length(car(args)))
-        error("vector-set", "Out of range", cadr(args));
+        error("vector-set", "out of range", cadr(args));
     return vector_set(car(args), to_integer(cadr(args)), caddr(args));
 }
 
@@ -481,7 +481,7 @@ object *p_add(object *args) {
 
     while (args) {
         if (!is_number(car(args)))
-            error("+", "Not a number", car(args));
+            error("+", "not a number", car(args));
         result += to_number(car(args));
         args = cdr(args);
     }
@@ -493,7 +493,7 @@ object *p_mul(object *args) {
 
     while (args) {
         if (!is_number(car(args)))
-            error("*", "Not a number", car(args));
+            error("*", "not a number", car(args));
         result *= to_number(car(args));
         args = cdr(args);
     }
@@ -504,16 +504,16 @@ object *p_sub(object *args) {
     double result;
 
     if (!args)
-        error("-", "Too few args", args);
+        error("-", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("-", "Not a number", car(args));
+        error("-", "not a number", car(args));
     result = to_number(car(args));
     args = cdr(args);
     if (!args)
         result = -result;
     while (args) {
         if (!is_number(car(args)))
-            error("-", "Not a number", car(args));
+            error("-", "not a number", car(args));
         result -= to_number(car(args));
         args = cdr(args);
     }
@@ -524,16 +524,16 @@ object *p_div(object *args) {
     double result;
 
     if (!args)
-        error("/", "Too few args", args);
+        error("/", "wrong number of args", args);
     if (!is_number(car(args)))
-        error("/", "Not a number", car(args));
+        error("/", "not a number", car(args));
     result = to_number(car(args));
     args = cdr(args);
     if (!args)
         result = 1 / result;
     while (args) {
         if (!is_number(car(args)))
-            error("/", "Not a number", car(args));
+            error("/", "not a number", car(args));
         result /= to_number(car(args));
         args = cdr(args);
     }
@@ -710,6 +710,6 @@ object *p_apply(object *args) {
     if (!args || !cdr(args) || cddr(args))
         error("apply", "wrong number of args", args);
     if (!is_procedure(car(args)))
-        error("apply", "arg 1 should be a proc", car(args));
+        error("apply", "not a procedure", car(args));
     return apply(car(args), cadr(args));
 }
