@@ -1,6 +1,7 @@
-; These are functions described in R5RS as ``library procedures'' meaning they
-; can be implemented in Scheme with primitive procedures, so that's what I've
-; done. There is of course no requirement that they must be.
+; What follows are a list of features that are described in R5RS as ``library
+; procedures'' meaning they are redundant and can be implemented with primitive
+; procedures. Some library procedures that I consider essential have been 
+; implemented as primitives. 
 
 ; Works similar to assert. I'm thinking about throwing out type-checking for
 ; arithmatic procedures and letting the passing of non-numbers to them be
@@ -46,18 +47,16 @@
         (apply min (cons (if (< x y) x y) (cdr args)))
         (error 'min "arguments must be real numbers" x args)))))
 
-
 (define (abs x)
   (check (number? x) 'abs "not a number" x)
   (if (< x 0)
     (- x)
     x))
 
-; Returns the greatest common divisor of its arguments.
-; The result is always non-negative.
 (define (gcd . args)
-  (define (euclid a b) ; Euclid's algoritm
-    (check (and (integer? a) (integer? b)) 'gcd "args must be itegers" args)
+  (define (euclid a b)
+    (check (integer? a) 'gcd "not an integer" a)
+    (check (integer? b) 'gcd "not an integer" b)
     (if (= b 0)
       a
       (euclid b (remainder a b))))
@@ -68,12 +67,12 @@
                            (cddr args))))))
 
 (define (lcm . args)
-  (define (algo a b)
+  (define (algorithm a b)
     (/ (abs (* a b)) (gcd a b)))
   (cond ((null? args) 1)
         ((null? (cdr args)) (abs (car args)))
         (else
-          (apply lcm (cons (algo (car args) (cadr args))
+          (apply lcm (cons (algorithm (car args) (cadr args))
                            (cddr args))))))
 
 (define (list? obj)

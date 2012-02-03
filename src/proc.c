@@ -169,6 +169,10 @@ object *p_error(object *args) {
     return nil;
 }
 
+/*
+ * (not obj)
+ * Returns #t is obj is #f, returns #f otherwise.
+ */
 object *p_not(object *args) {
     if (!args && cdr(args))
         error("not", "wrong number of args", args);
@@ -217,7 +221,8 @@ object *p_is_equal(object *args) {
 
 /*
  * (null? obj)
- * Returns #t if the object is null AKA nil AKA the empty list.
+ * Returns #t if the object is null, aka nil, aka ``the empty list'',
+ * represented in Scheme as ().
  */
 object *p_is_null(object *args) {
     if (!args || cdr(args))
@@ -226,7 +231,7 @@ object *p_is_null(object *args) {
 }
 
 /* (boolean? obj)
- * Return #t is the object is #t or #f, otherwise, return #f.
+ * Return #t is the object is #t or #f, return #f otherwise.
  */
 object *p_is_boolean(object *args) {
     if (!args || cdr(args))
@@ -247,7 +252,7 @@ object *p_is_integer(object *args) {
 
 /* 
  * (number? obj)
- * Returns #t is the object is a number.
+ * Returns #t is the object is a number, #f otherwise.
  */
 object *p_is_number(object *args) {
     if (!args || cdr(args))
@@ -257,7 +262,7 @@ object *p_is_number(object *args) {
 
 /*
  * (pair? obj)
- * Returns #t is the object is a pair.
+ * Returns #t is the object is a pair, #f otherwise.
  */
 object *p_is_pair(object *args) {
     if (!args || cdr(args))
@@ -267,7 +272,7 @@ object *p_is_pair(object *args) {
  
 /*
  * (procedure? obj)
- * Returns #t if the object is a procedure.
+ * Returns #t if the object is a procedure, #f otherwise.
  */
 object *p_is_procedure(object *args) {
     if (!args || cdr(args))
@@ -277,7 +282,7 @@ object *p_is_procedure(object *args) {
 
 /*
  * (string? obj)
- * Returns #t if the object is a string.
+ * Returns #t if the object is a string, #f otherwise.
  */
 object *p_is_string(object *args) {
     if (!args || cdr(args))
@@ -287,7 +292,7 @@ object *p_is_string(object *args) {
 
 /*
  * (symbol? obj)
- * Returns #t if the object is a symbol.
+ * Returns #t if the object is a symbol, #f otherwise.
  * BUG: Returns #t for booleans.
  */
 object *p_is_symbol(object *args) {
@@ -366,7 +371,7 @@ object *p_set_cdr(object *args) {
 
 /*
  * (vector? obj)
- * Returns #t if the object is a vector.
+ * Returns #t if the object is a vector, #f otherwise.
  */
 object *p_is_vector(object *args) {
     if (!args || cdr(args))
@@ -384,7 +389,7 @@ object *p_vector(object *args) {
 
 /*
  * (vector-length vec)
- * Returns the length of the vector vec.
+ * Returns the length of the given vector.
  */
 object *p_vector_length(object *args) {
     if (!args || cdr(args))
@@ -396,7 +401,8 @@ object *p_vector_length(object *args) {
 
 /*
  * (vector-ref vec k)
- * Return element k of vector vec. k must be a positive integer.
+ * Return element k of the given vector where k is a positive integer less than
+ * the length of the vector.
  */
 object *p_vector_ref(object *args) {
     if (!args || !cdr(args) || cddr(args))
@@ -413,7 +419,7 @@ object *p_vector_ref(object *args) {
 
 /*
  * (vector-set! vec k obj)
- * Sets element k of vector vec to object obj. k must be a positive integer.
+ * Sets element k of vector vec to object obj where k is a positive integer.
  */
 object *p_vector_set(object *args) {
     if (!args || !cdr(args) || !cddr(args) || cdddr(args))
