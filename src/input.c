@@ -47,7 +47,8 @@ object *read_comment(FILE *f) {
     do
         c = getc(f);
     while (!(iseol(c) || iseof(c)));
-    return cons(symbol("quote"), cons(nil, nil));
+    return nil;
+    /*return cons(symbol("quote"), cons(nil, nil));*/
 }
 
 object *read_string(FILE *f) {
