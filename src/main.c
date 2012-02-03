@@ -40,20 +40,9 @@ object *prompt(FILE *f) {
     return read(f);
 }
 
-int main(int argc, char *argv[]) {
-    object *env;
+void repl(object *env) {
     object *exp;
-    int i;
 
-    env = setup_environment();
-    if (setjmp(buf)) {
-        cleanup(nil);
-        return -1;
-    }
-    for (i = 1; i < argc; i++)
-        load(argv[i], env);
-    if (argc > 1)
-        goto exit;
     if (setjmp(buf))
         cleanup(env);
     while ((exp = prompt(stdin)) != eof) {
@@ -66,7 +55,21 @@ int main(int argc, char *argv[]) {
         }
         cleanup(env);
     }
-exit:
+}
+
+int main(int argc, char *argv[]) {
+    object *env;
+    int i;
+
+    env = setup_environment();
+    if (setjmp(buf)) {
+        cleanup(nil);
+        return -1;
+    }
+    for (i = 1; i < argc; i++)
+        load(argv[i], env);
+    if (argc == 1)
+        repl(env);
     cleanup(nil);
     return 0;
 }
