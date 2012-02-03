@@ -3,56 +3,67 @@
 #include "object.h"
 #include "output.h"
 
-void display_pair(object *exp, FILE *f);
-void display_vector(object *exp, FILE *f);
+void write_object(object *obj, FILE *f, int h);
+void write_pair(object *obj, FILE *f, int h);
+void write_vector(object *obj, FILE *f, int h);
 
-void display(object *exp, FILE *f) {
-    if (is_null(exp))
-        fprintf(f, "()");
-    else if (is_locked(exp))
-        fprintf(f, "...");
-    else if (is_number(exp))
-        fprintf(f, "%g", to_number(exp));
-    else if (is_string(exp))
-        fprintf(f, "%s", to_string(exp));
-    else if (is_symbol(exp))
-        fprintf(f, "%s", to_symbol(exp));
-    else if (is_primitive(exp))
-        fprintf(f, "#[primitive]");
-    else if (is_compound(exp))
-        fprintf(f, "#[procedure]");
-    else if (is_pair(exp))
-        display_pair(exp, f);
-    else if (is_vector(exp))
-        display_vector(exp, f);
+void write(object *obj, FILE *f) {
+    write_object(obj, f, 0);
 }
 
-void display_pair(object *exp, FILE *f) {
+void display(object *obj, FILE *f) {
+    write_object(obj, f, 1);
+}
+
+void write_object(object *obj, FILE *f, int h) {
+    if (is_null(obj))
+        fprintf(f, "()");
+    else if (is_locked(obj))
+        fprintf(f, "...");
+    else if (is_number(obj))
+        fprintf(f, "%g", to_number(obj));
+    else if (is_string(obj) && h)
+        fprintf(f, "%s", to_string(obj));
+    else if (is_string(obj))
+        fprintf(f, "\"%s\"", to_string(obj));
+    else if (is_symbol(obj))
+        fprintf(f, "%s", to_symbol(obj));
+    else if (is_primitive(obj))
+        fprintf(f, "#[primitive-procedure]");
+    else if (is_compound(obj))
+        fprintf(f, "#[compound-procedure]");
+    else if (is_pair(obj))
+        write_pair(obj, f, h);
+    else if (is_vector(obj))
+        write_vector(obj, f, h);
+}
+
+void write_pair(object *obj, FILE *f, int h) {
     object *iter;
 
-    exp->locked = 1;
-    iter = exp;
+    obj->locked = 1;
+    iter = obj;
     fprintf(f, "(");
     do {
-        display(car(iter), f);
+        write_object(car(iter), f, h);
         iter = cdr(iter);
         if (iter)
             fprintf(f, " ");
     } while (is_pair(iter));
     if (iter) {
         fprintf(f, ". ");
-        display(iter, f);
+        write_object(iter, f, h);
     }
     fprintf(f, ")");
-    exp->locked = 0;
+    obj->locked = 0;
 }
 
-void display_vector(object *obj, FILE *f) {
+void write_vector(object *obj, FILE *f, int h) {
     int k;
 
     fprintf(f, "#(");
     for (k = 0; k < vector_length(obj); k++) {
-        display(vector_ref(obj, k), f);
+        write_object(vector_ref(obj, k), f, h);
         if (k < vector_length(obj) - 1)
             fprintf(f, " ");
     }

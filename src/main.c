@@ -14,7 +14,7 @@ void error(char *who, char *msg, object *args) {
     if (!is_pair(args)) /* bad hack */
         args = cons(args, nil);
     while (args) {
-        display(car(args), stderr);
+        write(car(args), stderr);
         fputc(' ', stderr);
         args = cdr(args);
     }
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         if (exp) {
             exp = eval(exp, env);
             if (exp) {
-                display(exp, stdout);
+                write(exp, stdout);
                 newline(stdout);
             }
         }

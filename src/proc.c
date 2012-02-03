@@ -71,6 +71,7 @@ object *p_expt(object *args);
 
 /* I/O */
 object *p_read(object *args);
+object *p_write(object *args);
 object *p_display(object *args);
 object *p_newline(object *args);
 
@@ -137,7 +138,7 @@ struct reg {
     { "expt", p_expt },
     /* io */
     { "read", p_read },
-    { "write", p_display },
+    { "write", p_write },
     { "display", p_display },
     { "newline", p_newline },
     /* apply and eval */
@@ -684,13 +685,25 @@ object *p_expt(object *args) {
  * INPUT AND OUTPUT *
  ********************/
 
-/* (read)
+/*
+ * (read)
  * Reads and returns the next evaluative object.
  */
 object *p_read(object *args) {
     if (args)
         error("read", "wrong number of args", args);
     return read(stdin);
+}
+
+/*
+ * (write obj)
+ * Displays an object. Always returns nil.
+ */
+object *p_write(object *args) {
+    if (!args || cdr(args))
+        error("write", "wrong number of args", args);
+    write(car(args), stdout);
+    return nil;
 }
 
 /*
