@@ -49,7 +49,7 @@ void write_pair(object *obj, FILE *f, int h) {
         iter = cdr(iter);
         if (iter)
             fprintf(f, " ");
-    } while (is_pair(iter));
+    } while (is_pair(iter) && !is_locked(iter));
     if (iter) {
         fprintf(f, ". ");
         write_object(iter, f, h);
