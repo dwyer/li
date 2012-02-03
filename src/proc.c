@@ -19,8 +19,9 @@ object *p_is_equal(object *args);
 /* primitive types */
 object *p_not(object *args);
 object *p_is_null(object *args);
-object *p_is_number(object *args);
+object *p_is_boolean(object *args);
 object *p_is_integer(object *args);
+object *p_is_number(object *args);
 object *p_is_procedure(object *args);
 object *p_is_string(object *args);
 object *p_is_symbol(object *args);
@@ -90,8 +91,9 @@ struct reg {
     { "equal?", p_is_equal },
     /* primitive types */
     { "null?", p_is_null },
-    { "number?", p_is_number },
+    { "boolean?", p_is_boolean },
     { "integer?", p_is_integer },
+    { "number?", p_is_number },
     { "procedure?", p_is_procedure },
     { "string?", p_is_string },
     { "symbol?", p_is_symbol },
@@ -215,10 +217,32 @@ object *p_is_equal(object *args) {
 
 /*
  * (null? obj)
- * Returns #t if the object is null AKA nil AKA the empty list
+ * Returns #t if the object is null AKA nil AKA the empty list.
  */
 object *p_is_null(object *args) {
+    if (!args || cdr(args))
+        error("null?", "wrong number of args", args);
     return boolean(is_null(car(args)));
+}
+
+/* (boolean? obj)
+ * Return #t is the object is #t or #f, otherwise, return #f.
+ */
+object *p_is_boolean(object *args) {
+    if (!args || cdr(args))
+        error("boolean?", "wrong number of args", args);
+    return boolean(is_boolean(car(args)));
+}
+
+/*
+ * (integer? obj)
+ * Return #t is the object is an integer, #f otherwise.
+ */
+object *p_is_integer(object *args) {
+    if (!args || cdr(args))
+        error("integer?", "wrong number of args", args);
+    return boolean(is_number(car(args)) &&
+                   to_number(car(args)) == (int)to_number(car(args)));
 }
 
 /* 
@@ -229,17 +253,6 @@ object *p_is_number(object *args) {
     if (!args || cdr(args))
         error("number?", "wrong number of args", args);
     return boolean(is_number(car(args)));
-}
-
-/*
- * (integer? obj)
- * Return #t is the object is an integer.
- */
-object *p_is_integer(object *args) {
-    if (!args || cdr(args))
-        error("integer?", "wrong number of args", args);
-    return boolean(is_number(car(args)) &&
-                   to_number(car(args)) == (int)to_number(car(args)));
 }
 
 /*
