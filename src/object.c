@@ -167,22 +167,6 @@ void lock(object *obj) {
     }
 }
 
-void unlock(object *obj) {
-    if (!obj || !obj->locked)
-        return;
-    obj->locked = 0;
-    if (is_pair(obj)) {
-        unlock(car(obj));
-        unlock(cdr(obj));
-    } else if (is_vector(obj)) {
-        int k;
-        for (k = 0; k < vector_length(obj); k++)
-            unlock(vector_ref(obj, k));
-    } else if (is_compound(obj)) {
-        unlock(to_compound(obj));
-    }
-}
-
 /* Garbage collector. 
  * \param env Object not to collect garbage from.
  */
@@ -197,6 +181,7 @@ void cleanup(object *env) {
             heap.list[i] = nil;
             heap.size--;
         } else {
+            heap.list[i]->locked = 0;
             heap.list[j++] = heap.list[i];
         }
     }
@@ -206,5 +191,4 @@ void cleanup(object *env) {
         heap.size = 0;
         heap.cap = 0;
     }
-    unlock(env);
 }
