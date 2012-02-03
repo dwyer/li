@@ -166,6 +166,12 @@ object *primitive_procedures(object *env) {
  * printed.
  */
 object *p_error(object *args) {
+    if (!args || !cdr(args))
+        error("error", "wrong number of args", args);
+    if (!is_symbol(car(args)))
+        error("error", "not a symbol", car(args));
+    if (!is_string(cadr(args)))
+        error("error", "not a string", cadr(args));
     error(to_symbol(car(args)), to_string(cadr(args)), cddr(args));
     return nil;
 }
