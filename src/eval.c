@@ -196,6 +196,8 @@ object *eval_definition(object *exp, object *env) {
 }
 
 object *eval_if(object *exp, object *env) {
+    if (!cdr(exp) || !cddr(exp) || (cdddr(exp) && cddddr(exp)))
+        error("if", "ill-formed special form", cons(exp, nil));
     if (is_true(eval(cadr(exp), env)))
         return eval(caddr(exp), env);
     else
