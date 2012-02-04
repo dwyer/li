@@ -168,6 +168,8 @@ object *eval_and(object *exp, object *env) {
 }
 
 object *eval_assignment(object *exp, object *env) {
+    if (!cdr(exp) || !cddr(exp) || cdddr(exp))
+        error("set!", "ill-formed special form", cons(exp, nil));
     return set_variable_value(cadr(exp),
                               eval(caddr(exp), env),
                               env);
