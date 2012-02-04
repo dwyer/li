@@ -179,7 +179,7 @@ object *eval_assert(object *exp, object *env) {
     object *ret;
 
     if (!cdr(exp) || cddr(exp))
-        error("set!", "ill-formed special form", cons(exp, nil));
+        error("assert", "ill-formed special form", cons(exp, nil));
     ret = eval(cadr(exp), env);
     if (is_false(ret))
         error("assert", "assertion violated", exp);
@@ -187,6 +187,9 @@ object *eval_assert(object *exp, object *env) {
 }
 
 object *eval_definition(object *exp, object *env) {
+    /* TODO: more testing */
+    if (!cdr(exp) || !cddr(exp))
+        error("define", "ill-formed special form", cons(exp, nil));
     return define_variable(definition_variable(exp),
                            eval(definition_value(exp), env),
                            env);
