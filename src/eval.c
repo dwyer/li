@@ -135,7 +135,7 @@ object *eval(object *exp, object *env) {
     else if (is_and(exp))
         return eval_and(cdr(exp), env);
     else if (is_assert(exp))
-        return eval_assert(cadr(exp), env);
+        return eval_assert(exp, env);
     else if (is_let(exp))
         return eval_let(cdr(exp), env);
     else if (is_load(exp))
@@ -178,11 +178,12 @@ object *eval_assignment(object *exp, object *env) {
 object *eval_assert(object *exp, object *env) {
     object *ret;
 
-    ret = eval(exp, env);
+    if (!cdr(exp) || cddr(exp))
+        error("set!", "ill-formed special form", cons(exp, nil));
+    ret = eval(cadr(exp), env);
     if (is_false(ret))
         error("assert", "assertion violated", exp);
     return nil;
-    return ret;
 }
 
 object *eval_definition(object *exp, object *env) {
