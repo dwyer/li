@@ -137,7 +137,7 @@ object *eval(object *exp, object *env) {
     else if (is_assert(exp))
         return eval_assert(exp, env);
     else if (is_let(exp))
-        return eval_let(cdr(exp), env);
+        return eval_let(exp, env);
     else if (is_load(exp))
         return eval_load(cdr(exp), env);
     else if (is_or(exp))
@@ -209,7 +209,12 @@ object *eval_let(object *exp, object *env) {
     object *vars;
     object *vals;
 
-    bind = car(exp);
+    /* TODO: more testing */
+    if (!cdr(exp) || !cddr(exp))
+        error("let", "ill-formed special form", cons(exp, nil));
+    if (cadr(exp) && !is_pair(cadr(exp)))
+        error("let", "not a list", cons(cadr(exp), nil));
+    bind = cadr(exp);
     vars = nil;
     vals = nil;
     while (bind) {
@@ -217,7 +222,7 @@ object *eval_let(object *exp, object *env) {
         vals = cons(eval(cadar(bind), env), vals);
         bind = cdr(bind);
     }
-    return eval_sequence(cdr(exp), extend_environment(vars, vals, env));
+    return eval_sequence(cddr(exp), extend_environment(vars, vals, env));
 }
 
 object *eval_load(object *exp, object *env) {
