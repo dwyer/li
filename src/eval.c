@@ -248,6 +248,8 @@ object *eval_or(object *exp, object *env) {
 }
 
 object *eval_sequence(object *exps, object *env) {
+    if (!exps)
+        return nil;
     if (!cdr(exps))
         return eval(car(exps), env);
     eval(car(exps), env);
