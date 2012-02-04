@@ -227,7 +227,7 @@ object *eval_let(object *exp, object *env) {
 
 object *eval_load(object *exp, object *env) {
     if (!exp || cdr(exp))
-        error("load", "requires one argument", exp);
+        error("load", "wrong number of args", exp);
     if (!is_string(car(exp)))
         error("load", "arg must be a string", exp);
     load(to_string(car(exp)), env);
