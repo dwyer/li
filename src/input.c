@@ -18,6 +18,19 @@
 #define isdelimiter(c)  (isspace(c) || isopener(c) || iscloser(c) || \
                          isstring(c) || iscomment(c) || iseof(c))
 
+#define read_quote(f)   cons(symbol("quote"), cons(read(f), nil))
+
+int getch(FILE *f) {
+    int c;
+
+    while (isspace(c = getc(f)));
+    if (iscomment(c)) {
+        while (!iseol(c = getc(f)));
+        return getch(f);
+    }
+    return c;
+}
+
 int token_is_number(const char *tok) {
     int ret;
     int c;
@@ -39,16 +52,6 @@ int token_is_number(const char *tok) {
         ret = 1;
     }
     return ret && hasdigit;
-}
-
-object *read_comment(FILE *f) {
-    int c;
-
-    do
-        c = getc(f);
-    while (!(iseol(c) || iseof(c)));
-    return nil;
-    /*return cons(symbol("quote"), cons(nil, nil));*/
 }
 
 object *read_string(FILE *f) {
@@ -101,26 +104,11 @@ object *read_token(FILE *f) {
     return ret;
 }
 
-object *read_quote(FILE *f) {
-    object *obj;
-    int c;
-
-    if (isopener(c = getc(f))) {
-        obj = read(f);
-    } else {
-        ungetc(c, f);
-        obj = read_token(f);
-    }
-    return cons(symbol("quote"), cons(obj, nil));
-}
-
 object *read_sharp(FILE *f) {
     int c;
 
     c = getc(f);
-    if (c == '!')
-        return read_comment(f);
-    else if (c == 't')
+    if (c == 't')
         return boolean(true);
     else if (c == 'f')
         return boolean(false);
@@ -131,46 +119,39 @@ object *read_sharp(FILE *f) {
         return nil; /* TODO: something better */
 }
 
-object *read(FILE *f) {
-    object *obj, *lst, *iter;
+object *read_sequence(FILE *f) {
+    object *obj;
     int c;
 
-    while ((c = getc(f)) != EOF) {
-        if (isspace(c)) {
-            ;
-        } else if (iscomment(c)) {
-            while (!iseol(c = getc(f)) && !iseof(c))
-                ;
-            ungetc(c, f);
-        } else if (isquote(c)) {
-            return cons(symbol("quote"), cons(read(f), nil));
-        } else if (issharp(c)) {
-            return read_sharp(f);
-        } else if (isstring(c)) {
-            return read_string(f);
-        } else if (isopener(c)) {
-            lst = iter = nil;
-            while ((obj = read(f)) != eof) {
-                if (!lst) {
-                    lst = iter = cons(obj, nil);
-                } else if (obj == dot) {
-                    obj = read(f);
-                    if (!lst || !obj || read(f) != eof)
-                        error("read", "ill-formed dotted list", lst);
-                    set_cdr(iter, obj);
-                    return lst;
-                } else {
-                    iter = set_cdr(iter, cons(obj, nil));
-                }
-            }
-            return lst;
-        } else if (iscloser(c)) {
-            return eof;
-        } else {
-            ungetc(c, f);
-            obj = read_token(f);
+    if (iscloser(c = getch(f)))
+        return nil;
+    else if (c == '.') {
+        obj = read(f);
+        if (iscloser(c = getch(f)))
             return obj;
-        }
+        else
+            error("read", "ill-formed dotted pair", nil);
     }
-    return eof;
+    ungetc(c, f);
+    obj = read(f);
+    return cons(obj, read_sequence(f));
+}
+
+object *read(FILE *f) {
+    int c;
+
+    if (iseof(c = getch(f)))
+        return eof;
+    else if (isquote(c))
+        return read_quote(f);
+    else if (issharp(c))
+        return read_sharp(f);
+    else if (isstring(c))
+        return read_string(f);
+    else if (isopener(c))
+        return read_sequence(f);
+    else if (iscloser(c))
+        error("read", "unmatched right brace", nil);
+    ungetc(c, f);
+    return read_token(f);
 }
