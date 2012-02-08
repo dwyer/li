@@ -33,7 +33,7 @@ object *new(int type) {
     return obj;
 }
 
-object *cons(object *car, object *cdr) {
+object *pair(object *car, object *cdr) {
     object *obj;
 
     obj = new(T_PAIR); 

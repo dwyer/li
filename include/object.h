@@ -53,9 +53,9 @@
 #define vector_ref(obj, k)      to_vector(obj).data[k]
 #define vector_set(vec, k, obj) (vector_ref(vec, k) = obj)
 
+#define cons(obj1, obj2)        pair(obj1, obj2)
 #define car(obj)                to_pair(obj).car
 #define cdr(obj)                to_pair(obj).cdr
-
 #define set_car(obj1, obj2)     (car(obj1) = obj2)
 #define set_cdr(obj1, obj2)     (cdr(obj1) = obj2)
 
@@ -103,7 +103,7 @@ enum {
 
 typedef struct object object;
 
-object *cons(object *car, object *cdr);
+object *pair(object *car, object *cdr);
 object *number(double n);
 object *string(char *s);
 object *symbol(char *s);
