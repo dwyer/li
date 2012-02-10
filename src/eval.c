@@ -201,11 +201,8 @@ object *eval_let(object *exp, object *env) {
     object *vars;
     object *vals;
 
-    /* TODO: more testing */
-    if (!cdr(exp) || !cddr(exp))
+    if (length(exp) < 3 || length(cadr(exp)) == -1)
         error("let", "ill-formed special form", cons(exp, nil));
-    if (cadr(exp) && !is_pair(cadr(exp)))
-        error("let", "not a list", cons(cadr(exp), nil));
     bind = cadr(exp);
     vars = nil;
     vals = nil;
