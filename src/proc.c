@@ -29,6 +29,34 @@ object *p_is_symbol(object *args);
 /* pairs and lists */
 object *p_car(object *args);
 object *p_cdr(object *args);
+object *p_caar(object *args);
+object *p_cadr(object *args);
+object *p_cdar(object *args);
+object *p_cddr(object *args);
+object *p_caaar(object *args);
+object *p_caadr(object *args);
+object *p_cadar(object *args);
+object *p_caddr(object *args);
+object *p_cdaar(object *args);
+object *p_cdadr(object *args);
+object *p_cddar(object *args);
+object *p_cdddr(object *args);
+object *p_caaaar(object *args);
+object *p_caaadr(object *args);
+object *p_caadar(object *args);
+object *p_caaddr(object *args);
+object *p_cadaar(object *args);
+object *p_cadadr(object *args);
+object *p_caddar(object *args);
+object *p_cadddr(object *args);
+object *p_cdaaar(object *args);
+object *p_cdaadr(object *args);
+object *p_cdadar(object *args);
+object *p_cdaddr(object *args);
+object *p_cddaar(object *args);
+object *p_cddadr(object *args);
+object *p_cdddar(object *args);
+object *p_cddddr(object *args);
 object *p_cons(object *args);
 object *p_is_pair(object *args);
 object *p_set_car(object *args);
@@ -143,6 +171,35 @@ struct reg {
     { "newline", p_newline },
     /* apply and eval */
     { "apply", p_apply },
+    /* cars and cdrs */
+    { "caar", p_caar },
+    { "cadr", p_cadr },
+    { "cdar", p_cdar },
+    { "cddr", p_cddr },
+    { "caaar", p_caaar },
+    { "caadr", p_caadr },
+    { "cadar", p_cadar },
+    { "caddr", p_caddr },
+    { "cdaar", p_cdaar },
+    { "cdadr", p_cdadr },
+    { "cddar", p_cddar },
+    { "cdddr", p_cdddr },
+    { "caaaar", p_caaaar },
+    { "caaadr", p_caaadr },
+    { "caadar", p_caadar },
+    { "caaddr", p_caaddr },
+    { "cadaar", p_cadaar },
+    { "cadadr", p_cadadr },
+    { "caddar", p_caddar },
+    { "cadddr", p_cadddr },
+    { "cdaaar", p_cdaaar },
+    { "cdaadr", p_cdaadr },
+    { "cdadar", p_cdadar },
+    { "cdaddr", p_cdaddr },
+    { "cddaar", p_cddaar },
+    { "cddadr", p_cddadr },
+    { "cdddar", p_cdddar },
+    { "cddddr", p_cddddr },
     /* eol */
     { nil, nil }
 };
@@ -750,4 +807,256 @@ object *p_apply(object *args) {
     if (!is_procedure(car(args)))
         error("apply", "not a procedure", car(args));
     return apply(car(args), cadr(args));
+}
+
+/*****************
+ * CARS AND CDRS *
+ *****************/
+
+object *p_caar(object *args) {
+    if (!args && cdr(args))
+        error("caar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
+        error("caar", "list is too short", car(args));
+    return caar(car(args));
+}
+
+object *p_cadr(object *args) {
+    if (!args && cdr(args))
+        error("cadr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
+        error("cadr", "list is too short", car(args));
+    return cadr(car(args));
+}
+
+object *p_cdar(object *args) {
+    if (!args && cdr(args))
+        error("cdar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
+        error("cdar", "list is too short", car(args));
+    return cdar(car(args));
+}
+
+object *p_cddr(object *args) {
+    if (!args && cdr(args))
+        error("cddr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
+        error("cddr", "list is too short", car(args));
+    return cddr(car(args));
+}
+
+object *p_caaar(object *args) {
+    if (!args && cdr(args))
+        error("caaar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))))
+        error("caaar", "list is too short", car(args));
+    return caaar(car(args));
+}
+
+object *p_caadr(object *args) {
+    if (!args && cdr(args))
+        error("caadr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))))
+        error("caadr", "list is too short", car(args));
+    return caadr(car(args));
+}
+
+object *p_cadar(object *args) {
+    if (!args && cdr(args))
+        error("cadar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))))
+        error("cadar", "list is too short", car(args));
+    return cadar(car(args));
+}
+
+object *p_caddr(object *args) {
+    if (!args && cdr(args))
+        error("caddr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))))
+        error("caddr", "list is too short", car(args));
+    return caddr(car(args));
+}
+
+object *p_cdaar(object *args) {
+    if (!args && cdr(args))
+        error("cdaar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))))
+        error("cdaar", "list is too short", car(args));
+    return cdaar(car(args));
+}
+
+object *p_cdadr(object *args) {
+    if (!args && cdr(args))
+        error("cdadr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))))
+        error("cdadr", "list is too short", car(args));
+    return cdadr(car(args));
+}
+
+object *p_cddar(object *args) {
+    if (!args && cdr(args))
+        error("cddar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))))
+        error("cddar", "list is too short", car(args));
+    return cddar(car(args));
+}
+
+object *p_cdddr(object *args) {
+    if (!args && cdr(args))
+        error("cdddr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))))
+        error("cdddr", "list is too short", car(args));
+    return cdddr(car(args));
+}
+
+object *p_caaaar(object *args) {
+    if (!args && cdr(args))
+        error("caaaar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("caaaar", "list is too short", car(args));
+    return caaaar(car(args));
+}
+
+object *p_caaadr(object *args) {
+    if (!args && cdr(args))
+        error("caaadr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("caaadr", "list is too short", car(args));
+    return caaadr(car(args));
+}
+
+object *p_caadar(object *args) {
+    if (!args && cdr(args))
+        error("caadar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("caadar", "list is too short", car(args));
+    return caadar(car(args));
+}
+
+object *p_caaddr(object *args) {
+    if (!args && cdr(args))
+        error("caaddr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("caaddr", "list is too short", car(args));
+    return caaddr(car(args));
+}
+
+object *p_cadaar(object *args) {
+    if (!args && cdr(args))
+        error("cadaar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cadaar", "list is too short", car(args));
+    return cadaar(car(args));
+}
+
+object *p_cadadr(object *args) {
+    if (!args && cdr(args))
+        error("cadadr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cadadr", "list is too short", car(args));
+    return cadadr(car(args));
+}
+
+object *p_caddar(object *args) {
+    if (!args && cdr(args))
+        error("caddar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("caddar", "list is too short", car(args));
+    return caddar(car(args));
+}
+
+object *p_cadddr(object *args) {
+    if (!args && cdr(args))
+        error("cadddr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cadddr", "list is too short", car(args));
+    return cadddr(car(args));
+}
+
+object *p_cdaaar(object *args) {
+    if (!args && cdr(args))
+        error("cdaaar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cdaaar", "list is too short", car(args));
+    return cdaaar(car(args));
+}
+
+object *p_cdaadr(object *args) {
+    if (!args && cdr(args))
+        error("cdaadr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cdaadr", "list is too short", car(args));
+    return cdaadr(car(args));
+}
+
+object *p_cdadar(object *args) {
+    if (!args && cdr(args))
+        error("cdadar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cdadar", "list is too short", car(args));
+    return cdadar(car(args));
+}
+
+object *p_cdaddr(object *args) {
+    if (!args && cdr(args))
+        error("cdaddr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cdaddr", "list is too short", car(args));
+    return cdaddr(car(args));
+}
+
+object *p_cddaar(object *args) {
+    if (!args && cdr(args))
+        error("cddaar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cddaar", "list is too short", car(args));
+    return cddaar(car(args));
+}
+
+object *p_cddadr(object *args) {
+    if (!args && cdr(args))
+        error("cddadr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cddadr", "list is too short", car(args));
+    return cddadr(car(args));
+}
+
+object *p_cdddar(object *args) {
+    if (!args && cdr(args))
+        error("cdddar", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cdddar", "list is too short", car(args));
+    return cdddar(car(args));
+}
+
+object *p_cddddr(object *args) {
+    if (!args && cdr(args))
+        error("cddddr", "wrong number of args", args);
+    if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
+        !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
+        error("cddddr", "list is too short", car(args));
+    return cddddr(car(args));
 }
