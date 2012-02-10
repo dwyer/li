@@ -39,8 +39,6 @@ object *apply(object *procedure, object *arguments);
 object *apply_compound_procedure(object *proc, object *args);
 object *apply_primitive_procedure(object *proc, object *args);
 object *apply_syntax(object *proc, object *args);
-object *definition_value(object *exp);
-object *definition_variable(object *exp);
 object *eval_and(object *exp, object *env);
 object *eval_assert(object *exp, object *env);
 object *eval_assignment(object *exp, object *env);
@@ -99,18 +97,6 @@ object *define_variable(object *var, object *val, object *env) {
         env = cdr(env);
     } while (env);
     return var;
-}
-
-object *definition_variable(object *exp) {
-    if (is_symbol(cadr(exp)))
-        return cadr(exp);
-    return caadr(exp);
-}
-
-object *definition_value(object *exp) {
-    if (is_symbol(cadr(exp)))
-        return caddr(exp);
-    return make_lambda(cdadr(exp), cddr(exp));
 }
 
 object *eval(object *exp, object *env) {
@@ -187,12 +173,16 @@ object *eval_assert(object *exp, object *env) {
 }
 
 object *eval_definition(object *exp, object *env) {
-    /* TODO: more testing */
-    if (!cdr(exp) || !cddr(exp))
-        error("define", "ill-formed special form", cons(exp, nil));
-    return define_variable(definition_variable(exp),
-                           eval(definition_value(exp), env),
-                           env);
+    if (cdr(exp) && is_pair(cdr(exp)) && cddr(exp) && is_pair(cddr(exp))) {
+        if (is_symbol(cadr(exp)))
+            return define_variable(cadr(exp), eval(caddr(exp), env), env);
+        else if (is_pair(cadr(exp)))
+            return define_variable(caadr(exp),
+                                   eval(make_lambda(cdadr(exp), cddr(exp)), env),
+                                   env);
+    }
+    error("define", "ill-formed special form", cons(exp, nil));
+    return nil;
 }
 
 object *eval_if(object *exp, object *env) {
