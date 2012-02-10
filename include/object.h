@@ -116,6 +116,7 @@ void cleanup(object *env);
 
 int is_equal(object *obj1, object *obj2);
 int is_eqv(object *obj1, object *obj2);
+int length(object *obj);
 
 struct object {
     union {

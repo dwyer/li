@@ -154,11 +154,9 @@ object *eval_and(object *exp, object *env) {
 }
 
 object *eval_assignment(object *exp, object *env) {
-    if (!cdr(exp) || !cddr(exp) || cdddr(exp))
+    if (length(exp) != 3 || !is_symbol(cadr(exp)))
         error("set!", "ill-formed special form", cons(exp, nil));
-    return set_variable_value(cadr(exp),
-                              eval(caddr(exp), env),
-                              env);
+    return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
 }
 
 object *eval_assert(object *exp, object *env) {
@@ -173,25 +171,29 @@ object *eval_assert(object *exp, object *env) {
 }
 
 object *eval_definition(object *exp, object *env) {
-    if (cdr(exp) && is_pair(cdr(exp)) && cddr(exp) && is_pair(cddr(exp))) {
-        if (is_symbol(cadr(exp)))
-            return define_variable(cadr(exp), eval(caddr(exp), env), env);
-        else if (is_pair(cadr(exp)))
-            return define_variable(caadr(exp),
-                                   eval(make_lambda(cdadr(exp), cddr(exp)), env),
-                                   env);
-    }
+    int k;
+
+    if ((k = length(exp)) == 3 && is_symbol(cadr(exp)))
+        return define_variable(cadr(exp), eval(caddr(exp), env), env);
+    else if (k >= 3 && is_pair(cadr(exp)))
+        return define_variable(caadr(exp),
+                               eval(make_lambda(cdadr(exp), cddr(exp)), env),
+                               env);
     error("define", "ill-formed special form", cons(exp, nil));
     return nil;
 }
 
 object *eval_if(object *exp, object *env) {
-    if (!cdr(exp) || !cddr(exp) || (cdddr(exp) && cddddr(exp)))
-        error("if", "ill-formed special form", cons(exp, nil));
-    if (is_true(eval(cadr(exp), env)))
-        return eval(caddr(exp), env);
-    else
-        return eval(if_alternative(exp), env);
+    int k;
+
+    if ((k = length(exp)) == 3 || k == 4) {
+        if (is_true(eval(cadr(exp), env)))
+            return eval(caddr(exp), env);
+        else
+            return eval(if_alternative(exp), env);
+    }
+    error("if", "ill-formed special form", cons(exp, nil));
+    return nil;
 }
 
 object *eval_let(object *exp, object *env) {

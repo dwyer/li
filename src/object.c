@@ -183,3 +183,14 @@ int is_eqv(object *obj1, object *obj2) {
         return to_number(obj1) == to_number(obj2);
     return is_eq(obj1, obj2);
 }
+
+int length(object *obj) {
+    int k;
+
+    for (k = 0; obj; k++)
+        if (is_pair(obj))
+            obj = cdr(obj);
+        else
+            return -1;
+    return k;
+}
