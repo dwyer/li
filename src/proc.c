@@ -27,6 +27,8 @@ object *p_is_string(object *args);
 object *p_is_symbol(object *args);
 
 /* pairs and lists */
+object *p_is_pair(object *args);
+object *p_cons(object *args);
 object *p_car(object *args);
 object *p_cdr(object *args);
 object *p_caar(object *args);
@@ -57,8 +59,6 @@ object *p_cddaar(object *args);
 object *p_cddadr(object *args);
 object *p_cdddar(object *args);
 object *p_cddddr(object *args);
-object *p_cons(object *args);
-object *p_is_pair(object *args);
 object *p_set_car(object *args);
 object *p_set_cdr(object *args);
 

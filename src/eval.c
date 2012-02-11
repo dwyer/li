@@ -9,7 +9,7 @@
 #define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
 
 #define is_and(exp)                 is_tagged_list(exp, "and")
-#define is_application(exp)         is_pair(exp)
+#define is_application(exp)         is_list(exp)
 #define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
 #define is_begin(exp)               is_tagged_list(exp, "begin")
@@ -51,7 +51,6 @@ object *eval_sequence(object *exps, object *env);
 object *eval_syntax_definition(object *exp, object *env);
 object *expand_clauses(object *clauses);
 object *extend_environment(object *vars, object *vals, object *base_env);
-object *if_alternative(object *exp);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
 object *set_variable_value(object *var, object *val, object *env);
@@ -61,7 +60,7 @@ object *apply(object *proc, object *args) {
         return apply_primitive_procedure(proc, args);
     else if (is_compound(proc))
         return apply_compound_procedure(proc, args);
-    error("apply", "unknown procedure type", proc);
+    error("apply", "not applicable", proc);
     return nil;
 }
 
@@ -136,7 +135,7 @@ object *eval(object *exp, object *env) {
         return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
     /* error */
     else
-        error("eval", "unknown expression type", exp);
+        error("eval", "unknown expression type", cons(exp, nil));
     return nil;
 }
 
@@ -190,7 +189,7 @@ object *eval_if(object *exp, object *env) {
         if (is_true(eval(cadr(exp), env)))
             return eval(caddr(exp), env);
         else
-            return eval(if_alternative(exp), env);
+            return eval(cdddr(exp) ? cadddr(exp) : boolean(false), env);
     }
     error("if", "ill-formed special form", cons(exp, nil));
     return nil;
@@ -246,9 +245,7 @@ object *eval_sequence(object *exps, object *env) {
 }
 
 object *eval_syntax_definition(object *exp, object *env) {
-    return define_variable(cadr(exp),
-                           caddr(exp),
-                           env);
+    return define_variable(cadr(exp), caddr(exp), env);
 }
 
 object *sequence_to_exp(object *seq) {
@@ -294,18 +291,10 @@ object *extend_environment(object *vars, object *vals, object *base_env) {
     return base_env;
 }
 
-object *if_alternative(object *exp) {
-    if (cdddr(exp))
-        return cadddr(exp);
-    else
-        return boolean(false);
-}
-
 object *list_of_values(object *exps, object *env) {
     if (!exps)
         return nil;
-    return cons(eval(car(exps), env),
-                list_of_values(cdr(exps), env));
+    return cons(eval(car(exps), env), list_of_values(cdr(exps), env));
 }
 
 object *lookup_variable_value(object *var, object *env) {
