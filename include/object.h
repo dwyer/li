@@ -5,7 +5,6 @@
 #define true !false
 
 #define nil                     NULL
-#define dot                     symbol(".")
 #define eof                     symbol("#eof")
 
 #define is_eq(obj1, obj2)       ((obj1) == (obj2))
@@ -21,6 +20,7 @@
 #define is_pair(obj)            is_type(obj, T_PAIR)
 #define is_primitive(obj)       is_type(obj, T_PRIMITIVE)
 #define is_procedure(obj)       (is_primitive(obj) || is_compound(obj))
+#define is_promise(obj)         is_type(obj, T_PROMISE)
 
 /* Booleans */
 #define boolean(obj)            (obj ? symbol("#t") : symbol("#f"))
@@ -34,10 +34,11 @@
 #define unlock(obj)             ((obj)->locked = false)
 #define is_locked(obj)          (obj)->locked
 
+#define to_compound(obj)        (obj)->data.compound
 #define to_number(obj)          (obj)->data.number
 #define to_pair(obj)            (obj)->data.pair
 #define to_primitive(obj)       (obj)->data.primitive
-#define to_compound(obj)        (obj)->data.compound
+#define to_promise(obj)         (obj)->data.promise
 #define to_string(obj)          (obj)->data.string
 #define to_symbol(obj)          (obj)->data.symbol
 #define to_vector(obj)          (obj)->data.vector
@@ -91,25 +92,27 @@
 
 enum {
     T_CHAR, /* TODO (maybe): implement */
+    T_COMPOUND,
     T_NUMBER,
+    T_PAIR,
+    T_PRIMITIVE,
+    T_PROMISE,
     T_STRING,
     T_SYMBOL,
-    T_PAIR,
     T_VECTOR,
-    T_PRIMITIVE,
-    T_COMPOUND,
     N_TYPES
 };
 
 typedef struct object object;
 
-object *pair(object *car, object *cdr);
+object *compound(object *args, object *body, object *env);
 object *number(double n);
+object *pair(object *car, object *cdr);
+object *procedure(object *(*proc)(object *));
+object *promise(object *exp, object *env);
 object *string(char *s);
 object *symbol(char *s);
 object *vector(object *lst);
-object *compound(object *args, object *body, object *env);
-object *procedure(object *(*proc)(object *));
 
 void delete(object *obj);
 void cleanup(object *env);
@@ -133,6 +136,7 @@ struct object {
             int length;
         } vector;
         object *compound;
+        object *promise;
         object *(*primitive)(object *);
     } data;
     int type;

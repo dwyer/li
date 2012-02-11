@@ -20,13 +20,13 @@ The following are not yet supported, but may be in the future:
 * Continuations
 * Macros (define-syntax, syntax-rules, etc.)
 * Ports
-* Promises (delay, force)
 
 What is supported
 =================
 Data types:
 * Booleans
 * Numbers
+* Promises
 * Strings
 * Vectors
 

@@ -23,6 +23,7 @@ object *p_is_boolean(object *args);
 object *p_is_integer(object *args);
 object *p_is_number(object *args);
 object *p_is_procedure(object *args);
+object *p_is_promise(object *args);
 object *p_is_string(object *args);
 object *p_is_symbol(object *args);
 
@@ -111,6 +112,7 @@ object *p_newline(object *args);
 
 /* eval and applay */
 object *p_apply(object *args);
+object *p_force(object *args);
 
 struct reg {
     char *var;
@@ -130,6 +132,7 @@ struct reg {
     { "integer?", p_is_integer },
     { "number?", p_is_number },
     { "procedure?", p_is_procedure },
+    { "promise?", p_is_promise },
     { "string?", p_is_string },
     { "symbol?", p_is_symbol },
     /* pairs */
@@ -182,6 +185,7 @@ struct reg {
     { "newline", p_newline },
     /* apply and eval */
     { "apply", p_apply },
+    { "force", p_force },
     /* cars and cdrs */
     { "caar", p_caar },
     { "cadr", p_cadr },
@@ -353,6 +357,16 @@ object *p_is_procedure(object *args) {
     if (!args || cdr(args))
         error("procedure?", "wrong number of args", args);
     return boolean(is_procedure(car(args)));
+}
+ 
+/*
+ * (promise? obj)
+ * Returns #t if the object is a promise, #f otherwise.
+ */
+object *p_is_promise(object *args) {
+    if (!args || cdr(args))
+        error("promise?", "wrong number of args", args);
+    return boolean(is_promise(car(args)));
 }
 
 /*
@@ -879,6 +893,14 @@ object *p_apply(object *args) {
     if (!is_procedure(car(args)))
         error("apply", "not a procedure", car(args));
     return apply(car(args), cadr(args));
+}
+
+object *p_force(object *args) {
+    if (!args || cdr(args))
+        error("apply", "wrong number of args", args);
+    if (!is_promise(car(args)))
+        error("apply", "not a promise", car(args));
+    return eval(car(to_promise(car(args))), cdr(to_promise(car(args))));
 }
 
 /*****************

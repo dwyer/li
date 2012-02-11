@@ -16,6 +16,7 @@
 #define is_cond(exp)                is_tagged_list(exp, "cond")
 #define is_cond_else_clause(exp)    is_tagged_list(exp, "else")
 #define is_definition(exp)          is_tagged_list(exp, "define")
+#define is_delay(exp)               is_tagged_list(exp, "delay")
 #define is_if(exp)                  is_tagged_list(exp, "if")
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
 #define is_load(exp)                is_tagged_list(exp, "load")
@@ -43,6 +44,7 @@ object *eval_and(object *exp, object *env);
 object *eval_assert(object *exp, object *env);
 object *eval_assignment(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
+object *eval_delay(object *exp, object *env);
 object *eval_if(object *exp, object *env);
 object *eval_let(object *exp, object *env);
 object *eval_load(object *exp, object *env);
@@ -117,16 +119,18 @@ object *eval(object *exp, object *env) {
         return eval_sequence(cdr(exp), env);
     else if (is_cond(exp))
         return eval(cond_to_if(exp), env);
-    else if (is_and(exp))
-        return eval_and(cdr(exp), env);
-    else if (is_assert(exp))
-        return eval_assert(exp, env);
     else if (is_let(exp))
         return eval_let(exp, env);
-    else if (is_load(exp))
-        return eval_load(cdr(exp), env);
+    else if (is_and(exp))
+        return eval_and(cdr(exp), env);
     else if (is_or(exp))
         return eval_or(cdr(exp), env);
+    else if (is_delay(exp))
+        return eval_delay(exp, env);
+    else if (is_assert(exp))
+        return eval_assert(exp, env);
+    else if (is_load(exp))
+        return eval_load(cdr(exp), env);
     /* macros */
     else if (is_syntax_definition(exp))
         return eval_syntax_definition(exp, env);
@@ -180,6 +184,10 @@ object *eval_definition(object *exp, object *env) {
                                env);
     error("define", "ill-formed special form", exp);
     return nil;
+}
+
+object *eval_delay(object *exp, object *env) {
+    return promise(cadr(exp), env);
 }
 
 object *eval_if(object *exp, object *env) {

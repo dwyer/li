@@ -103,6 +103,14 @@ object *procedure(object *(*proc)(object *)) {
     return obj;
 }
 
+object *promise(object *exp, object *env) {
+    object *obj;
+
+    obj = new(T_PROMISE);
+    obj->data.promise = cons(exp, env);
+    return obj;
+}
+
 void delete(object *obj) {
     if (!obj || is_locked(obj))
         return;
