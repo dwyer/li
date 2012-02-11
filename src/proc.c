@@ -62,6 +62,12 @@ object *p_is_pair(object *args);
 object *p_set_car(object *args);
 object *p_set_cdr(object *args);
 
+/* lists */
+object *p_is_list(object *args);
+object *p_list(object *args);
+object *p_length(object *args);
+object *p_append(object *args);
+
 /* vectors */
 object *p_is_vector(object *args);
 object *p_vector(object *args);
@@ -126,13 +132,18 @@ struct reg {
     { "procedure?", p_is_procedure },
     { "string?", p_is_string },
     { "symbol?", p_is_symbol },
-    /* pairs and lists */
+    /* pairs */
     { "pair?", p_is_pair },
     { "cons", p_cons },
     { "car", p_car },
     { "cdr", p_cdr },
     { "set-car!", p_set_car },
     { "set-cdr!", p_set_cdr },
+    /* lists */
+    { "list?", p_is_list },
+    { "list", p_list },
+    { "length", p_length },
+    { "append", p_append },
     /* vectors */
     { "vector?", p_is_vector },
     { "vector", p_vector },
@@ -427,6 +438,67 @@ object *p_set_cdr(object *args) {
         error("set-cdr!", "not a pair", car(args));
     set_cdr(car(args), cadr(args));
     return nil;
+}
+
+/*********
+ * LISTS *
+ *********/
+
+object *p_is_list(object *args) {
+    if (!args || cdr(args))
+        error("list?", "wrong number of args", args);
+    for (args = car(args); args; args = cdr(args))
+        if (args && !is_pair(args))
+            return boolean(false);
+    return boolean(true);
+}
+
+object *p_list(object *args) {
+    return args;
+}
+
+object *p_length(object *args) {
+    int ret;
+    object *lst;
+
+    if (!args || cdr(args))
+        error("length", "wrong number of args", args);
+    for (ret = 0, lst = car(args); lst; ret++, lst = cdr(lst))
+        if (lst && !is_pair(lst))
+            error("length", "not a list", cons(car(args), nil));
+    return number(ret);
+}
+
+object *p_append(object *args) {
+    object *head, *tail, *list;
+
+    if (!args)
+        return nil;
+    else if (!cdr(args))
+        return car(args);
+    head = tail = list = nil;
+    while (args) {
+        list = car(args);
+        while (list) {
+            if (is_pair(list)) {
+                if (head)
+                    tail = set_cdr(tail, cons(car(list), nil));
+                else
+                    head = tail = cons(car(list), nil);
+                list = cdr(list);
+            } else if (!cdr(args)) {
+                if (head)
+                    tail = set_cdr(tail, list);
+                else
+                    head = tail = list;
+                list = nil;
+            } else {
+                error("append", "not a list", list);
+            }
+        }
+        args = cdr(args);
+    }
+    return head;
 }
 
 /***********

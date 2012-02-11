@@ -75,33 +75,6 @@
           (apply lcm (cons (algorithm (car args) (cadr args))
                            (cddr args))))))
 
-(define (list? obj)
-  (if (null? obj)
-    #t
-    (and (pair? obj) (list? (cdr obj)))))
-
-; Greatest function ever.
-(define (list . args)
-  args)
-
-(define (length lst)
-  (cond ((null? lst) 0)
-        ((pair? lst)
-         (+ 1 (length (cdr lst))))
-        (else (error 'length "arg must be a list" lst))))
-
-(define (append . args)
-  (define (iter lst1 lst2)
-    (cond ((null? lst1) lst2)
-          ((pair? lst1)
-           (cons (car lst1) (iter (cdr lst1) lst2)))
-          (else (error 'append "not a list" lst1))))
-  (cond ((null? args) '())
-        ((null? (cdr args)) (car args))
-        (else
-          (apply append (cons (iter (car args) (cadr args))
-                              (cddr args))))))
-
 (define (reverse lst)
   (cond ((null? lst) '())
         ((not (pair? lst)) (error 'reverse "arg must be a list" lst))
