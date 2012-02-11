@@ -135,7 +135,7 @@ object *eval(object *exp, object *env) {
         return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
     /* error */
     else
-        error("eval", "unknown expression type", cons(exp, nil));
+        error("eval", "unknown expression type", exp);
     return nil;
 }
 
@@ -154,7 +154,7 @@ object *eval_and(object *exp, object *env) {
 
 object *eval_assignment(object *exp, object *env) {
     if (length(exp) != 3 || !is_symbol(cadr(exp)))
-        error("set!", "ill-formed special form", cons(exp, nil));
+        error("set!", "ill-formed special form", exp);
     return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
 }
 
@@ -162,7 +162,7 @@ object *eval_assert(object *exp, object *env) {
     object *ret;
 
     if (!cdr(exp) || cddr(exp))
-        error("assert", "ill-formed special form", cons(exp, nil));
+        error("assert", "ill-formed special form", exp);
     ret = eval(cadr(exp), env);
     if (is_false(ret))
         error("assert", "assertion violated", exp);
@@ -178,7 +178,7 @@ object *eval_definition(object *exp, object *env) {
         return define_variable(caadr(exp),
                                eval(make_lambda(cdadr(exp), cddr(exp)), env),
                                env);
-    error("define", "ill-formed special form", cons(exp, nil));
+    error("define", "ill-formed special form", exp);
     return nil;
 }
 
@@ -191,7 +191,7 @@ object *eval_if(object *exp, object *env) {
         else
             return eval(cdddr(exp) ? cadddr(exp) : boolean(false), env);
     }
-    error("if", "ill-formed special form", cons(exp, nil));
+    error("if", "ill-formed special form", exp);
     return nil;
 }
 
@@ -201,7 +201,7 @@ object *eval_let(object *exp, object *env) {
     object *vals;
 
     if (length(exp) < 3 || length(cadr(exp)) == -1)
-        error("let", "ill-formed special form", cons(exp, nil));
+        error("let", "ill-formed special form", exp);
     bind = cadr(exp);
     vars = nil;
     vals = nil;

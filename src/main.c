@@ -13,11 +13,7 @@ void error(char *who, char *msg, object *args) {
     fprintf(stderr, "; error: %s: %s: ", who, msg);
     if (!is_pair(args)) /* bad hack */
         args = cons(args, nil);
-    while (args) {
-        write(car(args), stderr);
-        fputc(' ', stderr);
-        args = cdr(args);
-    }
+    write(args, stderr);
     newline(stderr);
     longjmp(buf, 1);
 }

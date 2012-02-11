@@ -465,7 +465,7 @@ object *p_length(object *args) {
         error("length", "wrong number of args", args);
     for (ret = 0, lst = car(args); lst; ret++, lst = cdr(lst))
         if (lst && !is_pair(lst))
-            error("length", "not a list", cons(car(args), nil));
+            error("length", "not a list", car(args));
     return number(ret);
 }
 
@@ -707,11 +707,11 @@ object *p_quotient(object *args) {
 
 object *p_remainder(object *args) {
     if (!args || !cdr(args) || cddr(args))
-        error("modulo", "wrong number of args", args);
+        error("remainder", "wrong number of args", args);
     if (!is_integer(car(args)) || !is_integer(cadr(args)))
-        error("modulo", "args must be integers", args);
+        error("remainder", "args must be integers", args);
     if (!to_integer(cadr(args)))
-        error("modulo", "arg2 must be non-zero", args);
+        error("remainder", "arg2 must be non-zero", cadr(args));
     return number(to_integer(car(args)) % to_integer(cadr(args)));
 }
 
@@ -723,7 +723,7 @@ object *p_modulo(object *args) {
     if (!is_integer(car(args)) || !is_integer(cadr(args)))
         error("modulo", "args must be integers", args);
     if (!to_integer(cadr(args)))
-        error("modulo", "arg2 must be non-zero", args);
+        error("modulo", "arg2 must be non-zero", cadr(args));
     n1 = to_integer(car(args));
     n2 = to_integer(cadr(args));
     nm = n1 % n2;
