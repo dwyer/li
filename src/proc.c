@@ -1,5 +1,7 @@
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include "object.h"
 #include "main.h"
 #include "eval.h"
@@ -10,6 +12,8 @@ typedef struct reg reg;
 
 /* non-standard */
 object *p_error(object *args);
+object *p_random(object *args);
+object *p_runtime(object *args);
 
 /* equivilence predicates */
 object *p_is_eq(object *args);
@@ -120,6 +124,8 @@ struct reg {
 } regs[] = {
     /* non-standard */
     { "error", p_error },
+    { "random", p_random },
+    { "runtime", p_runtime },
     /* not */
     { "not", p_not },
     /* equivelence */
@@ -246,6 +252,21 @@ object *p_error(object *args) {
         error("error", "not a string", cadr(args));
     error(to_symbol(car(args)), to_string(cadr(args)), cddr(args));
     return nil;
+}
+
+object *p_random(object *args) {
+    if (!args || cdr(args))
+        error("random", "wrong number of args", args);
+    if (!is_integer(car(args)))
+        error("random", "not an integer", car(args));
+    srand(time(NULL));
+    return number(rand() % to_integer(car(args)));
+}
+
+object *p_runtime(object *args) {
+    if (args)
+        error("runtime", "wrong number of args", args);
+    return number(time(NULL));
 }
 
 /*
