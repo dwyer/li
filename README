@@ -18,6 +18,7 @@ Therefore, I choose not to adhere strictly to the RnRS.
 The following are not yet supported, but may be in the future:
 * Chars
 * Continuations
+* ``Named let'', let*, letrec, let-syntax, etc.
 * Macros (define-syntax, syntax-rules, etc.)
 * Ports
 
