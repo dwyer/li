@@ -313,5 +313,10 @@
 ;                               nonneg
 ;                               (cons (car numbers) neg))))) '((6 1 3) (-5 -2))))
 
+; force and delay
+(assert (equal? (force (delay (+ 1 2))) '3))
+(assert (equal? (let ((p (delay (+ 1 2))))
+                  (list (force p) (force p))) '(3 3)))
+
 (display "all tests passed!")
 (newline)
