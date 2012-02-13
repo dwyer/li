@@ -136,6 +136,8 @@ void mark(object *obj) {
             mark(vector_ref(obj, k));
     } else if (is_compound(obj)) {
         mark(to_compound(obj));
+    } else if (is_promise(obj)) {
+        mark(to_promise(obj));
     }
 }
 
