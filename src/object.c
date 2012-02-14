@@ -23,7 +23,7 @@ void add_to_heap(object *obj) {
     heap.list[heap.size++] = obj;
 }
 
-object *new(int type) {
+object *create(int type) {
     object *obj;
 
     obj = malloc(sizeof(*obj));
@@ -36,7 +36,7 @@ object *new(int type) {
 object *pair(object *car, object *cdr) {
     object *obj;
 
-    obj = new(T_PAIR); 
+    obj = create(T_PAIR); 
     obj->data.pair.car = car;
     obj->data.pair.cdr = cdr;
     return obj;
@@ -45,7 +45,7 @@ object *pair(object *car, object *cdr) {
 object *number(double n) {
     object *obj;
 
-    obj = new(T_NUMBER);
+    obj = create(T_NUMBER);
     obj->data.number = n;
     return obj;
 }
@@ -53,7 +53,7 @@ object *number(double n) {
 object *string(char *s) {
     object *obj;
 
-    obj = new(T_STRING);
+    obj = create(T_STRING);
     obj->data.string = strdup(s);
     return obj;
 }
@@ -67,7 +67,7 @@ object *symbol(char *s) {
         if (is_symbol(obj) && !strcmp(s, to_symbol(obj)))
             return obj;
     }
-    obj = new(T_SYMBOL);
+    obj = create(T_SYMBOL);
     obj->data.symbol = strdup(s);
     return obj;
 }
@@ -79,7 +79,7 @@ object *vector(object *lst) {
 
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
         ;
-    obj = new(T_VECTOR);
+    obj = create(T_VECTOR);
     obj->data.vector.data = calloc(k, sizeof(*obj->data.vector.data));
     obj->data.vector.length = k;
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
@@ -90,7 +90,7 @@ object *vector(object *lst) {
 object *compound(object *args, object *body, object *env) {
     object *obj;
 
-    obj = new(T_COMPOUND);
+    obj = create(T_COMPOUND);
     obj->data.compound = cons(args, cons(body, cons(env, nil)));
     return obj;
 }
@@ -98,7 +98,7 @@ object *compound(object *args, object *body, object *env) {
 object *procedure(object *(*proc)(object *)) {
     object *obj;
 
-    obj = new(T_PRIMITIVE);
+    obj = create(T_PRIMITIVE);
     obj->data.primitive = proc;
     return obj;
 }
@@ -106,12 +106,12 @@ object *procedure(object *(*proc)(object *)) {
 object *promise(object *exp, object *env) {
     object *obj;
 
-    obj = new(T_PROMISE);
+    obj = create(T_PROMISE);
     obj->data.promise = cons(exp, env);
     return obj;
 }
 
-void delete(object *obj) {
+void destroy(object *obj) {
     if (!obj || is_locked(obj))
         return;
     if (is_string(obj))
@@ -151,7 +151,7 @@ void cleanup(object *env) {
     k = heap.size;
     for (i = j = 0; i < k; i++) {
         if (!is_locked(heap.list[i])) {
-            delete(heap.list[i]);
+            destroy(heap.list[i]);
             heap.size--;
         } else {
             unlock(heap.list[i]);

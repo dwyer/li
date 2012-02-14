@@ -114,7 +114,7 @@ object *string(char *s);
 object *symbol(char *s);
 object *vector(object *lst);
 
-void delete(object *obj);
+void destroy(object *obj);
 void cleanup(object *env);
 
 int is_equal(object *obj1, object *obj2);
