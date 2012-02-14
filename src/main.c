@@ -11,8 +11,6 @@ static jmp_buf buf;
 
 void error(char *who, char *msg, object *args) {
     fprintf(stderr, "; error: %s: %s: ", who, msg);
-    if (!is_pair(args)) /* bad hack */
-        args = cons(args, nil);
     write(args, stderr);
     newline(stderr);
     longjmp(buf, 1);

@@ -143,9 +143,9 @@ object *read_special(FILE *f) {
     } else if (isopener(c)) {
         ungetc(c, f);
         return vector(read(f));
-    } else {
-        return nil; /* TODO: something better */
     }
+    error("read", "ill-formed special symbol", nil);
+    return nil;
 }
 
 object *read_string(FILE *f) {
