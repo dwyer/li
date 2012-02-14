@@ -34,8 +34,6 @@
                                          cons(pred, cons(con, cons(alt, nil))))
 #define make_lambda(p, b)           cons(symbol("lambda"), cons(p, b))
 
-#define cond_to_if(exp)             expand_clauses(cdr(exp))
-
 object *apply(object *procedure, object *arguments);
 object *apply_compound_procedure(object *proc, object *args);
 object *apply_primitive_procedure(object *proc, object *args);
@@ -43,6 +41,7 @@ object *apply_syntax(object *proc, object *args);
 object *eval_and(object *exp, object *env);
 object *eval_assert(object *exp, object *env);
 object *eval_assignment(object *exp, object *env);
+object *eval_cond(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
 object *eval_delay(object *exp, object *env);
 object *eval_if(object *exp, object *env);
@@ -51,7 +50,6 @@ object *eval_load(object *exp, object *env);
 object *eval_or(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
 object *eval_syntax_definition(object *exp, object *env);
-object *expand_clauses(object *clauses);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
@@ -118,7 +116,7 @@ object *eval(object *exp, object *env) {
     else if (is_begin(exp))
         return eval_sequence(cdr(exp), env);
     else if (is_cond(exp))
-        return eval(cond_to_if(exp), env);
+        return eval_cond(exp, env);
     else if (is_let(exp))
         return eval_let(exp, env);
     else if (is_and(exp))
@@ -171,6 +169,13 @@ object *eval_assert(object *exp, object *env) {
     if (is_false(ret))
         error("assert", "assertion violated", exp);
     return nil;
+}
+
+object *eval_cond(object *exp, object *env) {
+    while ((exp = cdr(exp)))
+        if (is_tagged_list(car(exp), "else") || is_true(eval(caar(exp), env)))
+            return eval_sequence(cdar(exp), env);
+    return boolean(false);
 }
 
 object *eval_definition(object *exp, object *env) {
@@ -254,30 +259,6 @@ object *eval_sequence(object *exps, object *env) {
 
 object *eval_syntax_definition(object *exp, object *env) {
     return define_variable(cadr(exp), caddr(exp), env);
-}
-
-object *sequence_to_exp(object *seq) {
-    if (!seq)
-        return seq;
-    else if (!cdr(seq))
-        return car(seq);
-    else
-        return make_begin(seq);
-}
-
-object *expand_clauses(object *clauses) {
-    if (is_null(clauses))
-        return boolean(false);
-    if (is_cond_else_clause(car(clauses)))
-        if (is_null(cdr(clauses)))
-            return sequence_to_exp(cdr(car(clauses)));
-        else
-            error("cond", "else clause isn't last", clauses);
-    else
-        return make_if(car(car(clauses)),
-                       sequence_to_exp(cdr(car(clauses))),
-                       expand_clauses(cdr(clauses)));
-    return nil;
 }
 
 object *extend_environment(object *vars, object *vals, object *base_env) {
