@@ -266,10 +266,8 @@ object *extend_environment(object *vars, object *vals, object *base_env) {
         vars = cdr(vars);
         vals = cdr(vals);
     }
-    if (vars)
-        error("#[anonymous procedure]", "Too few arguments supplied", vars);
-    if (vals)
-        error("#[anonymous procedure]", "Too many arguments supplied", vars);
+    if (vars || vals)
+        error("#[anonymous procedure]", "wrong number of args", vars);
     return base_env;
 }
 
