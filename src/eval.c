@@ -120,9 +120,9 @@ object *eval(object *exp, object *env) {
     else if (is_let(exp))
         return eval_let(exp, env);
     else if (is_and(exp))
-        return eval_and(cdr(exp), env);
+        return eval_and(exp, env);
     else if (is_or(exp))
-        return eval_or(cdr(exp), env);
+        return eval_or(exp, env);
     else if (is_delay(exp))
         return eval_delay(exp, env);
     else if (is_assert(exp))
@@ -145,12 +145,9 @@ object *eval_and(object *exp, object *env) {
     object *ret;
 
     ret = boolean(true);
-    while (exp) {
-        ret = eval(car(exp), env);
-        if (is_false(ret))
+    while ((exp = cdr(exp)))
+        if (is_false(ret = eval(car(exp), env)))
             return boolean(false);
-        exp = cdr(exp);
-    }
     return ret;
 }
 
@@ -238,14 +235,10 @@ object *eval_load(object *exp, object *env) {
 object *eval_or(object *exp, object *env) {
     object *ret;
 
-    ret = false;
-    while (exp) {
-        ret = eval(car(exp), env);
-        if (is_true(ret))
-            break;
-        exp = cdr(exp);
-    }
-    return ret;
+    while ((exp = cdr(exp)))
+        if (is_true(ret = eval(car(exp), env)))
+            return ret;
+    return boolean(false);
 }
 
 object *eval_sequence(object *exps, object *env) {
