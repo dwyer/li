@@ -97,6 +97,7 @@ object *p_remainder(object *args);
 object *p_modulo(object *args);
 
 /* transendental functions */
+object *p_abs(object *args);
 object *p_exp(object *args);
 object *p_log(object *args);
 object *p_sin(object *args);
@@ -107,6 +108,10 @@ object *p_acos(object *args);
 object *p_atan(object *args);
 object *p_sqrt(object *args);
 object *p_expt(object *args);
+object *p_floor(object *args);
+object *p_ceiling(object *args);
+object *p_truncate(object *args);
+object *p_round(object *args);
 
 /* I/O */
 object *p_read(object *args);
@@ -174,6 +179,7 @@ struct reg {
     { "remainder", p_remainder },
     { "modulo", p_modulo },
     /* transendentals */
+    { "abs", p_abs },
     { "exp", p_exp },
     { "log", p_log },
     { "sin", p_sin },
@@ -184,6 +190,10 @@ struct reg {
     { "atan", p_atan },
     { "sqrt", p_sqrt },
     { "expt", p_expt },
+    { "floor", p_floor },
+    { "ceiling", p_ceiling },
+    { "round", p_round },
+    { "truncate", p_truncate },
     /* io */
     { "read", p_read },
     { "write", p_write },
@@ -771,6 +781,14 @@ object *p_modulo(object *args) {
  * TRANSENDENTAL FUNCTIONS *
  ***************************/
 
+object *p_abs(object *args) {
+    if (!args || cdr(args))
+        error("abs", "wrong number of args", args);
+    if (!is_number(car(args)))
+        error("abs", "not a number", car(args));
+    return number(fabs(to_number(car(args))));
+}
+
 object *p_exp(object *args) {
     if (!args || cdr(args))
         error("exp", "wrong number of args", args);
@@ -849,6 +867,38 @@ object *p_expt(object *args) {
     if (!is_number(car(args)) || !is_number(cadr(args)))
         error("expt", "not a number", args);
     return number(pow(to_number(car(args)), to_number(cadr(args))));
+}
+
+object *p_floor(object *args) {
+    if (!args || cdr(args))
+        error("floor", "wrong number of args", args);
+    if (!is_number(car(args)))
+        error("floor", "not a number", car(args));
+    return number(floor(to_number(car(args))));
+}
+
+object *p_ceiling(object *args) {
+    if (!args || cdr(args))
+        error("ceiling", "wrong number of args", args);
+    if (!is_number(car(args)))
+        error("ceiling", "not a number", car(args));
+    return number(ceil(to_number(car(args))));
+}
+
+object *p_round(object *args) {
+    if (!args || cdr(args))
+        error("round", "wrong number of args", args);
+    if (!is_number(car(args)))
+        error("round", "not a number", car(args));
+    return number(floor(to_number(car(args)) + 0.5));
+}
+
+object *p_truncate(object *args) {
+    if (!args || cdr(args))
+        error("truncate", "wrong number of args", args);
+    if (!is_number(car(args)))
+        error("truncate", "not a number", car(args));
+    return number(ceil(to_number(car(args)) - 0.5));
 }
 
 /********************
