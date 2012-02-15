@@ -23,8 +23,6 @@ void write_object(object *obj, FILE *f, int h) {
         fprintf(f, "#[primitive-procedure]");
     else if (is_compound(obj))
         fprintf(f, "#[compound-procedure]");
-    else if (is_promise(obj))
-        fprintf(f, "#[promise]");
     else if (is_pair(obj))
         write_pair(obj, f, h);
     else if (is_vector(obj))

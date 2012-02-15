@@ -43,7 +43,6 @@ object *eval_assert(object *exp, object *env);
 object *eval_assignment(object *exp, object *env);
 object *eval_cond(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
-object *eval_delay(object *exp, object *env);
 object *eval_if(object *exp, object *env);
 object *eval_let(object *exp, object *env);
 object *eval_load(object *exp, object *env);
@@ -124,7 +123,7 @@ object *eval(object *exp, object *env) {
     else if (is_or(exp))
         return eval_or(exp, env);
     else if (is_delay(exp))
-        return eval_delay(exp, env);
+        return compound(nil, cdr(exp), env);
     else if (is_assert(exp))
         return eval_assert(exp, env);
     else if (is_load(exp))
@@ -186,10 +185,6 @@ object *eval_definition(object *exp, object *env) {
                                env);
     error("define", "ill-formed special form", exp);
     return nil;
-}
-
-object *eval_delay(object *exp, object *env) {
-    return promise(cadr(exp), env);
 }
 
 object *eval_if(object *exp, object *env) {

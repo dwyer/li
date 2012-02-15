@@ -103,14 +103,6 @@ object *procedure(object *(*proc)(object *)) {
     return obj;
 }
 
-object *promise(object *exp, object *env) {
-    object *obj;
-
-    obj = create(T_PROMISE);
-    obj->data.promise = cons(exp, env);
-    return obj;
-}
-
 void destroy(object *obj) {
     if (!obj || is_locked(obj))
         return;
@@ -136,8 +128,6 @@ void mark(object *obj) {
             mark(vector_ref(obj, k));
     } else if (is_compound(obj)) {
         mark(to_compound(obj));
-    } else if (is_promise(obj)) {
-        mark(to_promise(obj));
     }
 }
 

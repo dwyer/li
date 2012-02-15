@@ -153,15 +153,6 @@ object *p_is_procedure(object *args) {
     assert_nargs("procedure?", 1, args);
     return boolean(is_procedure(car(args)));
 }
- 
-/*
- * (promise? obj)
- * Returns #t if the object is a promise, #f otherwise.
- */
-object *p_is_promise(object *args) {
-    assert_nargs("promise?", 1, args);
-    return boolean(is_promise(car(args)));
-}
 
 /*
  * (string? obj)
@@ -335,7 +326,7 @@ object *p_vector_length(object *args) {
 object *p_vector_ref(object *args) {
     assert_nargs("vector-ref", 2, args);
     assert_vector("vector-ref", car(args));
-    assert_integer("vector-set", cadr(args));
+    assert_integer("vector-ref", cadr(args));
     if (to_number(cadr(args)) < 0 ||
         to_number(cadr(args)) >= vector_length(car(args)))
         error("vector-ref", "out of range", cadr(args));
@@ -352,7 +343,7 @@ object *p_vector_set(object *args) {
     assert_integer("vector-set!", cadr(args));
     if (to_number(cadr(args)) < 0 ||
         to_number(cadr(args)) >= vector_length(car(args)))
-        error("vector-set", "out of range", cadr(args));
+        error("vector-set!", "out of range", cadr(args));
     return vector_set(car(args), to_integer(cadr(args)), caddr(args));
 }
 
@@ -658,8 +649,8 @@ object *p_apply(object *args) {
 
 object *p_force(object *args) {
     assert_nargs("force", 1, args);
-    assert_type("force", promise, car(args));
-    return eval(car(to_promise(car(args))), cdr(to_promise(car(args))));
+    assert_type("force", procedure, car(args));
+    return apply(car(args), nil);
 }
 
 /*****************
@@ -985,7 +976,6 @@ struct reg {
     { "procedure?", p_is_procedure },
     { "apply", p_apply },
     { "force", p_force },
-    { "promise?", p_is_promise }, /* TODO: delete */
     /* Input */
     { "read", p_read },
     /* Output */
