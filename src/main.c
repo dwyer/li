@@ -6,6 +6,7 @@
 #include "eval.h"
 #include "input.h"
 #include "output.h"
+#include "clib.h"
 
 static jmp_buf buf;
 
@@ -56,14 +57,15 @@ int main(int argc, char *argv[]) {
     int i;
 
     env = setup_environment();
+    env = register_clib(env);
     if (setjmp(buf)) {
         cleanup(nil);
-        return -1;
+        exit(-1);
     }
     for (i = 1; i < argc; i++)
         load(argv[i], env);
     if (argc == 1)
         repl(env);
     cleanup(nil);
-    return 0;
+    exit(0);
 }

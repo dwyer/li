@@ -8,6 +8,23 @@
 #include "input.h"
 #include "output.h"
 
+#define has_0args(args)     (!args)
+#define has_1args(args)     (args && !cdr(args))
+#define has_2args(args)     (args && cdr(args) && !cddr(args))
+#define has_3args(args)     (args && cdr(args) && cddr(args) && !cdddr(args))
+#define assert_nargs(name, n, args) if (!has_##n##args(args)) \
+    error(name, "wrong number of args", args)
+
+#define assert_type(name, type, arg) if (!is_##type(arg)) \
+    error(name, "not a " #type, arg)
+#define assert_integer(name, arg)    if (!is_integer(arg)) \
+    error(name, "not an integer", arg)
+#define assert_number(name, arg)     assert_type(name, number, arg)
+#define assert_pair(name, arg)       assert_type(name, pair, arg)
+#define assert_string(name, arg)     assert_type(name, string, arg)
+#define assert_symbol(name, arg)     assert_type(name, symbol, arg)
+#define assert_vector(name, arg)     assert_type(name, vector, arg)
+
 typedef struct reg reg;
 
 /* non-standard */
@@ -256,27 +273,22 @@ object *primitive_procedures(object *env) {
 object *p_error(object *args) {
     if (!args || !cdr(args))
         error("error", "wrong number of args", args);
-    if (!is_symbol(car(args)))
-        error("error", "not a symbol", car(args));
-    if (!is_string(cadr(args)))
-        error("error", "not a string", cadr(args));
+    assert_symbol("error", car(args));
+    assert_string("error", cadr(args));
     error(to_symbol(car(args)), to_string(cadr(args)), cddr(args));
     return nil;
 }
 
 object *p_random(object *args) {
-    if (!args || cdr(args))
-        error("random", "wrong number of args", args);
-    if (!is_integer(car(args)))
-        error("random", "not an integer", car(args));
+    assert_nargs("random", 1, args);
+    assert_integer("random", car(args));
     srand(time(NULL));
     return number(rand() % to_integer(car(args)));
 }
 
 object *p_runtime(object *args) {
-    if (args)
-        error("runtime", "wrong number of args", args);
-    return number(time(NULL));
+    assert_nargs("runtime", 0, args);
+    return number(clock());
 }
 
 /*
@@ -284,8 +296,7 @@ object *p_runtime(object *args) {
  * Returns #t is obj is #f, returns #f otherwise.
  */
 object *p_not(object *args) {
-    if (!args && cdr(args))
-        error("not", "wrong number of args", args);
+    assert_nargs("not", 1, args);
     return boolean(not(car(args)));
 }
 
@@ -300,28 +311,25 @@ object *p_not(object *args) {
  * numbers, strings, etc.
  */
 object *p_is_eq(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("eq?", "wrong number of args", args);
+    assert_nargs("eq?", 2, args);
     return boolean(is_eq(car(args), cadr(args)));
 }
 
 /* 
  * (eqv? obj1 obj2)
- * Same as eq?, but guarantees #t for identical numbers.
+ * Same as eq?, but guarantees #t for equivalent numbers.
  */
 object *p_is_eqv(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("eqv?", "wrong number of args", args);
+    assert_nargs("eqv?", 2, args);
     return boolean(is_eqv(car(args), cadr(args)));
 }
 
 /*
  * (equal? obj1 obj2)
- * Same as eqv? but guarantees #t for identical strings, pairs and vectors.
+ * Same as eqv? but guarantees #t for equivalent strings, pairs and vectors.
  */
 object *p_is_equal(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("equal?", "wrong number of args", args);
+    assert_nargs("equal?", 2, args);
     return boolean(is_equal(car(args), cadr(args)));
 }
 
@@ -335,8 +343,7 @@ object *p_is_equal(object *args) {
  * represented in Scheme as ().
  */
 object *p_is_null(object *args) {
-    if (!args || cdr(args))
-        error("null?", "wrong number of args", args);
+    assert_nargs("null?", 1, args);
     return boolean(is_null(car(args)));
 }
 
@@ -344,8 +351,7 @@ object *p_is_null(object *args) {
  * Return #t is the object is #t or #f, return #f otherwise.
  */
 object *p_is_boolean(object *args) {
-    if (!args || cdr(args))
-        error("boolean?", "wrong number of args", args);
+    assert_nargs("boolean?", 1, args);
     return boolean(is_boolean(car(args)));
 }
 
@@ -354,8 +360,7 @@ object *p_is_boolean(object *args) {
  * Return #t is the object is an integer, #f otherwise.
  */
 object *p_is_integer(object *args) {
-    if (!args || cdr(args))
-        error("integer?", "wrong number of args", args);
+    assert_nargs("integer?", 1, args);
     return boolean(is_number(car(args)) &&
                    to_number(car(args)) == (int)to_number(car(args)));
 }
@@ -365,8 +370,7 @@ object *p_is_integer(object *args) {
  * Returns #t is the object is a number, #f otherwise.
  */
 object *p_is_number(object *args) {
-    if (!args || cdr(args))
-        error("number?", "wrong number of args", args);
+    assert_nargs("number?", 1, args);
     return boolean(is_number(car(args)));
 }
 
@@ -375,8 +379,7 @@ object *p_is_number(object *args) {
  * Returns #t is the object is a pair, #f otherwise.
  */
 object *p_is_pair(object *args) {
-    if (!args || cdr(args))
-        error("pair?", "wrong number of args", args);
+    assert_nargs("pair?", 1, args);
     return boolean(is_pair(car(args)));
 }
  
@@ -385,8 +388,7 @@ object *p_is_pair(object *args) {
  * Returns #t if the object is a procedure, #f otherwise.
  */
 object *p_is_procedure(object *args) {
-    if (!args || cdr(args))
-        error("procedure?", "wrong number of args", args);
+    assert_nargs("procedure?", 1, args);
     return boolean(is_procedure(car(args)));
 }
  
@@ -395,8 +397,7 @@ object *p_is_procedure(object *args) {
  * Returns #t if the object is a promise, #f otherwise.
  */
 object *p_is_promise(object *args) {
-    if (!args || cdr(args))
-        error("promise?", "wrong number of args", args);
+    assert_nargs("promise?", 1, args);
     return boolean(is_promise(car(args)));
 }
 
@@ -405,8 +406,7 @@ object *p_is_promise(object *args) {
  * Returns #t if the object is a string, #f otherwise.
  */
 object *p_is_string(object *args) {
-    if (!args || cdr(args))
-        error("string?", "wrong number of args", args);
+    assert_nargs("string?", 1, args);
     return boolean(is_string(car(args)));
 }
 
@@ -416,8 +416,7 @@ object *p_is_string(object *args) {
  * BUG: Returns #t for booleans.
  */
 object *p_is_symbol(object *args) {
-    if (!args || cdr(args))
-        error("symbol?", "wrong number of args", args);
+    assert_nargs("symbol?", 1, args);
     return boolean(is_symbol(car(args)));
 }
 
@@ -430,8 +429,7 @@ object *p_is_symbol(object *args) {
  * Returns a pair containing obj1 and obj2.
  */
 object *p_cons(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("cons", "wrong number of args", args);
+    assert_nargs("cons", 2, args);
     return cons(car(args), cadr(args));
 }
 
@@ -440,10 +438,8 @@ object *p_cons(object *args) {
  * Returns the first element of the given pair.
  */
 object *p_car(object *args) {
-    if (!args || cdr(args))
-        error("car", "wrong number of args", args);
-    if (!is_pair(car(args)))
-        error("car", "not a pair", car(args));
+    assert_nargs("car", 1, args);
+    assert_pair("car", car(args));
     return caar(args);
 }
 
@@ -452,10 +448,8 @@ object *p_car(object *args) {
  * Returns the second element of the given pair.
  */
 object *p_cdr(object *args) {
-    if (!args || cdr(args))
-        error("cdr", "wrong number of args", args);
-    if (!is_pair(car(args)))
-        error("cdr", "not a pair", car(args));
+    assert_nargs("cdr", 1, args);
+    assert_pair("cdr", car(args));
     return cdar(args);
 }
 
@@ -464,10 +458,8 @@ object *p_cdr(object *args) {
  * Sets the first element of the given pair to the given object.
  */
 object *p_set_car(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("set-car!", "wrong number of args", args);
-    if (!is_pair(car(args)))
-        error("set-car!", "not a pair", car(args));
+    assert_nargs("set-car!", 2, args);
+    assert_pair("set-car!", car(args));
     set_car(car(args), cadr(args));
     return nil;
 }
@@ -477,10 +469,8 @@ object *p_set_car(object *args) {
  * Sets the second element of the given pair to the given object.
  */
 object *p_set_cdr(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("set-cdr!", "wrong number of args", args);
-    if (!is_pair(car(args)))
-        error("set-cdr!", "not a pair", car(args));
+    assert_nargs("set-cdr!", 2, args);
+    assert_pair("set-cdr!", car(args));
     set_cdr(car(args), cadr(args));
     return nil;
 }
@@ -490,8 +480,7 @@ object *p_set_cdr(object *args) {
  *********/
 
 object *p_is_list(object *args) {
-    if (!args || cdr(args))
-        error("list?", "wrong number of args", args);
+    assert_nargs("list?", 1, args);
     for (args = car(args); args; args = cdr(args))
         if (args && !is_pair(args))
             return boolean(false);
@@ -506,8 +495,7 @@ object *p_length(object *args) {
     int ret;
     object *lst;
 
-    if (!args || cdr(args))
-        error("length", "wrong number of args", args);
+    assert_nargs("length", 1, args);
     for (ret = 0, lst = car(args); lst; ret++, lst = cdr(lst))
         if (lst && !is_pair(lst))
             error("length", "not a list", car(args));
@@ -555,8 +543,7 @@ object *p_append(object *args) {
  * Returns #t if the object is a vector, #f otherwise.
  */
 object *p_is_vector(object *args) {
-    if (!args || cdr(args))
-        error("vector?", "wrong number of args", args);
+    assert_nargs("vector?", 1, args);
     return boolean(is_vector(car(args)));
 }
 
@@ -573,10 +560,8 @@ object *p_vector(object *args) {
  * Returns the length of the given vector.
  */
 object *p_vector_length(object *args) {
-    if (!args || cdr(args))
-        error("vector-length", "wrong number of args", args);
-    if (!is_vector(car(args)))
-        error("vector-length", "not a vector", car(args));
+    assert_nargs("vector-length", 1, args);
+    assert_vector("vector-length", car(args));
     return number(vector_length(car(args)));
 }
 
@@ -586,12 +571,9 @@ object *p_vector_length(object *args) {
  * the length of the vector.
  */
 object *p_vector_ref(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("vector-ref", "wrong number of args", args);
-    if (!is_vector(car(args)))
-        error("vector-ref", "not a vector", car(args));
-    if (!is_integer(cadr(args)))
-        error("vector-ref", "not an integer", cdar(args));
+    assert_nargs("vector-ref", 2, args);
+    assert_vector("vector-ref", car(args));
+    assert_integer("vector-set", cadr(args));
     if (to_number(cadr(args)) < 0 ||
         to_number(cadr(args)) >= vector_length(car(args)))
         error("vector-ref", "out of range", cadr(args));
@@ -603,12 +585,9 @@ object *p_vector_ref(object *args) {
  * Sets element k of vector vec to object obj where k is a positive integer.
  */
 object *p_vector_set(object *args) {
-    if (!args || !cdr(args) || !cddr(args) || cdddr(args))
-        error("vector-set", "wrong number of args", args);
-    if (!is_vector(car(args)))
-        error("vector-set", "not a vector", car(args));
-    if (!is_integer(cadr(args)))
-        error("vector-set", "not an integer", cdar(args));
+    assert_nargs("vector-set!", 3, args);
+    assert_vector("vector-set!", car(args));
+    assert_integer("vector-set!", cadr(args));
     if (to_number(cadr(args)) < 0 ||
         to_number(cadr(args)) >= vector_length(car(args)))
         error("vector-set", "out of range", cadr(args));
@@ -621,12 +600,10 @@ object *p_vector_set(object *args) {
 
 object *p_eq(object *args) {
     while (args) {
-        if (!is_number(car(args)))
-            error("=", "not a number", car(args));
+        assert_number("=", car(args));
         if (!cdr(args))
             return boolean(true);
-        if (!is_number(cadr(args)))
-            error("=", "not a number", cadr(args));
+        assert_number("=", cadr(args));
         if (!(to_number(car(args)) == to_number(cadr(args))))
             return boolean(false);
         args = cdr(args);
@@ -636,12 +613,10 @@ object *p_eq(object *args) {
 
 object *p_lt(object *args) {
     while (args) {
-        if (!is_number(car(args)))
-            error("<", "not a number", car(args));
+        assert_number("<", car(args));
         if (!cdr(args))
             return boolean(true);
-        if (!is_number(cadr(args)))
-            error("<", "not a number", cadr(args));
+        assert_number("<", cadr(args));
         if (!(to_number(car(args)) < to_number(cadr(args))))
             return boolean(false);
         args = cdr(args);
@@ -651,12 +626,10 @@ object *p_lt(object *args) {
 
 object *p_gt(object *args) {
     while (args) {
-        if (!is_number(car(args)))
-            error(">", "not a number", car(args));
+        assert_number(">", car(args));
         if (!cdr(args))
             return boolean(true);
-        if (!is_number(cadr(args)))
-            error(">", "not a number", cadr(args));
+        assert_number(">", cadr(args));
         if (!(to_number(car(args)) > to_number(cadr(args))))
             return boolean(false);
         args = cdr(args);
@@ -680,8 +653,7 @@ object *p_add(object *args) {
     double result = 0;
 
     while (args) {
-        if (!is_number(car(args)))
-            error("+", "not a number", car(args));
+        assert_number("+", car(args));
         result += to_number(car(args));
         args = cdr(args);
     }
@@ -692,8 +664,7 @@ object *p_mul(object *args) {
     double result = 1.0;
 
     while (args) {
-        if (!is_number(car(args)))
-            error("*", "not a number", car(args));
+        assert_number("*", car(args));
         result *= to_number(car(args));
         args = cdr(args);
     }
@@ -705,15 +676,13 @@ object *p_sub(object *args) {
 
     if (!args)
         error("-", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("-", "not a number", car(args));
+    assert_number("-", car(args));
     result = to_number(car(args));
     args = cdr(args);
     if (!args)
         result = -result;
     while (args) {
-        if (!is_number(car(args)))
-            error("-", "not a number", car(args));
+        assert_number("-", car(args));
         result -= to_number(car(args));
         args = cdr(args);
     }
@@ -725,15 +694,13 @@ object *p_div(object *args) {
 
     if (!args)
         error("/", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("/", "not a number", car(args));
+    assert_number("/", car(args));
     result = to_number(car(args));
     args = cdr(args);
     if (!args)
         result = 1 / result;
     while (args) {
-        if (!is_number(car(args)))
-            error("/", "not a number", car(args));
+        assert_number("/", car(args));
         result /= to_number(car(args));
         args = cdr(args);
     }
@@ -741,20 +708,18 @@ object *p_div(object *args) {
 }
 
 object *p_quotient(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("quotient", "wrong number of args", args);
-    if (!is_integer(car(args)) || !is_integer(cadr(args)))
-        error("quotient", "args must be integers", args);
+    assert_nargs("quotient", 2, args);
+    assert_integer("quotient", car(args));
+    assert_integer("quotient", cadr(args));
     if (!to_integer(cadr(args)))
         error("quotient", "arg2 must be non-zero", args);
     return number(to_integer(car(args)) / to_integer(cadr(args)));
 }
 
 object *p_remainder(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("remainder", "wrong number of args", args);
-    if (!is_integer(car(args)) || !is_integer(cadr(args)))
-        error("remainder", "args must be integers", args);
+    assert_nargs("remainder", 2, args);
+    assert_integer("remainder", car(args));
+    assert_integer("remainder", cadr(args));
     if (!to_integer(cadr(args)))
         error("remainder", "arg2 must be non-zero", cadr(args));
     return number(to_integer(car(args)) % to_integer(cadr(args)));
@@ -763,8 +728,7 @@ object *p_remainder(object *args) {
 object *p_modulo(object *args) {
     int n1, n2, nm;
 
-    if (!args || !cdr(args) || cddr(args))
-        error("modulo", "wrong number of args", args);
+    assert_nargs("modulo", 2, args);
     if (!is_integer(car(args)) || !is_integer(cadr(args)))
         error("modulo", "args must be integers", args);
     if (!to_integer(cadr(args)))
@@ -782,122 +746,93 @@ object *p_modulo(object *args) {
  ***************************/
 
 object *p_abs(object *args) {
-    if (!args || cdr(args))
-        error("abs", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("abs", "not a number", car(args));
+    assert_nargs("abs", 1, args);
+    assert_number("abs", car(args));
     return number(fabs(to_number(car(args))));
 }
 
 object *p_exp(object *args) {
-    if (!args || cdr(args))
-        error("exp", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("exp", "not a number", car(args));
+    assert_nargs("exp", 1, args);
+    assert_number("exp", car(args));
     return number(exp(to_number(car(args))));
 }
 
 object *p_log(object *args) {
-    if (!args || cdr(args))
-        error("log", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("log", "not a number", car(args));
+    assert_nargs("log", 1, args);
+    assert_number("log", car(args));
     return number(log(to_number(car(args))));
 }
 
 object *p_sin(object *args) {
-    if (!args || cdr(args))
-        error("sin", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("sin", "not a number", car(args));
+    assert_nargs("sin", 1, args);
+    assert_number("sin", car(args));
     return number(sin(to_number(car(args))));
 }
 
 object *p_cos(object *args) {
-    if (!args || cdr(args))
-        error("cos", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("cos", "not a number", car(args));
+    assert_nargs("cos", 1, args);
+    assert_number("cos", car(args));
     return number(cos(to_number(car(args))));
 }
 
 object *p_tan(object *args) {
-    if (!args || cdr(args))
-        error("tan", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("tan", "not a number", car(args));
+    assert_nargs("tan", 1, args);
+    assert_number("tan", car(args));
     return number(tan(to_number(car(args))));
 }
 
 object *p_asin(object *args) {
-    if (!args || cdr(args))
-        error("asin", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("asin", "not a number", car(args));
+    assert_nargs("asin", 1, args);
+    assert_number("asin", car(args));
     return number(asin(to_number(car(args))));
 }
 
 object *p_acos(object *args) {
-    if (!args || cdr(args))
-        error("acos", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("acos", "not a number", car(args));
+    assert_nargs("acos", 1, args);
+    assert_number("acos", car(args));
     return number(acos(to_number(car(args))));
 }
 
 object *p_atan(object *args) {
-    if (!args || cdr(args))
-        error("atan", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("atan", "not a number", car(args));
+    assert_nargs("atan", 1, args);
+    assert_number("atan", car(args));
     return number(atan(to_number(car(args))));
 }
 
 object *p_sqrt(object *args) {
-    if (!args || cdr(args))
-        error("sqrt", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("sqrt", "not a number", car(args));
+    assert_nargs("sqrt", 1, args);
+    assert_number("sqrt", car(args));
     return number(sqrt(to_number(car(args))));
 }
 
 object *p_expt(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("expt", "wrong number of args", args);
-    if (!is_number(car(args)) || !is_number(cadr(args)))
-        error("expt", "not a number", args);
+    assert_nargs("expt", 2, args);
+    assert_number("expt", car(args));
+    assert_number("expt", cadr(args));
     return number(pow(to_number(car(args)), to_number(cadr(args))));
 }
 
 object *p_floor(object *args) {
-    if (!args || cdr(args))
-        error("floor", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("floor", "not a number", car(args));
+    assert_nargs("floor", 1, args);
+    assert_number("floor", car(args));
     return number(floor(to_number(car(args))));
 }
 
 object *p_ceiling(object *args) {
-    if (!args || cdr(args))
-        error("ceiling", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("ceiling", "not a number", car(args));
+    assert_nargs("ceiling", 1, args);
+    assert_number("ceiling", car(args));
     return number(ceil(to_number(car(args))));
 }
 
 object *p_round(object *args) {
-    if (!args || cdr(args))
-        error("round", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("round", "not a number", car(args));
+    assert_nargs("round", 1, args);
+    assert_number("round", car(args));
     return number(floor(to_number(car(args)) + 0.5));
 }
 
 object *p_truncate(object *args) {
-    if (!args || cdr(args))
-        error("truncate", "wrong number of args", args);
-    if (!is_number(car(args)))
-        error("truncate", "not a number", car(args));
+    assert_nargs("truncate", 1, args);
+    assert_number("truncate", car(args));
     return number(ceil(to_number(car(args)) - 0.5));
 }
 
@@ -910,8 +845,7 @@ object *p_truncate(object *args) {
  * Reads and returns the next evaluative object.
  */
 object *p_read(object *args) {
-    if (args)
-        error("read", "wrong number of args", args);
+    assert_nargs("read", 0, args);
     return read(stdin);
 }
 
@@ -920,8 +854,7 @@ object *p_read(object *args) {
  * Displays an object. Always returns nil.
  */
 object *p_write(object *args) {
-    if (!args || cdr(args))
-        error("write", "wrong number of args", args);
+    assert_nargs("write", 1, args);
     write(car(args), stdout);
     return nil;
 }
@@ -931,8 +864,7 @@ object *p_write(object *args) {
  * Displays an object. Always returns nil.
  */
 object *p_display(object *args) {
-    if (!args || cdr(args))
-        error("display", "wrong number of args", args);
+    assert_nargs("display", 1, args);
     display(car(args), stdout);
     return nil;
 }
@@ -942,8 +874,7 @@ object *p_display(object *args) {
  * Displays a newline.
  */
 object *p_newline(object *args) {
-    if (args)
-        error("newline", "wrong number of args", args);
+    assert_nargs("newline", 0, args);
     newline(stdout);
     return nil;
 }
@@ -959,18 +890,14 @@ object *p_newline(object *args) {
  * procedure accepts.
  */
 object *p_apply(object *args) {
-    if (!args || !cdr(args) || cddr(args))
-        error("apply", "wrong number of args", args);
-    if (!is_procedure(car(args)))
-        error("apply", "not a procedure", car(args));
+    assert_nargs("apply", 2, args);
+    assert_type("apply", procedure, car(args));
     return apply(car(args), cadr(args));
 }
 
 object *p_force(object *args) {
-    if (!args || cdr(args))
-        error("apply", "wrong number of args", args);
-    if (!is_promise(car(args)))
-        error("apply", "not a promise", car(args));
+    assert_nargs("force", 1, args);
+    assert_type("force", promise, car(args));
     return eval(car(to_promise(car(args))), cdr(to_promise(car(args))));
 }
 
@@ -979,40 +906,35 @@ object *p_force(object *args) {
  *****************/
 
 object *p_caar(object *args) {
-    if (!args && cdr(args))
-        error("caar", "wrong number of args", args);
+    assert_nargs("caar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
         error("caar", "list is too short", car(args));
     return caar(car(args));
 }
 
 object *p_cadr(object *args) {
-    if (!args && cdr(args))
-        error("cadr", "wrong number of args", args);
+    assert_nargs("cadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
         error("cadr", "list is too short", car(args));
     return cadr(car(args));
 }
 
 object *p_cdar(object *args) {
-    if (!args && cdr(args))
-        error("cdar", "wrong number of args", args);
+    assert_nargs("cdar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
         error("cdar", "list is too short", car(args));
     return cdar(car(args));
 }
 
 object *p_cddr(object *args) {
-    if (!args && cdr(args))
-        error("cddr", "wrong number of args", args);
+    assert_nargs("cddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
         error("cddr", "list is too short", car(args));
     return cddr(car(args));
 }
 
 object *p_caaar(object *args) {
-    if (!args && cdr(args))
-        error("caaar", "wrong number of args", args);
+    assert_nargs("caaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
         error("caaar", "list is too short", car(args));
@@ -1020,8 +942,7 @@ object *p_caaar(object *args) {
 }
 
 object *p_caadr(object *args) {
-    if (!args && cdr(args))
-        error("caadr", "wrong number of args", args);
+    assert_nargs("caadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
         error("caadr", "list is too short", car(args));
@@ -1029,8 +950,7 @@ object *p_caadr(object *args) {
 }
 
 object *p_cadar(object *args) {
-    if (!args && cdr(args))
-        error("cadar", "wrong number of args", args);
+    assert_nargs("cadar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
         error("cadar", "list is too short", car(args));
@@ -1038,8 +958,7 @@ object *p_cadar(object *args) {
 }
 
 object *p_caddr(object *args) {
-    if (!args && cdr(args))
-        error("caddr", "wrong number of args", args);
+    assert_nargs("caddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
         error("caddr", "list is too short", car(args));
@@ -1047,8 +966,7 @@ object *p_caddr(object *args) {
 }
 
 object *p_cdaar(object *args) {
-    if (!args && cdr(args))
-        error("cdaar", "wrong number of args", args);
+    assert_nargs("cdaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
         error("cdaar", "list is too short", car(args));
@@ -1056,8 +974,7 @@ object *p_cdaar(object *args) {
 }
 
 object *p_cdadr(object *args) {
-    if (!args && cdr(args))
-        error("cdadr", "wrong number of args", args);
+    assert_nargs("cdadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
         error("cdadr", "list is too short", car(args));
@@ -1065,8 +982,7 @@ object *p_cdadr(object *args) {
 }
 
 object *p_cddar(object *args) {
-    if (!args && cdr(args))
-        error("cddar", "wrong number of args", args);
+    assert_nargs("cddar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
         error("cddar", "list is too short", car(args));
@@ -1074,8 +990,7 @@ object *p_cddar(object *args) {
 }
 
 object *p_cdddr(object *args) {
-    if (!args && cdr(args))
-        error("cdddr", "wrong number of args", args);
+    assert_nargs("cdddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
         error("cdddr", "list is too short", car(args));
@@ -1083,8 +998,7 @@ object *p_cdddr(object *args) {
 }
 
 object *p_caaaar(object *args) {
-    if (!args && cdr(args))
-        error("caaaar", "wrong number of args", args);
+    assert_nargs("caaaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("caaaar", "list is too short", car(args));
@@ -1092,8 +1006,7 @@ object *p_caaaar(object *args) {
 }
 
 object *p_caaadr(object *args) {
-    if (!args && cdr(args))
-        error("caaadr", "wrong number of args", args);
+    assert_nargs("caaadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("caaadr", "list is too short", car(args));
@@ -1101,8 +1014,7 @@ object *p_caaadr(object *args) {
 }
 
 object *p_caadar(object *args) {
-    if (!args && cdr(args))
-        error("caadar", "wrong number of args", args);
+    assert_nargs("caadar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("caadar", "list is too short", car(args));
@@ -1110,8 +1022,7 @@ object *p_caadar(object *args) {
 }
 
 object *p_caaddr(object *args) {
-    if (!args && cdr(args))
-        error("caaddr", "wrong number of args", args);
+    assert_nargs("caaddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("caaddr", "list is too short", car(args));
@@ -1119,8 +1030,7 @@ object *p_caaddr(object *args) {
 }
 
 object *p_cadaar(object *args) {
-    if (!args && cdr(args))
-        error("cadaar", "wrong number of args", args);
+    assert_nargs("cadaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cadaar", "list is too short", car(args));
@@ -1128,8 +1038,7 @@ object *p_cadaar(object *args) {
 }
 
 object *p_cadadr(object *args) {
-    if (!args && cdr(args))
-        error("cadadr", "wrong number of args", args);
+    assert_nargs("cadadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cadadr", "list is too short", car(args));
@@ -1137,8 +1046,7 @@ object *p_cadadr(object *args) {
 }
 
 object *p_caddar(object *args) {
-    if (!args && cdr(args))
-        error("caddar", "wrong number of args", args);
+    assert_nargs("caddar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("caddar", "list is too short", car(args));
@@ -1146,8 +1054,7 @@ object *p_caddar(object *args) {
 }
 
 object *p_cadddr(object *args) {
-    if (!args && cdr(args))
-        error("cadddr", "wrong number of args", args);
+    assert_nargs("cadddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cadddr", "list is too short", car(args));
@@ -1155,8 +1062,7 @@ object *p_cadddr(object *args) {
 }
 
 object *p_cdaaar(object *args) {
-    if (!args && cdr(args))
-        error("cdaaar", "wrong number of args", args);
+    assert_nargs("cdaaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cdaaar", "list is too short", car(args));
@@ -1164,8 +1070,7 @@ object *p_cdaaar(object *args) {
 }
 
 object *p_cdaadr(object *args) {
-    if (!args && cdr(args))
-        error("cdaadr", "wrong number of args", args);
+    assert_nargs("cdaadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cdaadr", "list is too short", car(args));
@@ -1173,8 +1078,7 @@ object *p_cdaadr(object *args) {
 }
 
 object *p_cdadar(object *args) {
-    if (!args && cdr(args))
-        error("cdadar", "wrong number of args", args);
+    assert_nargs("cdadar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cdadar", "list is too short", car(args));
@@ -1182,8 +1086,7 @@ object *p_cdadar(object *args) {
 }
 
 object *p_cdaddr(object *args) {
-    if (!args && cdr(args))
-        error("cdaddr", "wrong number of args", args);
+    assert_nargs("cdaddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cdaddr", "list is too short", car(args));
@@ -1191,8 +1094,7 @@ object *p_cdaddr(object *args) {
 }
 
 object *p_cddaar(object *args) {
-    if (!args && cdr(args))
-        error("cddaar", "wrong number of args", args);
+    assert_nargs("cddaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cddaar", "list is too short", car(args));
@@ -1200,8 +1102,7 @@ object *p_cddaar(object *args) {
 }
 
 object *p_cddadr(object *args) {
-    if (!args && cdr(args))
-        error("cddadr", "wrong number of args", args);
+    assert_nargs("cddadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cddadr", "list is too short", car(args));
@@ -1209,8 +1110,7 @@ object *p_cddadr(object *args) {
 }
 
 object *p_cdddar(object *args) {
-    if (!args && cdr(args))
-        error("cdddar", "wrong number of args", args);
+    assert_nargs("cdddar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cdddar", "list is too short", car(args));
@@ -1218,8 +1118,7 @@ object *p_cdddar(object *args) {
 }
 
 object *p_cddddr(object *args) {
-    if (!args && cdr(args))
-        error("cddddr", "wrong number of args", args);
+    assert_nargs("cddddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
         error("cddddr", "list is too short", car(args));
