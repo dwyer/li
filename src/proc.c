@@ -253,6 +253,25 @@ object *p_modulo(object *args) {
     return number(nm);
 }
 
+object *p_gcd(object *args) {
+    int a, b, c;
+
+    if (!args)
+        return number(0);
+    assert_integer("gcd", car(args));
+    a = abs(to_integer(car(args)));
+    while ((args = cdr(args))) {
+        assert_integer("gcd", car(args));
+        b = abs(to_integer(car(args)));
+        while (b) {
+            c = b;
+            b = a % b;
+            a = c;
+        }
+    }
+    return number(a);
+}
+
 object *p_floor(object *args) {
     assert_nargs("floor", 1, args);
     assert_number("floor", car(args));
@@ -903,6 +922,7 @@ struct reg {
     { "quotient", p_quotient },
     { "remainder", p_remainder },
     { "modulo", p_modulo },
+    { "gcd", p_gcd },
     { "floor", p_floor },
     { "ceiling", p_ceiling },
     { "truncate", p_truncate },

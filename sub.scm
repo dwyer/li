@@ -53,19 +53,6 @@
     (- x)
     x))
 
-(define (gcd . args)
-  (define (euclid a b)
-    (check (integer? a) 'gcd "not an integer" a)
-    (check (integer? b) 'gcd "not an integer" b)
-    (if (= b 0)
-      a
-      (euclid b (remainder a b))))
-  (cond ((null? args) 0)
-        ((null? (cdr args)) (abs (car args)))
-        (else
-          (apply gcd (cons (euclid (car args) (cadr args))
-                           (cddr args))))))
-
 (define (lcm . args)
   (define (algorithm a b)
     (/ (abs (* a b)) (gcd a b)))

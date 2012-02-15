@@ -166,7 +166,8 @@ object *eval(object *exp, object *env) {
             else if (is_load(exp))
                 return eval_load(cdr(exp), env);
             else if (is_application(exp))
-                return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
+                return apply(eval(car(exp), env),
+                             list_of_values(cdr(exp), env));
             else
                 error("eval", "unknown expression type", exp);
         }
