@@ -38,15 +38,11 @@ object *apply(object *procedure, object *arguments);
 object *apply_compound_procedure(object *proc, object *args);
 object *apply_primitive_procedure(object *proc, object *args);
 object *apply_syntax(object *proc, object *args);
-object *eval_and(object *exp, object *env);
 object *eval_assert(object *exp, object *env);
 object *eval_assignment(object *exp, object *env);
-object *eval_cond(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
-object *eval_if(object *exp, object *env);
 object *eval_let(object *exp, object *env);
 object *eval_load(object *exp, object *env);
-object *eval_or(object *exp, object *env);
 object *eval_sequence(object *exps, object *env);
 object *eval_syntax_definition(object *exp, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
@@ -98,56 +94,83 @@ object *define_variable(object *var, object *val, object *env) {
 }
 
 object *eval(object *exp, object *env) {
-    if (is_self_evaluating(exp))
-        return exp;
-    else if (is_variable(exp))
-        return lookup_variable_value(exp, env);
-    else if (is_quoted(exp))
-        return cadr(exp);
-    else if (is_assignment(exp))
-        return eval_assignment(exp, env);
-    else if (is_definition(exp))
-        return eval_definition(exp, env);
-    else if (is_if(exp))
-        return eval_if(exp, env);
-    else if (is_lambda(exp))
-        return compound(cadr(exp), cddr(exp), env);
-    else if (is_begin(exp))
-        return eval_sequence(cdr(exp), env);
-    else if (is_cond(exp))
-        return eval_cond(exp, env);
-    else if (is_let(exp))
-        return eval_let(exp, env);
-    else if (is_and(exp))
-        return eval_and(exp, env);
-    else if (is_or(exp))
-        return eval_or(exp, env);
-    else if (is_delay(exp))
-        return compound(nil, cdr(exp), env);
-    else if (is_assert(exp))
-        return eval_assert(exp, env);
-    else if (is_load(exp))
-        return eval_load(cdr(exp), env);
-    /* macros */
-    else if (is_syntax_definition(exp))
-        return eval_syntax_definition(exp, env);
-    /* apply */
-    else if (is_application(exp))
-        return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
-    /* error */
-    else
-        error("eval", "unknown expression type", exp);
-    return nil;
-}
+    object *seq;
 
-object *eval_and(object *exp, object *env) {
-    object *ret;
+    while (!is_self_evaluating(exp))
+        if (is_variable(exp))
+            return lookup_variable_value(exp, env);
+        else {
+            for (seq = exp; seq; seq = cdr(seq))
+                if (seq && !is_pair(seq))
+                    error("eval", "ill-formed special form", exp);
+            if (is_quoted(exp))
+                return cadr(exp);
+            else if (is_definition(exp))
+                return eval_definition(exp, env);
+            else if (is_assignment(exp))
+                return eval_assignment(exp, env);
+            else if (is_if(exp)) {
+                if (is_true(eval(cadr(exp), env)))
+                    exp = caddr(exp);
+                else if (cdddr(exp))
+                    exp = cadddr(exp);
+                else
+                    return boolean(false);
+            }
+            else if (is_cond(exp)) {
+                while ((exp = cdr(exp))) {
+                    if (is_tagged_list(car(exp), "else") ||
+                        is_true(eval(caar(exp), env))) {
+                        for (exp = cdar(exp); cdr(exp); exp = cdr(exp))
+                            eval(car(exp), env);
+                        break;
+                    }
+                }
+                if (!exp)
+                    return boolean(false);
+                exp = car(exp);
+            }
+            else if (is_begin(exp)) {
+                if (!cdr(exp))
+                    return nil;
+                while (cdr(exp = cdr(exp)))
+                    eval(car(exp), env);
+                exp = car(exp);
+            }
+            else if (is_and(exp)) {
+                if (!cdr(exp))
+                    return boolean(true);
+                while (cdr(exp = cdr(exp)))
+                    if (is_false(eval(car(exp), env)))
+                        return boolean(false);
+                exp = car(exp);
+            }
+            else if (is_or(exp)) {
+                object *obj;
 
-    ret = boolean(true);
-    while ((exp = cdr(exp)))
-        if (is_false(ret = eval(car(exp), env)))
-            return boolean(false);
-    return ret;
+                if (!cdr(exp))
+                    return boolean(false);
+                while (cdr(exp = cdr(exp)))
+                    if (is_true(obj = eval(car(exp), env)))
+                        return obj;
+                exp = car(exp);
+            }
+            else if (is_lambda(exp))
+                return compound(cadr(exp), cddr(exp), env);
+            else if (is_delay(exp))
+                return compound(nil, cdr(exp), env);
+            else if (is_let(exp))
+                return eval_let(exp, env);
+            else if (is_assert(exp))
+                return eval_assert(exp, env);
+            else if (is_load(exp))
+                return eval_load(cdr(exp), env);
+            else if (is_application(exp))
+                return apply(eval(car(exp), env), list_of_values(cdr(exp), env));
+            else
+                error("eval", "unknown expression type", exp);
+        }
+    return exp;
 }
 
 object *eval_assignment(object *exp, object *env) {
@@ -167,13 +190,6 @@ object *eval_assert(object *exp, object *env) {
     return nil;
 }
 
-object *eval_cond(object *exp, object *env) {
-    while ((exp = cdr(exp)))
-        if (is_tagged_list(car(exp), "else") || is_true(eval(caar(exp), env)))
-            return eval_sequence(cdar(exp), env);
-    return boolean(false);
-}
-
 object *eval_definition(object *exp, object *env) {
     int k;
 
@@ -184,19 +200,6 @@ object *eval_definition(object *exp, object *env) {
                                eval(make_lambda(cdadr(exp), cddr(exp)), env),
                                env);
     error("define", "ill-formed special form", exp);
-    return nil;
-}
-
-object *eval_if(object *exp, object *env) {
-    int k;
-
-    if ((k = length(exp)) == 3 || k == 4) {
-        if (is_true(eval(cadr(exp), env)))
-            return eval(caddr(exp), env);
-        else
-            return eval(cdddr(exp) ? cadddr(exp) : boolean(false), env);
-    }
-    error("if", "ill-formed special form", exp);
     return nil;
 }
 
@@ -225,15 +228,6 @@ object *eval_load(object *exp, object *env) {
         error("load", "arg must be a string", exp);
     load(to_string(car(exp)), env);
     return nil;
-}
-
-object *eval_or(object *exp, object *env) {
-    object *ret;
-
-    while ((exp = cdr(exp)))
-        if (is_true(ret = eval(car(exp), env)))
-            return ret;
-    return boolean(false);
 }
 
 object *eval_sequence(object *exps, object *env) {
