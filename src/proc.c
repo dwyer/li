@@ -53,15 +53,6 @@ object *p_runtime(object *args) {
     return number(clock());
 }
 
-/*
- * (not obj)
- * Returns #t is obj is #f, returns #f otherwise.
- */
-object *p_not(object *args) {
-    assert_nargs("not", 1, args);
-    return boolean(not(car(args)));
-}
-
 /**************************
  * Equivelence predicates *
  **************************/
@@ -96,36 +87,8 @@ object *p_is_equal(object *args) {
 }
 
 /************************
- * Primitive data types *
+ * Numerical operations *
  ************************/
-
-/*
- * (null? obj)
- * Returns #t if the object is null, aka nil, aka ``the empty list'',
- * represented in Scheme as ().
- */
-object *p_is_null(object *args) {
-    assert_nargs("null?", 1, args);
-    return boolean(is_null(car(args)));
-}
-
-/* (boolean? obj)
- * Return #t is the object is #t or #f, return #f otherwise.
- */
-object *p_is_boolean(object *args) {
-    assert_nargs("boolean?", 1, args);
-    return boolean(is_boolean(car(args)));
-}
-
-/*
- * (integer? obj)
- * Return #t is the object is an integer, #f otherwise.
- */
-object *p_is_integer(object *args) {
-    assert_nargs("integer?", 1, args);
-    return boolean(is_number(car(args)) &&
-                   to_number(car(args)) == (int)to_number(car(args)));
-}
 
 /* 
  * (number? obj)
@@ -137,219 +100,13 @@ object *p_is_number(object *args) {
 }
 
 /*
- * (pair? obj)
- * Returns #t is the object is a pair, #f otherwise.
+ * (integer? obj)
+ * Return #t is the object is an integer, #f otherwise.
  */
-object *p_is_pair(object *args) {
-    assert_nargs("pair?", 1, args);
-    return boolean(is_pair(car(args)));
+object *p_is_integer(object *args) {
+    assert_nargs("integer?", 1, args);
+    return boolean(is_integer(car(args)));
 }
- 
-/*
- * (procedure? obj)
- * Returns #t if the object is a procedure, #f otherwise.
- */
-object *p_is_procedure(object *args) {
-    assert_nargs("procedure?", 1, args);
-    return boolean(is_procedure(car(args)));
-}
-
-/*
- * (string? obj)
- * Returns #t if the object is a string, #f otherwise.
- */
-object *p_is_string(object *args) {
-    assert_nargs("string?", 1, args);
-    return boolean(is_string(car(args)));
-}
-
-/*
- * (symbol? obj)
- * Returns #t if the object is a symbol, #f otherwise.
- * BUG: Returns #t for booleans.
- */
-object *p_is_symbol(object *args) {
-    assert_nargs("symbol?", 1, args);
-    return boolean(is_symbol(car(args)));
-}
-
-/*********
- * PAIRS *
- *********/
-
-/*
- * (cons obj1 obj2)
- * Returns a pair containing obj1 and obj2.
- */
-object *p_cons(object *args) {
-    assert_nargs("cons", 2, args);
-    return cons(car(args), cadr(args));
-}
-
-/*
- * (car pair)
- * Returns the first element of the given pair.
- */
-object *p_car(object *args) {
-    assert_nargs("car", 1, args);
-    assert_pair("car", car(args));
-    return caar(args);
-}
-
-/* 
- * (cdr pair)
- * Returns the second element of the given pair.
- */
-object *p_cdr(object *args) {
-    assert_nargs("cdr", 1, args);
-    assert_pair("cdr", car(args));
-    return cdar(args);
-}
-
-/*
- * (set-car! pair obj)
- * Sets the first element of the given pair to the given object.
- */
-object *p_set_car(object *args) {
-    assert_nargs("set-car!", 2, args);
-    assert_pair("set-car!", car(args));
-    set_car(car(args), cadr(args));
-    return nil;
-}
-
-/*
- * (set-cdr! pair obj)
- * Sets the second element of the given pair to the given object.
- */
-object *p_set_cdr(object *args) {
-    assert_nargs("set-cdr!", 2, args);
-    assert_pair("set-cdr!", car(args));
-    set_cdr(car(args), cadr(args));
-    return nil;
-}
-
-/*********
- * LISTS *
- *********/
-
-object *p_is_list(object *args) {
-    assert_nargs("list?", 1, args);
-    for (args = car(args); args; args = cdr(args))
-        if (args && !is_pair(args))
-            return boolean(false);
-    return boolean(true);
-}
-
-object *p_list(object *args) {
-    return args;
-}
-
-object *p_length(object *args) {
-    int ret;
-    object *lst;
-
-    assert_nargs("length", 1, args);
-    for (ret = 0, lst = car(args); lst; ret++, lst = cdr(lst))
-        if (lst && !is_pair(lst))
-            error("length", "not a list", car(args));
-    return number(ret);
-}
-
-object *p_append(object *args) {
-    object *head, *tail, *list;
-
-    if (!args)
-        return nil;
-    else if (!cdr(args))
-        return car(args);
-    head = tail = list = nil;
-    while (args) {
-        list = car(args);
-        while (list) {
-            if (is_pair(list)) {
-                if (head)
-                    tail = set_cdr(tail, cons(car(list), nil));
-                else
-                    head = tail = cons(car(list), nil);
-                list = cdr(list);
-            } else if (!cdr(args)) {
-                if (head)
-                    tail = set_cdr(tail, list);
-                else
-                    head = tail = list;
-                list = nil;
-            } else {
-                error("append", "not a list", list);
-            }
-        }
-        args = cdr(args);
-    }
-    return head;
-}
-
-/***********
- * VECTORS *
- ***********/
-
-/*
- * (vector? obj)
- * Returns #t if the object is a vector, #f otherwise.
- */
-object *p_is_vector(object *args) {
-    assert_nargs("vector?", 1, args);
-    return boolean(is_vector(car(args)));
-}
-
-/* 
- * (vector . args)
- * Returns a vector containing the given args.
- */
-object *p_vector(object *args) {
-    return vector(args);
-}
-
-/*
- * (vector-length vec)
- * Returns the length of the given vector.
- */
-object *p_vector_length(object *args) {
-    assert_nargs("vector-length", 1, args);
-    assert_vector("vector-length", car(args));
-    return number(vector_length(car(args)));
-}
-
-/*
- * (vector-ref vec k)
- * Return element k of the given vector where k is a positive integer less than
- * the length of the vector.
- */
-object *p_vector_ref(object *args) {
-    assert_nargs("vector-ref", 2, args);
-    assert_vector("vector-ref", car(args));
-    assert_integer("vector-ref", cadr(args));
-    if (to_number(cadr(args)) < 0 ||
-        to_number(cadr(args)) >= vector_length(car(args)))
-        error("vector-ref", "out of range", cadr(args));
-    return vector_ref(car(args), to_integer(cadr(args)));
-}
-
-/*
- * (vector-set! vec k obj)
- * Sets element k of vector vec to object obj where k is a positive integer.
- */
-object *p_vector_set(object *args) {
-    assert_nargs("vector-set!", 3, args);
-    assert_vector("vector-set!", car(args));
-    assert_integer("vector-set!", cadr(args));
-    if (to_number(cadr(args)) < 0 ||
-        to_number(cadr(args)) >= vector_length(car(args)))
-        error("vector-set!", "out of range", cadr(args));
-    return vector_set(car(args), to_integer(cadr(args)), caddr(args));
-}
-
-/*************************
- * ARITHMATIC PREDICATES *
- *************************/
 
 object *p_eq(object *args) {
     while (args) {
@@ -397,10 +154,6 @@ object *p_le(object *args) {
 object *p_ge(object *args) {
     return boolean(not(p_lt(args)));
 }
-
-/************************
- * ARITHMATIC OPERATORS *
- ************************/
 
 object *p_add(object *args) {
     double result = 0;
@@ -460,6 +213,12 @@ object *p_div(object *args) {
     return number(result);
 }
 
+object *p_abs(object *args) {
+    assert_nargs("abs", 1, args);
+    assert_number("abs", car(args));
+    return number(fabs(to_number(car(args))));
+}
+
 object *p_quotient(object *args) {
     assert_nargs("quotient", 2, args);
     assert_integer("quotient", car(args));
@@ -494,14 +253,28 @@ object *p_modulo(object *args) {
     return number(nm);
 }
 
-/***************************
- * TRANSENDENTAL FUNCTIONS *
- ***************************/
+object *p_floor(object *args) {
+    assert_nargs("floor", 1, args);
+    assert_number("floor", car(args));
+    return number(floor(to_number(car(args))));
+}
 
-object *p_abs(object *args) {
-    assert_nargs("abs", 1, args);
-    assert_number("abs", car(args));
-    return number(fabs(to_number(car(args))));
+object *p_ceiling(object *args) {
+    assert_nargs("ceiling", 1, args);
+    assert_number("ceiling", car(args));
+    return number(ceil(to_number(car(args))));
+}
+
+object *p_truncate(object *args) {
+    assert_nargs("truncate", 1, args);
+    assert_number("truncate", car(args));
+    return number(ceil(to_number(car(args)) - 0.5));
+}
+
+object *p_round(object *args) {
+    assert_nargs("round", 1, args);
+    assert_number("round", car(args));
+    return number(floor(to_number(car(args)) + 0.5));
 }
 
 object *p_exp(object *args) {
@@ -564,33 +337,276 @@ object *p_expt(object *args) {
     return number(pow(to_number(car(args)), to_number(cadr(args))));
 }
 
-object *p_floor(object *args) {
-    assert_nargs("floor", 1, args);
-    assert_number("floor", car(args));
-    return number(floor(to_number(car(args))));
+/************
+ * Booleans *
+ ************/
+
+/*
+ * (not obj)
+ * Returns #t is obj is #f, returns #f otherwise.
+ */
+object *p_not(object *args) {
+    assert_nargs("not", 1, args);
+    return boolean(not(car(args)));
 }
 
-object *p_ceiling(object *args) {
-    assert_nargs("ceiling", 1, args);
-    assert_number("ceiling", car(args));
-    return number(ceil(to_number(car(args))));
+/* (boolean? obj)
+ * Return #t is the object is #t or #f, return #f otherwise.
+ */
+object *p_is_boolean(object *args) {
+    assert_nargs("boolean?", 1, args);
+    return boolean(is_boolean(car(args)));
 }
 
-object *p_round(object *args) {
-    assert_nargs("round", 1, args);
-    assert_number("round", car(args));
-    return number(floor(to_number(car(args)) + 0.5));
+/*******************
+ * Pairs and lists *
+ *******************/
+
+/*
+ * (pair? obj)
+ * Returns #t is the object is a pair, #f otherwise.
+ */
+object *p_is_pair(object *args) {
+    assert_nargs("pair?", 1, args);
+    return boolean(is_pair(car(args)));
 }
 
-object *p_truncate(object *args) {
-    assert_nargs("truncate", 1, args);
-    assert_number("truncate", car(args));
-    return number(ceil(to_number(car(args)) - 0.5));
+/*
+ * (cons obj1 obj2)
+ * Returns a pair containing obj1 and obj2.
+ */
+object *p_cons(object *args) {
+    assert_nargs("cons", 2, args);
+    return cons(car(args), cadr(args));
+}
+
+/*
+ * (car pair)
+ * Returns the first element of the given pair.
+ */
+object *p_car(object *args) {
+    assert_nargs("car", 1, args);
+    assert_pair("car", car(args));
+    return caar(args);
+}
+
+/* 
+ * (cdr pair)
+ * Returns the second element of the given pair.
+ */
+object *p_cdr(object *args) {
+    assert_nargs("cdr", 1, args);
+    assert_pair("cdr", car(args));
+    return cdar(args);
+}
+
+/*
+ * (set-car! pair obj)
+ * Sets the first element of the given pair to the given object.
+ */
+object *p_set_car(object *args) {
+    assert_nargs("set-car!", 2, args);
+    assert_pair("set-car!", car(args));
+    set_car(car(args), cadr(args));
+    return nil;
+}
+
+/*
+ * (set-cdr! pair obj)
+ * Sets the second element of the given pair to the given object.
+ */
+object *p_set_cdr(object *args) {
+    assert_nargs("set-cdr!", 2, args);
+    assert_pair("set-cdr!", car(args));
+    set_cdr(car(args), cadr(args));
+    return nil;
+}
+
+/*
+ * (null? obj)
+ * Returns #t if the object is null, aka nil, aka ``the empty list'',
+ * represented in Scheme as ().
+ */
+object *p_is_null(object *args) {
+    assert_nargs("null?", 1, args);
+    return boolean(is_null(car(args)));
+}
+ 
+object *p_is_list(object *args) {
+    assert_nargs("list?", 1, args);
+    for (args = car(args); args; args = cdr(args))
+        if (args && !is_pair(args))
+            return boolean(false);
+    return boolean(true);
+}
+
+object *p_list(object *args) {
+    return args;
+}
+
+object *p_length(object *args) {
+    int ret;
+    object *lst;
+
+    assert_nargs("length", 1, args);
+    for (ret = 0, lst = car(args); lst; ret++, lst = cdr(lst))
+        if (lst && !is_pair(lst))
+            error("length", "not a list", car(args));
+    return number(ret);
+}
+
+object *p_append(object *args) {
+    object *head, *tail, *list;
+
+    if (!args)
+        return nil;
+    else if (!cdr(args))
+        return car(args);
+    head = tail = list = nil;
+    while (args) {
+        list = car(args);
+        while (list) {
+            if (is_pair(list)) {
+                if (head)
+                    tail = set_cdr(tail, cons(car(list), nil));
+                else
+                    head = tail = cons(car(list), nil);
+                list = cdr(list);
+            } else if (!cdr(args)) {
+                if (head)
+                    tail = set_cdr(tail, list);
+                else
+                    head = tail = list;
+                list = nil;
+            } else {
+                error("append", "not a list", list);
+            }
+        }
+        args = cdr(args);
+    }
+    return head;
+}
+
+/***********
+ * Symbols *
+ ***********/
+
+/*
+ * (symbol? obj)
+ * Returns #t if the object is a symbol, #f otherwise.
+ */
+object *p_is_symbol(object *args) {
+    assert_nargs("symbol?", 1, args);
+    return boolean(is_symbol(car(args)));
+}
+
+/***********
+ * Strings *
+ ***********/
+
+/*
+ * (string? obj)
+ * Returns #t if the object is a string, #f otherwise.
+ */
+object *p_is_string(object *args) {
+    assert_nargs("string?", 1, args);
+    return boolean(is_string(car(args)));
+}
+
+/***********
+ * Vectors *
+ ***********/
+
+/*
+ * (vector? obj)
+ * Returns #t if the object is a vector, #f otherwise.
+ */
+object *p_is_vector(object *args) {
+    assert_nargs("vector?", 1, args);
+    return boolean(is_vector(car(args)));
+}
+
+/* 
+ * (vector . args)
+ * Returns a vector containing the given args.
+ */
+object *p_vector(object *args) {
+    return vector(args);
+}
+
+/*
+ * (vector-length vec)
+ * Returns the length of the given vector.
+ */
+object *p_vector_length(object *args) {
+    assert_nargs("vector-length", 1, args);
+    assert_vector("vector-length", car(args));
+    return number(vector_length(car(args)));
+}
+
+/*
+ * (vector-ref vec k)
+ * Return element k of the given vector where k is a positive integer less than
+ * the length of the vector.
+ */
+object *p_vector_ref(object *args) {
+    assert_nargs("vector-ref", 2, args);
+    assert_vector("vector-ref", car(args));
+    assert_integer("vector-ref", cadr(args));
+    if (to_number(cadr(args)) < 0 ||
+        to_number(cadr(args)) >= vector_length(car(args)))
+        error("vector-ref", "out of range", cadr(args));
+    return vector_ref(car(args), to_integer(cadr(args)));
+}
+
+/*
+ * (vector-set! vec k obj)
+ * Sets element k of vector vec to object obj where k is a positive integer.
+ */
+object *p_vector_set(object *args) {
+    assert_nargs("vector-set!", 3, args);
+    assert_vector("vector-set!", car(args));
+    assert_integer("vector-set!", cadr(args));
+    if (to_number(cadr(args)) < 0 ||
+        to_number(cadr(args)) >= vector_length(car(args)))
+        error("vector-set!", "out of range", cadr(args));
+    return vector_set(car(args), to_integer(cadr(args)), caddr(args));
 }
 
 /********************
- * INPUT AND OUTPUT *
+ * Control features *
  ********************/
+
+/*
+ * (procedure? obj)
+ * Returns #t if the object is a procedure, #f otherwise.
+ */
+object *p_is_procedure(object *args) {
+    assert_nargs("procedure?", 1, args);
+    return boolean(is_procedure(car(args)));
+}
+
+/*
+ * (apply proc args)
+ * Applies the given args to the given procedure. proc must be a procedure.
+ * args must be a list whose length is equal to the number of args the
+ * procedure accepts.
+ */
+object *p_apply(object *args) {
+    assert_nargs("apply", 2, args);
+    assert_type("apply", procedure, car(args));
+    return apply(car(args), cadr(args));
+}
+
+object *p_force(object *args) {
+    assert_nargs("force", 1, args);
+    assert_type("force", procedure, car(args));
+    return apply(car(args), nil);
+}
+
+/*********
+ * Input *
+ *********/
 
 /*
  * (read)
@@ -600,6 +616,10 @@ object *p_read(object *args) {
     assert_nargs("read", 0, args);
     return read(stdin);
 }
+
+/**********
+ * Output *
+ **********/
 
 /*
  * (write obj)
@@ -629,28 +649,6 @@ object *p_newline(object *args) {
     assert_nargs("newline", 0, args);
     newline(stdout);
     return nil;
-}
-
-/******************
- * APPLY AND EVAL *
- ******************/
-
-/*
- * (apply proc args)
- * Applies the given args to the given procedure. proc must be a procedure.
- * args must be a list whose length is equal to the number of args the
- * procedure accepts.
- */
-object *p_apply(object *args) {
-    assert_nargs("apply", 2, args);
-    assert_type("apply", procedure, car(args));
-    return apply(car(args), cadr(args));
-}
-
-object *p_force(object *args) {
-    assert_nargs("force", 1, args);
-    assert_type("force", procedure, car(args));
-    return apply(car(args), nil);
 }
 
 /*****************
