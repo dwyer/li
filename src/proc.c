@@ -27,242 +27,6 @@
 
 typedef struct reg reg;
 
-/* non-standard */
-object *p_error(object *args);
-object *p_random(object *args);
-object *p_runtime(object *args);
-
-/* equivilence predicates */
-object *p_is_eq(object *args);
-object *p_is_eqv(object *args);
-object *p_is_equal(object *args);
-
-/* primitive types */
-object *p_not(object *args);
-object *p_is_null(object *args);
-object *p_is_boolean(object *args);
-object *p_is_integer(object *args);
-object *p_is_number(object *args);
-object *p_is_procedure(object *args);
-object *p_is_promise(object *args);
-object *p_is_string(object *args);
-object *p_is_symbol(object *args);
-
-/* pairs and lists */
-object *p_is_pair(object *args);
-object *p_cons(object *args);
-object *p_car(object *args);
-object *p_cdr(object *args);
-object *p_caar(object *args);
-object *p_cadr(object *args);
-object *p_cdar(object *args);
-object *p_cddr(object *args);
-object *p_caaar(object *args);
-object *p_caadr(object *args);
-object *p_cadar(object *args);
-object *p_caddr(object *args);
-object *p_cdaar(object *args);
-object *p_cdadr(object *args);
-object *p_cddar(object *args);
-object *p_cdddr(object *args);
-object *p_caaaar(object *args);
-object *p_caaadr(object *args);
-object *p_caadar(object *args);
-object *p_caaddr(object *args);
-object *p_cadaar(object *args);
-object *p_cadadr(object *args);
-object *p_caddar(object *args);
-object *p_cadddr(object *args);
-object *p_cdaaar(object *args);
-object *p_cdaadr(object *args);
-object *p_cdadar(object *args);
-object *p_cdaddr(object *args);
-object *p_cddaar(object *args);
-object *p_cddadr(object *args);
-object *p_cdddar(object *args);
-object *p_cddddr(object *args);
-object *p_set_car(object *args);
-object *p_set_cdr(object *args);
-
-/* lists */
-object *p_is_list(object *args);
-object *p_list(object *args);
-object *p_length(object *args);
-object *p_append(object *args);
-
-/* vectors */
-object *p_is_vector(object *args);
-object *p_vector(object *args);
-object *p_vector_length(object *args);
-object *p_vector_ref(object *args);
-object *p_vector_set(object *args);
-
-/* arithmatic predicates */
-object *p_eq(object *args);
-object *p_ge(object *args);
-object *p_gt(object *args);
-object *p_le(object *args);
-object *p_lt(object *args);
-
-/* arithmatic operators */
-object *p_add(object *args);
-object *p_mul(object *args);
-object *p_sub(object *args);
-object *p_div(object *args);
-object *p_quotient(object *args);
-object *p_remainder(object *args);
-object *p_modulo(object *args);
-
-/* transendental functions */
-object *p_abs(object *args);
-object *p_exp(object *args);
-object *p_log(object *args);
-object *p_sin(object *args);
-object *p_cos(object *args);
-object *p_tan(object *args);
-object *p_asin(object *args);
-object *p_acos(object *args);
-object *p_atan(object *args);
-object *p_sqrt(object *args);
-object *p_expt(object *args);
-object *p_floor(object *args);
-object *p_ceiling(object *args);
-object *p_truncate(object *args);
-object *p_round(object *args);
-
-/* I/O */
-object *p_read(object *args);
-object *p_write(object *args);
-object *p_display(object *args);
-object *p_newline(object *args);
-
-/* eval and applay */
-object *p_apply(object *args);
-object *p_force(object *args);
-
-struct reg {
-    char *var;
-    object *(*val)(object *);
-} regs[] = {
-    /* non-standard */
-    { "error", p_error },
-    { "random", p_random },
-    { "runtime", p_runtime },
-    /* not */
-    { "not", p_not },
-    /* equivelence */
-    { "eq?", p_is_eq },
-    { "eqv?", p_is_eqv },
-    { "equal?", p_is_equal },
-    /* primitive types */
-    { "null?", p_is_null },
-    { "boolean?", p_is_boolean },
-    { "integer?", p_is_integer },
-    { "number?", p_is_number },
-    { "procedure?", p_is_procedure },
-    { "promise?", p_is_promise },
-    { "string?", p_is_string },
-    { "symbol?", p_is_symbol },
-    /* pairs */
-    { "pair?", p_is_pair },
-    { "cons", p_cons },
-    { "car", p_car },
-    { "cdr", p_cdr },
-    { "set-car!", p_set_car },
-    { "set-cdr!", p_set_cdr },
-    /* lists */
-    { "list?", p_is_list },
-    { "list", p_list },
-    { "length", p_length },
-    { "append", p_append },
-    /* vectors */
-    { "vector?", p_is_vector },
-    { "vector", p_vector },
-    { "vector-length", p_vector_length },
-    { "vector-ref", p_vector_ref },
-    { "vector-set!", p_vector_set },
-    /* artiy preds */
-    { "=", p_eq },
-    { "<", p_lt },
-    { ">", p_gt },
-    { "<=", p_le },
-    { ">=", p_ge },
-    /* arity ops */
-    { "+", p_add },
-    { "*", p_mul },
-    { "-", p_sub },
-    { "/", p_div },
-    { "quotient", p_quotient },
-    { "remainder", p_remainder },
-    { "modulo", p_modulo },
-    /* transendentals */
-    { "abs", p_abs },
-    { "exp", p_exp },
-    { "log", p_log },
-    { "sin", p_sin },
-    { "cos", p_cos },
-    { "tan", p_tan },
-    { "asin", p_asin },
-    { "acos", p_acos },
-    { "atan", p_atan },
-    { "sqrt", p_sqrt },
-    { "expt", p_expt },
-    { "floor", p_floor },
-    { "ceiling", p_ceiling },
-    { "round", p_round },
-    { "truncate", p_truncate },
-    /* io */
-    { "read", p_read },
-    { "write", p_write },
-    { "display", p_display },
-    { "newline", p_newline },
-    /* apply and eval */
-    { "apply", p_apply },
-    { "force", p_force },
-    /* cars and cdrs */
-    { "caar", p_caar },
-    { "cadr", p_cadr },
-    { "cdar", p_cdar },
-    { "cddr", p_cddr },
-    { "caaar", p_caaar },
-    { "caadr", p_caadr },
-    { "cadar", p_cadar },
-    { "caddr", p_caddr },
-    { "cdaar", p_cdaar },
-    { "cdadr", p_cdadr },
-    { "cddar", p_cddar },
-    { "cdddr", p_cdddr },
-    { "caaaar", p_caaaar },
-    { "caaadr", p_caaadr },
-    { "caadar", p_caadar },
-    { "caaddr", p_caaddr },
-    { "cadaar", p_cadaar },
-    { "cadadr", p_cadadr },
-    { "caddar", p_caddar },
-    { "cadddr", p_cadddr },
-    { "cdaaar", p_cdaaar },
-    { "cdaadr", p_cdaadr },
-    { "cdadar", p_cdadar },
-    { "cdaddr", p_cdaddr },
-    { "cddaar", p_cddaar },
-    { "cddadr", p_cddadr },
-    { "cdddar", p_cdddar },
-    { "cddddr", p_cddddr },
-    /* eol */
-    { nil, nil }
-};
-
-object *primitive_procedures(object *env) {
-    reg *iter;
-
-    for (iter = regs; iter->var; iter++) {
-        object *var = symbol(iter->var);
-        object *val = procedure(iter->val);
-        env = cons(cons(var, val), env);
-    }
-    return env;
-}
-
 /*
  * (error who msg . irritants)
  * Prints an error message and raises an exception. who should be the name of
@@ -794,7 +558,6 @@ object *p_acos(object *args) {
 }
 
 object *p_atan(object *args) {
-    assert_nargs("atan", 1, args);
     assert_number("atan", car(args));
     return number(atan(to_number(car(args))));
 }
@@ -1124,3 +887,127 @@ object *p_cddddr(object *args) {
         error("cddddr", "list is too short", car(args));
     return cddddr(car(args));
 }
+
+struct reg {
+    char *var;
+    object *(*val)(object *);
+} regs[] = {
+    /* non-standard */
+    { "error", p_error },
+    { "random", p_random },
+    { "runtime", p_runtime },
+    /* not */
+    { "not", p_not },
+    /* equivelence */
+    { "eq?", p_is_eq },
+    { "eqv?", p_is_eqv },
+    { "equal?", p_is_equal },
+    /* primitive types */
+    { "null?", p_is_null },
+    { "boolean?", p_is_boolean },
+    { "integer?", p_is_integer },
+    { "number?", p_is_number },
+    { "procedure?", p_is_procedure },
+    { "promise?", p_is_promise },
+    { "string?", p_is_string },
+    { "symbol?", p_is_symbol },
+    /* pairs */
+    { "pair?", p_is_pair },
+    { "cons", p_cons },
+    { "car", p_car },
+    { "cdr", p_cdr },
+    { "set-car!", p_set_car },
+    { "set-cdr!", p_set_cdr },
+    /* lists */
+    { "list?", p_is_list },
+    { "list", p_list },
+    { "length", p_length },
+    { "append", p_append },
+    /* vectors */
+    { "vector?", p_is_vector },
+    { "vector", p_vector },
+    { "vector-length", p_vector_length },
+    { "vector-ref", p_vector_ref },
+    { "vector-set!", p_vector_set },
+    /* artiy preds */
+    { "=", p_eq },
+    { "<", p_lt },
+    { ">", p_gt },
+    { "<=", p_le },
+    { ">=", p_ge },
+    /* arity ops */
+    { "+", p_add },
+    { "*", p_mul },
+    { "-", p_sub },
+    { "/", p_div },
+    { "quotient", p_quotient },
+    { "remainder", p_remainder },
+    { "modulo", p_modulo },
+    /* transendentals */
+    { "abs", p_abs },
+    { "exp", p_exp },
+    { "log", p_log },
+    { "sin", p_sin },
+    { "cos", p_cos },
+    { "tan", p_tan },
+    { "asin", p_asin },
+    { "acos", p_acos },
+    { "atan", p_atan },
+    { "sqrt", p_sqrt },
+    { "expt", p_expt },
+    { "floor", p_floor },
+    { "ceiling", p_ceiling },
+    { "round", p_round },
+    { "truncate", p_truncate },
+    /* io */
+    { "read", p_read },
+    { "write", p_write },
+    { "display", p_display },
+    { "newline", p_newline },
+    /* apply and eval */
+    { "apply", p_apply },
+    { "force", p_force },
+    /* cars and cdrs */
+    { "caar", p_caar },
+    { "cadr", p_cadr },
+    { "cdar", p_cdar },
+    { "cddr", p_cddr },
+    { "caaar", p_caaar },
+    { "caadr", p_caadr },
+    { "cadar", p_cadar },
+    { "caddr", p_caddr },
+    { "cdaar", p_cdaar },
+    { "cdadr", p_cdadr },
+    { "cddar", p_cddar },
+    { "cdddr", p_cdddr },
+    { "caaaar", p_caaaar },
+    { "caaadr", p_caaadr },
+    { "caadar", p_caadar },
+    { "caaddr", p_caaddr },
+    { "cadaar", p_cadaar },
+    { "cadadr", p_cadadr },
+    { "caddar", p_caddar },
+    { "cadddr", p_cadddr },
+    { "cdaaar", p_cdaaar },
+    { "cdaadr", p_cdaadr },
+    { "cdadar", p_cdadar },
+    { "cdaddr", p_cdaddr },
+    { "cddaar", p_cddaar },
+    { "cddadr", p_cddadr },
+    { "cdddar", p_cdddar },
+    { "cddddr", p_cddddr },
+    /* eol */
+    { nil, nil }
+};
+
+object *primitive_procedures(object *env) {
+    reg *iter;
+
+    for (iter = regs; iter->var; iter++) {
+        object *var = symbol(iter->var);
+        object *val = procedure(iter->val);
+        env = cons(cons(var, val), env);
+    }
+    return env;
+}
+
