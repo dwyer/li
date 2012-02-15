@@ -25,8 +25,6 @@
 #define assert_symbol(name, arg)     assert_type(name, symbol, arg)
 #define assert_vector(name, arg)     assert_type(name, vector, arg)
 
-typedef struct reg reg;
-
 /*
  * (error who msg . irritants)
  * Prints an error message and raises an exception. who should be the name of
@@ -892,59 +890,34 @@ struct reg {
     char *var;
     object *(*val)(object *);
 } regs[] = {
-    /* non-standard */
+    /* Non-standard */
     { "error", p_error },
     { "random", p_random },
     { "runtime", p_runtime },
-    /* not */
-    { "not", p_not },
-    /* equivelence */
+    /* Equivalence predicates */
     { "eq?", p_is_eq },
     { "eqv?", p_is_eqv },
     { "equal?", p_is_equal },
-    /* primitive types */
-    { "null?", p_is_null },
-    { "boolean?", p_is_boolean },
-    { "integer?", p_is_integer },
+    /* Numerical operations */
     { "number?", p_is_number },
-    { "procedure?", p_is_procedure },
-    { "promise?", p_is_promise },
-    { "string?", p_is_string },
-    { "symbol?", p_is_symbol },
-    /* pairs */
-    { "pair?", p_is_pair },
-    { "cons", p_cons },
-    { "car", p_car },
-    { "cdr", p_cdr },
-    { "set-car!", p_set_car },
-    { "set-cdr!", p_set_cdr },
-    /* lists */
-    { "list?", p_is_list },
-    { "list", p_list },
-    { "length", p_length },
-    { "append", p_append },
-    /* vectors */
-    { "vector?", p_is_vector },
-    { "vector", p_vector },
-    { "vector-length", p_vector_length },
-    { "vector-ref", p_vector_ref },
-    { "vector-set!", p_vector_set },
-    /* artiy preds */
+    { "integer?", p_is_integer },
     { "=", p_eq },
     { "<", p_lt },
     { ">", p_gt },
     { "<=", p_le },
     { ">=", p_ge },
-    /* arity ops */
     { "+", p_add },
     { "*", p_mul },
     { "-", p_sub },
     { "/", p_div },
+    { "abs", p_abs },
     { "quotient", p_quotient },
     { "remainder", p_remainder },
     { "modulo", p_modulo },
-    /* transendentals */
-    { "abs", p_abs },
+    { "floor", p_floor },
+    { "ceiling", p_ceiling },
+    { "truncate", p_truncate },
+    { "round", p_round },
     { "exp", p_exp },
     { "log", p_log },
     { "sin", p_sin },
@@ -955,19 +928,14 @@ struct reg {
     { "atan", p_atan },
     { "sqrt", p_sqrt },
     { "expt", p_expt },
-    { "floor", p_floor },
-    { "ceiling", p_ceiling },
-    { "round", p_round },
-    { "truncate", p_truncate },
-    /* io */
-    { "read", p_read },
-    { "write", p_write },
-    { "display", p_display },
-    { "newline", p_newline },
-    /* apply and eval */
-    { "apply", p_apply },
-    { "force", p_force },
-    /* cars and cdrs */
+    /* Booleans */
+    { "boolean?", p_is_boolean },
+    { "not", p_not },
+    /* Pairs and lists */
+    { "pair?", p_is_pair },
+    { "cons", p_cons },
+    { "car", p_car },
+    { "cdr", p_cdr },
     { "caar", p_caar },
     { "cadr", p_cadr },
     { "cdar", p_cdar },
@@ -996,12 +964,40 @@ struct reg {
     { "cddadr", p_cddadr },
     { "cdddar", p_cdddar },
     { "cddddr", p_cddddr },
-    /* eol */
+    { "set-car!", p_set_car },
+    { "set-cdr!", p_set_cdr },
+    { "null?", p_is_null },
+    { "list?", p_is_list },
+    { "list", p_list },
+    { "length", p_length },
+    { "append", p_append },
+    /* Symbols */
+    { "symbol?", p_is_symbol },
+    /* Strings */
+    { "string?", p_is_string },
+    /* Vectors */
+    { "vector?", p_is_vector },
+    { "vector", p_vector },
+    { "vector-length", p_vector_length },
+    { "vector-ref", p_vector_ref },
+    { "vector-set!", p_vector_set },
+    /* Control features */
+    { "procedure?", p_is_procedure },
+    { "apply", p_apply },
+    { "force", p_force },
+    { "promise?", p_is_promise }, /* TODO: delete */
+    /* Input */
+    { "read", p_read },
+    /* Output */
+    { "write", p_write },
+    { "display", p_display },
+    { "newline", p_newline },
+    /* sentinel */
     { nil, nil }
 };
 
 object *primitive_procedures(object *env) {
-    reg *iter;
+    struct reg *iter;
 
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);
