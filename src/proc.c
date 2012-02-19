@@ -108,6 +108,18 @@ object *p_is_integer(object *args) {
     return boolean(is_integer(car(args)));
 }
 
+object *p_is_odd(object *args) {
+    assert_nargs("odd?", 1, args);
+    assert_integer("odd?", car(args));
+    return boolean(to_integer(car(args)) % 2 != 0);
+}
+
+object *p_is_even(object *args) {
+    assert_nargs("even?", 1, args);
+    assert_integer("even?", car(args));
+    return boolean(to_integer(car(args)) % 2 == 0);
+}
+
 object *p_eq(object *args) {
     while (args) {
         assert_number("=", car(args));
@@ -909,6 +921,8 @@ struct reg {
     /* Numerical operations */
     { "number?", p_is_number },
     { "integer?", p_is_integer },
+    { "odd?", p_is_odd },
+    { "even?", p_is_even },
     { "=", p_eq },
     { "<", p_lt },
     { ">", p_gt },
