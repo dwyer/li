@@ -21,6 +21,7 @@
     error(name, "not an integer", arg)
 #define assert_number(name, arg)     assert_type(name, number, arg)
 #define assert_pair(name, arg)       assert_type(name, pair, arg)
+#define assert_procedure(name, arg)  assert_type(name, procedure, arg)
 #define assert_string(name, arg)     assert_type(name, string, arg)
 #define assert_symbol(name, arg)     assert_type(name, symbol, arg)
 #define assert_vector(name, arg)     assert_type(name, vector, arg)
@@ -625,13 +626,43 @@ object *p_is_procedure(object *args) {
  */
 object *p_apply(object *args) {
     assert_nargs("apply", 2, args);
-    assert_type("apply", procedure, car(args));
+    assert_procedure("apply", car(args));
     return apply(car(args), cadr(args));
+}
+
+object *p_map(object *args) {
+    object *head, *tail, *proc, *iter, *node;
+
+    assert_nargs("map", 2, args);
+    assert_procedure("map", car(args));
+    head = tail = nil;
+    proc = car(args);
+    iter = cadr(args);
+    while (iter) {
+        node = cons(apply(proc, cons(car(iter), nil)), nil);
+        tail = head ? set_cdr(tail, node) : (head = node);
+        iter = cdr(iter);
+    }
+    return head;
+}
+
+object *p_for_each(object *args) {
+    object *proc, *iter;
+
+    assert_nargs("map", 2, args);
+    assert_procedure("map", car(args));
+    proc = car(args);
+    iter = cadr(args);
+    while (iter) {
+        apply(proc, cons(car(iter), nil));
+        iter = cdr(iter);
+    }
+    return nil;
 }
 
 object *p_force(object *args) {
     assert_nargs("force", 1, args);
-    assert_type("force", procedure, car(args));
+    assert_procedure("force", car(args));
     return apply(car(args), nil);
 }
 
@@ -1007,6 +1038,8 @@ struct reg {
     /* Control features */
     { "procedure?", p_is_procedure },
     { "apply", p_apply },
+    { "map", p_map },
+    { "for-each", p_for_each },
     { "force", p_force },
     /* Input */
     { "read", p_read },

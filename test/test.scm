@@ -262,7 +262,7 @@
                               (vector-set! v i (* i i)))
                             '(0 1 2 3 4))
                   v) #(0 1 4 9 16)))
-(assert (equal? (for-each (lambda (x) x) '(1 2 3 4)) '(1 2 3 4)))
+(assert (equal? (for-each (lambda (x) x) '(1 2 3 4)) '()))
 (assert (equal? (for-each even? '()) '()))
 
 ; 11.10  Symbols
