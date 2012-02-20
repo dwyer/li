@@ -293,8 +293,9 @@ object *setup_environment(void) {
     object *env;
 
     env = nil;
+    env = primitive_procedures(env);
     env = cons(cons(boolean(true), boolean(true)), env);
     env = cons(cons(boolean(false), boolean(false)), env);
-    env = primitive_procedures(env);
+    env = cons(cons(symbol("user-initial-environment"), env), env);
     return env;
 }

@@ -666,6 +666,11 @@ object *p_force(object *args) {
     return apply(car(args), nil);
 }
 
+object *p_eval(object *args) {
+    assert_nargs("eval", 2, args);
+    return eval(car(args), cadr(args));
+}
+
 /*********
  * Input *
  *********/
@@ -1041,6 +1046,7 @@ struct reg {
     { "map", p_map },
     { "for-each", p_for_each },
     { "force", p_force },
+    { "eval", p_eval },
     /* Input */
     { "read", p_read },
     /* Output */
