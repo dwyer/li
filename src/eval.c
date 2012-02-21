@@ -31,13 +31,12 @@
                                          cons(pred, cons(con, cons(alt, nil))))
 #define make_lambda(p, b)           cons(symbol("lambda"), cons(p, b))
 
+#define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
+
 object *apply(object *procedure, object *arguments);
-object *eval_assert(object *exp, object *env);
 object *eval_assignment(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
-object *eval_let(object *exp, object *env);
 object *eval_load(object *exp, object *env);
-object *eval_sequence(object *exps, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
@@ -130,9 +129,21 @@ object *eval(object *exp, object *env) {
                         return obj;
                 exp = car(exp);
             } else if (is_let(exp)) {
-                return eval_let(exp, env);
+                object *forms, *vars, *vals;
+
+                vars = vals = nil;
+                for (forms = cadr(exp); forms; forms = cdr(forms)) {
+                    vars = cons(caar(forms), vars);
+                    vals = cons(eval(cadar(forms), env), vals);
+                }
+                env = extend_environment(vars, vals, env);
+                for (exp = cddr(exp); cdr(exp); exp = cdr(exp))
+                    eval(car(exp), env);
+                exp = car(exp);
             } else if (is_assert(exp)) {
-                return eval_assert(exp, env);
+                if (is_false(eval(cadr(exp), env)))
+                    error("assert", "assertion violated", exp);
+                return nil;
             } else if (is_load(exp)) {
                 return eval_load(cdr(exp), env);
             } else if (is_application(exp)) {
@@ -163,17 +174,6 @@ object *eval_assignment(object *exp, object *env) {
     return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
 }
 
-object *eval_assert(object *exp, object *env) {
-    object *ret;
-
-    if (!cdr(exp) || cddr(exp))
-        error("assert", "ill-formed special form", exp);
-    ret = eval(cadr(exp), env);
-    if (is_false(ret))
-        error("assert", "assertion violated", exp);
-    return nil;
-}
-
 object *eval_definition(object *exp, object *env) {
     int k;
 
@@ -187,24 +187,6 @@ object *eval_definition(object *exp, object *env) {
     return nil;
 }
 
-object *eval_let(object *exp, object *env) {
-    object *bind;
-    object *vars;
-    object *vals;
-
-    if (length(exp) < 3 || length(cadr(exp)) == -1)
-        error("let", "ill-formed special form", exp);
-    bind = cadr(exp);
-    vars = nil;
-    vals = nil;
-    while (bind) {
-        vars = cons(caar(bind), vars);
-        vals = cons(eval(cadar(bind), env), vals);
-        bind = cdr(bind);
-    }
-    return eval_sequence(cddr(exp), extend_environment(vars, vals, env));
-}
-
 object *eval_load(object *exp, object *env) {
     if (!exp || cdr(exp))
         error("load", "wrong number of args", exp);
@@ -214,19 +196,8 @@ object *eval_load(object *exp, object *env) {
     return nil;
 }
 
-object *eval_sequence(object *exps, object *env) {
-    object *val;
-
-    while (exps) {
-        val = eval(car(exps), env);
-        exps = cdr(exps);
-    }
-    return val;
-}
-
 object *extend_environment(object *vars, object *vals, object *env) {
-    env = environment(env);
-    while (vars) {
+    for (env = environment(env); vars; vars = cdr(vars), vals = cdr(vals)) {
         if (is_symbol(vars)) {
             define_variable(vars, vals, env);
             return env;
@@ -234,11 +205,9 @@ object *extend_environment(object *vars, object *vals, object *env) {
         if (!vals)
             break;
         define_variable(car(vars), car(vals), env);
-        vars = cdr(vars);
-        vals = cdr(vals);
     }
     if (vars || vals)
-        error("#[anonymous procedure]", "wrong number of args", vars);
+        error("#[anonymous-procedure]", "wrong number of args", vars);
     return env;
 }
 
