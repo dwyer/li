@@ -67,16 +67,18 @@
                       (else 'equal)) 'equal))
 ; (assert (equal? (cond ('(1 2 3) => cadr)
 ;       (else #f)) 2)) ; not supported
-; (assert (equal? (case (* 2 3)
-;  ((2 3 5 7) 'prime)
-;  ((1 4 6 8 9) 'composite)) 'composite))
-;(assert (equal? (case (car '(c d))
-;  ((a) 'a)
-;  ((b) 'b)) 'unspecified))
-;(assert (equal? (case (car '(c d))
-;  ((a e i o u) 'vowel)
-;  ((w y) 'semivowel)
-;  (else 'consonant)) 'consonant))
+(assert (equal?
+          (case (* 2 3)
+            ((2 3 5 7) 'prime)
+            ((1 4 6 8 9) 'composite))
+          'composite))
+(assert (equal? (case (car '(c d))
+                  ((a) 'a)
+                  ((b) 'b)) #f))
+(assert (equal? (case (car '(c d))
+                  ((a e i o u) 'vowel)
+                  ((w y) 'semivowel)
+                  (else 'consonant)) 'consonant))
 (assert (equal? (and (= 2 2) (< 2 1)) #f))
 (assert (equal? (and 1 2 'c '(f g)) '(f g)))
 (assert (equal? (and) #t))
@@ -92,17 +94,17 @@
                   (let ((x 7)
                         (z (+ x y)))
                     (* z x))) 35))
-; (assert (equal? (let ((x 2) (y 3))
-;   (let* ((x 7)
-;          (z (+ x y)))
-;     (* z x))) 70)) ; not supported
+(assert (equal? (let ((x 2) (y 3))
+                  (let* ((x 7)
+                         (z (+ x y)))
+                    (* z x))) 70))
 
 ; 11.4.7  Sequencing
 (define x 0)
 (assert (equal? (begin (set! x 5)
                        (+ x 1)) 6))
-; (assert (equal? (begin (display "4 plus 1 equals ")
-;        (display (+ 4 1))) '())) ; unspecified
+;(assert (equal? (begin (display "4 plus 1 equals ")
+;                       (display (+ 4 1))) '())) ; unspecified
 
 ; 11.5  Equivalence predicates
 (assert (equal? (eqv? 'a 'a) #t))

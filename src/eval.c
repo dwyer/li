@@ -13,8 +13,8 @@
 #define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
 #define is_begin(exp)               is_tagged_list(exp, "begin")
+#define is_case(exp)                is_tagged_list(exp, "case")
 #define is_cond(exp)                is_tagged_list(exp, "cond")
-#define is_cond_else_clause(exp)    is_tagged_list(exp, "else")
 #define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_delay(exp)               is_tagged_list(exp, "delay")
 #define is_if(exp)                  is_tagged_list(exp, "if")
@@ -46,14 +46,7 @@ object *apply(object *proc, object *args) {
     return eval(cons(proc, args), to_compound(proc).env);
 }
 
-object *define_variable(object *var, object *val, object *env) {
-    int i;
-
-    for (i = 0; i < env->data.env.size; i++)
-        if (env->data.env.array[i].var == var) {
-            env->data.env.array[i].val = val;
-            return var;
-        }
+object *append_variable(object *var, object *val, object *env) {
     if (env->data.env.size == env->data.env.cap) {
         env->data.env.cap *= 2;
         env->data.env.array = realloc(env->data.env.array, env->data.env.cap *
@@ -63,6 +56,17 @@ object *define_variable(object *var, object *val, object *env) {
     env->data.env.array[env->data.env.size].val = val;
     env->data.env.size++;
     return var;
+}
+
+object *define_variable(object *var, object *val, object *env) {
+    int i;
+
+    for (i = 0; i < env->data.env.size; i++)
+        if (env->data.env.array[i].var == var) {
+            env->data.env.array[i].val = val;
+            return var;
+        }
+    return append_variable(var, val, env);
 }
 
 object *eval(object *exp, object *env) {
@@ -122,6 +126,18 @@ object *eval(object *exp, object *env) {
             if (!seq)
                 return boolean(false);
             exp = car(seq);
+        } else if (is_case(exp)) {
+            val = eval(cadr(exp), env);
+            for (exp = cddr(exp); exp; exp = cdr(exp))
+                for (seq = caar(exp); seq; seq = cdr(seq))
+                    if (is_eq(seq, symbol("else")) || is_eqv(car(seq), val)) {
+                        for (seq = cdar(exp); cdr(seq); seq = cdr(seq))
+                            eval(car(seq), env);
+                        break;
+                    }
+            if (!seq)
+                return boolean(false);
+            exp = car(seq);
         } else if (is_begin(exp)) {
             for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
                 eval(car(seq), env);
@@ -155,7 +171,7 @@ object *eval(object *exp, object *env) {
         } else if (is_let_star(exp)) {
             env = environment(env);
             for (seq = cadr(exp); seq; seq = cdr(seq))
-                define_variable(caar(seq), eval(cadar(seq), env), env);
+                append_variable(caar(seq), eval(cadar(seq), env), env);
             for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
                 eval(car(seq), env);
             exp = car(seq);
@@ -188,12 +204,12 @@ object *eval(object *exp, object *env) {
 object *extend_environment(object *vars, object *vals, object *env) {
     for (env = environment(env); vars; vars = cdr(vars), vals = cdr(vals)) {
         if (is_symbol(vars)) {
-            define_variable(vars, vals, env);
+            append_variable(vars, vals, env);
             return env;
         }
         if (!vals)
             break;
-        define_variable(car(vars), car(vals), env);
+        append_variable(car(vars), car(vals), env);
     }
     if (vars || vals)
         error("#[anonymous-procedure]", "wrong number of args", vars);
@@ -244,9 +260,9 @@ object *setup_environment(void) {
     object *env;
 
     env = environment(nil);
-    define_variable(symbol("user-initial-environment"), env, env);
-    define_variable(boolean(true), boolean(true), env);
-    define_variable(boolean(false), boolean(false), env);
+    append_variable(symbol("user-initial-environment"), env, env);
+    append_variable(boolean(true), boolean(true), env);
+    append_variable(boolean(false), boolean(false), env);
     define_primitive_procedures(env);
     return env;
 }
