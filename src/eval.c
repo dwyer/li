@@ -87,7 +87,11 @@ object *eval(object *exp, object *env) {
                 return eval_definition(exp, env);
             } else if (is_assignment(exp)) {
                 return eval_assignment(exp, env);
+            } else if (is_load(exp)) {
+                return eval_load(cdr(exp), env);
             } else if (is_if(exp)) {
+                check_syntax(cdr(exp), exp);
+                check_syntax(cddr(exp), exp);
                 if (is_true(eval(cadr(exp), env)))
                     exp = caddr(exp);
                 else if (cdddr(exp))
@@ -95,67 +99,65 @@ object *eval(object *exp, object *env) {
                 else
                     return boolean(false);
             } else if (is_cond(exp)) {
-                while ((exp = cdr(exp))) {
-                    if (is_tagged_list(car(exp), "else") ||
-                        is_true(eval(caar(exp), env))) {
-                        for (exp = cdar(exp); cdr(exp); exp = cdr(exp))
-                            eval(car(exp), env);
+                check_syntax(cdr(exp), exp);
+                for (seq = cdr(exp); seq; seq = cdr(seq))
+                    if (is_tagged_list(car(seq), "else") ||
+                        is_true(eval(caar(seq), env))) {
+                        for (seq = cdar(seq); cdr(seq); seq = cdr(seq))
+                            eval(car(seq), env);
                         break;
                     }
-                }
-                if (!exp)
+                if (!seq)
                     return boolean(false);
-                exp = car(exp);
+                exp = car(seq);
             } else if (is_begin(exp)) {
-                if (!cdr(exp))
+                for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
+                    eval(car(seq), env);
+                if (!seq)
                     return nil;
-                while (cdr(exp = cdr(exp)))
-                    eval(car(exp), env);
-                exp = car(exp);
+                exp = car(seq);
             } else if (is_and(exp)) {
-                if (!cdr(exp))
-                    return boolean(true);
-                while (cdr(exp = cdr(exp)))
-                    if (is_false(eval(car(exp), env)))
+                for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
+                    if (is_false(eval(car(seq), env)))
                         return boolean(false);
-                exp = car(exp);
+                if (!seq)
+                    return boolean(true);
+                exp = car(seq);
             } else if (is_or(exp)) {
-                object *obj;
+                object *val;
 
-                if (!cdr(exp))
+                for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
+                    if (is_true(val = eval(car(seq), env)))
+                        return val;
+                if (!seq)
                     return boolean(false);
-                while (cdr(exp = cdr(exp)))
-                    if (is_true(obj = eval(car(exp), env)))
-                        return obj;
-                exp = car(exp);
+                exp = car(seq);
             } else if (is_let(exp)) {
-                object *forms, *vars, *vals;
+                object *vars, *vals;
 
                 vars = vals = nil;
-                for (forms = cadr(exp); forms; forms = cdr(forms)) {
-                    vars = cons(caar(forms), vars);
-                    vals = cons(eval(cadar(forms), env), vals);
+                for (seq = cadr(exp); seq; seq = cdr(seq)) {
+                    vars = cons(caar(seq), vars);
+                    vals = cons(eval(cadar(seq), env), vals);
                 }
                 env = extend_environment(vars, vals, env);
-                for (exp = cddr(exp); cdr(exp); exp = cdr(exp))
-                    eval(car(exp), env);
-                exp = car(exp);
+                for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
+                    eval(car(seq), env);
+                exp = car(seq);
             } else if (is_assert(exp)) {
                 if (is_false(eval(cadr(exp), env)))
                     error("assert", "assertion violated", exp);
                 return nil;
-            } else if (is_load(exp)) {
-                return eval_load(cdr(exp), env);
             } else if (is_application(exp)) {
                 object *proc = eval(car(exp), env);
                 object *args = list_of_values(cdr(exp), env);
                 if (is_compound(proc)) {
-                    exp = to_compound(proc).proc;
+                    seq = to_compound(proc).proc;
                     env = to_compound(proc).env;
-                    env = extend_environment(car(exp), args, env);
-                    while (cdr(exp = cdr(exp)))
-                        eval(car(exp), env);
-                    exp = car(exp);
+                    env = extend_environment(car(seq), args, env);
+                    for (seq = cdr(seq); seq && cdr(seq); seq = cdr(seq))
+                        eval(car(seq), env);
+                    exp = car(seq);
                 } else if (is_primitive(proc)) {
                     return to_primitive(proc)(args);
                 } else {
