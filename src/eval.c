@@ -34,7 +34,6 @@
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
 object *apply(object *procedure, object *arguments);
-object *eval_assignment(object *exp, object *env);
 object *eval_definition(object *exp, object *env);
 object *eval_load(object *exp, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
@@ -75,8 +74,7 @@ object *eval(object *exp, object *env) {
             return lookup_variable_value(exp, env);
         else {
             for (seq = exp; seq; seq = cdr(seq))
-                if (seq && !is_pair(seq))
-                    error("eval", "ill-formed special form", exp);
+                check_syntax(is_pair(seq), exp);
             if (is_quoted(exp)) {
                 return cadr(exp);
             } else if (is_delay(exp)) {
@@ -85,10 +83,11 @@ object *eval(object *exp, object *env) {
                 return compound(cdr(exp), env);
             } else if (is_definition(exp)) {
                 return eval_definition(exp, env);
-            } else if (is_assignment(exp)) {
-                return eval_assignment(exp, env);
             } else if (is_load(exp)) {
                 return eval_load(cdr(exp), env);
+            } else if (is_assignment(exp)) {
+                check_syntax(cdr(exp) && cddr(exp), exp);
+                return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
             } else if (is_if(exp)) {
                 check_syntax(cdr(exp), exp);
                 check_syntax(cddr(exp), exp);
@@ -168,12 +167,6 @@ object *eval(object *exp, object *env) {
             }
         }
     return exp;
-}
-
-object *eval_assignment(object *exp, object *env) {
-    if (length(exp) != 3 || !is_symbol(cadr(exp)))
-        error("set!", "ill-formed special form", exp);
-    return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
 }
 
 object *eval_definition(object *exp, object *env) {
