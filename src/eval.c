@@ -21,6 +21,7 @@
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
 #define is_load(exp)                is_tagged_list(exp, "load")
 #define is_let(exp)                 is_tagged_list(exp, "let")
+#define is_let_star(exp)            is_tagged_list(exp, "let*")
 #define is_or(exp)                  is_tagged_list(exp, "or")
 #define is_self_evaluating(exp)     (exp && !is_pair(exp) && !is_symbol(exp))
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
@@ -143,13 +144,22 @@ object *eval(object *exp, object *env) {
                 for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
                     eval(car(seq), env);
                 exp = car(seq);
+            } else if (is_let_star(exp)) {
+                env = environment(env);
+                for (seq = cadr(exp); seq; seq = cdr(seq))
+                    define_variable(caar(seq), eval(cadar(seq), env), env);
+                for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
+                    eval(car(seq), env);
+                exp = car(seq);
             } else if (is_assert(exp)) {
                 if (is_false(eval(cadr(exp), env)))
                     error("assert", "assertion violated", exp);
                 return nil;
             } else if (is_application(exp)) {
-                object *proc = eval(car(exp), env);
-                object *args = list_of_values(cdr(exp), env);
+                object *proc, *args;
+
+                proc = eval(car(exp), env);
+                args = list_of_values(cdr(exp), env);
                 if (is_compound(proc)) {
                     seq = to_compound(proc).proc;
                     env = to_compound(proc).env;
