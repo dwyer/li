@@ -35,8 +35,6 @@
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
 object *apply(object *procedure, object *arguments);
-object *eval_definition(object *exp, object *env);
-object *eval_load(object *exp, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
@@ -68,137 +66,123 @@ object *define_variable(object *var, object *val, object *env) {
 }
 
 object *eval(object *exp, object *env) {
-    object *seq;
+    object *seq, *var, *val, *proc, *args;
 
-    while (!is_self_evaluating(exp))
+    while (!is_self_evaluating(exp)) {
         if (is_variable(exp))
             return lookup_variable_value(exp, env);
-        else {
-            for (seq = exp; seq; seq = cdr(seq))
-                check_syntax(is_pair(seq), exp);
-            if (is_quoted(exp)) {
-                return cadr(exp);
-            } else if (is_delay(exp)) {
-                return compound(cons(nil, cdr(exp)), env);
-            } else if (is_lambda(exp)) {
-                return compound(cdr(exp), env);
-            } else if (is_definition(exp)) {
-                return eval_definition(exp, env);
-            } else if (is_load(exp)) {
-                return eval_load(cdr(exp), env);
-            } else if (is_assignment(exp)) {
-                check_syntax(cdr(exp) && cddr(exp), exp);
-                return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
-            } else if (is_if(exp)) {
-                check_syntax(cdr(exp), exp);
-                check_syntax(cddr(exp), exp);
-                if (is_true(eval(cadr(exp), env)))
-                    exp = caddr(exp);
-                else if (cdddr(exp))
-                    exp = cadddr(exp);
-                else
-                    return boolean(false);
-            } else if (is_cond(exp)) {
-                check_syntax(cdr(exp), exp);
-                for (seq = cdr(exp); seq; seq = cdr(seq))
-                    if (is_tagged_list(car(seq), "else") ||
-                        is_true(eval(caar(seq), env))) {
-                        for (seq = cdar(seq); cdr(seq); seq = cdr(seq))
-                            eval(car(seq), env);
-                        break;
-                    }
-                if (!seq)
-                    return boolean(false);
-                exp = car(seq);
-            } else if (is_begin(exp)) {
-                for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
-                    eval(car(seq), env);
-                if (!seq)
-                    return nil;
-                exp = car(seq);
-            } else if (is_and(exp)) {
-                for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
-                    if (is_false(eval(car(seq), env)))
-                        return boolean(false);
-                if (!seq)
-                    return boolean(true);
-                exp = car(seq);
-            } else if (is_or(exp)) {
-                object *val;
-
-                for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
-                    if (is_true(val = eval(car(seq), env)))
-                        return val;
-                if (!seq)
-                    return boolean(false);
-                exp = car(seq);
-            } else if (is_let(exp)) {
-                object *vars, *vals;
-
-                vars = vals = nil;
-                for (seq = cadr(exp); seq; seq = cdr(seq)) {
-                    vars = cons(caar(seq), vars);
-                    vals = cons(eval(cadar(seq), env), vals);
-                }
-                env = extend_environment(vars, vals, env);
-                for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
-                    eval(car(seq), env);
-                exp = car(seq);
-            } else if (is_let_star(exp)) {
-                env = environment(env);
-                for (seq = cadr(exp); seq; seq = cdr(seq))
-                    define_variable(caar(seq), eval(cadar(seq), env), env);
-                for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
-                    eval(car(seq), env);
-                exp = car(seq);
-            } else if (is_assert(exp)) {
-                if (is_false(eval(cadr(exp), env)))
-                    error("assert", "assertion violated", exp);
-                return nil;
-            } else if (is_application(exp)) {
-                object *proc, *args;
-
-                proc = eval(car(exp), env);
-                args = list_of_values(cdr(exp), env);
-                if (is_compound(proc)) {
-                    seq = to_compound(proc).proc;
-                    env = to_compound(proc).env;
-                    env = extend_environment(car(seq), args, env);
-                    for (seq = cdr(seq); seq && cdr(seq); seq = cdr(seq))
-                        eval(car(seq), env);
-                    exp = car(seq);
-                } else if (is_primitive(proc)) {
-                    return to_primitive(proc)(args);
-                } else {
-                    error("apply", "not applicable", proc);
-                }
+        /* assert that it's a list */
+        for (seq = exp; seq; seq = cdr(seq))
+            check_syntax(is_pair(seq), exp);
+        if (is_quoted(exp)) {
+            return cadr(exp);
+        } else if (is_delay(exp)) {
+            return compound(cons(nil, cdr(exp)), env);
+        } else if (is_lambda(exp)) {
+            return compound(cdr(exp), env);
+        } else if (is_definition(exp)) {
+            seq = cdr(exp);
+            check_syntax(seq && cdr(seq), exp);
+            check_syntax(is_symbol(car(seq)) || is_pair(car(seq)), exp);
+            if (is_symbol(car(seq))) {
+                check_syntax(cdr(seq) && !cddr(seq), exp);
+                return define_variable(car(seq), eval(cadr(seq), env), env);
             } else {
-                error("eval", "unknown expression type", exp);
+                var = caar(seq);
+                val = make_lambda(cdar(seq), cdr(seq));
+                exp = cons(car(exp), cons(var, cons(val, nil)));
             }
+        } else if (is_load(exp)) {
+            /* TODO: make this a primitive */
+            check_syntax(cdr(exp) && !cddr(exp), exp);
+            check_syntax(is_string(cadr(exp)), exp);
+            load(to_string(cadr(exp)), env);
+            return nil;
+        } else if (is_assignment(exp)) {
+            check_syntax(cdr(exp) && cddr(exp), exp);
+            return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
+        } else if (is_if(exp)) {
+            check_syntax(cdr(exp), exp);
+            check_syntax(cddr(exp), exp);
+            if (is_true(eval(cadr(exp), env)))
+                exp = caddr(exp);
+            else if (cdddr(exp))
+                exp = cadddr(exp);
+            else
+                return boolean(false);
+        } else if (is_cond(exp)) {
+            check_syntax(cdr(exp), exp);
+            for (seq = cdr(exp); seq; seq = cdr(seq))
+                if (is_tagged_list(car(seq), "else") ||
+                    is_true(eval(caar(seq), env))) {
+                    for (seq = cdar(seq); cdr(seq); seq = cdr(seq))
+                        eval(car(seq), env);
+                    break;
+                }
+            if (!seq)
+                return boolean(false);
+            exp = car(seq);
+        } else if (is_begin(exp)) {
+            for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
+                eval(car(seq), env);
+            if (!seq)
+                return nil;
+            exp = car(seq);
+        } else if (is_and(exp)) {
+            for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
+                if (is_false(eval(car(seq), env)))
+                    return boolean(false);
+            if (!seq)
+                return boolean(true);
+            exp = car(seq);
+        } else if (is_or(exp)) {
+            for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
+                if (is_true(val = eval(car(seq), env)))
+                    return val;
+            if (!seq)
+                return boolean(false);
+            exp = car(seq);
+        } else if (is_let(exp)) {
+            var = val = nil;
+            for (seq = cadr(exp); seq; seq = cdr(seq)) {
+                var = cons(caar(seq), var);
+                val = cons(eval(cadar(seq), env), val);
+            }
+            env = extend_environment(var, val, env);
+            for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
+                eval(car(seq), env);
+            exp = car(seq);
+        } else if (is_let_star(exp)) {
+            env = environment(env);
+            for (seq = cadr(exp); seq; seq = cdr(seq))
+                define_variable(caar(seq), eval(cadar(seq), env), env);
+            for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
+                eval(car(seq), env);
+            exp = car(seq);
+        } else if (is_assert(exp)) {
+            if (is_false(eval(cadr(exp), env)))
+                error("assert", "assertion violated", exp);
+            return nil;
+        } else if (is_application(exp)) {
+            proc = eval(car(exp), env);
+            args = list_of_values(cdr(exp), env);
+            if (is_compound(proc)) {
+                seq = to_compound(proc).proc;
+                env = to_compound(proc).env;
+                env = extend_environment(car(seq), args, env);
+                for (seq = cdr(seq); seq && cdr(seq); seq = cdr(seq))
+                    eval(car(seq), env);
+                exp = car(seq);
+            } else if (is_primitive(proc)) {
+                return to_primitive(proc)(args);
+            } else {
+                error("apply", "not applicable", proc);
+            }
+        } else {
+            error("eval", "unknown expression type", exp);
         }
+    }
     return exp;
-}
-
-object *eval_definition(object *exp, object *env) {
-    int k;
-
-    if ((k = length(exp)) == 3 && is_symbol(cadr(exp)))
-        return define_variable(cadr(exp), eval(caddr(exp), env), env);
-    else if (k >= 3 && is_pair(cadr(exp)))
-        return define_variable(caadr(exp),
-                               eval(make_lambda(cdadr(exp), cddr(exp)), env),
-                               env);
-    error("define", "ill-formed special form", exp);
-    return nil;
-}
-
-object *eval_load(object *exp, object *env) {
-    if (!exp || cdr(exp))
-        error("load", "wrong number of args", exp);
-    if (!is_string(car(exp)))
-        error("load", "arg must be a string", exp);
-    load(to_string(car(exp)), env);
-    return nil;
 }
 
 object *extend_environment(object *vars, object *vals, object *env) {
