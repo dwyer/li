@@ -256,7 +256,7 @@
                   (map (lambda (ignored)
                          (set! count (+ count 1))
                          count)
-                       '(a b))) '(2 1)))
+                       '(a b))) '(1 2)))
 (assert (equal? (let ((v (make-vector 5)))
                   (for-each (lambda (i)
                               (vector-set! v i (* i i)))
