@@ -13,6 +13,7 @@
 /* Type checking. */
 #define is_type(obj, t)         ((obj) && (obj)->type == t)
 #define is_compound(obj)        is_type(obj, T_COMPOUND)
+#define is_environment(obj)     is_type(obj, T_ENVIRONMENT)
 #define is_number(obj)          is_type(obj, T_NUMBER)
 #define is_string(obj)          is_type(obj, T_STRING)
 #define is_symbol(obj)          is_type(obj, T_SYMBOL)
@@ -91,6 +92,7 @@
 enum {
     T_CHAR, /* TODO (maybe): implement */
     T_COMPOUND,
+    T_ENVIRONMENT,
     T_NUMBER,
     T_PAIR,
     T_PRIMITIVE,
@@ -102,7 +104,8 @@ enum {
 
 typedef struct object object;
 
-object *compound(object *args, object *body, object *env);
+object *environment(object *base);
+object *compound(object *proc, object *env);
 object *number(double n);
 object *pair(object *car, object *cdr);
 object *procedure(object *(*proc)(object *));
@@ -131,7 +134,19 @@ struct object {
             object **data;
             int length;
         } vector;
-        object *compound;
+        struct {
+            object *proc;
+            object *env;
+        } compound;
+        struct {
+            struct {
+                object *var;
+                object *val;
+            } *array;
+            int size;
+            int cap;
+            object *base;
+        } env;
         object *(*primitive)(object *);
     } data;
     int type;

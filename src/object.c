@@ -33,6 +33,34 @@ object *create(int type) {
     return obj;
 }
 
+object *compound(object *proc, object *env) {
+    object *obj;
+
+    obj = create(T_COMPOUND);
+    obj->data.compound.proc = proc;
+    obj->data.compound.env = env;
+    return obj;
+}
+
+object *environment(object *base) {
+    object *obj;
+
+    obj = create(T_ENVIRONMENT);
+    obj->data.env.cap = 2;
+    obj->data.env.size = 0;
+    obj->data.env.array = calloc(obj->data.env.cap, sizeof(*obj->data.env.array));
+    obj->data.env.base = base;
+    return obj;
+}
+
+object *number(double n) {
+    object *obj;
+
+    obj = create(T_NUMBER);
+    obj->data.number = n;
+    return obj;
+}
+
 object *pair(object *car, object *cdr) {
     object *obj;
 
@@ -42,11 +70,11 @@ object *pair(object *car, object *cdr) {
     return obj;
 }
 
-object *number(double n) {
+object *procedure(object *(*proc)(object *)) {
     object *obj;
 
-    obj = create(T_NUMBER);
-    obj->data.number = n;
+    obj = create(T_PRIMITIVE);
+    obj->data.primitive = proc;
     return obj;
 }
 
@@ -87,25 +115,11 @@ object *vector(object *lst) {
     return obj;
 }
 
-object *compound(object *args, object *body, object *env) {
-    object *obj;
-
-    obj = create(T_COMPOUND);
-    obj->data.compound = cons(args, cons(body, cons(env, nil)));
-    return obj;
-}
-
-object *procedure(object *(*proc)(object *)) {
-    object *obj;
-
-    obj = create(T_PRIMITIVE);
-    obj->data.primitive = proc;
-    return obj;
-}
-
 void destroy(object *obj) {
     if (!obj || is_locked(obj))
         return;
+    if (is_environment(obj))
+        free(obj->data.env.array);
     if (is_string(obj))
         free(to_string(obj));
     if (is_symbol(obj))
@@ -116,10 +130,18 @@ void destroy(object *obj) {
 }
 
 void mark(object *obj) {
+    int i;
+
     if (!obj || is_locked(obj))
         return;
     lock(obj);
-    if (is_pair(obj)) {
+    if (is_environment(obj)) {
+        for (; obj; obj = obj->data.env.base)
+            for (i = 0; i < obj->data.env.size; i++) {
+                mark(obj->data.env.array[i].var);
+                mark(obj->data.env.array[i].val);
+            }
+    } else if (is_pair(obj)) {
         mark(car(obj));
         mark(cdr(obj));
     } else if (is_vector(obj)) {
@@ -127,7 +149,8 @@ void mark(object *obj) {
         for (k = 0; k < vector_length(obj); k++)
             mark(vector_ref(obj, k));
     } else if (is_compound(obj)) {
-        mark(to_compound(obj));
+        mark(to_compound(obj).proc);
+        mark(to_compound(obj).env);
     }
 }
 

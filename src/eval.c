@@ -60,9 +60,9 @@ object *apply(object *proc, object *args) {
 }
 
 object *apply_compound_procedure(object *proc, object *args) {
-    object *params = car(to_compound(proc));
-    object *body = cadr(to_compound(proc));
-    object *env = caddr(to_compound(proc));
+    object *params = car(to_compound(proc).proc);
+    object *body = cdr(to_compound(proc).proc);
+    object *env = to_compound(proc).env;
     return eval_sequence(body, extend_environment(params, args, env));
 }
 
@@ -75,21 +75,21 @@ object *apply_syntax(object *proc, object *args) {
 }
 
 object *define_variable(object *var, object *val, object *env) {
-    do {
-        if (!env) {
-            break;
-        } else if (!car(env)) {
-            set_car(env, cons(var, val));
-            set_cdr(env, cons(nil, cdr(env)));
-            break;
-        } else if (is_eq(caar(env), var)) {
-            set_cdr(car(env), val);
-        } else if (!cdr(env)) {
-            set_cdr(env, cons(cons(var, val), nil));
-            break;
+    int i;
+
+    for (i = 0; i < env->data.env.size; i++)
+        if (env->data.env.array[i].var == var) {
+            env->data.env.array[i].val = val;
+            return var;
         }
-        env = cdr(env);
-    } while (env);
+    if (env->data.env.size == env->data.env.cap) {
+        env->data.env.cap *= 2;
+        env->data.env.array = realloc(env->data.env.array, env->data.env.cap *
+                                      sizeof(*env->data.env.array));
+    }
+    env->data.env.array[env->data.env.size].var = var;
+    env->data.env.array[env->data.env.size].val = val;
+    env->data.env.size++;
     return var;
 }
 
@@ -156,9 +156,9 @@ object *eval(object *exp, object *env) {
                 exp = car(exp);
             }
             else if (is_lambda(exp))
-                return compound(cadr(exp), cddr(exp), env);
+                return compound(cdr(exp), env);
             else if (is_delay(exp))
-                return compound(nil, cdr(exp), env);
+                return compound(cons(nil, cdr(exp)), env);
             else if (is_let(exp))
                 return eval_let(exp, env);
             else if (is_assert(exp))
@@ -244,21 +244,22 @@ object *eval_syntax_definition(object *exp, object *env) {
     return define_variable(cadr(exp), caddr(exp), env);
 }
 
-object *extend_environment(object *vars, object *vals, object *base_env) {
-    /* create a barrier between this and the base environment */
-    base_env = cons(nil, base_env);
+object *extend_environment(object *vars, object *vals, object *env) {
+    env = environment(env);
     while (vars) {
-        if (is_symbol(vars))
-            return cons(cons(vars, vals), base_env);
+        if (is_symbol(vars)) {
+            define_variable(vars, vals, env);
+            return env;
+        }
         if (!vals)
             break;
-        base_env = cons(cons(car(vars), car(vals)), base_env);
+        define_variable(car(vars), car(vals), env);
         vars = cdr(vars);
         vals = cdr(vals);
     }
     if (vars || vals)
         error("#[anonymous procedure]", "wrong number of args", vars);
-    return base_env;
+    return env;
 }
 
 object *list_of_values(object *exps, object *env) {
@@ -268,22 +269,28 @@ object *list_of_values(object *exps, object *env) {
 }
 
 object *lookup_variable_value(object *var, object *env) {
+    int i;
+
     while (env) {
-        if (car(env) && var == caar(env))
-            return cdar(env);
-        env = cdr(env);
+        for (i = 0; i < env->data.env.size; i++)
+            if (env->data.env.array[i].var == var)
+                return env->data.env.array[i].val;
+        env = env->data.env.base;
     }
     error("eval", "unbound variable", var);
     return nil;
 }
 
 object *set_variable_value(object *var, object *val, object *env) {
+    int i;
+
     while (env) {
-        if (car(env) && is_eq(caar(env), var)) {
-            set_cdr(car(env), val);
-            return var;
-        }
-        env = cdr(env);
+        for (i = 0; i < env->data.env.size; i++)
+            if (env->data.env.array[i].var == var) {
+                env->data.env.array[i].val = val;
+                return var;
+            }
+        env = env->data.env.base;
     }
     error("eval", "unbound variable", var);
     return nil;
@@ -292,10 +299,10 @@ object *set_variable_value(object *var, object *val, object *env) {
 object *setup_environment(void) {
     object *env;
 
-    env = nil;
-    env = primitive_procedures(env);
-    env = cons(cons(boolean(true), boolean(true)), env);
-    env = cons(cons(boolean(false), boolean(false)), env);
-    env = cons(cons(symbol("user-initial-environment"), env), env);
+    env = environment(nil);
+    define_variable(symbol("user-initial-environment"), env, env);
+    define_variable(boolean(true), boolean(true), env);
+    define_variable(boolean(false), boolean(false), env);
+    define_primitive_procedures(env);
     return env;
 }

@@ -1057,14 +1057,12 @@ struct reg {
     { nil, nil }
 };
 
-object *primitive_procedures(object *env) {
+void define_primitive_procedures(object *env) {
     struct reg *iter;
 
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);
         object *val = procedure(iter->val);
-        env = cons(cons(var, val), env);
+        define_variable(var, val, env);
     }
-    return env;
 }
-
