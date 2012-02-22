@@ -1,12 +1,3 @@
-; What follows are a list of features that are described in R5RS as ``library
-; procedures'' meaning they are redundant and can be implemented with primitive
-; procedures. Some library procedures that I consider essential have been 
-; implemented as primitives. 
-
-; Works similar to assert. I'm thinking about throwing out type-checking for
-; arithmatic procedures and letting the passing of non-numbers to them be
-; unspecified. It could lead to some interesting hacking but I haven't thought
-; too much about the security implications.
 (define (check condition who msg . args)
   (if (not condition)
     (apply error (cons who (cons msg args)))))
@@ -55,10 +46,12 @@
                            (cddr args))))))
 
 (define (reverse lst)
-  (cond ((null? lst) '())
-        ((not (pair? lst)) (error 'reverse "arg must be a list" lst))
-        ((null? (cdr lst)) lst)
-        (else (append (reverse (cdr lst)) (list (car lst))))))
+  (define (iter lst tsl)
+    (if (null? lst)
+      tsl
+      (iter (cdr lst)
+            (cons (car lst) tsl))))
+  (iter lst '()))
 
 ; Taken from R5RS
 (define (list-tail lst k)
