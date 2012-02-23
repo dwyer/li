@@ -22,6 +22,7 @@
 
 int getch(FILE *f);
 int is_atom_number(const char *s);
+int peek_char(FILE *f);
 
 object *read_atom(FILE *f);
 object *read_sequence(FILE *f);
@@ -67,6 +68,14 @@ int is_atom_number(const char *s) {
         ret = 1;
     }
     return ret && hasdigit;
+}
+
+int peek_char(FILE *f) {
+    int c;
+
+    c = getc(f);
+    ungetc(c, f);
+    return c;
 }
 
 object *read(FILE *f) {
@@ -120,7 +129,7 @@ object *read_sequence(FILE *f) {
 
     if (iscloser(c = getch(f)))
         return nil;
-    else if (c == '.') {
+    else if (c == '.' && isspace(peek_char(f))) {
         obj = read(f);
         if (iscloser(c = getch(f)))
             return obj;
