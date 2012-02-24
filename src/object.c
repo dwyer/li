@@ -13,7 +13,7 @@ static struct {
 
 void add_to_heap(object *obj) {
     if (!heap.list) {
-        heap.cap = 4096;
+        heap.cap = 4096 * 8;
         heap.size = 0;
         heap.list = calloc(heap.cap, sizeof(*heap.list));
     } else if (heap.size == heap.cap) {
@@ -46,7 +46,7 @@ object *environment(object *base) {
     object *obj;
 
     obj = create(T_ENVIRONMENT);
-    obj->data.env.cap = 2;
+    obj->data.env.cap = 4;
     obj->data.env.size = 0;
     obj->data.env.array = calloc(obj->data.env.cap, sizeof(*obj->data.env.array));
     obj->data.env.base = base;
@@ -160,6 +160,8 @@ void mark(object *obj) {
 void cleanup(object *env) {
     int i, j, k;
 
+    if (env && heap.size < heap.cap / 2)
+        return;
     mark(env);
     k = heap.size;
     for (i = j = 0; i < k; i++) {

@@ -1048,7 +1048,6 @@ struct reg {
     { "string->symbol", p_string_to_symbol },
     /* Strings */
     { "string?", p_is_string },
-    { "string-length", p_is_string },
     /* Vectors */
     { "vector?", p_is_vector },
     { "vector", p_vector },

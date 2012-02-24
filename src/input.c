@@ -5,8 +5,6 @@
 #include "input.h"
 #include "main.h"
 
-#define BUF_SZ 50
-
 #define iscomment(c)    ((c) == ';')
 #define isopener(c)     ((c) == '(')
 #define iscloser(c)     ((c) == ')')
@@ -19,6 +17,9 @@
                          isstring(c) || iscomment(c) || iseof(c))
 
 #define read_quote(f)   cons(symbol("quote"), cons(read(f), nil))
+
+static int buf_sz = 32;
+static char *buf = nil;
 
 int getch(FILE *f);
 int is_atom_number(const char *s);
@@ -81,8 +82,11 @@ int peek_char(FILE *f) {
 object *read(FILE *f) {
     int c;
 
-    if (iseof(c = getch(f)))
+    if (iseof(c = getch(f))) {
+        free(buf);
+        buf = nil;
         return eof;
+    }
     else if (isquote(c))
         return read_quote(f);
     else if (issharp(c))
@@ -99,13 +103,11 @@ object *read(FILE *f) {
 
 object *read_atom(FILE *f) {
     object *ret;
-    char *buf;
-    int buf_sz;
     int i, c;
 
     i = 0;
-    buf_sz = BUF_SZ;
-    buf = calloc(buf_sz, sizeof(*buf));
+    if (!buf)
+        buf = calloc(buf_sz, sizeof(*buf));
     do {
         buf[i++] = c = getc(f);
         if (i == buf_sz) {
@@ -119,7 +121,6 @@ object *read_atom(FILE *f) {
         ret = number(atof(buf));
     else
         ret = symbol(buf);
-    free(buf);
     return ret;
 }
 
@@ -159,12 +160,10 @@ object *read_special(FILE *f) {
 
 object *read_string(FILE *f) {
     object *ret;
-    char *buf;
-    int buf_sz;
     int i, c;
 
-    buf_sz = BUF_SZ;
-    buf = calloc(buf_sz, sizeof(*buf));
+    if (!buf)
+        buf = calloc(buf_sz, sizeof(*buf));
     i = 0;
     do {
         buf[i++] = c = getc(f);
@@ -177,6 +176,5 @@ object *read_string(FILE *f) {
     if (iseof(c))
         ungetc(c, f);
     ret = string(buf);
-    free(buf);
     return ret;
 }
