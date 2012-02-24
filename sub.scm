@@ -98,6 +98,15 @@
 (define (assoc obj lst)
   (__assoc 'assoc equal? obj lst))
 
+(define (filter pred? lst)
+  (define (iter lst)
+    (cond ((null? lst) '())
+          ((pred? (car lst))
+           (cons (car lst)
+                 (iter (cdr lst))))
+          (else (iter (cdr lst)))))
+  (iter lst))
+
 (define (make-vector k . args)
   (if (and (not (null? args)) (not (null? (cdr args))))
     (error 'make-vector "too many arguments"))

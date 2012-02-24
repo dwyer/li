@@ -274,10 +274,10 @@
 (assert (equal? (symbol? 'nil) #t))
 (assert (equal? (symbol? '()) #f))
 ; BUG: (assert (equal? (symbol? #f) #f))
-;(assert (equal? (symbol->string 'flying-fish) "flying-fish"))
-;(assert (equal? (symbol->string 'Martin) "Martin"))
-;(assert (equal? (symbol->string
-;                  (string->symbol "Malvina")) "Malvina"))
+(assert (equal? (symbol->string 'flying-fish) "flying-fish"))
+(assert (equal? (symbol->string 'Martin) "Martin"))
+(assert (equal? (symbol->string
+                  (string->symbol "Malvina")) "Malvina"))
 (assert (equal? (eq? 'mISSISSIppi 'mississippi) #f))
 
 ; 11.11  Characters

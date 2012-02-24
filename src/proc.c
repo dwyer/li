@@ -532,6 +532,18 @@ object *p_is_symbol(object *args) {
     return boolean(is_symbol(car(args)));
 }
 
+object *p_symbol_to_string(object *args) {
+    assert_nargs("symbol->string", 1, args);
+    assert_symbol("symbol->string", car(args));
+    return string(to_symbol(car(args)));
+}
+
+object *p_string_to_symbol(object *args) {
+    assert_nargs("string->symbol", 1, args);
+    assert_string("string->symbol", car(args));
+    return symbol(to_string(car(args)));
+}
+
 /***********
  * Strings *
  ***********/
@@ -1032,8 +1044,11 @@ struct reg {
     { "append", p_append },
     /* Symbols */
     { "symbol?", p_is_symbol },
+    { "symbol->string", p_symbol_to_string },
+    { "string->symbol", p_string_to_symbol },
     /* Strings */
     { "string?", p_is_string },
+    { "string-length", p_is_string },
     /* Vectors */
     { "vector?", p_is_vector },
     { "vector", p_vector },
