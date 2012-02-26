@@ -792,6 +792,25 @@ object *p_read(object *args) {
     return read(stdin);
 }
 
+object *p_read_char(object *args) {
+    assert_nargs("read-char", 0, args);
+    return character(getc(stdin));
+}
+
+object *p_peek_char(object *args) {
+    int c;
+
+    assert_nargs("peek-char", 0, args);
+    c = getc(stdin);
+    ungetc(c, stdin);
+    return character(c);
+}
+
+object *p_is_eof_object(object *args) {
+    assert_nargs("eof-object?", 1, args);
+    return boolean(car(args) == eof);
+}
+
 /**********
  * Output *
  **********/
@@ -1172,6 +1191,9 @@ struct reg {
     { "eval", p_eval },
     /* Input */
     { "read", p_read },
+    { "read-char", p_read_char },
+    { "peek-char", p_peek_char },
+    { "eof-object?", p_is_eof_object },
     /* Output */
     { "write", p_write },
     { "display", p_display },
