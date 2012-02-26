@@ -521,6 +521,81 @@ object *p_append(object *args) {
     return head;
 }
 
+object *p_assq(object *args) {
+    object *lst;
+
+    assert_nargs("assq", 2, args);
+    for (lst = cadr(args); lst; lst = cdr(lst)) {
+        if (!is_pair(lst))
+            error("assq", "not a list", cadr(args));
+        if (is_eq(car(args), caar(lst)))
+            return car(lst);
+    }
+    return boolean(false);
+}
+
+object *p_assv(object *args) {
+    object *lst;
+
+    assert_nargs("assv", 2, args);
+    for (lst = cadr(args); lst; lst = cdr(lst)) {
+        if (!is_pair(lst))
+            error("assv", "not a list", cadr(args));
+        if (is_eqv(car(args), caar(lst)))
+            return car(lst);
+    }
+    return boolean(false);
+}
+
+object *p_assoc(object *args) {
+    object *lst;
+
+    assert_nargs("assoc", 2, args);
+    for (lst = cadr(args); lst; lst = cdr(lst)) {
+        if (!is_pair(lst))
+            error("assoc", "not a list", cadr(args));
+        if (is_equal(car(args), caar(lst)))
+            return car(lst);
+    }
+    return boolean(false);
+}
+
+object *p_memq(object *args) {
+    object *lst;
+
+    for (lst = cadr(args); lst; lst = cdr(lst)) {
+        if (!is_pair(lst))
+            error("memq", "not a list", cadr(args));
+        if (is_eq(car(args), car(lst)))
+            return lst;
+    }
+    return boolean(false);
+}
+
+object *p_memv(object *args) {
+    object *lst;
+
+    for (lst = cadr(args); lst; lst = cdr(lst)) {
+        if (!is_pair(lst))
+            error("memv", "not a list", cadr(args));
+        if (is_eqv(car(args), car(lst)))
+            return lst;
+    }
+    return boolean(false);
+}
+
+object *p_member(object *args) {
+    object *lst;
+
+    for (lst = cadr(args); lst; lst = cdr(lst)) {
+        if (!is_pair(lst))
+            error("member", "not a list", cadr(args));
+        if (is_equal(car(args), car(lst)))
+            return lst;
+    }
+    return boolean(false);
+}
+
 /***********
  * Symbols *
  ***********/
@@ -1161,6 +1236,12 @@ struct reg {
     { "list", p_list },
     { "length", p_length },
     { "append", p_append },
+    { "memq", p_memq },
+    { "memv", p_memv },
+    { "member", p_member },
+    { "assq", p_assq },
+    { "assv", p_assv },
+    { "assoc", p_assoc },
     /* Symbols */
     { "symbol?", p_is_symbol },
     { "symbol->string", p_symbol_to_string },

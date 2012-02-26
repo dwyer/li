@@ -62,42 +62,6 @@
 (define (list-ref lst k)
   (car (list-tail lst k)))
 
-(define (__member name pred obj lst)
-  (define (iter next)
-    (cond ((null? next) #f)
-          ((not (pair? next))
-           (error name "arg2 must be a list" lst))
-          ((pred obj (car next)) next)
-          (else (iter (cdr next)))))
-  (iter lst))
-
-(define (memq obj lst)
-  (__member 'memq eq? obj lst))
-
-(define (memv obj lst)
-  (__member 'memv eqv? obj lst))
-
-(define (member obj lst)
-  (__member 'member equal? obj lst))
-
-(define (__assoc name pred obj lst)
-  (define (iter next)
-    (cond ((null? next) #f)
-          ((not (and (pair? next) (pair? (car next))))
-           (error name "arg2 must be a list of pairs" lst))
-          ((pred obj (caar next)) (car next))
-          (else (iter (cdr next)))))
-  (iter lst))
-
-(define (assq obj lst)
-  (__assoc 'assq eq? obj lst))
-
-(define (assv obj lst)
-  (__assoc 'assv eqv? obj lst))
-
-(define (assoc obj lst)
-  (__assoc 'assoc equal? obj lst))
-
 (define (filter pred? lst)
   (define (iter lst)
     (cond ((null? lst) '())
