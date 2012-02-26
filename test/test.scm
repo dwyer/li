@@ -332,9 +332,29 @@
 ;                               (cons (car numbers) neg))))) '((6 1 3) (-5 -2))))
 
 ; force and delay
-(assert (equal? (force (delay (+ 1 2))) '3))
+(assert (equal? (force (delay (+ 1 2))) 3))
 (assert (equal? (let ((p (delay (+ 1 2))))
                   (list (force p) (force p))) '(3 3)))
+(define a-stream
+  (let* ((next
+           (lambda (n)
+             (cons n (delay (next (+ n 1)))))))
+    (next 0)))
+(define head car)
+(define tail
+(lambda (stream) (force (cdr stream))))
+(assert (equal? (head (tail (tail a-stream))) 2))
+(define count 0)
+(define p
+  (delay (begin (set! count (+ count 1))
+                (if (> count x)
+                  count
+                  (force p)))))
+(define x 5)
+(assert (equal? (force p) 6))
+;(assert (equal? (begin (set! x 10)
+;                       (force p))
+;                6))
 
 (display "all tests passed!")
 (newline)
