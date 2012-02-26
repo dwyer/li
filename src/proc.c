@@ -793,8 +793,12 @@ object *p_read(object *args) {
 }
 
 object *p_read_char(object *args) {
+    int c;
+
     assert_nargs("read-char", 0, args);
-    return character(getc(stdin));
+    if ((c = getc(stdin)) == '\n')
+        c = getc(stdin);
+    return character(c);
 }
 
 object *p_peek_char(object *args) {
