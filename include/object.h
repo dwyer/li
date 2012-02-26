@@ -12,8 +12,9 @@
 
 /* Type checking. */
 #define is_type(obj, t)         ((obj) && (obj)->type == t)
-#define is_compound(obj)        is_type(obj, T_COMPOUND)
 #define is_environment(obj)     is_type(obj, T_ENVIRONMENT)
+#define is_char(obj)            is_type(obj, T_CHAR)
+#define is_compound(obj)        is_type(obj, T_COMPOUND)
 #define is_number(obj)          is_type(obj, T_NUMBER)
 #define is_string(obj)          is_type(obj, T_STRING)
 #define is_symbol(obj)          is_type(obj, T_SYMBOL)
@@ -34,6 +35,7 @@
 #define unlock(obj)             ((obj)->locked = false)
 #define is_locked(obj)          (obj)->locked
 
+#define to_char(obj)            (obj)->data.character
 #define to_compound(obj)        (obj)->data.compound
 #define to_number(obj)          (obj)->data.number
 #define to_pair(obj)            (obj)->data.pair
@@ -90,7 +92,7 @@
 #define cddddr(obj)             cdr(cdr(cdr(cdr(obj))))
 
 enum {
-    T_CHAR, /* TODO (maybe): implement */
+    T_CHAR,
     T_COMPOUND,
     T_ENVIRONMENT,
     T_NUMBER,
@@ -105,6 +107,7 @@ enum {
 typedef struct object object;
 
 object *environment(object *base);
+object *character(int c);
 object *compound(object *proc, object *env);
 object *number(double n);
 object *pair(object *car, object *cdr);
@@ -123,11 +126,12 @@ int length(object *obj);
 
 struct object {
     union {
+        int character;
+        double number;
         struct {
             object *car;
             object *cdr;
         } pair;
-        double number;
         char *string;
         char *symbol;
         struct {

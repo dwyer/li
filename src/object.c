@@ -33,6 +33,14 @@ object *create(int type) {
     return obj;
 }
 
+object *character(int c) {
+    object *obj;
+
+    obj = create(T_CHAR);
+    obj->data.character = c;
+    return obj;
+}
+
 object *compound(object *proc, object *env) {
     object *obj;
 

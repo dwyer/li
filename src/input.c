@@ -150,6 +150,8 @@ object *read_special(FILE *f) {
         return boolean(true);
     } else if (c == 'f') {
         return boolean(false);
+    } else if (c == '\\') {
+        return character(getc(f));
     } else if (isopener(c)) {
         ungetc(c, f);
         return vector(read(f));

@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "object.h"
 #include "main.h"
@@ -19,12 +20,13 @@
     error(name, "not a " #type, arg)
 #define assert_integer(name, arg)    if (!is_integer(arg)) \
     error(name, "not an integer", arg)
-#define assert_number(name, arg)     assert_type(name, number, arg)
-#define assert_pair(name, arg)       assert_type(name, pair, arg)
-#define assert_procedure(name, arg)  assert_type(name, procedure, arg)
-#define assert_string(name, arg)     assert_type(name, string, arg)
-#define assert_symbol(name, arg)     assert_type(name, symbol, arg)
-#define assert_vector(name, arg)     assert_type(name, vector, arg)
+#define assert_char(name, arg)      assert_type(name, char, arg)
+#define assert_number(name, arg)    assert_type(name, number, arg)
+#define assert_pair(name, arg)      assert_type(name, pair, arg)
+#define assert_procedure(name, arg) assert_type(name, procedure, arg)
+#define assert_string(name, arg)    assert_type(name, string, arg)
+#define assert_symbol(name, arg)    assert_type(name, symbol, arg)
+#define assert_vector(name, arg)    assert_type(name, vector, arg)
 
 /*
  * (error who msg . irritants)
@@ -544,6 +546,62 @@ object *p_string_to_symbol(object *args) {
     return symbol(to_string(car(args)));
 }
 
+/**************
+ * Characters *
+ **************/
+
+object *p_is_char(object *args) {
+    assert_nargs("char?", 1, args);
+    return boolean(is_char(car(args)));
+}
+
+object *p_is_char_eq(object *args) {
+    assert_nargs("char=?", 2, args);
+    assert_char("char=?", car(args));
+    assert_char("char=?", cadr(args));
+    return boolean(to_char(car(args)) == to_char(cadr(args)));
+}
+
+object *p_is_char_lt(object *args) {
+    assert_nargs("char<?", 2, args);
+    assert_char("char<?", car(args));
+    assert_char("char<?", cadr(args));
+    return boolean(to_char(car(args)) < to_char(cadr(args)));
+}
+
+object *p_is_char_gt(object *args) {
+    assert_nargs("char>?", 2, args);
+    assert_char("char>?", car(args));
+    assert_char("char>?", cadr(args));
+    return boolean(to_char(car(args)) > to_char(cadr(args)));
+}
+
+object *p_is_char_le(object *args) {
+    assert_nargs("char<=?", 2, args);
+    assert_char("char<=?", car(args));
+    assert_char("char<=?", cadr(args));
+    return boolean(to_char(car(args)) <= to_char(cadr(args)));
+}
+
+object *p_is_char_ge(object *args) {
+    assert_nargs("char>=?", 2, args);
+    assert_char("char>=?", car(args));
+    assert_char("char>=?", cadr(args));
+    return boolean(to_char(car(args)) >= to_char(cadr(args)));
+}
+
+object *p_char_to_integer(object *args) {
+    assert_nargs("char->integer", 1, args);
+    assert_char("char->integer", car(args));
+    return number(to_char(car(args)));
+}
+
+object *p_integer_to_char(object *args) {
+    assert_nargs("integer->char", 1, args);
+    assert_integer("integer->char", car(args));
+    return character(to_integer(car(args)));
+}
+
 /***********
  * Strings *
  ***********/
@@ -555,6 +613,44 @@ object *p_string_to_symbol(object *args) {
 object *p_is_string(object *args) {
     assert_nargs("string?", 1, args);
     return boolean(is_string(car(args)));
+}
+
+object *p_make_string(object *args) {
+    object *obj;
+    char *s;
+    int k;
+
+    assert_nargs("make-string", 1, args);
+    assert_integer("make-string", car(args));
+    k = to_integer(car(args)) + 1;
+    s = calloc(k, sizeof(*s));
+    for (k = k; k >= 0; k--)
+        s[k] = '\0';
+    obj = string(s);
+    free(s);
+    return obj;
+}
+
+object *p_string_length(object *args) {
+    assert_nargs("string-length", 1, args);
+    assert_string("string-length", car(args));
+    return number(strlen(to_string(car(args))));
+}
+
+object *p_string_ref(object *args) {
+    assert_nargs("string-ref", 2, args);
+    assert_string("string-ref", car(args));
+    assert_integer("string-ref", cadr(args));
+    return character(to_string(car(args))[to_integer(cadr(args))]);
+}
+
+object *p_string_set(object *args) {
+    assert_nargs("string-set!", 3, args);
+    assert_string("string-set!", car(args));
+    assert_integer("string-set!", cadr(args));
+    assert_char("string-set!", caddr(args));
+    return character(to_string(car(args))[to_integer(cadr(args))] =
+                     to_char(caddr(args)));
 }
 
 /***********
@@ -1046,8 +1142,21 @@ struct reg {
     { "symbol?", p_is_symbol },
     { "symbol->string", p_symbol_to_string },
     { "string->symbol", p_string_to_symbol },
+    /* Chars */
+    { "char?", p_is_char },
+    { "char=?", p_is_char_eq },
+    { "char<?", p_is_char_lt },
+    { "char>?", p_is_char_gt },
+    { "char<=?", p_is_char_le },
+    { "char>=?", p_is_char_ge },
+    { "char->integer", p_char_to_integer },
+    { "integer->char", p_integer_to_char },
     /* Strings */
     { "string?", p_is_string },
+    { "make-string", p_make_string },
+    { "string-length", p_string_length },
+    { "string-ref", p_string_ref },
+    { "string-set!", p_string_set },
     /* Vectors */
     { "vector?", p_is_vector },
     { "vector", p_vector },
