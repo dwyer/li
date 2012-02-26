@@ -25,6 +25,8 @@
 #define is_or(exp)                  is_tagged_list(exp, "or")
 #define is_self_evaluating(exp)     (exp && !is_pair(exp) && !is_symbol(exp))
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
+#define is_quasiquoted(exp)         is_tagged_list(exp, "quasiquote")
+#define is_unquoted(exp)            is_tagged_list(exp, "unquote")
 #define is_variable(exp)            is_symbol(exp)
 
 #define make_begin(seq)             cons(symbol("begin"), seq)
@@ -34,7 +36,7 @@
 
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
-object *apply(object *procedure, object *arguments);
+object *eval_quasiquote(object *exp, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
@@ -80,6 +82,8 @@ object *eval(object *exp, object *env) {
             check_syntax(is_pair(seq), exp);
         if (is_quoted(exp)) {
             return cadr(exp);
+        } else if (is_quasiquoted(exp)) {
+            return eval_quasiquote(cadr(exp), env);
         } else if (is_delay(exp)) {
             return compound(cons(nil, cdr(exp)), env);
         } else if (is_lambda(exp)) {
@@ -199,6 +203,14 @@ object *eval(object *exp, object *env) {
         }
     }
     return exp;
+}
+
+object *eval_quasiquote(object *exp, object *env) {
+    if (!is_pair(exp))
+        return exp;
+    else if (is_unquoted(exp))
+        return eval(cadr(exp), env);
+    return cons(eval_quasiquote(car(exp), env), eval_quasiquote(cdr(exp), env));
 }
 
 object *extend_environment(object *vars, object *vals, object *env) {
