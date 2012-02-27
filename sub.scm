@@ -2,40 +2,6 @@
   (if (not condition)
     (apply error (cons who (cons msg args)))))
 
-(define (zero? z)
-  (check (number? z) 'zero? "not a number" z)
-  (= z 0))
-
-(define (positive? x)
-  (check (number? x) 'positive? "not a number" x)
-  (>= x 0))
-
-(define (negative? x)
-  (check (number? x) 'negative? "not a number" x)
-  (< x 0))
-
-(define (max x . args)
-  (if (null? args)
-    x
-    (let ((y (car args)))
-      (if (and (number? x) (number? y))
-        (apply max (cons (if (> x y) x y) (cdr args)))
-        (error 'max "arguments must be real numbers" x args)))))
-
-(define (min x . args)
-  (if (null? args)
-    x
-    (let ((y (car args)))
-      (if (and (number? x) (number? y))
-        (apply min (cons (if (< x y) x y) (cdr args)))
-        (error 'min "arguments must be real numbers" x args)))))
-
-(define (abs x)
-  (check (number? x) 'abs "not a number" x)
-  (if (< x 0)
-    (- x)
-    x))
-
 (define (lcm . args)
   (define (algorithm a b)
     (/ (abs (* a b)) (gcd a b)))
@@ -44,14 +10,6 @@
         (else
           (apply lcm (cons (algorithm (car args) (cadr args))
                            (cddr args))))))
-
-(define (reverse lst)
-  (define (iter lst tsl)
-    (if (null? lst)
-      tsl
-      (iter (cdr lst)
-            (cons (car lst) tsl))))
-  (iter lst '()))
 
 ; Taken from R5RS
 (define (list-tail lst k)

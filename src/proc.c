@@ -111,6 +111,24 @@ object *p_is_integer(object *args) {
     return boolean(is_integer(car(args)));
 }
 
+object *p_is_zero(object *args) {
+    assert_nargs("zero?", 1, args);
+    assert_number("zero?", car(args));
+    return boolean(to_number(car(args)) == 0);
+}
+
+object *p_is_positive(object *args) {
+    assert_nargs("positive?", 1, args);
+    assert_number("positive?", car(args));
+    return boolean(to_number(car(args)) >= 0);
+}
+
+object *p_is_negative(object *args) {
+    assert_nargs("negative?", 1, args);
+    assert_number("negative?", car(args));
+    return boolean(to_number(car(args)) < 0);
+}
+
 object *p_is_odd(object *args) {
     assert_nargs("odd?", 1, args);
     assert_integer("odd?", car(args));
@@ -121,6 +139,28 @@ object *p_is_even(object *args) {
     assert_nargs("even?", 1, args);
     assert_integer("even?", car(args));
     return boolean(to_integer(car(args)) % 2 == 0);
+}
+
+object *p_max(object *args) {
+    double max;
+
+    if (!args)
+        error("max", "wrong number of args", args);
+    max = to_number(car(args));
+    while ((args = cdr(args)))
+        max = max > to_number(car(args)) ? max : to_number(car(args));
+    return number(max);
+}
+
+object *p_min(object *args) {
+    double min;
+
+    if (!args)
+        error("min", "wrong number of args", args);
+    min = to_number(car(args));
+    while ((args = cdr(args)))
+        min = min < to_number(car(args)) ? min : to_number(car(args));
+    return number(min);
 }
 
 object *p_eq(object *args) {
@@ -519,6 +559,18 @@ object *p_append(object *args) {
         args = cdr(args);
     }
     return head;
+}
+
+object *p_reverse(object *args) {
+    object *lst, *tsl;
+
+    assert_nargs("reverse", 1, args);
+    for (tsl = nil, lst = car(args); lst; lst = cdr(lst)) {
+        if (!is_pair(lst))
+            error("reverse", "not a list", car(args));
+        tsl = cons(car(lst), tsl);
+    }
+    return tsl;
 }
 
 object *p_assq(object *args) {
@@ -1163,8 +1215,13 @@ struct reg {
     /* Numerical operations */
     { "number?", p_is_number },
     { "integer?", p_is_integer },
+    { "zero?", p_is_zero },
+    { "positive?", p_is_positive },
+    { "negative?", p_is_negative },
     { "odd?", p_is_odd },
     { "even?", p_is_even },
+    { "max", p_max },
+    { "min", p_min },
     { "=", p_eq },
     { "<", p_lt },
     { ">", p_gt },
@@ -1236,6 +1293,7 @@ struct reg {
     { "list", p_list },
     { "length", p_length },
     { "append", p_append },
+    { "reverse", p_reverse },
     { "memq", p_memq },
     { "memv", p_memv },
     { "member", p_member },
