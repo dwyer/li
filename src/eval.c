@@ -49,6 +49,8 @@ object *apply(object *proc, object *args) {
 }
 
 object *append_variable(object *var, object *val, object *env) {
+    if (!is_symbol(var))
+        error("eval", "not a variable", var);
     if (env->data.env.size == env->data.env.cap) {
         env->data.env.cap *= 2;
         env->data.env.array = realloc(env->data.env.array, env->data.env.cap *
@@ -106,15 +108,14 @@ object *eval(object *exp, object *env) {
                 error("assert", "assertion violated", exp);
             return nil;
         } else if (is_definition(exp)) {
-            seq = cdr(exp);
-            check_syntax(seq && cdr(seq), exp);
-            check_syntax(is_symbol(car(seq)) || is_pair(car(seq)), exp);
-            if (is_symbol(car(seq))) {
-                check_syntax(cdr(seq) && !cddr(seq), exp);
-                return define_variable(car(seq), eval(cadr(seq), env), env);
+            check_syntax(cdr(exp) && cddr(exp), exp);
+            check_syntax(is_symbol(cadr(exp)) || is_pair(cadr(exp)), exp);
+            if (is_symbol(cadr(exp))) {
+                check_syntax(cddr(exp) && !cdddr(exp), exp);
+                return define_variable(cadr(exp), eval(caddr(exp), env), env);
             } else {
-                var = caar(seq);
-                val = make_lambda(cdar(seq), cdr(seq));
+                var = caadr(exp);
+                val = make_lambda(cdadr(exp), cddr(exp));
                 exp = cons(car(exp), cons(var, cons(val, nil)));
             }
         } else if (is_if(exp)) {
