@@ -81,13 +81,30 @@ object *eval(object *exp, object *env) {
         for (seq = exp; seq; seq = cdr(seq))
             check_syntax(is_pair(seq), exp);
         if (is_quoted(exp)) {
+            check_syntax(cdr(exp) && !cddr(exp), exp);
             return cadr(exp);
         } else if (is_quasiquoted(exp)) {
+            check_syntax(cdr(exp) && !cddr(exp), exp);
             return eval_quasiquote(cadr(exp), env);
         } else if (is_delay(exp)) {
+            check_syntax(cdr(exp) && !cddr(exp), exp);
             return compound(cons(nil, cdr(exp)), env);
         } else if (is_lambda(exp)) {
+            check_syntax(cdr(exp) && cddr(exp), exp);
             return compound(cdr(exp), env);
+        } else if (is_assignment(exp)) {
+            check_syntax(cdr(exp) && cddr(exp), exp);
+            return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
+        } else if (is_load(exp)) {
+            check_syntax(cdr(exp) && !cddr(exp), exp);
+            check_syntax(is_string(cadr(exp)), exp);
+            load(to_string(cadr(exp)), env);
+            return nil;
+        } else if (is_assert(exp)) {
+            check_syntax(cdr(exp) && !cddr(exp), exp);
+            if (is_false(eval(cadr(exp), env)))
+                error("assert", "assertion violated", exp);
+            return nil;
         } else if (is_definition(exp)) {
             seq = cdr(exp);
             check_syntax(seq && cdr(seq), exp);
@@ -100,15 +117,6 @@ object *eval(object *exp, object *env) {
                 val = make_lambda(cdar(seq), cdr(seq));
                 exp = cons(car(exp), cons(var, cons(val, nil)));
             }
-        } else if (is_load(exp)) {
-            /* TODO: make this a primitive */
-            check_syntax(cdr(exp) && !cddr(exp), exp);
-            check_syntax(is_string(cadr(exp)), exp);
-            load(to_string(cadr(exp)), env);
-            return nil;
-        } else if (is_assignment(exp)) {
-            check_syntax(cdr(exp) && cddr(exp), exp);
-            return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
         } else if (is_if(exp)) {
             check_syntax(cdr(exp), exp);
             check_syntax(cddr(exp), exp);
@@ -179,10 +187,6 @@ object *eval(object *exp, object *env) {
             for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
                 eval(car(seq), env);
             exp = car(seq);
-        } else if (is_assert(exp)) {
-            if (is_false(eval(cadr(exp), env)))
-                error("assert", "assertion violated", exp);
-            return nil;
         } else if (is_application(exp)) {
             proc = eval(car(exp), env);
             args = list_of_values(cdr(exp), env);
