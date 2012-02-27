@@ -16,9 +16,8 @@ great deal of complexity to a language I admire for its power and simplicity.
 Therefore, I choose not to adhere strictly to the RnRS.
 
 The following are not yet supported, but may be in the future:
-* Chars
 * Continuations
-* ``Named let'', let*, letrec, let-syntax, etc.
+* ``Named let'', letrec, let-syntax, etc.
 * Macros (define-syntax, syntax-rules, etc.)
 * Ports
 
@@ -26,6 +25,7 @@ What is supported
 =================
 Data types:
 * Booleans
+* Chars
 * Numbers
 * Promises
 * Strings
