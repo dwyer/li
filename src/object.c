@@ -3,20 +3,33 @@
 #include <string.h>
 #include "object.h"
 
+#define HASHSIZE        1024
 #define strdup(s)       strcpy(calloc(strlen(s)+1, sizeof(char)), s)
 
 static struct {
     object **objs;
-    object *syms;
+    object *syms[HASHSIZE];
     int size;
     int cap;
-} heap = { .objs = nil, .syms = nil, .size = 0, .cap = 0 };
+} heap = { .objs = nil, .size = 0, .cap = 0 };
+
+unsigned int calc_hash(char *s) {
+    unsigned int hash;
+
+    for (hash = 0; *s; s++)
+        hash = hash * 31 + *s;
+    return hash % HASHSIZE;
+}
 
 void add_to_heap(object *obj) {
+    int i;
+
     if (!heap.objs) {
-        heap.cap = 4096 * 8;
+        heap.cap = 1024;
         heap.size = 0;
         heap.objs = calloc(heap.cap, sizeof(*heap.objs));
+        for (i = 0; i < HASHSIZE; i++)
+            heap.syms[i] = nil;
     } else if (heap.size == heap.cap) {
         heap.cap *= 2;
         heap.objs = realloc(heap.objs, heap.cap * sizeof(*heap.objs));
@@ -97,17 +110,20 @@ object *string(char *s) {
 
 object *symbol(char *s) {
     object *obj;
+    unsigned int hash;
 
-    for (obj = heap.syms; obj; obj = obj->data.symbol.next)
-        if (strcmp(to_symbol(obj), s) == 0)
-            return obj;
+    hash = calc_hash(s);
+    if (heap.syms[hash])
+        for (obj = heap.syms[hash]; obj; obj = obj->data.symbol.next)
+            if (strcmp(to_symbol(obj), s) == 0)
+                return obj;
     obj = create(T_SYMBOL);
     obj->data.symbol.string = strdup(s);
-    obj->data.symbol.next = heap.syms;
     obj->data.symbol.prev = nil;
-    if (heap.syms)
-        heap.syms->data.symbol.prev = obj;
-    heap.syms = obj;
+    obj->data.symbol.next = heap.syms[hash];
+    if (obj->data.symbol.next)
+        obj->data.symbol.next->data.symbol.prev = obj;
+    heap.syms[hash] = obj;
     return obj;
 }
 
@@ -135,9 +151,11 @@ void destroy(object *obj) {
         free(to_string(obj));
     if (is_symbol(obj)) {
         if (obj->data.symbol.next)
-            obj->data.symbol.next = obj->data.symbol.prev;
+            obj->data.symbol.next->data.symbol.prev = obj->data.symbol.prev;
         if (obj->data.symbol.prev)
-            obj->data.symbol.prev = obj->data.symbol.next;
+            obj->data.symbol.prev->data.symbol.next = obj->data.symbol.next;
+        else
+            heap.syms[calc_hash(to_symbol(obj))] = obj->data.symbol.next;
         free(to_symbol(obj));
     }
     if (is_vector(obj))
@@ -176,17 +194,17 @@ void mark(object *obj) {
 void cleanup(object *env) {
     int i, j, k;
 
-    if (env && heap.size < heap.cap / 2)
+    if (env)
         return;
     mark(env);
     k = heap.size;
     for (i = j = 0; i < k; i++) {
-        if (!is_locked(heap.objs[i])) {
-            destroy(heap.objs[i]);
-            heap.size--;
-        } else {
+        if (is_locked(heap.objs[i])) {
             unlock(heap.objs[i]);
             heap.objs[j++] = heap.objs[i];
+        } else {
+            destroy(heap.objs[i]);
+            heap.size--;
         }
     }
     if (!env) {
