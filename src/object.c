@@ -225,20 +225,28 @@ int is_equal_vectors(object *obj1, object *obj2) {
 }
 
 int is_equal(object *obj1, object *obj2) {
-    if (is_pair(obj1) && is_pair(obj2))
+    if (is_eqv(obj1, obj2))
+        return true;
+    else if (is_pair(obj1) && is_pair(obj2))
         return (is_equal(car(obj1), car(obj2)) &&
                 is_equal(cdr(obj2), cdr(obj2)));
     else if (is_string(obj1) && is_string(obj2))
         return is_string_eq(obj1, obj2);
     else if (is_vector(obj1) && is_vector(obj2))
         return is_equal_vectors(obj1, obj2);
-    return is_eqv(obj1, obj2);
+    return false;
 }
 
 int is_eqv(object *obj1, object *obj2) {
-    if (is_number(obj1) && is_number(obj2))
+    if (is_eq(obj1, obj2))
+        return true;
+    else if (!obj1 || !obj2)
+        return false;
+    else if (obj1->type != obj2->type)
+        return false;
+    else if (is_number(obj1) && is_number(obj2))
         return to_number(obj1) == to_number(obj2);
-    return is_eq(obj1, obj2);
+    return false;
 }
 
 int is_list(object *obj) {

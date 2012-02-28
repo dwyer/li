@@ -395,6 +395,11 @@ object *p_acos(object *args) {
 
 object *p_atan(object *args) {
     assert_number("atan", car(args));
+    if (cdr(args)) {
+        assert_nargs("atan", 2, args);
+        assert_number("atan", cadr(args));
+        return number(atan2(to_number(cadr(args)), to_number(car(args))));
+    }
     return number(atan(to_number(car(args))));
 }
 
@@ -890,11 +895,10 @@ object *p_map(object *args) {
     assert_procedure("map", car(args));
     head = tail = nil;
     proc = car(args);
-    iter = cadr(args);
-    while (iter) {
-        node = cons(apply(proc, cons(car(iter), nil)), nil);
+    for (iter = cadr(args); iter; iter = cdr(iter)) {
+        node = cons(car(iter), nil);
+        set_car(node, apply(proc, node));
         tail = head ? set_cdr(tail, node) : (head = node);
-        iter = cdr(iter);
     }
     return head;
 }
