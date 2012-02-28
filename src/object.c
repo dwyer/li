@@ -194,8 +194,6 @@ void mark(object *obj) {
 void cleanup(object *env) {
     int i, j, k;
 
-    if (env)
-        return;
     mark(env);
     k = heap.size;
     for (i = j = 0; i < k; i++) {
