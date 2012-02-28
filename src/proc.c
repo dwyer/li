@@ -561,6 +561,24 @@ object *p_append(object *args) {
     return head;
 }
 
+object *p_filter(object *args) {
+    object *iter, *head, *tail, *temp;
+
+    assert_nargs("filter", 2, args);
+    assert_procedure("filter", car(args));
+    for (iter = cadr(args), head = temp = nil; iter; iter = cdr(iter)) {
+        if (temp)
+            set_car(temp, car(iter));
+        else
+            temp = cons(car(iter), nil);
+        if (is_true(apply(car(args), temp))) {
+            tail = head ? set_cdr(tail, temp) : (head = temp);
+            temp = nil;
+        }
+    }
+    return head;
+}
+
 object *p_reverse(object *args) {
     object *lst, *tsl;
 
@@ -1293,6 +1311,7 @@ struct reg {
     { "list", p_list },
     { "length", p_length },
     { "append", p_append },
+    { "filter", p_filter },
     { "reverse", p_reverse },
     { "memq", p_memq },
     { "memv", p_memv },

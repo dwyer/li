@@ -11,6 +11,8 @@ void write_object(object *obj, FILE *f, int h) {
         fprintf(f, "()");
     else if (is_locked(obj))
         fprintf(f, "...");
+    else if (is_char(obj) && h)
+        fprintf(f, "%c", to_char(obj));
     else if (is_char(obj))
         fprintf(f, "#\\%c", to_char(obj));
     else if (is_number(obj))
