@@ -6,21 +6,22 @@
 #define strdup(s)       strcpy(calloc(strlen(s)+1, sizeof(char)), s)
 
 static struct {
-    object **list;
+    object **objs;
+    object *syms;
     int size;
     int cap;
-} heap = { .list = nil, .size = 0, .cap = 0 };
+} heap = { .objs = nil, .syms = nil, .size = 0, .cap = 0 };
 
 void add_to_heap(object *obj) {
-    if (!heap.list) {
+    if (!heap.objs) {
         heap.cap = 4096 * 8;
         heap.size = 0;
-        heap.list = calloc(heap.cap, sizeof(*heap.list));
+        heap.objs = calloc(heap.cap, sizeof(*heap.objs));
     } else if (heap.size == heap.cap) {
         heap.cap *= 2;
-        heap.list = realloc(heap.list, heap.cap * sizeof(*heap.list));
+        heap.objs = realloc(heap.objs, heap.cap * sizeof(*heap.objs));
     }
-    heap.list[heap.size++] = obj;
+    heap.objs[heap.size++] = obj;
 }
 
 object *create(int type) {
@@ -96,15 +97,17 @@ object *string(char *s) {
 
 object *symbol(char *s) {
     object *obj;
-    int i;
 
-    for (i = 0; i < heap.size; i++) {
-        obj = heap.list[i];
-        if (is_symbol(obj) && !strcmp(s, to_symbol(obj)))
+    for (obj = heap.syms; obj; obj = obj->data.symbol.next)
+        if (strcmp(to_symbol(obj), s) == 0)
             return obj;
-    }
     obj = create(T_SYMBOL);
-    obj->data.symbol = strdup(s);
+    obj->data.symbol.string = strdup(s);
+    obj->data.symbol.next = heap.syms;
+    obj->data.symbol.prev = nil;
+    if (heap.syms)
+        heap.syms->data.symbol.prev = obj;
+    heap.syms = obj;
     return obj;
 }
 
@@ -130,8 +133,13 @@ void destroy(object *obj) {
         free(obj->data.env.array);
     if (is_string(obj))
         free(to_string(obj));
-    if (is_symbol(obj))
+    if (is_symbol(obj)) {
+        if (obj->data.symbol.next)
+            obj->data.symbol.next = obj->data.symbol.prev;
+        if (obj->data.symbol.prev)
+            obj->data.symbol.prev = obj->data.symbol.next;
         free(to_symbol(obj));
+    }
     if (is_vector(obj))
         free(to_vector(obj).data);
     free(obj);
@@ -173,17 +181,17 @@ void cleanup(object *env) {
     mark(env);
     k = heap.size;
     for (i = j = 0; i < k; i++) {
-        if (!is_locked(heap.list[i])) {
-            destroy(heap.list[i]);
+        if (!is_locked(heap.objs[i])) {
+            destroy(heap.objs[i]);
             heap.size--;
         } else {
-            unlock(heap.list[i]);
-            heap.list[j++] = heap.list[i];
+            unlock(heap.objs[i]);
+            heap.objs[j++] = heap.objs[i];
         }
     }
     if (!env) {
-        free(heap.list);
-        heap.list = nil;
+        free(heap.objs);
+        heap.objs = nil;
         heap.size = 0;
         heap.cap = 0;
     }

@@ -41,7 +41,7 @@
 #define to_pair(obj)            (obj)->data.pair
 #define to_primitive(obj)       (obj)->data.primitive
 #define to_string(obj)          (obj)->data.string
-#define to_symbol(obj)          (obj)->data.symbol
+#define to_symbol(obj)          (obj)->data.symbol.string
 #define to_vector(obj)          (obj)->data.vector
 
 #define to_integer(obj)         (int)to_number(obj)
@@ -133,7 +133,11 @@ struct object {
             object *cdr;
         } pair;
         char *string;
-        char *symbol;
+        struct {
+            char *string;
+            object *next;
+            object *prev;
+        } symbol;
         struct {
             object **data;
             int length;
