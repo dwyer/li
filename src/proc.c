@@ -1373,7 +1373,7 @@ void define_primitive_procedures(object *env) {
 
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);
-        object *val = procedure(iter->val);
+        object *val = primitive(iter->val);
         append_variable(var, val, env);
     }
 }

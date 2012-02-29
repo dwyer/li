@@ -5,7 +5,7 @@
 #define true !false
 
 #define nil                     NULL
-#define eof                     symbol("#eof")
+#define eof                     symbol("#<eof>")
 
 #define is_eq(obj1, obj2)       ((obj1) == (obj2))
 #define is_null(obj)            is_eq(obj, nil)
@@ -111,7 +111,7 @@ object *character(int c);
 object *compound(object *proc, object *env);
 object *number(double n);
 object *pair(object *car, object *cdr);
-object *procedure(object *(*proc)(object *));
+object *primitive(object *(*proc)(object *));
 object *string(char *s);
 object *symbol(char *s);
 object *vector(object *lst);
@@ -137,6 +137,7 @@ struct object {
             char *string;
             object *next;
             object *prev;
+            unsigned int hash;
         } symbol;
         struct {
             object **data;

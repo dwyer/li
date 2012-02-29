@@ -13,14 +13,6 @@ static struct {
     int cap;
 } heap = { .objs = nil, .size = 0, .cap = 0 };
 
-unsigned int calc_hash(char *s) {
-    unsigned int hash;
-
-    for (hash = 0; *s; s++)
-        hash = hash * 31 + *s;
-    return hash % HASHSIZE;
-}
-
 void add_to_heap(object *obj) {
     int i;
 
@@ -92,7 +84,7 @@ object *pair(object *car, object *cdr) {
     return obj;
 }
 
-object *procedure(object *(*proc)(object *)) {
+object *primitive(object *(*proc)(object *)) {
     object *obj;
 
     obj = create(T_PRIMITIVE);
@@ -110,9 +102,11 @@ object *string(char *s) {
 
 object *symbol(char *s) {
     object *obj;
-    unsigned int hash;
+    unsigned int i, hash;
 
-    hash = calc_hash(s);
+    for (i = hash = 0; s[i]; i++)
+        hash = hash * 31 + s[i];
+    hash = hash % HASHSIZE;
     if (heap.syms[hash])
         for (obj = heap.syms[hash]; obj; obj = obj->data.symbol.next)
             if (strcmp(to_symbol(obj), s) == 0)
@@ -123,6 +117,7 @@ object *symbol(char *s) {
     obj->data.symbol.next = heap.syms[hash];
     if (obj->data.symbol.next)
         obj->data.symbol.next->data.symbol.prev = obj;
+    obj->data.symbol.hash = hash;
     heap.syms[hash] = obj;
     return obj;
 }
@@ -155,7 +150,7 @@ void destroy(object *obj) {
         if (obj->data.symbol.prev)
             obj->data.symbol.prev->data.symbol.next = obj->data.symbol.next;
         else
-            heap.syms[calc_hash(to_symbol(obj))] = obj->data.symbol.next;
+            heap.syms[obj->data.symbol.hash] = obj->data.symbol.next;
         free(to_symbol(obj));
     }
     if (is_vector(obj))
