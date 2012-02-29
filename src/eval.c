@@ -23,7 +23,7 @@
 #define is_let(exp)                 is_tagged_list(exp, "let")
 #define is_let_star(exp)            is_tagged_list(exp, "let*")
 #define is_or(exp)                  is_tagged_list(exp, "or")
-#define is_self_evaluating(exp)     (exp && !is_pair(exp) && !is_symbol(exp))
+#define is_self_evaluating(exp)     (!exp || !(is_pair(exp) || is_symbol(exp)))
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
 #define is_quasiquoted(exp)         is_tagged_list(exp, "quasiquote")
 #define is_unquoted(exp)            is_tagged_list(exp, "unquote")
