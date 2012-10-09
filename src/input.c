@@ -5,7 +5,7 @@
 #include "input.h"
 #include "main.h"
 
-#define iscomment(c)    ((c) == ';')
+#define iscomment(c)    ((c) == '#')
 #define isopener(c)     ((c) == '(')
 #define iscloser(c)     ((c) == ')')
 #define isquote(c)      ((c) == '\'')

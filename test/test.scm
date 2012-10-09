@@ -1,19 +1,19 @@
 (load "sub.scm")
 
-; 11.2.1  Variable definitions
+# 11.2.1  Variable definitions
 (define add3
   (lambda (x) (+ x 3)))
 (assert (equal? (add3 3) 6))
 (define first car)
 (assert (equal? (first `(1 2)) 1))
 
-; 11.3  Bodies
+# 11.3  Bodies
 (assert (equal? (let ((x 5))
                   (define foo (lambda (y) (bar x y)))
                   (define bar (lambda (a b) (+ (* a b) a)))
                   (foo (+ x 3))) 45))
 
-; 11.4.1  Quotation
+# 11.4.1  Quotation
 (assert (equal? (quasiquote a) `a))
 (assert (equal? (quasiquote %(a b c)) %(a b c)))
 (assert (equal? (quasiquote (+ 1 2)) `(+ 1 2)))
@@ -25,7 +25,7 @@
 (assert (equal? `(quasiquote a) (quasiquote (quasiquote a))))
 (assert (equal? ``a (quasiquote (quasiquote a))))
 
-; 11.4.2  Procedures
+# 11.4.2  Procedures
 (lambda (x) (+ x x))
 (assert (equal? ((lambda (x) (+ x x)) 4) 8))
 (assert (equal? ((lambda (x)
@@ -45,28 +45,28 @@
 (assert (equal? ((lambda (x y . z) z)
                  3 4 5 6) `(5 6)))
 
-; 11.4.3  Conditionals
+# 11.4.3  Conditionals
 (assert (equal? (if (> 3 2) `yes `no) `yes))
 (assert (equal? (if (> 2 3) `yes `no) `no))
 (assert (equal? (if (> 3 2)
                   (- 3 2)
                   (+ 3 2)) 1))
-(assert (equal? (if false false) false)) ; unspecified
+(assert (equal? (if false false) false)) # unspecified
 
-; 11.4.4  Assignments
+# 11.4.4  Assignments
 (assert (equal? (let ((x 2))
                   (+ x 1)
                   (set! x 4)
                   (+ x 1)) 5))
 
-; 11.4.5  Derived conditionals
+# 11.4.5  Derived conditionals
 (assert (equal? (cond ((> 3 2) `greater)
                       ((< 3 2) `less)) `greater))
 (assert (equal? (cond ((> 3 3) `greater)
                       ((< 3 3) `less)
                       (else `equal)) `equal))
-; (assert (equal? (cond (`(1 2 3) => cadr)
-;       (else false)) 2)) ; not supported
+# (assert (equal? (cond (`(1 2 3) => cadr)
+#       (else false)) 2)) # not supported
 (assert (equal?
           (case (* 2 3)
             ((2 3 5 7) `prime)
@@ -87,7 +87,7 @@
 (assert (equal? (or false false false) false))
 (assert (equal? (or `(b c) (/ 3 0)) `(b c)))
 
-; 11.4.6  Binding constructs
+# 11.4.6  Binding constructs
 (assert (equal? (let ((x 2) (y 3))
                   (* x y)) 6))
 (assert (equal? (let ((x 2) (y 3))
@@ -99,14 +99,14 @@
                          (z (+ x y)))
                     (* z x))) 70))
 
-; 11.4.7  Sequencing
+# 11.4.7  Sequencing
 (define x 0)
 (assert (equal? (begin (set! x 5)
                        (+ x 1)) 6))
-;(assert (equal? (begin (display "4 plus 1 equals ")
-;                       (display (+ 4 1))) nil)) ; unspecified
+#(assert (equal? (begin (display "4 plus 1 equals ")
+#                       (display (+ 4 1))) nil)) # unspecified
 
-; 11.5  Equivalence predicates
+# 11.5  Equivalence predicates
 (assert (equal? (eqv? `a `a) true))
 (assert (equal? (eqv? `a `b) false))
 (assert (equal? (eqv? 2 2) true))
@@ -170,15 +170,15 @@
 (assert (equal? (equal? (lambda (x) x)
                         (lambda (y) y)) false))
 
-; 11.6  Procedure predicate
+# 11.6  Procedure predicate
 (assert (equal? (procedure? car) true))
 (assert (equal? (procedure? `car) false))
 (assert (equal? (procedure? (lambda (x) (* x x))) true))
 (assert (equal? (procedure? `(lambda (x) (* x x))) false))
 
-; 11.7  Arithmetic
+# 11.7  Arithmetic
 
-; 11.7.4.3  Arithmetic operations
+# 11.7.4.3  Arithmetic operations
 (assert (equal? (max 3 4) 4))
 (assert (equal? (max 3.9 4) 4.0))
 (assert (equal? (+ 3 4) 7))
@@ -200,13 +200,13 @@
 (assert (equal? (lcm 32.0 -36) 288.0))
 (assert (equal? (lcm) 1))
 (assert (equal? (expt 5 3) 125))
-; This one passes under normal circumstances but fails in Valgrind.
-; (assert (equal? (expt 5 -3) (/ 1 125)))
+# This one passes under normal circumstances but fails in Valgrind.
+# (assert (equal? (expt 5 -3) (/ 1 125)))
 (assert (equal? (expt 5 0) 1))
 (assert (equal? (expt 0 5) 0))
 (assert (equal? (expt 0 0) 1))
 (assert (equal? (expt 0.0 0.0) 1.0))
-; 11.8  Booleans
+# 11.8  Booleans
 (assert (equal? (not true) false))
 (assert (equal? (not 3) false))
 (assert (equal? (not (list 3)) false))
@@ -217,8 +217,8 @@
 (assert (equal? (boolean? false) true))
 (assert (equal? (boolean? 0) false))
 (assert (equal? (boolean? nil) false))
-; 11.9  Pairs and lists
-; ERROR: (assert (equal? (a b c . d) `(a . (b . (c . d)))))
+# 11.9  Pairs and lists
+# ERROR: (assert (equal? (a b c . d) `(a . (b . (c . d)))))
 (assert (equal? (pair? `(a . b)) true))
 (assert (equal? (pair? `(a b c)) true))
 (assert (equal? (pair? nil) false))
@@ -256,7 +256,7 @@
 (assert (equal? (memq (list `a) `(b (a) c)) false))
 (assert (equal? (member (list `a)
                         `(b (a) c)) `((a) c)))
-(assert (equal? (memq 101 `(100 101 102)) false)) ; unspecified
+(assert (equal? (memq 101 `(100 101 102)) false)) # unspecified
 (assert (equal? (memv 101 `(100 101 102)) `(101 102)))
 (define e `((a 1) (b 2) (c 3)))
 (assert (equal? (assq `a e) `(a 1)))
@@ -264,7 +264,7 @@
 (assert (equal? (assq `d e) false))
 (assert (equal? (assq (list `a) `(((a)) ((b)) ((c)))) false))
 (assert (equal? (assoc (list `a) `(((a)) ((b)) ((c)))) `((a))))
-(assert (equal? (assq 5 `((2 3) (5 7) (11 13))) false)) ; unspecified
+(assert (equal? (assq 5 `((2 3) (5 7) (11 13))) false)) # unspecified
 (assert (equal? (assv 5 `((2 3) (5 7) (11 13))) `(5 7)))
 (assert (equal? (map cadr `((a b) (d e) (g h))) `(b e h)))
 (assert (equal? (map (lambda (n) (expt n n))
@@ -283,22 +283,22 @@
 (assert (equal? (for-each (lambda (x) x) `(1 2 3 4)) nil))
 (assert (equal? (for-each even? nil) nil))
 
-; 11.10  Symbols
+# 11.10  Symbols
 (assert (equal? (symbol? `foo) true))
 (assert (equal? (symbol? (car `(a b))) true))
 (assert (equal? (symbol? "bar") false))
 (assert (equal? (symbol? `nil) true))
 (assert (equal? (symbol? nil) false))
-; BUG: (assert (equal? (symbol? false) false))
+# BUG: (assert (equal? (symbol? false) false))
 (assert (equal? (symbol->string `flying-fish) "flying-fish"))
 (assert (equal? (symbol->string `Martin) "Martin"))
 (assert (equal? (symbol->string
                   (string->symbol "Malvina")) "Malvina"))
 (assert (equal? (eq? `mISSISSIppi `mississippi) false))
 
-; 11.11  Characters
-; 11.12  Strings
-; 11.13  Vectors
+# 11.11  Characters
+# 11.12  Strings
+# 11.13  Vectors
 (assert (equal? %(0 (2 2 2 2) "Anna") %(0 (2 2 2 2) "Anna")))
 (assert (equal? (vector `a `b `c) %(a b c)))
 (assert (equal? (vector-ref %(1 1 2 3 5 8 13 21) 5) 8))
@@ -308,7 +308,7 @@
 (assert (equal? (vector-set! %(0 1 2) 1 "doe") "doe"))
 (assert (equal? (vector->list %(dah dah didah)) `(dah dah didah)))
 (assert (equal? (list->vector `(dididit dah)) %(dididit dah)))
-; 11.15  Control features
+# 11.15  Control features
 (assert (equal? (apply + (list 3 4)) 7))
 (define compose
   (lambda (f g)
@@ -316,22 +316,22 @@
       (f (apply g args)))))
 (assert (equal? ((compose sqrt *) 12 75) 30))
 
-; 11.16  Iteration
-; SEGFAULT
-;(assert (equal? (let loop ((numbers `(3 -2 1 6 -5))
-;                           (nonneg nil)
-;                           (neg nil))
-;                  (cond ((null? numbers) (list nonneg neg))
-;                        ((>= (car numbers) 0)
-;                         (loop (cdr numbers)
-;                               (cons (car numbers) nonneg)
-;                               neg))
-;                        ((< (car numbers) 0)
-;                         (loop (cdr numbers)
-;                               nonneg
-;                               (cons (car numbers) neg))))) `((6 1 3) (-5 -2))))
+# 11.16  Iteration
+# SEGFAULT
+#(assert (equal? (let loop ((numbers `(3 -2 1 6 -5))
+#                           (nonneg nil)
+#                           (neg nil))
+#                  (cond ((null? numbers) (list nonneg neg))
+#                        ((>= (car numbers) 0)
+#                         (loop (cdr numbers)
+#                               (cons (car numbers) nonneg)
+#                               neg))
+#                        ((< (car numbers) 0)
+#                         (loop (cdr numbers)
+#                               nonneg
+#                               (cons (car numbers) neg))))) `((6 1 3) (-5 -2))))
 
-; force and delay
+# force and delay
 (assert (equal? (force (delay (+ 1 2))) 3))
 (assert (equal? (let ((p (delay (+ 1 2))))
                   (list (force p) (force p))) `(3 3)))
@@ -352,9 +352,9 @@
                   (force p)))))
 (define x 5)
 (assert (equal? (force p) 6))
-;(assert (equal? (begin (set! x 10)
-;                       (force p))
-;                6))
+#(assert (equal? (begin (set! x 10)
+#                       (force p))
+#                6))
 
 (display "all tests passed!")
 (newline)

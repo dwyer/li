@@ -11,7 +11,7 @@
           (apply lcm (cons (algorithm (car args) (cadr args))
                            (cddr args))))))
 
-; Taken from R5RS
+# Taken from R5RS
 (define (list-tail lst k)
   (if (= k 0)
     lst
