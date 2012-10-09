@@ -18,7 +18,6 @@
 #define isdelimiter(c)  (isspace(c) || isopener(c) || iscloser(c) || \
                          isstring(c) || iscomment(c) || iseof(c))
 
-#define read_quote(f)   cons(symbol("quote"), cons(read(f), nil))
 #define read_quasi(f)   cons(symbol("quasiquote"), cons(read(f), nil))
 #define read_unquote(f) cons(symbol("unquote"), cons(read(f), nil))
 
@@ -91,8 +90,6 @@ object *read(FILE *f) {
         buf = nil;
         return eof;
     }
-    else if (isquote(c))
-        return read_quote(f);
     else if (isquasi(c))
         return read_quasi(f);
     else if (isunquote(c))

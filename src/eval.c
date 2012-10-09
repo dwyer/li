@@ -24,7 +24,6 @@
 #define is_let_star(exp)            is_tagged_list(exp, "let*")
 #define is_or(exp)                  is_tagged_list(exp, "or")
 #define is_self_evaluating(exp)     (!exp || !(is_pair(exp) || is_symbol(exp)))
-#define is_quoted(exp)              is_tagged_list(exp, "quote")
 #define is_quasiquoted(exp)         is_tagged_list(exp, "quasiquote")
 #define is_unquoted(exp)            is_tagged_list(exp, "unquote")
 #define is_variable(exp)            is_symbol(exp)
@@ -82,10 +81,7 @@ object *eval(object *exp, object *env) {
         /* assert that it's a list */
         for (seq = exp; seq; seq = cdr(seq))
             check_syntax(is_pair(seq), exp);
-        if (is_quoted(exp)) {
-            check_syntax(cdr(exp) && !cddr(exp), exp);
-            return cadr(exp);
-        } else if (is_quasiquoted(exp)) {
+        if (is_quasiquoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return eval_quasiquote(cadr(exp), env);
         } else if (is_delay(exp)) {
@@ -278,6 +274,7 @@ object *setup_environment(void) {
 
     env = environment(nil);
     append_variable(symbol("user-initial-environment"), env, env);
+    append_variable(symbol("nil"), nil, env);
     append_variable(boolean(true), boolean(true), env);
     append_variable(boolean(false), boolean(false), env);
     define_primitive_procedures(env);
