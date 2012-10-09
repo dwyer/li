@@ -11,7 +11,7 @@
 #define isquote(c)      ((c) == '\'')
 #define isquasi(c)      ((c) == '`')
 #define isunquote(c)    ((c) == ',')
-#define issharp(c)      ((c) == '#')
+#define issharp(c)      ((c) == '%')
 #define iseof(c)        ((c) == EOF)
 #define iseol(c)        ((c) == '\n')
 #define isstring(c)     ((c) == '"')

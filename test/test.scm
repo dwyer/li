@@ -15,7 +15,7 @@
 
 ; 11.4.1  Quotation
 (assert (equal? (quasiquote a) `a))
-(assert (equal? (quasiquote #(a b c)) #(a b c)))
+(assert (equal? (quasiquote %(a b c)) %(a b c)))
 (assert (equal? (quasiquote (+ 1 2)) `(+ 1 2)))
 (assert (equal? `"abc" "abc"))
 (assert (equal? `145932 145932))
@@ -119,7 +119,7 @@
 (assert (equal? (let ((p (lambda (x) x)))
                   (eqv? p p)) true))
 (assert (equal? (eqv? "" "") false))
-(assert (equal? (eqv? #() #()) false))
+(assert (equal? (eqv? %() %()) false))
 (assert (equal? (eqv? (lambda (x) x)
                       (lambda (x) x)) false))
 (assert (equal? (eqv? (lambda (x) x)
@@ -155,7 +155,7 @@
                   (eq? n n)) true))
 (assert (equal? (let ((x `(a)))
                   (eq? x x)) true))
-(assert (equal? (let ((x #()))
+(assert (equal? (let ((x %()))
                   (eq? x x)) true))
 (assert (equal? (let ((p (lambda (x) x)))
                   (eq? p p)) true))
@@ -222,7 +222,7 @@
 (assert (equal? (pair? `(a . b)) true))
 (assert (equal? (pair? `(a b c)) true))
 (assert (equal? (pair? nil) false))
-(assert (equal? (pair? #(a b)) false))
+(assert (equal? (pair? %(a b)) false))
 (assert (equal? (cons `a nil) `(a)))
 (assert (equal? (cons `(a) `(b c d)) `((a) b c d)))
 (assert (equal? (cons "a" `(b c)) `("a" b c)))
@@ -279,7 +279,7 @@
                   (for-each (lambda (i)
                               (vector-set! v i (* i i)))
                             `(0 1 2 3 4))
-                  v) #(0 1 4 9 16)))
+                  v) %(0 1 4 9 16)))
 (assert (equal? (for-each (lambda (x) x) `(1 2 3 4)) nil))
 (assert (equal? (for-each even? nil) nil))
 
@@ -299,15 +299,15 @@
 ; 11.11  Characters
 ; 11.12  Strings
 ; 11.13  Vectors
-(assert (equal? #(0 (2 2 2 2) "Anna") #(0 (2 2 2 2) "Anna")))
-(assert (equal? (vector `a `b `c) #(a b c)))
-(assert (equal? (vector-ref #(1 1 2 3 5 8 13 21) 5) 8))
+(assert (equal? %(0 (2 2 2 2) "Anna") %(0 (2 2 2 2) "Anna")))
+(assert (equal? (vector `a `b `c) %(a b c)))
+(assert (equal? (vector-ref %(1 1 2 3 5 8 13 21) 5) 8))
 (assert (equal? (let ((vec (vector 0 `(2 2 2 2) "Anna")))
                   (vector-set! vec 1 `("Sue" "Sue"))
-                  vec) #(0 ("Sue" "Sue") "Anna")))
-(assert (equal? (vector-set! #(0 1 2) 1 "doe") "doe"))
-(assert (equal? (vector->list #(dah dah didah)) `(dah dah didah)))
-(assert (equal? (list->vector `(dididit dah)) #(dididit dah)))
+                  vec) %(0 ("Sue" "Sue") "Anna")))
+(assert (equal? (vector-set! %(0 1 2) 1 "doe") "doe"))
+(assert (equal? (vector->list %(dah dah didah)) `(dah dah didah)))
+(assert (equal? (list->vector `(dididit dah)) %(dididit dah)))
 ; 11.15  Control features
 (assert (equal? (apply + (list 3 4)) 7))
 (define compose
