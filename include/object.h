@@ -24,7 +24,7 @@
 #define is_procedure(obj)       (is_primitive(obj) || is_compound(obj))
 
 /* Booleans */
-#define boolean(obj)            (obj ? symbol("#t") : symbol("#f"))
+#define boolean(obj)            (obj ? symbol("true") : symbol("false"))
 #define not(obj)                is_eq(obj, boolean(false))
 #define is_boolean(obj)         (is_eq(obj, boolean(true)) || \
                                  is_eq(obj, boolean(false)))
