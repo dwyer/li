@@ -275,8 +275,8 @@ object *setup_environment(void) {
     env = environment(nil);
     append_variable(symbol("user-initial-environment"), env, env);
     append_variable(symbol("nil"), nil, env);
-    append_variable(boolean(true), boolean(true), env);
-    append_variable(boolean(false), boolean(false), env);
+    append_variable(symbol("true"), boolean(true), env);
+    append_variable(symbol("false"), boolean(false), env);
     define_primitive_procedures(env);
     return env;
 }
