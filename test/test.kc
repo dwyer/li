@@ -1,4 +1,4 @@
-(load "sub.scm")
+(load "lib.kc")
 
 # 11.2.1  Variable definitions
 (define add3
