@@ -1,25 +1,4 @@
-subscm, pronounced subscheme, is, as the name is meant to imply, an interpreter
-for a small subset of the Scheme programming language.  That is, it's not meant
-to be a full-featured RnRS implementation, just a subset of the features I love
-the most.  My ultimate goal is ease of extensibility so that I may use it as an
-embedded configuration and scripting lanaguge in future projects.
-
-What's not supported
-====================
-Scheme is a language by-mathematicans-not-necessarily-for-mathematicans.
-Current revisions of the specification require support for what they call the
-full numerical tower.  That is, numbers may be exact, inexact, rational,
-irrational, real, imaginary, complex, finite, infinite and arbitrarily large.
-For the authors of Scheme, this is probably practical for their purposes and a
-joy to implement.  For me, however, it adds very little power in exchange for a
-great deal of complexity to a language I admire for its power and simplicity.
-Therefore, I choose not to adhere strictly to the RnRS.
-
-The following are not yet supported, but may be in the future:
-* Continuations
-* ``Named let'', letrec, let-syntax, etc.
-* Macros (define-syntax, syntax-rules, etc.)
-* Ports
+sub is a Lisp-1 based on Scheme.
 
 What is supported
 =================
@@ -31,13 +10,7 @@ Data types:
 * Strings
 * Vectors
 
-Procedures:
-* Any procedure that appears in Structure and Interpretation of Computer
-  Programs should be implemented at the very least as a library procedure.
-  Library procedures can be imported with (load "sub.scm").
-
 Bugs
 ====
 * Syntax checking is not complete.  Bad syntax will result in unknown behavior
   which may include unexpected termination or even segfaults.
-* (symbol? #f) and (symbol? #t) return #t.
