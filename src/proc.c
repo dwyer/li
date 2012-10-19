@@ -46,14 +46,12 @@ object *p_error(object *args) {
 
 object *p_rand(object *args) {
     assert_nargs("rand", 0, args);
-    srand(time(NULL));
     return number(rand());
 }
 
 object *p_random(object *args) {
     assert_nargs("random", 1, args);
     assert_integer("random", car(args));
-    srand(time(NULL));
     return number(rand() % to_integer(car(args)));
 }
 

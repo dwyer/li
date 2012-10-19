@@ -1,6 +1,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include "object.h"
 #include "main.h"
 #include "eval.h"
@@ -55,6 +56,7 @@ int main(int argc, char *argv[]) {
     object *env;
     int i;
 
+    srand(time(NULL));
     env = setup_environment();
     if (setjmp(buf)) {
         cleanup(nil);
