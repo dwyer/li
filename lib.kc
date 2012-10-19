@@ -20,6 +20,32 @@
 (def (list-ref lst k)
   (car (list-tail lst k)))
 
+# STRINGS
+
+(def (string . chars)
+  (apply string->list chars))
+
+(def (string->list str)
+  (def (iter ref len)
+    (if (< ref len)
+      (cons (string-ref str ref)
+            (iter (+ ref 1) len))
+      nil))
+  (iter 0 (string-length str)))
+
+(def (list->string lst)
+  (def (iter lst str k)
+    (if (null? lst)
+      str
+      (begin (string-set! str k (car lst))
+             (iter (cdr lst) str (+ k 1)))))
+  (iter lst (make-string (length lst)) 0))
+
+(def (string-append . strs)
+  (list->string (apply append (map string->list strs))))
+
+# VECTORS
+
 (def (make-vector k . args)
   (if (and (not (null? args)) (not (null? (cdr args))))
     (error `make-vector "too many arguments"))
