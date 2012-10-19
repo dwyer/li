@@ -1,0 +1,8 @@
+Change vector syntax from %(a b c) to [a b c].
+Change file ext.
+Change (load "name.ext") to (import name).
+
+Done:
+Change vector syntax from #(...) to %(...).
+Change comment syntax from ; to #.
+Change define to def.
