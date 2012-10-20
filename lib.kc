@@ -2,6 +2,26 @@
   (if (not condition)
     (apply error (cons who (cons msg args)))))
 
+(def (print . args)
+  (def (iter args)
+    (if (not (null? args))
+      (begin (display (car args))
+             (if (not (null? (cdr args)))
+               (begin (display " ")
+                      (iter (cdr args)))))))
+  (iter args)
+  (newline))
+
+(def (randint start end)
+  (+ start (modulo (rand) (- end start -1))))
+
+(def (range start end)
+  (def (iter k)
+    (if (< k end)
+      (cons k (iter (+ k 1)))
+      nil))
+  (iter start))
+
 (def (lcm . args)
   (def (algorithm a b)
     (/ (abs (* a b)) (gcd a b)))
@@ -11,9 +31,14 @@
           (apply lcm (cons (algorithm (car args) (cadr args))
                            (cddr args))))))
 
+(def (list-ref lst k)
+  (if (= k 0)
+    (car lst)
+    (list-ref (cdr lst) (- k 1))))
+
 # Taken from R5RS
 (def (list-tail lst k)
-  (if (= k 0)
+  (if (zero? k)
     lst
     (list-tail (cdr lst) (- k 1))))
 
@@ -26,10 +51,10 @@
   (apply string->list chars))
 
 (def (string->list str)
-  (def (iter ref len)
-    (if (< ref len)
-      (cons (string-ref str ref)
-            (iter (+ ref 1) len))
+  (def (iter k len)
+    (if (< k len)
+      (cons (string-ref str k)
+            (iter (+ k 1) len))
       nil))
   (iter 0 (string-length str)))
 
@@ -43,6 +68,19 @@
 
 (def (string-append . strs)
   (list->string (apply append (map string->list strs))))
+
+(def (substring str start end)
+  (let* ((len (- end start))
+         (sub (make-string len)))
+    (def (iter k)
+      (cond ((< k len)
+             (string-set! sub k (string-ref str (+ start k)))
+             (iter (+ k 1)))
+            (else sub)))
+    (iter 0)))
+
+(def (string-copy str)
+  (substring str 0 (string-length str)))
 
 # VECTORS
 
