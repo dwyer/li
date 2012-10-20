@@ -1,6 +1,7 @@
 Change vector syntax from %(a b c) to [a b c].
 Change file ext.
 Change (load "name.ext") to (import name).
+Implement unquote-splicing.
 
 Done:
 Change vector syntax from #(...) to %(...).
