@@ -5,6 +5,7 @@
 #include "input.h"
 #include "main.h"
 
+#define ischaracter(c)  ((c) == '\'')
 #define iscomment(c)    ((c) == '#')
 #define isopener(c)     ((c) == '(')
 #define iscloser(c)     ((c) == ')')
@@ -29,6 +30,7 @@ int is_atom_number(const char *s);
 int peek_char(FILE *f);
 
 object *read_atom(FILE *f);
+object *read_character(FILE *f);
 object *read_sequence(FILE *f);
 object *read_special(FILE *f);
 object *read_string(FILE *f);
@@ -90,6 +92,8 @@ object *read(FILE *f) {
         buf = nil;
         return eof;
     }
+    else if (ischaracter(c))
+        return read_character(f);
     else if (isquasi(c))
         return read_quasi(f);
     else if (isunquote(c))
@@ -127,6 +131,22 @@ object *read_atom(FILE *f) {
     else
         ret = symbol(buf);
     return ret;
+}
+
+object *read_character(FILE *f) {
+    char c;
+
+    c = getch(f);
+    if (c == '\\') {
+        c = getch(f);
+        if (c == 'n')
+            c = '\n';
+        else if (c == 't')
+            c = '\t';
+    }
+    if (!ischaracter(getc(f)))
+        error("read", "ill-formed character", nil);
+    return character(c);
 }
 
 object *read_sequence(FILE *f) {
@@ -173,7 +193,18 @@ object *read_string(FILE *f) {
         buf = calloc(buf_sz, sizeof(*buf));
     i = 0;
     do {
-        buf[i++] = c = getc(f);
+        c = getc(f);
+        if (c == '\\') {
+            if ((c = getc(f)) == 'n')
+                c = '\n';
+            else if (c == 't')
+                c = '\t';
+            else {
+                ungetc(c, f);
+                c = '\\';
+            }
+        }
+        buf[i++] = c;
         if (i == buf_sz) {
             buf_sz *= 2;
             buf = realloc(buf, buf_sz * sizeof(*buf));
