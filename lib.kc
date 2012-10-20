@@ -31,6 +31,14 @@
           (apply lcm (cons (algorithm (car args) (cadr args))
                            (cddr args))))))
 
+(define (make-list len . fill)
+  (assert (positive? len))
+  (define (iter k fill)
+    (if (< k len)
+      (cons fill (iter (+ k 1) fill))
+      nil))
+  (iter 0 (if (null? fill) nil (car fill))))
+
 (define (list-ref lst k)
   (if (= k 0)
     (car lst)
