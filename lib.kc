@@ -1,9 +1,9 @@
-(def (check condition who msg . args)
+(define (check condition who msg . args)
   (if (not condition)
     (apply error (cons who (cons msg args)))))
 
-(def (print . args)
-  (def (iter args)
+(define (print . args)
+  (define (iter args)
     (if (not (null? args))
       (begin (display (car args))
              (if (not (null? (cdr args)))
@@ -12,18 +12,18 @@
   (iter args)
   (newline))
 
-(def (randint start end)
+(define (randint start end)
   (+ start (modulo (rand) (- end start -1))))
 
-(def (range start end)
-  (def (iter k)
+(define (range start end)
+  (define (iter k)
     (if (< k end)
       (cons k (iter (+ k 1)))
       nil))
   (iter start))
 
-(def (lcm . args)
-  (def (algorithm a b)
+(define (lcm . args)
+  (define (algorithm a b)
     (/ (abs (* a b)) (gcd a b)))
   (cond ((null? args) 1)
         ((null? (cdr args)) (abs (car args)))
@@ -31,102 +31,102 @@
           (apply lcm (cons (algorithm (car args) (cadr args))
                            (cddr args))))))
 
-(def (list-ref lst k)
+(define (list-ref lst k)
   (if (= k 0)
     (car lst)
     (list-ref (cdr lst) (- k 1))))
 
 # Taken from R5RS
-(def (list-tail lst k)
+(define (list-tail lst k)
   (if (zero? k)
     lst
     (list-tail (cdr lst) (- k 1))))
 
-(def (list-ref lst k)
+(define (list-ref lst k)
   (car (list-tail lst k)))
 
 # STRINGS
 
-(def (string . chars)
+(define (string . chars)
   (apply string->list chars))
 
-(def (string->list str)
-  (def (iter k len)
+(define (string->list str)
+  (define (iter k len)
     (if (< k len)
       (cons (string-ref str k)
             (iter (+ k 1) len))
       nil))
   (iter 0 (string-length str)))
 
-(def (list->string lst)
-  (def (iter lst str k)
+(define (list->string lst)
+  (define (iter lst str k)
     (if (null? lst)
       str
       (begin (string-set! str k (car lst))
              (iter (cdr lst) str (+ k 1)))))
   (iter lst (make-string (length lst)) 0))
 
-(def (string-append . strs)
+(define (string-append . strs)
   (list->string (apply append (map string->list strs))))
 
-(def (substring str start end)
+(define (substring str start end)
   (let* ((len (- end start))
          (sub (make-string len)))
-    (def (iter k)
+    (define (iter k)
       (cond ((< k len)
              (string-set! sub k (string-ref str (+ start k)))
              (iter (+ k 1)))
             (else sub)))
     (iter 0)))
 
-(def (string-copy str)
+(define (string-copy str)
   (substring str 0 (string-length str)))
 
 # VECTORS
 
-(def (make-vector k . args)
+(define (make-vector k . args)
   (if (and (not (null? args)) (not (null? (cdr args))))
     (error `make-vector "too many arguments"))
   (if (or (not (integer? k)) (< k 0))
     (error `make-vector "arg1 must be a positive integer" k))
-  (def (make-list k fill)
+  (define (make-list k fill)
     (if (= k 0)
       nil
       (cons fill (make-list (- k 1) fill))))
   (list->vector (make-list k (if (null? args) nil (car args)))))
 
-(def (vector->list vec)
+(define (vector->list vec)
   (if (not (vector? vec))
     (error `vector->list "arg must be a vector" vec))
-  (def (iter k)
+  (define (iter k)
     (if (= k (vector-length vec))
       nil
       (cons (vector-ref vec k) (iter (+ k 1)))))
   (iter 0))
 
-(def (list->vector lst)
+(define (list->vector lst)
   (if (not (list? lst))
     (error `list->vector "arg must be a list" lst))
   (apply vector lst))
 
-(def (vector-fill! vec fill)
+(define (vector-fill! vec fill)
   (if (not (vector? vec))
     (error `vector-fill! "arg1 must be a vector" vec))
   (let ((len (vector-length vec)))
-    (def (iter k)
+    (define (iter k)
       (if (< k len)
         (begin (vector-set! vec k fill)
                (iter (+ k 1)))
         vec))
     (iter 0)))
 
-(def (map proc . args)
-  (def (map1 lst)
+(define (map proc . args)
+  (define (map1 lst)
     (if (null? lst)
       nil
       (cons (proc (car lst))
             (map1 (cdr lst)))))
-  (def (iter args)
+  (define (iter args)
     (if (or (null? args) (null? (car args)))
       nil
       (cons (apply proc (map car args))
@@ -136,13 +136,13 @@
          (map1 (car args)))
         (else (iter args))))
 
-(def (for-each proc . args)
-  (def (for-each-unary lst)
+(define (for-each proc . args)
+  (define (for-each-unary lst)
     (if (null? lst)
       nil
       (begin (proc (car lst))
              (for-each-unary (cdr lst)))))
-  (def (iter args)
+  (define (iter args)
     (if (or (null? args) (null? (car args)))
       nil
       (begin (apply proc (map car args))

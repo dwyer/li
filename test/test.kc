@@ -1,16 +1,16 @@
 (load "lib.kc")
 
-# 11.2.1  Variable definitions
-(def add3
+# 11.2.1  Variable defineinitions
+(define add3
   (lambda (x) (+ x 3)))
 (assert (equal? (add3 3) 6))
-(def first car)
+(define first car)
 (assert (equal? (first `(1 2)) 1))
 
 # 11.3  Bodies
 (assert (equal? (let ((x 5))
-                  (def foo (lambda (y) (bar x y)))
-                  (def bar (lambda (a b) (+ (* a b) a)))
+                  (define foo (lambda (y) (bar x y)))
+                  (define bar (lambda (a b) (+ (* a b) a)))
                   (foo (+ x 3))) 45))
 
 # 11.4.1  Quotation
@@ -29,14 +29,14 @@
 (lambda (x) (+ x x))
 (assert (equal? ((lambda (x) (+ x x)) 4) 8))
 (assert (equal? ((lambda (x)
-                   (def (p y)
+                   (define (p y)
                      (+ y 1))
                    (+ (p x) x))
                  5) 11))
-(def reverse-subtract
+(define reverse-subtract
   (lambda (x y) (- y x)))
 (assert (equal? (reverse-subtract 7 10) 3))
-(def add4
+(define add4
   (let ((x 4))
     (lambda (y) (+ x y))))
 
@@ -100,7 +100,7 @@
                     (* z x))) 70))
 
 # 11.4.7  Sequencing
-(def x 0)
+(define x 0)
 (assert (equal? (begin (set! x 5)
                        (+ x 1)) 6))
 #(assert (equal? (begin (display "4 plus 1 equals ")
@@ -124,14 +124,14 @@
                       (lambda (x) x)) false))
 (assert (equal? (eqv? (lambda (x) x)
                       (lambda (y) y)) false))
-(def gen-counter
+(define gen-counter
   (lambda ()
     (let ((n 0))
       (lambda () (set! n (+ n 1)) n))))
 (assert (equal? (let ((g (gen-counter)))
                   (eqv? g g)) true))
 (assert (equal? (eqv? (gen-counter) (gen-counter)) false))
-(def gen-loser
+(define gen-loser
   (lambda ()
     (let ((n 0))
       (lambda () (set! n (+ n 1)) 27))))
@@ -258,7 +258,7 @@
                         `(b (a) c)) `((a) c)))
 (assert (equal? (memq 101 `(100 101 102)) false)) # unspecified
 (assert (equal? (memv 101 `(100 101 102)) `(101 102)))
-(def e `((a 1) (b 2) (c 3)))
+(define e `((a 1) (b 2) (c 3)))
 (assert (equal? (assq `a e) `(a 1)))
 (assert (equal? (assq `b e) `(b 2)))
 (assert (equal? (assq `d e) false))
@@ -310,7 +310,7 @@
 (assert (equal? (list->vector `(dididit dah)) %(dididit dah)))
 # 11.15  Control features
 (assert (equal? (apply + (list 3 4)) 7))
-(def compose
+(define compose
   (lambda (f g)
     (lambda args
       (f (apply g args)))))
@@ -335,22 +335,22 @@
 (assert (equal? (force (delay (+ 1 2))) 3))
 (assert (equal? (let ((p (delay (+ 1 2))))
                   (list (force p) (force p))) `(3 3)))
-(def a-stream
+(define a-stream
   (let* ((next
            (lambda (n)
              (cons n (delay (next (+ n 1)))))))
     (next 0)))
-(def head car)
-(def tail
+(define head car)
+(define tail
 (lambda (stream) (force (cdr stream))))
 (assert (equal? (head (tail (tail a-stream))) 2))
-(def count 0)
-(def p
+(define count 0)
+(define p
   (delay (begin (set! count (+ count 1))
                 (if (> count x)
                   count
                   (force p)))))
-(def x 5)
+(define x 5)
 (assert (equal? (force p) 6))
 #(assert (equal? (begin (set! x 10)
 #                       (force p))
