@@ -55,6 +55,25 @@ object *p_random(object *args) {
     return number(rand() % to_integer(car(args)));
 }
 
+object *p_getenv(object *args) {
+    char *env;
+
+    assert_nargs("getenv", 1, args);
+    assert_string("getenv", car(args));
+    if ((env = getenv(to_string(car(args)))))
+        return string(env);
+    else
+        return boolean(false);
+}
+
+object *p_setenv(object *args) {
+    assert_nargs("setenv", 2, args);
+    assert_string("setenv", car(args));
+    assert_string("setenv", cadr(args));
+    setenv(to_string(car(args)), to_string(cadr(args)), 1);
+    return nil;
+}
+
 object *p_runtime(object *args) {
     assert_nargs("runtime", 0, args);
     return number(clock());
@@ -1235,6 +1254,8 @@ struct reg {
     { "rand", p_rand },
     { "random", p_random },
     { "runtime", p_runtime },
+    { "getenv", p_getenv },
+    { "setenv", p_setenv },
     /* Equivalence predicates */
     { "eq?", p_is_eq },
     { "eqv?", p_is_eqv },
