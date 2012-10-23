@@ -2,3 +2,5 @@ Change vector syntax from %(a b c) to [a b c].
 Change file ext.
 Change (load "name.ext") to (import name).
 Implement unquote-splicing.
+Implement file I/O.
+Fix ill-formed character bug.
