@@ -67,10 +67,23 @@ object *p_getenv(object *args) {
 }
 
 object *p_setenv(object *args) {
+    int ret;
+
     assert_nargs("setenv", 2, args);
     assert_string("setenv", car(args));
     assert_string("setenv", cadr(args));
-    setenv(to_string(car(args)), to_string(cadr(args)), 1);
+    if ((ret = setenv(to_string(car(args)), to_string(cadr(args)), 1)))
+        return number(ret);
+    return nil;
+}
+
+object *p_system(object *args) {
+    int ret;
+
+    assert_nargs("system", 1, args);
+    assert_string("system", car(args));
+    if ((ret = system(to_string(car(args)))))
+        return number(ret);
     return nil;
 }
 
@@ -1256,6 +1269,7 @@ struct reg {
     { "runtime", p_runtime },
     { "getenv", p_getenv },
     { "setenv", p_setenv },
+    { "system", p_system },
     /* Equivalence predicates */
     { "eq?", p_is_eq },
     { "eqv?", p_is_eqv },
