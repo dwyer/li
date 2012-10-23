@@ -839,6 +839,12 @@ object *p_string_set(object *args) {
                      to_char(caddr(args)));
 }
 
+object *p_string_to_number(object *args) {
+    assert_nargs("string->number", 1, args);
+    assert_string("string->number", car(args));
+    return number(atof(to_string(car(args))));
+}
+
 /***********
  * Vectors *
  ***********/
@@ -1382,6 +1388,7 @@ struct reg {
     { "string-length", p_string_length },
     { "string-ref", p_string_ref },
     { "string-set!", p_string_set },
+    { "string->number", p_string_to_number },
     /* Vectors */
     { "vector?", p_is_vector },
     { "vector", p_vector },
