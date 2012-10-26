@@ -4,6 +4,7 @@
 #include "output.h"
 
 void write_pair(object *obj, FILE *f, int h);
+void write_string(object *obj, FILE *f, int h);
 void write_vector(object *obj, FILE *f, int h);
 
 void write_object(object *obj, FILE *f, int h) {
@@ -17,10 +18,8 @@ void write_object(object *obj, FILE *f, int h) {
         fprintf(f, "'%c'", to_char(obj));
     else if (is_number(obj))
         fprintf(f, "%.512g", to_number(obj));
-    else if (is_string(obj) && h)
-        fprintf(f, "%s", to_string(obj));
     else if (is_string(obj))
-        fprintf(f, "\"%s\"", to_string(obj));
+        write_string(obj, f, h);
     else if (is_symbol(obj))
         fprintf(f, "%s", to_symbol(obj));
     else if (is_compound(obj))
@@ -55,10 +54,14 @@ void write_pair(object *obj, FILE *f, int h) {
     unlock(obj);
 }
 
+void write_string(object *obj, FILE *f, int h) {
+    fprintf(f, h ? "%s" : "\"%s\"", to_string(obj));
+}
+
 void write_vector(object *obj, FILE *f, int h) {
     int k;
 
-    fprintf(f, "#(");
+    fprintf(f, "%%(");
     for (k = 0; k < vector_length(obj); k++) {
         write_object(vector_ref(obj, k), f, h);
         if (k < vector_length(obj) - 1)
