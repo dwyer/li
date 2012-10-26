@@ -187,29 +187,30 @@ object *read_special(FILE *f) {
 
 object *read_string(FILE *f) {
     object *ret;
-    int i, c;
+    int i, c, isstringescaped;
 
     if (!buf)
         buf = calloc(buf_sz, sizeof(*buf));
     i = 0;
     do {
+        isstringescaped = 0;
         c = getc(f);
         if (c == '\\') {
-            if ((c = getc(f)) == 'n')
+            if ((c = getc(f)) == '"')
+                isstringescaped = 1;
+            else if (c == 'n')
                 c = '\n';
             else if (c == 't')
                 c = '\t';
-            else {
-                ungetc(c, f);
-                c = '\\';
-            }
+            else
+                error("read", "unknown escape character", character(c));
         }
         buf[i++] = c;
         if (i == buf_sz) {
-            buf_sz *= 2;
-            buf = realloc(buf, buf_sz * sizeof(*buf));
+            buf_sz *= buf_sz;
+            buf = realloc(buf, buf_sz);
         }
-    } while (!isstring(c) && !iseof(c));
+    } while ((!isstring(c) || isstringescaped) && !iseof(c));
     buf[i-1] = '\0';
     if (iseof(c))
         ungetc(c, f);
