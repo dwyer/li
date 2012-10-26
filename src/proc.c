@@ -810,8 +810,8 @@ object *p_make_string(object *args) {
     assert_integer("make-string", car(args));
     k = to_integer(car(args)) + 1;
     s = calloc(k, sizeof(*s));
-    for (k = k; k >= 0; k--)
-        s[k] = '\0';
+    while (k >= 0)
+        s[k--] = '\0';
     obj = string(s);
     free(s);
     return obj;
