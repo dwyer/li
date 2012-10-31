@@ -5,7 +5,7 @@ CFLAGS=-c -ansi -Wall -I./include
 LDFLAGS=-lm
 OBJDIR=obj
 SRCDIR=src
-EXECUTABLE=scm
+EXECUTABLE=subscm
 
 OBJS=$(addprefix $(OBJDIR)/, $(CFILES:.c=.o))
 SRCS=$(addprefix $(SRCDIR)/, $(CFILES))
