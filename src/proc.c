@@ -75,6 +75,13 @@ object *p_remove(object *args) {
     return number(remove(to_string(car(args))));
 }
 
+object *p_rename(object *args) {
+    assert_nargs("rename", 2, args);
+    assert_string("rename", car(args));
+    assert_string("rename", cadr(args));
+    return number(rename(to_string(car(args)), to_string(cadr(args))));
+}
+
 object *p_getenv(object *args) {
     char *env;
 
@@ -1375,6 +1382,7 @@ struct reg {
     { "getenv", p_getenv },
     { "rand", p_rand },
     { "remove", p_remove },
+    { "rename", p_rename },
     { "setenv", p_setenv },
     { "system", p_system },
     { "time", p_time },
