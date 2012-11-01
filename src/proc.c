@@ -69,6 +69,11 @@ object *p_rand(object *args) {
     return number(n);
 }
 
+object *p_remove(object *args) {
+    assert_nargs("remove", 1, args);
+    assert_string("remove", car(args));
+    return number(remove(to_string(car(args))));
+}
 
 object *p_getenv(object *args) {
     char *env;
@@ -1369,6 +1374,7 @@ struct reg {
     { "exit", p_exit },
     { "getenv", p_getenv },
     { "rand", p_rand },
+    { "remove", p_remove },
     { "setenv", p_setenv },
     { "system", p_system },
     { "time", p_time },
