@@ -53,19 +53,22 @@ void repl(object *env) {
 }
 
 int main(int argc, char *argv[]) {
-    object *env;
+    object *env, *args;
     int i;
 
     srand(time(NULL));
     env = setup_environment();
+    for (i = argc; --i;)
+        args = cons(string(argv[i]), args);
+    append_variable(symbol("argv"), args, env);
     if (setjmp(buf)) {
         cleanup(nil);
         exit(-1);
     }
-    for (i = 1; i < argc; i++)
-        load(argv[i], env);
     if (argc == 1)
         repl(env);
+    else
+        load(argv[1], env);
     cleanup(nil);
     exit(0);
 }
