@@ -93,6 +93,11 @@ object *p_system(object *args) {
     return nil;
 }
 
+object *p_time(object *args) {
+    assert_nargs("time", 0, args);
+    return number(time(NULL));
+}
+
 /**************************
  * Equivelence predicates *
  **************************/
@@ -1351,12 +1356,13 @@ struct reg {
 } regs[] = {
     /* Non-standard */
     { "error", p_error },
+    { "clock", p_clock },
     { "rand", p_rand },
     { "random", p_random },
-    { "clock", p_clock },
     { "getenv", p_getenv },
     { "setenv", p_setenv },
     { "system", p_system },
+    { "time", p_time },
     /* Equivalence predicates */
     { "eq?", p_is_eq },
     { "eqv?", p_is_eqv },
