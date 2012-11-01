@@ -50,6 +50,13 @@ object *p_clock(object *args) {
     return number(clock());
 }
 
+object *p_exit(object *args) {
+    assert_nargs("exit", 1, args);
+    assert_integer("exit", car(args));
+    exit(to_integer(car(args)));
+    return nil;
+}
+
 object *p_rand(object *args) {
     assert_nargs("rand", 0, args);
     return number(rand());
@@ -1357,8 +1364,7 @@ struct reg {
     /* Non-standard */
     { "error", p_error },
     { "clock", p_clock },
-    { "rand", p_rand },
-    { "random", p_random },
+    { "exit", p_exit },
     { "getenv", p_getenv },
     { "setenv", p_setenv },
     { "system", p_system },
