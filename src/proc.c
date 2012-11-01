@@ -1005,6 +1005,12 @@ object *p_open(object *args) {
     return p;
 }
 
+object *p_close(object *args) {
+    assert_nargs("close", 1, args);
+    assert_port("close", car(args));
+    return number(fclose(to_port(car(args)).file));
+}
+
 /*
  * (read [port])
  * Reads and returns the next evaluative object.
@@ -1480,6 +1486,7 @@ struct reg {
     /* Input */
     { "port?", p_is_port },
     { "open", p_open },
+    { "close", p_close },
     { "read", p_read },
     { "read-char", p_read_char },
     { "peek-char", p_peek_char },
