@@ -45,6 +45,11 @@ object *p_error(object *args) {
     return nil;
 }
 
+object *p_clock(object *args) {
+    assert_nargs("clock", 0, args);
+    return number(clock());
+}
+
 object *p_rand(object *args) {
     assert_nargs("rand", 0, args);
     return number(rand());
@@ -86,11 +91,6 @@ object *p_system(object *args) {
     if ((ret = system(to_string(car(args)))))
         return number(ret);
     return nil;
-}
-
-object *p_runtime(object *args) {
-    assert_nargs("runtime", 0, args);
-    return number(clock());
 }
 
 /**************************
@@ -1353,7 +1353,7 @@ struct reg {
     { "error", p_error },
     { "rand", p_rand },
     { "random", p_random },
-    { "runtime", p_runtime },
+    { "clock", p_clock },
     { "getenv", p_getenv },
     { "setenv", p_setenv },
     { "system", p_system },
