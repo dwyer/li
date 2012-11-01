@@ -10,6 +10,7 @@ Data types:
 * Booleans
 * Chars
 * Numbers
+* Ports
 * Promises
 * Strings
 * Vectors

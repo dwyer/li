@@ -16,6 +16,7 @@
 #define is_char(obj)            is_type(obj, T_CHAR)
 #define is_compound(obj)        is_type(obj, T_COMPOUND)
 #define is_number(obj)          is_type(obj, T_NUMBER)
+#define is_port(obj)            is_type(obj, T_PORT)
 #define is_string(obj)          is_type(obj, T_STRING)
 #define is_symbol(obj)          is_type(obj, T_SYMBOL)
 #define is_vector(obj)          is_type(obj, T_VECTOR)
@@ -39,6 +40,7 @@
 #define to_compound(obj)        (obj)->data.compound
 #define to_number(obj)          (obj)->data.number
 #define to_pair(obj)            (obj)->data.pair
+#define to_port(obj)            (obj)->data.port
 #define to_primitive(obj)       (obj)->data.primitive
 #define to_string(obj)          (obj)->data.string
 #define to_symbol(obj)          (obj)->data.symbol.string
@@ -97,6 +99,7 @@ enum {
     T_ENVIRONMENT,
     T_NUMBER,
     T_PAIR,
+    T_PORT,
     T_PRIMITIVE,
     T_STRING,
     T_SYMBOL,
@@ -111,6 +114,7 @@ object *character(int c);
 object *compound(object *proc, object *env);
 object *number(double n);
 object *pair(object *car, object *cdr);
+object *port(const char *filename, const char *mode);
 object *primitive(object *(*proc)(object *));
 object *string(char *s);
 object *symbol(char *s);
@@ -132,6 +136,10 @@ struct object {
             object *car;
             object *cdr;
         } pair;
+        struct {
+            FILE *file;
+            char *filename;
+        } port;
         char *string;
         struct {
             char *string;

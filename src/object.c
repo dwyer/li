@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "object.h"
@@ -84,6 +85,18 @@ object *pair(object *car, object *cdr) {
     return obj;
 }
 
+object *port(const char *filename, const char *mode) {
+    object *obj;
+    FILE *f;
+
+    if (!(f = fopen(filename, mode)))
+        return boolean(false);
+    obj = create(T_PORT);
+    obj->data.port.file = f;
+    obj->data.port.filename = strdup(filename);
+    return obj;
+}
+
 object *primitive(object *(*proc)(object *)) {
     object *obj;
 
@@ -142,6 +155,10 @@ void destroy(object *obj) {
         return;
     if (is_environment(obj))
         free(obj->data.env.array);
+    if (is_port(obj)) {
+        fclose(obj->data.port.file);
+        free(obj->data.port.filename);
+    }
     if (is_string(obj))
         free(to_string(obj));
     if (is_symbol(obj)) {

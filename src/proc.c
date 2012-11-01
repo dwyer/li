@@ -23,6 +23,7 @@
 #define assert_char(name, arg)      assert_type(name, char, arg)
 #define assert_number(name, arg)    assert_type(name, number, arg)
 #define assert_pair(name, arg)      assert_type(name, pair, arg)
+#define assert_port(name, arg)      assert_type(name, port, arg)
 #define assert_procedure(name, arg) assert_type(name, procedure, arg)
 #define assert_string(name, arg)    assert_type(name, string, arg)
 #define assert_symbol(name, arg)    assert_type(name, symbol, arg)
@@ -975,29 +976,78 @@ object *p_eval(object *args) {
  *********/
 
 /*
- * (read)
+ * (port? obj)
+ * Returns true is obj is a port, false otherwise.
+ */
+object *p_is_port(object *args) {
+    assert_nargs("port?", 1, args);
+    return boolean(is_port(car(args)));
+}
+
+/*
+ * (open filename mode)
+ */
+object *p_open(object *args) {
+    object *p;
+    char *mode;
+
+    if (has_2args(args)) {
+        assert_nargs("open", 2, args);
+        assert_string("open", cadr(args));
+        mode = to_string(cadr(args));
+    } else {
+        assert_nargs("open", 1, args);
+        mode = "r";
+    }
+    assert_string("open", car(args));
+    if (!(p = port(to_string(car(args)), mode)))
+        error("open", "cannot open file", car(args));
+    return p;
+}
+
+/*
+ * (read [port])
  * Reads and returns the next evaluative object.
  */
 object *p_read(object *args) {
-    assert_nargs("read", 0, args);
-    return read(stdin);
+    FILE *f;
+
+    f = stdin;
+    if (args) {
+        assert_nargs("read", 1, args);
+        assert_port("read", car(args));
+        f = to_port(car(args)).file;
+    }
+    return read(f);
 }
 
 object *p_read_char(object *args) {
     int c;
+    FILE *f;
 
-    assert_nargs("read-char", 0, args);
-    if ((c = getc(stdin)) == '\n')
-        c = getc(stdin);
+    f = stdin;
+    if (args) {
+        assert_nargs("read-char", 1, args);
+        assert_port("read-char", car(args));
+        f = to_port(car(args)).file;
+    }
+    if ((c = getc(f)) == '\n')
+        c = getc(f);
     return character(c);
 }
 
 object *p_peek_char(object *args) {
     int c;
+    FILE *f;
 
-    assert_nargs("peek-char", 0, args);
-    c = getc(stdin);
-    ungetc(c, stdin);
+    f = stdin;
+    if (args) {
+        assert_nargs("peek-char", 1, args);
+        assert_port("peek-char", car(args));
+        f = to_port(car(args)).file;
+    }
+    c = getc(f);
+    ungetc(c, f);
     return character(c);
 }
 
@@ -1015,8 +1065,17 @@ object *p_is_eof_object(object *args) {
  * Displays an object. Always returns nil.
  */
 object *p_write(object *args) {
-    assert_nargs("write", 1, args);
-    write(car(args), stdout);
+    FILE *f;
+
+    f = stdout;
+    if (has_2args(args)) {
+        assert_nargs("write", 2, args);
+        assert_port("write", cadr(args));
+        f = to_port(cadr(args)).file;
+    } else {
+        assert_nargs("write", 1, args);
+    }
+    write(car(args), f);
     return nil;
 }
 
@@ -1025,8 +1084,17 @@ object *p_write(object *args) {
  * Displays an object. Always returns nil.
  */
 object *p_display(object *args) {
-    assert_nargs("display", 1, args);
-    display(car(args), stdout);
+    FILE *f;
+
+    f = stdout;
+    if (has_2args(args)) {
+        assert_nargs("display", 2, args);
+        assert_port("display", cadr(args));
+        f = to_port(cadr(args)).file;
+    } else {
+        assert_nargs("display", 1, args);
+    }
+    display(car(args), f);
     return nil;
 }
 
@@ -1035,8 +1103,15 @@ object *p_display(object *args) {
  * Displays a newline.
  */
 object *p_newline(object *args) {
-    assert_nargs("newline", 0, args);
-    newline(stdout);
+    FILE *f;
+
+    f = stdout;
+    if (args) {
+        assert_nargs("newline", 1, args);
+        assert_port("newline", car(args));
+        f = to_port(car(args)).file;
+    }
+    newline(f);
     return nil;
 }
 
@@ -1403,6 +1478,8 @@ struct reg {
     { "force", p_force },
     { "eval", p_eval },
     /* Input */
+    { "port?", p_is_port },
+    { "open", p_open },
     { "read", p_read },
     { "read-char", p_read_char },
     { "peek-char", p_peek_char },

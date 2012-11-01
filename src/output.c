@@ -18,6 +18,8 @@ void write_object(object *obj, FILE *f, int h) {
         fprintf(f, "'%c'", to_char(obj));
     else if (is_number(obj))
         fprintf(f, "%.512g", to_number(obj));
+    else if (is_port(obj))
+        fprintf(f, "#<port: %s %d>", to_port(obj).filename, fileno(to_port(obj).file));
     else if (is_string(obj))
         write_string(obj, f, h);
     else if (is_symbol(obj))

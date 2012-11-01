@@ -53,6 +53,20 @@
 (define (list-ref lst k)
   (car (list-tail lst k)))
 
+# PORTS
+
+(define (open-input-file str)
+  (port str "r"))
+
+(define (open-binary-input-file str)
+  (port str "rb"))
+
+(define (open-output-file str)
+  (port str "w"))
+
+(define (open-binary-output-file str)
+  (port str "wb"))
+
 # STRINGS
 
 (define (string . chars)
