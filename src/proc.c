@@ -58,15 +58,17 @@ object *p_exit(object *args) {
 }
 
 object *p_rand(object *args) {
-    assert_nargs("rand", 0, args);
-    return number(rand());
+    int n;
+
+    n = rand();
+    if (args) {
+        assert_nargs("rand", 1, args);
+        assert_integer("rand", car(args));
+        n %= to_integer(car(args));
+    }
+    return number(n);
 }
 
-object *p_random(object *args) {
-    assert_nargs("random", 1, args);
-    assert_integer("random", car(args));
-    return number(rand() % to_integer(car(args)));
-}
 
 object *p_getenv(object *args) {
     char *env;
@@ -1366,6 +1368,7 @@ struct reg {
     { "clock", p_clock },
     { "exit", p_exit },
     { "getenv", p_getenv },
+    { "rand", p_rand },
     { "setenv", p_setenv },
     { "system", p_system },
     { "time", p_time },
