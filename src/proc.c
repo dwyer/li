@@ -586,6 +586,21 @@ object *p_list(object *args) {
     return args;
 }
 
+object *p_list_ref(object *args) {
+    object *lst;
+    int k;
+
+    assert_nargs("list-ref", 2, args);
+    assert_integer("list-ref", cadr(args));
+    lst = car(args);
+    for (k = to_integer(cadr(args)); k; k--) {
+        if (lst && !is_pair(lst))
+            error("list-ref", "not a list", car(args));
+        lst = cdr(lst);
+    }
+    return car(lst);
+}
+
 object *p_length(object *args) {
     int ret;
     object *lst;
@@ -1469,6 +1484,7 @@ struct reg {
     { "null?", p_is_null },
     { "list?", p_is_list },
     { "list", p_list },
+    { "list-ref", p_list_ref },
     { "length", p_length },
     { "append", p_append },
     { "filter", p_filter },
