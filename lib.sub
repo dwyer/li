@@ -55,9 +55,6 @@
 
 # STRINGS
 
-(define (string . chars)
-  (apply string->list chars))
-
 (define (string->list str)
   (define (iter k len)
     (if (< k len)

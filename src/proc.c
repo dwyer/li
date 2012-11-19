@@ -858,6 +858,22 @@ object *p_is_string(object *args) {
     return boolean(is_string(car(args)));
 }
 
+object *p_string(object *args) {
+    char *str;
+    int i;
+
+    str = calloc(length(args)+1, sizeof(char));
+    for (i = 0; args; i++, args = cdr(args)) {
+        if (!is_char(car(args))) {
+            free(str);
+            error("string", "not a character", car(args));
+        }
+        str[i] = to_char(car(args));
+    }
+    str[i] = '\0';
+    return string(str);
+}
+
 object *p_make_string(object *args) {
     object *obj;
     char *s;
@@ -1526,6 +1542,7 @@ struct reg {
     { "integer->char", p_integer_to_char },
     /* Strings */
     { "string?", p_is_string },
+    { "string", p_string },
     { "make-string", p_make_string },
     { "string-length", p_string_length },
     { "string-ref", p_string_ref },
