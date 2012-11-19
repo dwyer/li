@@ -39,12 +39,6 @@
       nil))
   (iter 0 (if (null? fill) nil (car fill))))
 
-# Taken from R5RS
-(define (list-tail lst k)
-  (if (zero? k)
-    lst
-    (list-tail (cdr lst) (- k 1))))
-
 # PORTS
 
 (define (open-input-file str)
