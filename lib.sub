@@ -77,6 +77,9 @@
 (define (string-copy str)
   (substring str 0 (string-length str)))
 
+(define (string-reverse str)
+  (list->string (reverse (string->list str))))
+
 (define (substring str start end)
   (let* ((len (- end start))
          (sub (make-string len)))
