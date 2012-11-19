@@ -74,6 +74,9 @@
 (define (string-append . strs)
   (list->string (apply append (map string->list strs))))
 
+(define (string-copy str)
+  (substring str 0 (string-length str)))
+
 (define (substring str start end)
   (let* ((len (- end start))
          (sub (make-string len)))
@@ -83,9 +86,6 @@
              (iter (+ k 1)))
             (else sub)))
     (iter 0)))
-
-(define (string-copy str)
-  (substring str 0 (string-length str)))
 
 # VECTORS
 
