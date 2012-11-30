@@ -2,7 +2,7 @@
   (if (not condition)
     (apply error (cons who (cons msg args)))))
 
-(define (print . args)
+(define (print-line . args)
   (define (iter args)
     (if (not (null? args))
       (begin (display (car args))
