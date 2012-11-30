@@ -30,7 +30,7 @@
 
 #define make_begin(seq)             cons(symbol("begin"), seq)
 #define make_if(pred, con, alt)     cons(symbol("if"), \
-                                         cons(pred, cons(con, cons(alt, nil))))
+                                         cons(pred, cons(con, cons(alt, null))))
 #define make_lambda(p, b)           cons(symbol("lambda"), cons(p, b))
 
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
@@ -86,7 +86,7 @@ object *eval(object *exp, object *env) {
             return eval_quasiquote(cadr(exp), env);
         } else if (is_delay(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
-            return compound(cons(nil, cdr(exp)), env);
+            return compound(cons(null, cdr(exp)), env);
         } else if (is_lambda(exp)) {
             check_syntax(cdr(exp) && cddr(exp), exp);
             return compound(cdr(exp), env);
@@ -97,12 +97,12 @@ object *eval(object *exp, object *env) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             check_syntax(is_string(cadr(exp)), exp);
             load(to_string(cadr(exp)), env);
-            return nil;
+            return null;
         } else if (is_assert(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             if (is_false(eval(cadr(exp), env)))
                 error("assert", "assertion violated", exp);
-            return nil;
+            return null;
         } else if (is_definition(exp)) {
             check_syntax(cdr(exp) && cddr(exp), exp);
             check_syntax(is_symbol(cadr(exp)) || is_pair(cadr(exp)), exp);
@@ -112,7 +112,7 @@ object *eval(object *exp, object *env) {
             } else {
                 var = caadr(exp);
                 val = make_lambda(cdadr(exp), cddr(exp));
-                exp = cons(car(exp), cons(var, cons(val, nil)));
+                exp = cons(car(exp), cons(var, cons(val, null)));
             }
         } else if (is_if(exp)) {
             check_syntax(cdr(exp), exp);
@@ -151,7 +151,7 @@ object *eval(object *exp, object *env) {
             for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
                 eval(car(seq), env);
             if (!seq)
-                return nil;
+                return null;
             exp = car(seq);
         } else if (is_and(exp)) {
             for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
@@ -168,7 +168,7 @@ object *eval(object *exp, object *env) {
                 return boolean(false);
             exp = car(seq);
         } else if (is_let(exp)) {
-            var = val = nil;
+            var = val = null;
             for (seq = cadr(exp); seq; seq = cdr(seq)) {
                 var = cons(caar(seq), var);
                 val = cons(eval(cadar(seq), env), val);
@@ -232,9 +232,9 @@ object *extend_environment(object *vars, object *vals, object *env) {
 object *list_of_values(object *exps, object *env) {
     object *head, *node, *tail;
 
-    head = nil;
+    head = null;
     while (exps) {
-        tail = cons(eval(car(exps), env), nil);
+        tail = cons(eval(car(exps), env), null);
         node = head ? set_cdr(node, tail) : (head = tail);
         exps = cdr(exps);
     }
@@ -251,7 +251,7 @@ object *lookup_variable_value(object *var, object *env) {
         env = env->data.env.base;
     }
     error("eval", "unbound variable", var);
-    return nil;
+    return null;
 }
 
 object *set_variable_value(object *var, object *val, object *env) {
@@ -266,15 +266,15 @@ object *set_variable_value(object *var, object *val, object *env) {
         env = env->data.env.base;
     }
     error("eval", "unbound variable", var);
-    return nil;
+    return null;
 }
 
 object *setup_environment(void) {
     object *env;
 
-    env = environment(nil);
+    env = environment(null);
     append_variable(symbol("user-initial-environment"), env, env);
-    append_variable(symbol("nil"), nil, env);
+    append_variable(symbol("null"), null, env);
     append_variable(boolean(true), boolean(true), env);
     append_variable(boolean(false), boolean(false), env);
     define_primitive_procedures(env);

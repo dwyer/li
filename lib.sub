@@ -19,7 +19,7 @@
   (define (iter k)
     (if (< k end)
       (cons k (iter (+ k 1)))
-      nil))
+      null))
   (iter start))
 
 (define (lcm . args)
@@ -36,8 +36,8 @@
   (define (iter k fill)
     (if (< k len)
       (cons fill (iter (+ k 1) fill))
-      nil))
-  (iter 0 (if (null? fill) nil (car fill))))
+      null))
+  (iter 0 (if (null? fill) null (car fill))))
 
 # PORTS
 
@@ -60,7 +60,7 @@
     (if (< k len)
       (cons (string-ref str k)
             (iter (+ k 1) len))
-      nil))
+      null))
   (iter 0 (string-length str)))
 
 (define (list->string lst)
@@ -99,16 +99,16 @@
     (error `make-vector "arg1 must be a positive integer" k))
   (define (make-list k fill)
     (if (= k 0)
-      nil
+      null
       (cons fill (make-list (- k 1) fill))))
-  (list->vector (make-list k (if (null? args) nil (car args)))))
+  (list->vector (make-list k (if (null? args) null (car args)))))
 
 (define (vector->list vec)
   (if (not (vector? vec))
     (error `vector->list "arg must be a vector" vec))
   (define (iter k)
     (if (= k (vector-length vec))
-      nil
+      null
       (cons (vector-ref vec k) (iter (+ k 1)))))
   (iter 0))
 
@@ -131,15 +131,15 @@
 (define (map proc . args)
   (define (map1 lst)
     (if (null? lst)
-      nil
+      null
       (cons (proc (car lst))
             (map1 (cdr lst)))))
   (define (iter args)
     (if (or (null? args) (null? (car args)))
-      nil
+      null
       (cons (apply proc (map car args))
             (iter (map cdr args)))))
-  (cond ((null? args) nil)
+  (cond ((null? args) null)
         ((null? (cdr args))
          (map1 (car args)))
         (else (iter args))))
@@ -147,15 +147,15 @@
 (define (for-each proc . args)
   (define (for-each-unary lst)
     (if (null? lst)
-      nil
+      null
       (begin (proc (car lst))
              (for-each-unary (cdr lst)))))
   (define (iter args)
     (if (or (null? args) (null? (car args)))
-      nil
+      null
       (begin (apply proc (map car args))
              (iter (map cdr args)))))
-  (cond ((null? args) nil)
+  (cond ((null? args) null)
         ((null? (cdr args))
          (for-each-unary (car args)))
         (else (iter args))))

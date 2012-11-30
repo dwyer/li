@@ -62,13 +62,13 @@ int main(int argc, char *argv[]) {
         args = cons(string(argv[i]), args);
     append_variable(symbol("argv"), args, env);
     if (setjmp(buf)) {
-        cleanup(nil);
+        cleanup(null);
         exit(-1);
     }
     if (argc == 1)
         repl(env);
     else
         load(argv[1], env);
-    cleanup(nil);
+    cleanup(null);
     exit(0);
 }

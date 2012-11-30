@@ -12,7 +12,7 @@ static struct {
     object *syms[HASHSIZE];
     int size;
     int cap;
-} heap = { .objs = nil, .size = 0, .cap = 0 };
+} heap = { .objs = null, .size = 0, .cap = 0 };
 
 void add_to_heap(object *obj) {
     int i;
@@ -22,7 +22,7 @@ void add_to_heap(object *obj) {
         heap.size = 0;
         heap.objs = calloc(heap.cap, sizeof(*heap.objs));
         for (i = 0; i < HASHSIZE; i++)
-            heap.syms[i] = nil;
+            heap.syms[i] = null;
     } else if (heap.size == heap.cap) {
         heap.cap *= 2;
         heap.objs = realloc(heap.objs, heap.cap * sizeof(*heap.objs));
@@ -126,7 +126,7 @@ object *symbol(char *s) {
                 return obj;
     obj = create(T_SYMBOL);
     obj->data.symbol.string = strdup(s);
-    obj->data.symbol.prev = nil;
+    obj->data.symbol.prev = null;
     obj->data.symbol.next = heap.syms[hash];
     if (obj->data.symbol.next)
         obj->data.symbol.next->data.symbol.prev = obj;
@@ -219,7 +219,7 @@ void cleanup(object *env) {
     }
     if (!env) {
         free(heap.objs);
-        heap.objs = nil;
+        heap.objs = null;
         heap.size = 0;
         heap.cap = 0;
     }

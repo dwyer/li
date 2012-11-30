@@ -4,11 +4,11 @@
 #define false 0
 #define true !false
 
-#define nil                     NULL
+#define null                     NULL
 #define eof                     symbol("#<eof>")
 
 #define is_eq(obj1, obj2)       ((obj1) == (obj2))
-#define is_null(obj)            is_eq(obj, nil)
+#define is_null(obj)            is_eq(obj, null)
 
 /* Type checking. */
 #define is_type(obj, t)         ((obj) && (obj)->type == t)

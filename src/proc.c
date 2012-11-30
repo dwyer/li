@@ -42,7 +42,7 @@ object *p_error(object *args) {
     assert_symbol("error", car(args));
     assert_string("error", cadr(args));
     error(to_symbol(car(args)), to_string(cadr(args)), cddr(args));
-    return nil;
+    return null;
 }
 
 object *p_clock(object *args) {
@@ -54,7 +54,7 @@ object *p_exit(object *args) {
     assert_nargs("exit", 1, args);
     assert_integer("exit", car(args));
     exit(to_integer(car(args)));
-    return nil;
+    return null;
 }
 
 object *p_rand(object *args) {
@@ -101,7 +101,7 @@ object *p_setenv(object *args) {
     assert_string("setenv", cadr(args));
     if ((ret = setenv(to_string(car(args)), to_string(cadr(args)), 1)))
         return number(ret);
-    return nil;
+    return null;
 }
 
 object *p_system(object *args) {
@@ -111,7 +111,7 @@ object *p_system(object *args) {
     assert_string("system", car(args));
     if ((ret = system(to_string(car(args)))))
         return number(ret);
-    return nil;
+    return null;
 }
 
 object *p_time(object *args) {
@@ -550,7 +550,7 @@ object *p_set_car(object *args) {
     assert_nargs("set-car!", 2, args);
     assert_pair("set-car!", car(args));
     set_car(car(args), cadr(args));
-    return nil;
+    return null;
 }
 
 /*
@@ -561,12 +561,12 @@ object *p_set_cdr(object *args) {
     assert_nargs("set-cdr!", 2, args);
     assert_pair("set-cdr!", car(args));
     set_cdr(car(args), cadr(args));
-    return nil;
+    return null;
 }
 
 /*
  * (null? obj)
- * Returns #t if the object is null, aka nil, aka ``the empty list'',
+ * Returns #t if the object is null, aka null, aka ``the empty list'',
  * represented in Scheme as ().
  */
 object *p_is_null(object *args) {
@@ -631,25 +631,25 @@ object *p_append(object *args) {
     object *head, *tail, *list;
 
     if (!args)
-        return nil;
+        return null;
     else if (!cdr(args))
         return car(args);
-    head = tail = list = nil;
+    head = tail = list = null;
     while (args) {
         list = car(args);
         while (list) {
             if (is_pair(list)) {
                 if (head)
-                    tail = set_cdr(tail, cons(car(list), nil));
+                    tail = set_cdr(tail, cons(car(list), null));
                 else
-                    head = tail = cons(car(list), nil);
+                    head = tail = cons(car(list), null);
                 list = cdr(list);
             } else if (!cdr(args)) {
                 if (head)
                     tail = set_cdr(tail, list);
                 else
                     head = tail = list;
-                list = nil;
+                list = null;
             } else {
                 error("append", "not a list", list);
             }
@@ -664,14 +664,14 @@ object *p_filter(object *args) {
 
     assert_nargs("filter", 2, args);
     assert_procedure("filter", car(args));
-    for (iter = cadr(args), head = temp = nil; iter; iter = cdr(iter)) {
+    for (iter = cadr(args), head = temp = null; iter; iter = cdr(iter)) {
         if (temp)
             set_car(temp, car(iter));
         else
-            temp = cons(car(iter), nil);
+            temp = cons(car(iter), null);
         if (is_true(apply(car(args), temp))) {
             tail = head ? set_cdr(tail, temp) : (head = temp);
-            temp = nil;
+            temp = null;
         }
     }
     return head;
@@ -681,7 +681,7 @@ object *p_reverse(object *args) {
     object *lst, *tsl;
 
     assert_nargs("reverse", 1, args);
-    for (tsl = nil, lst = car(args); lst; lst = cdr(lst)) {
+    for (tsl = null, lst = car(args); lst; lst = cdr(lst)) {
         if (!is_pair(lst))
             error("reverse", "not a list", car(args));
         tsl = cons(car(lst), tsl);
@@ -1008,10 +1008,10 @@ object *p_map(object *args) {
 
     assert_nargs("map", 2, args);
     assert_procedure("map", car(args));
-    head = tail = nil;
+    head = tail = null;
     proc = car(args);
     for (iter = cadr(args); iter; iter = cdr(iter)) {
-        node = cons(car(iter), nil);
+        node = cons(car(iter), null);
         set_car(node, apply(proc, node));
         tail = head ? set_cdr(tail, node) : (head = node);
     }
@@ -1026,16 +1026,16 @@ object *p_for_each(object *args) {
     proc = car(args);
     iter = cadr(args);
     while (iter) {
-        apply(proc, cons(car(iter), nil));
+        apply(proc, cons(car(iter), null));
         iter = cdr(iter);
     }
-    return nil;
+    return null;
 }
 
 object *p_force(object *args) {
     assert_nargs("force", 1, args);
     assert_procedure("force", car(args));
-    return apply(car(args), nil);
+    return apply(car(args), null);
 }
 
 object *p_eval(object *args) {
@@ -1140,7 +1140,7 @@ object *p_is_eof_object(object *args) {
 
 /*
  * (write obj)
- * Displays an object. Always returns nil.
+ * Displays an object. Always returns null.
  */
 object *p_write(object *args) {
     FILE *f;
@@ -1154,12 +1154,12 @@ object *p_write(object *args) {
         assert_nargs("write", 1, args);
     }
     write(car(args), f);
-    return nil;
+    return null;
 }
 
 /*
  * (display obj)
- * Displays an object. Always returns nil.
+ * Displays an object. Always returns null.
  */
 object *p_display(object *args) {
     FILE *f;
@@ -1173,7 +1173,7 @@ object *p_display(object *args) {
         assert_nargs("display", 1, args);
     }
     display(car(args), f);
-    return nil;
+    return null;
 }
 
 /*
@@ -1190,7 +1190,7 @@ object *p_newline(object *args) {
         f = to_port(car(args)).file;
     }
     newline(f);
-    return nil;
+    return null;
 }
 
 /*****************
@@ -1574,7 +1574,7 @@ struct reg {
     { "display", p_display },
     { "newline", p_newline },
     /* sentinel */
-    { nil, nil }
+    { null, null }
 };
 
 void define_primitive_procedures(object *env) {

@@ -19,11 +19,11 @@
 #define isdelimiter(c)  (isspace(c) || isopener(c) || iscloser(c) || \
                          isstring(c) || iscomment(c) || iseof(c))
 
-#define read_quasi(f)   cons(symbol("quasiquote"), cons(read(f), nil))
-#define read_unquote(f) cons(symbol("unquote"), cons(read(f), nil))
+#define read_quasi(f)   cons(symbol("quasiquote"), cons(read(f), null))
+#define read_unquote(f) cons(symbol("unquote"), cons(read(f), null))
 
 static int buf_sz = 32;
-static char *buf = nil;
+static char *buf = null;
 
 int getch(FILE *f);
 int is_atom_number(const char *s);
@@ -89,7 +89,7 @@ object *read(FILE *f) {
 
     if (iseof(c = getch(f))) {
         free(buf);
-        buf = nil;
+        buf = null;
         return eof;
     }
     else if (ischaracter(c))
@@ -105,7 +105,7 @@ object *read(FILE *f) {
     else if (isopener(c))
         return read_sequence(f);
     else if (iscloser(c))
-        error("read", "unmatched right brace", nil);
+        error("read", "unmatched right brace", null);
     ungetc(c, f);
     return read_atom(f);
 }
@@ -145,7 +145,7 @@ object *read_character(FILE *f) {
             c = '\t';
     }
     if (!ischaracter(getc(f)))
-        error("read", "ill-formed character", nil);
+        error("read", "ill-formed character", null);
     return character(c);
 }
 
@@ -154,13 +154,13 @@ object *read_sequence(FILE *f) {
     int c;
 
     if (iscloser(c = getch(f)))
-        return nil;
+        return null;
     else if (c == '.' && isspace(peek_char(f))) {
         obj = read(f);
         if (iscloser(c = getch(f)))
             return obj;
         else
-            error("read", "ill-formed dotted pair", nil);
+            error("read", "ill-formed dotted pair", null);
     }
     ungetc(c, f);
     obj = read(f);
@@ -181,8 +181,8 @@ object *read_special(FILE *f) {
         ungetc(c, f);
         return vector(read(f));
     }
-    error("read", "ill-formed special symbol", nil);
-    return nil;
+    error("read", "ill-formed special symbol", null);
+    return null;
 }
 
 object *read_string(FILE *f) {
