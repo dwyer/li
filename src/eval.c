@@ -42,9 +42,21 @@ object *lookup_variable_value(object *exp, object *env);
 object *set_variable_value(object *var, object *val, object *env);
 
 object *apply(object *proc, object *args) {
+    object *head, *tail, *obj;
+
     if (is_primitive(proc))
         return to_primitive(proc)(args);
-    return eval(cons(proc, args), to_compound(proc).env);
+    head = tail = null;
+    while (args) {
+        obj = cons(symbol("quasiquote"), cons(car(args), null));
+        if (!tail)
+            head = tail = cons(obj, null);
+        else {
+            tail = set_cdr(tail, cons(obj, null));
+        }
+        args = cdr(args);
+    }
+    return eval(cons(proc, head), to_compound(proc).env);
 }
 
 object *append_variable(object *var, object *val, object *env) {
