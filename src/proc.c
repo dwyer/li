@@ -665,6 +665,7 @@ object *p_filter(object *args) {
     assert_nargs("filter", 2, args);
     assert_procedure("filter", car(args));
     for (iter = cadr(args), head = temp = null; iter; iter = cdr(iter)) {
+        assert_pair("filter", iter);
         if (temp)
             set_car(temp, car(iter));
         else
