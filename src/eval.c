@@ -16,6 +16,7 @@
 #define is_case(exp)                is_tagged_list(exp, "case")
 #define is_cond(exp)                is_tagged_list(exp, "cond")
 #define is_definition(exp)          is_tagged_list(exp, "define")
+#define is_defmacro(exp)            is_tagged_list(exp, "defmacro")
 #define is_delay(exp)               is_tagged_list(exp, "delay")
 #define is_if(exp)                  is_tagged_list(exp, "if")
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
@@ -26,18 +27,20 @@
 #define is_self_evaluating(exp)     (!exp || !(is_pair(exp) || is_symbol(exp)))
 #define is_quasiquoted(exp)         is_tagged_list(exp, "quasiquote")
 #define is_unquoted(exp)            is_tagged_list(exp, "unquote")
+#define is_unquoted_splicing(exp)   is_tagged_list(exp, "unquote-splicing")
 #define is_variable(exp)            is_symbol(exp)
 
 #define make_begin(seq)             cons(symbol("begin"), seq)
 #define make_if(pred, con, alt)     cons(symbol("if"), \
                                          cons(pred, cons(con, cons(alt, null))))
 #define make_lambda(p, b)           cons(symbol("lambda"), cons(p, b))
+#define make_quasiquote(exp)        cons(symbol("quasiquote"), cons(exp, null))
 
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
 object *eval_quasiquote(object *exp, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
-object *list_of_values(object *exps, object *env);
+object *list_of_values(object *exps, object *env, int evl);
 object *lookup_variable_value(object *exp, object *env);
 object *set_variable_value(object *var, object *val, object *env);
 
@@ -126,6 +129,13 @@ object *eval(object *exp, object *env) {
                 val = make_lambda(cdadr(exp), cddr(exp));
                 exp = cons(car(exp), cons(var, cons(val, null)));
             }
+        } else if (is_defmacro(exp)) {
+            check_syntax(cdr(exp) && cddr(exp), exp);
+            check_syntax(is_pair(cadr(exp)), exp);
+            check_syntax(cddr(exp), exp);
+            return define_variable(caadr(exp),
+                                   macro(cons(cdadr(exp), cddr(exp)), env),
+                                   env);
         } else if (is_if(exp)) {
             check_syntax(cdr(exp), exp);
             check_syntax(cddr(exp), exp);
@@ -198,8 +208,15 @@ object *eval(object *exp, object *env) {
             exp = car(seq);
         } else if (is_application(exp)) {
             proc = eval(car(exp), env);
-            args = list_of_values(cdr(exp), env);
-            if (is_compound(proc)) {
+            if (is_macro(proc)) {
+                args = list_of_values(cdr(exp), env, 0);
+                seq = to_macro(proc).mac;
+                env = to_macro(proc).env;
+                env = extend_environment(car(seq), args, env);
+                for (seq = cdr(seq); seq; seq = cdr(seq))
+                    exp = eval(car(seq), env);
+            } else if (is_compound(proc)) {
+                args = list_of_values(cdr(exp), env, 1);
                 seq = to_compound(proc).proc;
                 env = to_compound(proc).env;
                 env = extend_environment(car(seq), args, env);
@@ -207,6 +224,7 @@ object *eval(object *exp, object *env) {
                     eval(car(seq), env);
                 exp = car(seq);
             } else if (is_primitive(proc)) {
+                args = list_of_values(cdr(exp), env, 1);
                 return to_primitive(proc)(args);
             } else {
                 error("apply", "not applicable", proc);
@@ -241,12 +259,12 @@ object *extend_environment(object *vars, object *vals, object *env) {
     return env;
 }
 
-object *list_of_values(object *exps, object *env) {
+object *list_of_values(object *exps, object *env, int evl) {
     object *head, *node, *tail;
 
     head = null;
     while (exps) {
-        tail = cons(eval(car(exps), env), null);
+        tail = cons(evl ? eval(car(exps), env) : car(exps), null);
         node = head ? set_cdr(node, tail) : (head = tail);
         exps = cdr(exps);
     }

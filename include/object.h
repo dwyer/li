@@ -15,6 +15,7 @@
 #define is_environment(obj)     is_type(obj, T_ENVIRONMENT)
 #define is_char(obj)            is_type(obj, T_CHAR)
 #define is_compound(obj)        is_type(obj, T_COMPOUND)
+#define is_macro(obj)           is_type(obj, T_MACRO)
 #define is_number(obj)          is_type(obj, T_NUMBER)
 #define is_port(obj)            is_type(obj, T_PORT)
 #define is_string(obj)          is_type(obj, T_STRING)
@@ -38,6 +39,7 @@
 
 #define to_char(obj)            (obj)->data.character
 #define to_compound(obj)        (obj)->data.compound
+#define to_macro(obj)           (obj)->data.macro
 #define to_number(obj)          (obj)->data.number
 #define to_pair(obj)            (obj)->data.pair
 #define to_port(obj)            (obj)->data.port
@@ -97,6 +99,7 @@ enum {
     T_CHAR,
     T_COMPOUND,
     T_ENVIRONMENT,
+    T_MACRO,
     T_NUMBER,
     T_PAIR,
     T_PORT,
@@ -113,6 +116,7 @@ object *environment(object *base);
 object *character(int c);
 object *compound(object *proc, object *env);
 object *number(double n);
+object *macro(object *mac, object *env);
 object *pair(object *car, object *cdr);
 object *port(const char *filename, const char *mode);
 object *primitive(object *(*proc)(object *));
@@ -155,6 +159,10 @@ struct object {
             object *proc;
             object *env;
         } compound;
+        struct {
+            object *mac;
+            object *env;
+        } macro;
         struct {
             struct {
                 object *var;

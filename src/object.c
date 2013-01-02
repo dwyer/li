@@ -68,6 +68,15 @@ object *environment(object *base) {
     return obj;
 }
 
+object *macro(object *mac, object *env) {
+    object *obj;
+
+    obj = create(T_MACRO);
+    obj->data.macro.mac = mac;
+    obj->data.macro.env = env;
+    return obj;
+}
+
 object *number(double n) {
     object *obj;
 
@@ -197,6 +206,9 @@ void mark(object *obj) {
     } else if (is_compound(obj)) {
         mark(to_compound(obj).proc);
         mark(to_compound(obj).env);
+    } else if (is_macro(obj)) {
+        mark(to_macro(obj).mac);
+        mark(to_macro(obj).env);
     }
 }
 
