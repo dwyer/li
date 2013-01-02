@@ -12,6 +12,7 @@
 #define isquote(c)      ((c) == '\'')
 #define isquasi(c)      ((c) == '`')
 #define isunquote(c)    ((c) == ',')
+#define isunquotes(c)   ((c) == '@')
 #define issharp(c)      ((c) == '%')
 #define iseof(c)        ((c) == EOF)
 #define iseol(c)        ((c) == '\n')
@@ -21,6 +22,7 @@
 
 #define read_quasi(f)   cons(symbol("quasiquote"), cons(read(f), null))
 #define read_unquote(f) cons(symbol("unquote"), cons(read(f), null))
+#define read_unquotes(f) cons(symbol("unquote-splicing"), cons(read(f), null))
 
 static int buf_sz = 32;
 static char *buf = null;
@@ -96,9 +98,12 @@ object *read(FILE *f) {
         return read_character(f);
     else if (isquasi(c))
         return read_quasi(f);
-    else if (isunquote(c))
+    else if (isunquote(c)) {
+        if (isunquotes(c = getc(f)))
+            return read_unquotes(f);
+        ungetc(c, f);
         return read_unquote(f);
-    else if (issharp(c))
+    } else if (issharp(c))
         return read_special(f);
     else if (isstring(c))
         return read_string(f);

@@ -241,6 +241,9 @@ object *eval_quasiquote(object *exp, object *env) {
         return exp;
     else if (is_unquoted(exp))
         return eval(cadr(exp), env);
+    else if (is_unquoted_splicing(car(exp))) {
+        return eval(cadar(exp), env);
+    }
     return cons(eval_quasiquote(car(exp), env), eval_quasiquote(cdr(exp), env));
 }
 
