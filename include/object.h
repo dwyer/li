@@ -23,7 +23,7 @@
 #define is_vector(obj)          is_type(obj, T_VECTOR)
 #define is_pair(obj)            is_type(obj, T_PAIR)
 #define is_primitive(obj)       is_type(obj, T_PRIMITIVE)
-#define is_procedure(obj)       (is_primitive(obj) || is_compound(obj))
+#define is_procedure(obj)       (is_primitive(obj) || is_compound(obj) || is_macro(obj))
 
 /* Booleans */
 #define boolean(obj)            (obj ? symbol("true") : symbol("false"))
