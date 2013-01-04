@@ -237,12 +237,21 @@ object *eval(object *exp, object *env) {
 }
 
 object *eval_quasiquote(object *exp, object *env) {
+    object *head, *tail;
+
     if (!is_pair(exp))
         return exp;
     else if (is_unquoted(exp))
         return eval(cadr(exp), env);
     else if (is_unquoted_splicing(car(exp))) {
-        return eval(cadar(exp), env);
+        head = eval(cadar(exp), env);
+        for (tail = head; tail && cdr(tail); tail = cdr(tail));
+        if (tail) {
+            set_cdr(tail, eval_quasiquote(cdr(exp), env));
+            return head;
+        } else {
+            return eval_quasiquote(cdr(exp), env);
+        }
     }
     return cons(eval_quasiquote(car(exp), env), eval_quasiquote(cdr(exp), env));
 }
