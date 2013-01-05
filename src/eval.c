@@ -258,7 +258,7 @@ object *expand_macro(object *exp, object *args, object *env) {
 
     env = extend_environment(car(exp), args, env);
     for (seq = cdr(exp); seq; seq = cdr(seq))
-        ret = eval(cadr(exp), env);
+        ret = eval(car(seq), env);
     return ret;
 }
 
