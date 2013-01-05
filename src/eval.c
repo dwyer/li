@@ -40,6 +40,7 @@
 
 object *eval_quasiquote(object *exp, object *env);
 object *extend_environment(object *vars, object *vals, object *base_env);
+object *expand_macro(object *obj, object *args, object *env);
 object *list_of_values(object *exps, object *env, int evl);
 object *lookup_variable_value(object *exp, object *env);
 object *set_variable_value(object *var, object *val, object *env);
@@ -134,7 +135,7 @@ object *eval(object *exp, object *env) {
             check_syntax(is_pair(cadr(exp)), exp);
             check_syntax(cddr(exp), exp);
             return define_variable(caadr(exp),
-                                   macro(cons(cdadr(exp), cddr(exp)), env),
+                                   macro(cons(cdadr(exp), cddr(exp))),
                                    env);
         } else if (is_if(exp)) {
             check_syntax(cdr(exp), exp);
@@ -210,11 +211,7 @@ object *eval(object *exp, object *env) {
             proc = eval(car(exp), env);
             if (is_macro(proc)) {
                 args = list_of_values(cdr(exp), env, 0);
-                seq = to_macro(proc).mac;
-                env = to_macro(proc).env;
-                env = extend_environment(car(seq), args, env);
-                for (seq = cdr(seq); seq; seq = cdr(seq))
-                    exp = eval(car(seq), env);
+                exp = expand_macro(to_macro(proc).mac, args, env);
             } else if (is_compound(proc)) {
                 args = list_of_values(cdr(exp), env, 1);
                 seq = to_compound(proc).proc;
@@ -254,6 +251,15 @@ object *eval_quasiquote(object *exp, object *env) {
         }
     }
     return cons(eval_quasiquote(car(exp), env), eval_quasiquote(cdr(exp), env));
+}
+
+object *expand_macro(object *exp, object *args, object *env) {
+    object *ret, *seq;
+
+    env = extend_environment(car(exp), args, env);
+    for (seq = cdr(exp); seq; seq = cdr(seq))
+        ret = eval(cadr(exp), env);
+    return ret;
 }
 
 object *extend_environment(object *vars, object *vals, object *env) {
