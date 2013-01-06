@@ -1005,18 +1005,41 @@ object *p_apply(object *args) {
 }
 
 object *p_map(object *args) {
-    object *head, *tail, *proc, *iter, *node;
+    object *proc, *clists, *clists_iter;
+    object *list, *list_iter;
+    object *cars, *cars_iter;
+    int loop;
 
-    assert_nargs("map", 2, args);
-    assert_procedure("map", car(args));
-    head = tail = null;
     proc = car(args);
-    for (iter = cadr(args); iter; iter = cdr(iter)) {
-        node = cons(car(iter), null);
-        set_car(node, apply(proc, node));
-        tail = head ? set_cdr(tail, node) : (head = node);
+    clists = cdr(args);
+    list = list_iter = null;
+    assert_procedure("map", proc);
+    /* iterate clists */
+    loop = 1;
+    while (loop) {
+        cars = null;
+        for (clists_iter = clists; clists_iter; clists_iter = cdr(clists_iter)) {
+            /* get clist */
+            if (!car(clists_iter)) {
+                loop = 0;
+                break;
+            }
+            assert_pair("map", car(clists_iter));
+            /* get cars */
+            if (cars)
+                cars_iter = set_cdr(cars_iter, cons(caar(clists_iter), null));
+            else
+                cars = cars_iter = cons(caar(clists_iter), null);
+            set_car(clists_iter, cdar(clists_iter));
+        }
+        if (loop) {
+            if (list)
+                list_iter = set_cdr(list_iter, cons(apply(proc, cars), null));
+            else
+                list = list_iter = cons(apply(proc, cars), null);
+        }
     }
-    return head;
+    return list;
 }
 
 object *p_for_each(object *args) {
