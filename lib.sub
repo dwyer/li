@@ -71,9 +71,6 @@
              (iter (cdr lst) str (+ k 1)))))
   (iter lst (make-string (length lst)) 0))
 
-(define (string-append . strs)
-  (list->string (apply append (map string->list strs))))
-
 (define (string-copy str)
   (substring str 0 (string-length str)))
 

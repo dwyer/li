@@ -919,6 +919,29 @@ object *p_string_to_number(object *args) {
     return number(atof(to_string(car(args))));
 }
 
+object *p_string_append(object *args) {
+    object *str;
+    char *s, *ss;
+    int size, i;
+
+    size = 1;
+    s = calloc(size, sizeof(char));
+    for (i = 0; args; args = cdr(args)) {
+        assert_string("string-append", car(args));
+        for (ss = to_string(car(args)); *ss; ss++) {
+            s[i] = *ss;
+            if (++i >= size) {
+                size *= 2;
+                s = realloc(s, sizeof(char) * size);
+            }
+        }
+    }
+    s[i] = '\0';
+    str = string(s);
+    free(s);
+    return str;
+}
+
 /***********
  * Vectors *
  ***********/
@@ -1582,6 +1605,7 @@ struct reg {
     { "string-ref", p_string_ref },
     { "string-set!", p_string_set },
     { "string->number", p_string_to_number },
+    { "string-append", p_string_append },
     /* Vectors */
     { "vector?", p_is_vector },
     { "vector", p_vector },
