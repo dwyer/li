@@ -6,8 +6,8 @@
 #include "object.h"
 #include "main.h"
 #include "eval.h"
-#include "input.h"
-#include "output.h"
+#include "read.h"
+#include "write.h"
 
 #define has_0args(args)     (!args)
 #define has_1args(args)     (args && !cdr(args))

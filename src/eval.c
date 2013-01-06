@@ -3,7 +3,7 @@
 #include "object.h"
 #include "main.h"
 #include "eval.h"
-#include "input.h"
+#include "read.h"
 #include "proc.h"
 
 #define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))

@@ -5,8 +5,8 @@
 #include "object.h"
 #include "main.h"
 #include "eval.h"
-#include "input.h"
-#include "output.h"
+#include "read.h"
+#include "write.h"
 
 static jmp_buf buf;
 
