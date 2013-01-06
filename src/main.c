@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 
     srand(time(NULL));
     env = setup_environment();
-    for (i = argc; --i;)
+    for (args = null, i = argc - 1; i; i--)
         args = cons(string(argv[i]), args);
     append_variable(symbol("argv"), args, env);
     if (setjmp(buf)) {
