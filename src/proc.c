@@ -1217,6 +1217,16 @@ object *p_newline(object *args) {
     return null;
 }
 
+object *p_print(object *args) {
+    for (; args; args = cdr(args)) {
+        display(car(args), stdout);
+        if (cdr(args))
+            display(character(' '), stdout);
+    }
+    newline(stdout);
+    return null;
+}
+
 /*****************
  * CARS AND CDRS *
  *****************/
@@ -1597,6 +1607,7 @@ struct reg {
     { "write", p_write },
     { "display", p_display },
     { "newline", p_newline },
+    { "print", p_print },
     /* sentinel */
     { null, null }
 };
