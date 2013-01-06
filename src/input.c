@@ -5,7 +5,7 @@
 #include "input.h"
 #include "main.h"
 
-#define ischaracter(c)  ((c) == '\'')
+#define ischaracter(c)  ((c) == '\\')
 #define iscomment(c)    ((c) == '#')
 #define isopener(c)     ((c) == '(')
 #define iscloser(c)     ((c) == ')')
@@ -21,6 +21,7 @@
                          isstring(c) || iscomment(c) || iseof(c))
 
 #define read_quasi(f)   cons(symbol("quasiquote"), cons(read(f), null))
+#define read_quote(f)   cons(symbol("quote"), cons(read(f), null))
 #define read_unquote(f) cons(symbol("unquote"), cons(read(f), null))
 #define read_unquotes(f) cons(symbol("unquote-splicing"), cons(read(f), null))
 
@@ -96,6 +97,8 @@ object *read(FILE *f) {
     }
     else if (ischaracter(c))
         return read_character(f);
+    else if (isquote(c))
+        return read_quote(f);
     else if (isquasi(c))
         return read_quasi(f);
     else if (isunquote(c)) {
