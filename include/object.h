@@ -116,7 +116,7 @@ object *environment(object *base);
 object *character(int c);
 object *compound(object *proc, object *env);
 object *number(double n);
-object *macro(object *mac);
+object *macro(object *mac, object *env);
 object *pair(object *car, object *cdr);
 object *port(const char *filename, const char *mode);
 object *primitive(object *(*proc)(object *));
@@ -161,6 +161,7 @@ struct object {
         } compound;
         struct {
             object *mac;
+            object *env;
         } macro;
         struct {
             struct {
