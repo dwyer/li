@@ -6,6 +6,7 @@ LDFLAGS=-lm
 OBJDIR=obj
 SRCDIR=src
 EXECUTABLE=subscm
+PREFIX=/usr/local
 
 OBJS=$(addprefix $(OBJDIR)/, $(CFILES:.c=.o))
 SRCS=$(addprefix $(SRCDIR)/, $(CFILES))
@@ -26,6 +27,10 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
+
+install: all
+	cp -r $(EXECUTABLE) $(addprefix $(PREFIX)/, bin)
+	cp -r lib $(addprefix $(PREFIX)/, lib/subscm)
 
 clean:
 	$(RM) -rf $(EXECUTABLE) $(OBJDIR)
