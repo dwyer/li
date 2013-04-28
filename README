@@ -1,8 +1,4 @@
-subscm is a is very simple Lisp-1 based on Scheme. It started out as a Scheme
-implementation, but the spec was more complex and vague than I thought it would
-be and didn't include some features that I wanted to implement, so I decided to
-create my own Lisp.  It's meant for simple scripts and embedding into C code.
-It's pretty far from complete.
+subscm is a is very simple Lisp-1 based on Scheme.
 
 What is supported
 =================
