@@ -913,6 +913,41 @@ object *p_string_set(object *args) {
                      to_char(caddr(args)));
 }
 
+object *p_string_eq(object *args) {
+    assert_nargs("string=?", 2, args);
+    assert_string("string=?", car(args));
+    assert_string("string=?", cadr(args));
+    return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) == 0);
+}
+
+object *p_string_le(object *args) {
+    assert_nargs("string<=?", 2, args);
+    assert_string("string<=?", car(args));
+    assert_string("string<=?", cadr(args));
+    return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) <= 0);
+}
+
+object *p_string_lt(object *args) {
+    assert_nargs("string<?", 2, args);
+    assert_string("string<?", car(args));
+    assert_string("string<?", cadr(args));
+    return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) < 0);
+}
+
+object *p_string_ge(object *args) {
+    assert_nargs("string>=?", 2, args);
+    assert_string("string>=?", car(args));
+    assert_string("string>=?", cadr(args));
+    return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) >= 0);
+}
+
+object *p_string_gt(object *args) {
+    assert_nargs("string>?", 2, args);
+    assert_string("string>?", car(args));
+    assert_string("string>?", cadr(args));
+    return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) > 0);
+}
+
 object *p_string_to_number(object *args) {
     assert_nargs("string->number", 1, args);
     assert_string("string->number", car(args));
@@ -1604,6 +1639,11 @@ struct reg {
     { "string-length", p_string_length },
     { "string-ref", p_string_ref },
     { "string-set!", p_string_set },
+    { "string=?", p_string_eq },
+    { "string>=?", p_string_ge },
+    { "string>?", p_string_gt },
+    { "string<=?", p_string_le },
+    { "string<?", p_string_lt },
     { "string->number", p_string_to_number },
     { "string-append", p_string_append },
     /* Vectors */
