@@ -954,6 +954,18 @@ object *p_string_to_number(object *args) {
     return number(atof(to_string(car(args))));
 }
 
+object *p_number_to_string(object *args) {
+    char *s;
+    size_t sz;
+
+    assert_nargs("number->string", 1, args);
+    assert_number("number->string", car(args));
+    sz = 100;
+    s = calloc(sz, sizeof(char));
+    snprintf(s, sz, "%g", to_number(car(args)));
+    return string(s);
+}
+
 object *p_string_append(object *args) {
     object *str;
     char *s, *ss;
@@ -1644,8 +1656,9 @@ struct reg {
     { "string>?", p_string_gt },
     { "string<=?", p_string_le },
     { "string<?", p_string_lt },
-    { "string->number", p_string_to_number },
     { "string-append", p_string_append },
+    { "string->number", p_string_to_number },
+    { "number->string", p_number_to_string },
     /* Vectors */
     { "vector?", p_is_vector },
     { "vector", p_vector },
