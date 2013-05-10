@@ -14,7 +14,6 @@
 #define is_cond(exp)                is_tagged_list(exp, "cond")
 #define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_defmacro(exp)            is_tagged_list(exp, "defmacro")
-#define is_delay(exp)               is_tagged_list(exp, "delay")
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
 #define is_load(exp)                is_tagged_list(exp, "load")
 #define is_let(exp)                 is_tagged_list(exp, "let")
@@ -96,9 +95,6 @@ object *eval(object *exp, object *env) {
         } else if (is_quasiquoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return eval_quasiquote(cadr(exp), env);
-        } else if (is_delay(exp)) {
-            check_syntax(cdr(exp) && !cddr(exp), exp);
-            return compound(cons(null, cdr(exp)), env);
         } else if (is_lambda(exp)) {
             check_syntax(cdr(exp) && cddr(exp), exp);
             return compound(cdr(exp), env);
