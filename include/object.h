@@ -23,7 +23,9 @@
 #define is_vector(obj)          is_type(obj, T_VECTOR)
 #define is_pair(obj)            is_type(obj, T_PAIR)
 #define is_primitive(obj)       is_type(obj, T_PRIMITIVE)
-#define is_procedure(obj)       (is_primitive(obj) || is_compound(obj) || is_macro(obj))
+#define is_primitive_macro(obj) is_type(obj, T_PRIMITIVE_MACRO)
+#define is_procedure(obj)       (is_compound(obj) || is_macro(obj) || \
+                                 is_primitive(obj) || is_primitive_macro(obj))
 
 /* Booleans */
 #define boolean(obj)            (obj ? symbol("true") : symbol("false"))
@@ -44,6 +46,7 @@
 #define to_pair(obj)            (obj)->data.pair
 #define to_port(obj)            (obj)->data.port
 #define to_primitive(obj)       (obj)->data.primitive
+#define to_primitive_macro(obj) (obj)->data.primitive_macro
 #define to_string(obj)          (obj)->data.string
 #define to_symbol(obj)          (obj)->data.symbol.string
 #define to_vector(obj)          (obj)->data.vector
@@ -104,6 +107,7 @@ enum {
     T_PAIR,
     T_PORT,
     T_PRIMITIVE,
+    T_PRIMITIVE_MACRO,
     T_STRING,
     T_SYMBOL,
     T_VECTOR,
@@ -120,6 +124,7 @@ object *macro(object *mac, object *env);
 object *pair(object *car, object *cdr);
 object *port(const char *filename, const char *mode);
 object *primitive(object *(*proc)(object *));
+object *primitive_macro(object *(*proc)(object *, object *));
 object *string(char *s);
 object *symbol(char *s);
 object *vector(object *lst);
@@ -173,6 +178,7 @@ struct object {
             object *base;
         } env;
         object *(*primitive)(object *);
+        object *(*primitive_macro)(object *, object *);
     } data;
     int type;
     int locked;

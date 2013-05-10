@@ -114,6 +114,14 @@ object *primitive(object *(*proc)(object *)) {
     return obj;
 }
 
+object *primitive_macro(object *(*proc)(object *, object *)) {
+    object *obj;
+
+    obj = create(T_PRIMITIVE_MACRO);
+    obj->data.primitive_macro = proc;
+    return obj;
+}
+
 object *string(char *s) {
     object *obj;
 

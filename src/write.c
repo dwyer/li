@@ -28,6 +28,8 @@ void write_object(object *obj, FILE *f, int h) {
         fprintf(f, "#[compound-procedure]");
     else if (is_primitive(obj))
         fprintf(f, "#[primitive-procedure]");
+    else if (is_primitive_macro(obj))
+        fprintf(f, "#[primitive-macro]");
     else if (is_macro(obj))
         fprintf(f, "#[macro]");
     else if (is_environment(obj))
