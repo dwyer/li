@@ -18,7 +18,6 @@
 #define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_defmacro(exp)            is_tagged_list(exp, "defmacro")
 #define is_delay(exp)               is_tagged_list(exp, "delay")
-#define is_if(exp)                  is_tagged_list(exp, "if")
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
 #define is_load(exp)                is_tagged_list(exp, "load")
 #define is_let(exp)                 is_tagged_list(exp, "let")
@@ -32,11 +31,7 @@
 #define is_unquoted_splicing(exp)   is_tagged_list(exp, "unquote-splicing")
 #define is_variable(exp)            is_symbol(exp)
 
-#define make_begin(seq)             cons(symbol("begin"), seq)
-#define make_if(pred, con, alt)     cons(symbol("if"), \
-                                         cons(pred, cons(con, cons(alt, null))))
 #define make_lambda(p, b)           cons(symbol("lambda"), cons(p, b))
-#define make_quasiquote(exp)        cons(symbol("quasiquote"), cons(exp, null))
 
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
@@ -142,15 +137,6 @@ object *eval(object *exp, object *env) {
             return define_variable(caadr(exp),
                                    macro(cons(cdadr(exp), cddr(exp)), env),
                                    env);
-        } else if (is_if(exp)) {
-            check_syntax(cdr(exp), exp);
-            check_syntax(cddr(exp), exp);
-            if (is_true(eval(cadr(exp), env)))
-                exp = caddr(exp);
-            else if (cdddr(exp))
-                exp = cadddr(exp);
-            else
-                return boolean(false);
         } else if (is_cond(exp)) {
             check_syntax(cdr(exp), exp);
             for (seq = cdr(exp); seq; seq = cdr(seq))
@@ -218,10 +204,10 @@ object *eval(object *exp, object *env) {
         } else if (is_application(exp)) {
             proc = eval(car(exp), env);
             if (is_macro(proc)) {
-                args = list_of_values(cdr(exp), env, 0);
+                args = list_of_values(cdr(exp), env, false);
                 exp = expand_macro(proc, args);
             } else if (is_compound(proc)) {
-                args = list_of_values(cdr(exp), env, 1);
+                args = list_of_values(cdr(exp), env, true);
                 seq = to_compound(proc).proc;
                 env = to_compound(proc).env;
                 env = extend_environment(car(seq), args, env);
@@ -229,8 +215,11 @@ object *eval(object *exp, object *env) {
                     eval(car(seq), env);
                 exp = car(seq);
             } else if (is_primitive(proc)) {
-                args = list_of_values(cdr(exp), env, 1);
+                args = list_of_values(cdr(exp), env, true);
                 return to_primitive(proc)(args);
+            } else if (is_primitive_macro(proc)) {
+                args = list_of_values(cdr(exp), env, false);
+                exp = to_primitive_macro(proc)(args, env);
             } else {
                 error("apply", "not applicable", proc);
             }

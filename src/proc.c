@@ -29,6 +29,17 @@
 #define assert_symbol(name, arg)    assert_type(name, symbol, arg)
 #define assert_vector(name, arg)    assert_type(name, vector, arg)
 
+object *m_if(object *seq, object *env) {
+    if (!seq || !cdr(seq))
+        error("if", "invalid sequence", seq);
+    if (is_true(eval(car(seq), env)))
+        return cadr(seq);
+    else if (cddr(seq))
+        return caddr(seq);
+    else
+        return boolean(false);
+}
+
 /*
  * (error who msg . irritants)
  * Prints an error message and raises an exception. who should be the name of
@@ -1692,6 +1703,7 @@ struct reg {
 void define_primitive_procedures(object *env) {
     struct reg *iter;
 
+    append_variable(symbol("if"), primitive_macro(m_if), env);
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);
         object *val = primitive(iter->val);
