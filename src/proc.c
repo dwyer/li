@@ -90,6 +90,10 @@ object *m_if(object *seq, object *env) {
         return boolean(false);
 }
 
+object *m_lambda(object *seq, object *env) {
+    return compound(seq, env);
+}
+
 object *m_or(object *seq, object *env) {
     object *val;
 
@@ -1770,6 +1774,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("cond"), primitive_macro(m_cond), env);
     append_variable(symbol("delay"), primitive_macro(m_delay), env);
     append_variable(symbol("if"), primitive_macro(m_if), env);
+    append_variable(symbol("lambda"), primitive_macro(m_lambda), env);
     append_variable(symbol("or"), primitive_macro(m_or), env);
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);
