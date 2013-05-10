@@ -19,7 +19,6 @@
 #define is_load(exp)                is_tagged_list(exp, "load")
 #define is_let(exp)                 is_tagged_list(exp, "let")
 #define is_let_star(exp)            is_tagged_list(exp, "let*")
-#define is_or(exp)                  is_tagged_list(exp, "or")
 #define is_macro_expand(exp)        is_tagged_list(exp, "macro-expand")
 #define is_self_evaluating(exp)     (!exp || !(is_pair(exp) || is_symbol(exp)))
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
@@ -143,13 +142,6 @@ object *eval(object *exp, object *env) {
                         eval(car(seq), env);
                     break;
                 }
-            if (!seq)
-                return boolean(false);
-            exp = car(seq);
-        } else if (is_or(exp)) {
-            for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
-                if (is_true(val = eval(car(seq), env)))
-                    return val;
             if (!seq)
                 return boolean(false);
             exp = car(seq);

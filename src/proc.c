@@ -73,6 +73,17 @@ object *m_if(object *seq, object *env) {
         return boolean(false);
 }
 
+object *m_or(object *seq, object *env) {
+    object *val;
+
+    for (; seq && cdr(seq); seq = cdr(seq))
+        if (is_true(val = eval(car(seq), env)))
+            return cons(symbol("quote"), cons(val, null));
+    if (!seq)
+        return boolean(false);
+    return car(seq);
+}
+
 /*
  * (error who msg . irritants)
  * Prints an error message and raises an exception. who should be the name of
@@ -1740,6 +1751,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("begin"), primitive_macro(m_begin), env);
     append_variable(symbol("case"), primitive_macro(m_case), env);
     append_variable(symbol("if"), primitive_macro(m_if), env);
+    append_variable(symbol("or"), primitive_macro(m_or), env);
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);
         object *val = primitive(iter->val);
