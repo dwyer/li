@@ -6,15 +6,14 @@
 #include "read.h"
 #include "proc.h"
 
-#define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
+#define is_tagged_list(exp, tag)    (car(exp) == symbol(tag))
 
 #define is_application(exp)         is_list(exp)
-#define is_self_evaluating(exp)     (!exp || !(is_pair(exp) || is_symbol(exp)))
+#define is_self_evaluating(exp)     !(is_pair(exp) || is_symbol(exp))
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
 #define is_quasiquoted(exp)         is_tagged_list(exp, "quasiquote")
 #define is_unquoted(exp)            is_tagged_list(exp, "unquote")
 #define is_unquoted_splicing(exp)   is_tagged_list(exp, "unquote-splicing")
-#define is_variable(exp)            is_symbol(exp)
 
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
@@ -71,23 +70,17 @@ object *eval(object *exp, object *env) {
     object *seq, *proc, *args;
 
     while (!is_self_evaluating(exp)) {
-        if (is_variable(exp))
+        if (is_symbol(exp)) {
             return lookup_variable_value(exp, env);
-        /* assert that it's a list */
-        for (seq = exp; seq; seq = cdr(seq))
-            check_syntax(is_pair(seq), exp);
-
-        if (is_quoted(exp)) {
+        } else if (is_quoted(exp)) {
+            check_syntax(cdr(exp) && !cddr(exp), exp);
             return cadr(exp);
         } else if (is_quasiquoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return eval_quasiquote(cadr(exp), env);
         } else if (is_application(exp)) {
             proc = eval(car(exp), env);
-            if (is_macro(proc)) {
-                args = list_of_values(cdr(exp), env, false);
-                exp = expand_macro(proc, args);
-            } else if (is_compound(proc)) {
+            if (is_compound(proc)) {
                 args = list_of_values(cdr(exp), env, true);
                 seq = to_compound(proc).proc;
                 env = to_compound(proc).env;
@@ -95,6 +88,9 @@ object *eval(object *exp, object *env) {
                 for (seq = cdr(seq); seq && cdr(seq); seq = cdr(seq))
                     eval(car(seq), env);
                 exp = car(seq);
+	    } else if (is_macro(proc)) {
+                args = list_of_values(cdr(exp), env, false);
+                exp = expand_macro(proc, args);
             } else if (is_primitive(proc)) {
                 args = list_of_values(cdr(exp), env, true);
                 return to_primitive(proc)(args);
