@@ -48,11 +48,12 @@ object *character(int c) {
     return obj;
 }
 
-object *compound(object *proc, object *env) {
+object *compound(object *vars, object *body, object *env) {
     object *obj;
 
     obj = create(T_COMPOUND);
-    obj->data.compound.proc = proc;
+    obj->data.compound.vars = vars;
+    obj->data.compound.body = body;
     obj->data.compound.env = env;
     return obj;
 }
@@ -213,7 +214,8 @@ void mark(object *obj) {
         for (k = 0; k < vector_length(obj); k++)
             mark(vector_ref(obj, k));
     } else if (is_compound(obj)) {
-        mark(to_compound(obj).proc);
+        mark(to_compound(obj).vars);
+        mark(to_compound(obj).body);
         mark(to_compound(obj).env);
     } else if (is_macro(obj)) {
         mark(to_macro(obj).vars);

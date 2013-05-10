@@ -24,8 +24,7 @@
 #define is_pair(obj)            is_type(obj, T_PAIR)
 #define is_primitive(obj)       is_type(obj, T_PRIMITIVE)
 #define is_primitive_macro(obj) is_type(obj, T_PRIMITIVE_MACRO)
-#define is_procedure(obj)       (is_compound(obj) || is_macro(obj) || \
-                                 is_primitive(obj) || is_primitive_macro(obj))
+#define is_procedure(obj)       (is_compound(obj) || is_primitive(obj))
 
 /* Booleans */
 #define boolean(obj)            (obj ? symbol("true") : symbol("false"))
@@ -118,7 +117,7 @@ typedef struct object object;
 
 object *environment(object *base);
 object *character(int c);
-object *compound(object *proc, object *env);
+object *compound(object *vars, object *body, object *env);
 object *number(double n);
 object *macro(object *vars, object *body, object *env);
 object *pair(object *car, object *cdr);
@@ -161,7 +160,8 @@ struct object {
             int length;
         } vector;
         struct {
-            object *proc;
+            object *vars;
+            object *body;
             object *env;
         } compound;
         struct {

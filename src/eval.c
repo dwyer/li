@@ -20,7 +20,7 @@
 object *eval_quasiquote(object *exp, object *env);
 object *expand_macro(object *mac, object *args);
 object *extend_environment(object *vars, object *vals, object *base_env);
-object *list_of_values(object *exps, object *env, int evl);
+object *list_of_values(object *exps, object *env);
 object *lookup_variable_value(object *exp, object *env);
 
 object *apply(object *proc, object *args) {
@@ -80,22 +80,21 @@ object *eval(object *exp, object *env) {
             return eval_quasiquote(cadr(exp), env);
         } else if (is_application(exp)) {
             proc = eval(car(exp), env);
+            args = cdr(exp);
+	    if (is_procedure(proc))
+                args = list_of_values(args, env);
             if (is_compound(proc)) {
-                args = list_of_values(cdr(exp), env, true);
-                seq = to_compound(proc).proc;
                 env = to_compound(proc).env;
-                env = extend_environment(car(seq), args, env);
-                for (seq = cdr(seq); seq && cdr(seq); seq = cdr(seq))
+                env = extend_environment(to_compound(proc).vars, args, env);
+                for (seq = to_compound(proc).body; seq && cdr(seq);
+		     seq = cdr(seq))
                     eval(car(seq), env);
                 exp = car(seq);
 	    } else if (is_macro(proc)) {
-                args = list_of_values(cdr(exp), env, false);
                 exp = expand_macro(proc, args);
             } else if (is_primitive(proc)) {
-                args = list_of_values(cdr(exp), env, true);
                 return to_primitive(proc)(args);
             } else if (is_primitive_macro(proc)) {
-                args = list_of_values(cdr(exp), env, false);
                 exp = to_primitive_macro(proc)(args, env);
             } else {
                 error("apply", "not applicable", proc);
@@ -153,12 +152,12 @@ object *extend_environment(object *vars, object *vals, object *env) {
     return env;
 }
 
-object *list_of_values(object *exps, object *env, int evl) {
+object *list_of_values(object *exps, object *env) {
     object *head, *node, *tail;
 
     head = null;
     while (exps) {
-        tail = cons(evl ? eval(car(exps), env) : car(exps), null);
+        tail = cons(eval(car(exps), env), null);
         node = head ? set_cdr(node, tail) : (head = tail);
         exps = cdr(exps);
     }

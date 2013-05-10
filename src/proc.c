@@ -105,7 +105,7 @@ object *m_defmacro(object *seq, object *env) {
 
 
 object *m_delay(object *seq, object *env) {
-    return compound(cons(null, seq), env);
+    return compound(null, seq, env);
 }
 
 object *m_if(object *seq, object *env) {
@@ -120,7 +120,7 @@ object *m_if(object *seq, object *env) {
 }
 
 object *m_lambda(object *seq, object *env) {
-    return compound(seq, env);
+    return compound(car(seq), cdr(seq), env);
 }
 
 object *m_let(object *args, object *env) {
