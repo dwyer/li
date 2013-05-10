@@ -11,8 +11,6 @@
 #define is_application(exp)         is_list(exp)
 #define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
-#define is_defmacro(exp)            is_tagged_list(exp, "defmacro")
-#define is_let(exp)                 is_tagged_list(exp, "let")
 #define is_let_star(exp)            is_tagged_list(exp, "let*")
 #define is_macro_expand(exp)        is_tagged_list(exp, "macro-expand")
 #define is_self_evaluating(exp)     (!exp || !(is_pair(exp) || is_symbol(exp)))
@@ -75,7 +73,7 @@ object *define_variable(object *var, object *val, object *env) {
 }
 
 object *eval(object *exp, object *env) {
-    object *seq, *var, *val, *proc, *args;
+    object *seq, *proc, *args;
 
     while (!is_self_evaluating(exp)) {
         if (is_variable(exp))
@@ -97,26 +95,9 @@ object *eval(object *exp, object *env) {
             if (is_false(eval(cadr(exp), env)))
                 error("assert", "assertion violated", exp);
             return null;
-        } else if (is_defmacro(exp)) {
-            check_syntax(cdr(exp) && cddr(exp), exp);
-            check_syntax(is_pair(cadr(exp)), exp);
-            check_syntax(cddr(exp), exp);
-            return define_variable(caadr(exp),
-                                   macro(cons(cdadr(exp), cddr(exp)), env),
-                                   env);
         } else if (is_macro_expand(exp)) {
             /* TODO: error checking */
             return expand_macro(eval(caadr(exp), env), cdadr(exp));
-        } else if (is_let(exp)) {
-            var = val = null;
-            for (seq = cadr(exp); seq; seq = cdr(seq)) {
-                var = cons(caar(seq), var);
-                val = cons(eval(cadar(seq), env), val);
-            }
-            env = extend_environment(var, val, env);
-            for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
-                eval(car(seq), env);
-            exp = car(seq);
         } else if (is_let_star(exp)) {
             env = environment(env);
             for (seq = cadr(exp); seq; seq = cdr(seq))

@@ -86,6 +86,13 @@ object *m_define(object *seq, object *env) {
     }
 }
 
+object *m_defmacro(object *seq, object *env) {
+    assert_pair("defmacro", car(seq));
+    return define_variable(caar(seq), macro(cons(cdar(seq), cdr(seq)), env),
+			   env);
+}
+
+
 object *m_delay(object *seq, object *env) {
     return compound(cons(null, seq), env);
 }
@@ -103,6 +110,20 @@ object *m_if(object *seq, object *env) {
 
 object *m_lambda(object *seq, object *env) {
     return compound(seq, env);
+}
+
+object *m_let(object *args, object *env) {
+    object *binding, *bindings, *body, *vals, *vars;
+
+    bindings = car(args);
+    body = cdr(args);
+    vals = vars = null;
+    for (; bindings; bindings = cdr(bindings)) {
+        binding = car(bindings);
+        vals = cons(cadr(binding), vals);
+	vars = cons(car(binding), vars);
+    }
+    return cons(make_lambda(vars, body), vals);
 }
 
 object *m_load(object *args, object *env) {
@@ -1791,9 +1812,11 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("case"), primitive_macro(m_case), env);
     append_variable(symbol("cond"), primitive_macro(m_cond), env);
     append_variable(symbol("define"), primitive_macro(m_define), env);
+    append_variable(symbol("defmacro"), primitive_macro(m_define), env);
     append_variable(symbol("delay"), primitive_macro(m_delay), env);
     append_variable(symbol("if"), primitive_macro(m_if), env);
     append_variable(symbol("lambda"), primitive_macro(m_lambda), env);
+    append_variable(symbol("let"), primitive_macro(m_let), env);
     append_variable(symbol("load"), primitive_macro(m_load), env);
     append_variable(symbol("or"), primitive_macro(m_or), env);
     for (iter = regs; iter->var; iter++) {
