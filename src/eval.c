@@ -8,7 +8,6 @@
 
 #define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
 
-#define is_and(exp)                 is_tagged_list(exp, "and")
 #define is_application(exp)         is_list(exp)
 #define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
@@ -146,13 +145,6 @@ object *eval(object *exp, object *env) {
                 }
             if (!seq)
                 return boolean(false);
-            exp = car(seq);
-        } else if (is_and(exp)) {
-            for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
-                if (is_false(eval(car(seq), env)))
-                    return boolean(false);
-            if (!seq)
-                return boolean(true);
             exp = car(seq);
         } else if (is_or(exp)) {
             for (seq = cdr(exp); seq && cdr(seq); seq = cdr(seq))
