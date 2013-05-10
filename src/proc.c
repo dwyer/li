@@ -151,6 +151,12 @@ object *m_or(object *seq, object *env) {
     return car(seq);
 }
 
+object *m_set(object *args, object *env) {
+    assert_nargs("set!", 2, args);
+    assert_symbol("set!", car(args));
+    return set_variable_value(car(args), eval(cadr(args), env), env);
+}
+
 /*
  * (error who msg . irritants)
  * Prints an error message and raises an exception. who should be the name of
@@ -1827,6 +1833,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("let"), primitive_macro(m_let), env);
     append_variable(symbol("load"), primitive_macro(m_load), env);
     append_variable(symbol("or"), primitive_macro(m_or), env);
+    append_variable(symbol("set!"), primitive_macro(m_set), env);
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);
         object *val = primitive(iter->val);

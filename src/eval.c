@@ -9,7 +9,6 @@
 #define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
 
 #define is_application(exp)         is_list(exp)
-#define is_assignment(exp)          is_tagged_list(exp, "set!")
 #define is_let_star(exp)            is_tagged_list(exp, "let*")
 #define is_macro_expand(exp)        is_tagged_list(exp, "macro-expand")
 #define is_self_evaluating(exp)     (!exp || !(is_pair(exp) || is_symbol(exp)))
@@ -26,7 +25,6 @@ object *expand_macro(object *mac, object *args);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *list_of_values(object *exps, object *env, int evl);
 object *lookup_variable_value(object *exp, object *env);
-object *set_variable_value(object *var, object *val, object *env);
 
 object *apply(object *proc, object *args) {
     object *head, *tail, *obj;
@@ -86,9 +84,6 @@ object *eval(object *exp, object *env) {
         } else if (is_quasiquoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return eval_quasiquote(cadr(exp), env);
-        } else if (is_assignment(exp)) {
-            check_syntax(cdr(exp) && cddr(exp), exp);
-            return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
         } else if (is_macro_expand(exp)) {
             /* TODO: error checking */
             return expand_macro(eval(caadr(exp), env), cdadr(exp));
