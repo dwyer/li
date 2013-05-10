@@ -62,6 +62,19 @@ object *m_case(object *exp, object *env) {
     return car(seq);
 }
 
+object *m_cond(object *seq, object *env) {
+    for (; seq; seq = cdr(seq))
+        if (is_eq(caar(seq), symbol("else")) ||
+            is_true(eval(caar(seq), env))) {
+            for (seq = cdar(seq); cdr(seq); seq = cdr(seq))
+                eval(car(seq), env);
+            break;
+        }
+    if (!seq)
+        return boolean(false);
+    return car(seq);
+}
+
 object *m_delay(object *seq, object *env) {
     return compound(cons(null, seq), env);
 }
@@ -1754,6 +1767,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("and"), primitive_macro(m_and), env);
     append_variable(symbol("begin"), primitive_macro(m_begin), env);
     append_variable(symbol("case"), primitive_macro(m_case), env);
+    append_variable(symbol("cond"), primitive_macro(m_cond), env);
     append_variable(symbol("delay"), primitive_macro(m_delay), env);
     append_variable(symbol("if"), primitive_macro(m_if), env);
     append_variable(symbol("or"), primitive_macro(m_or), env);

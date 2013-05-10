@@ -11,7 +11,6 @@
 #define is_application(exp)         is_list(exp)
 #define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
-#define is_cond(exp)                is_tagged_list(exp, "cond")
 #define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_defmacro(exp)            is_tagged_list(exp, "defmacro")
 #define is_lambda(exp)              is_tagged_list(exp, "lambda")
@@ -129,18 +128,6 @@ object *eval(object *exp, object *env) {
             return define_variable(caadr(exp),
                                    macro(cons(cdadr(exp), cddr(exp)), env),
                                    env);
-        } else if (is_cond(exp)) {
-            check_syntax(cdr(exp), exp);
-            for (seq = cdr(exp); seq; seq = cdr(seq))
-                if (is_tagged_list(car(seq), "else") ||
-                    is_true(eval(caar(seq), env))) {
-                    for (seq = cdar(seq); cdr(seq); seq = cdr(seq))
-                        eval(car(seq), env);
-                    break;
-                }
-            if (!seq)
-                return boolean(false);
-            exp = car(seq);
         } else if (is_macro_expand(exp)) {
             /* TODO: error checking */
             return expand_macro(eval(caadr(exp), env), cdadr(exp));
