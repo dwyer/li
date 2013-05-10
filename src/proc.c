@@ -94,6 +94,13 @@ object *m_lambda(object *seq, object *env) {
     return compound(seq, env);
 }
 
+object *m_load(object *args, object *env) {
+    assert_nargs("load", 1, args);
+    assert_string("load", car(args));
+    load(to_string(car(args)), env);
+    return null;
+}
+
 object *m_or(object *seq, object *env) {
     object *val;
 
@@ -1775,6 +1782,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("delay"), primitive_macro(m_delay), env);
     append_variable(symbol("if"), primitive_macro(m_if), env);
     append_variable(symbol("lambda"), primitive_macro(m_lambda), env);
+    append_variable(symbol("load"), primitive_macro(m_load), env);
     append_variable(symbol("or"), primitive_macro(m_or), env);
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);

@@ -13,7 +13,6 @@
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
 #define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_defmacro(exp)            is_tagged_list(exp, "defmacro")
-#define is_load(exp)                is_tagged_list(exp, "load")
 #define is_let(exp)                 is_tagged_list(exp, "let")
 #define is_let_star(exp)            is_tagged_list(exp, "let*")
 #define is_macro_expand(exp)        is_tagged_list(exp, "macro-expand")
@@ -96,11 +95,6 @@ object *eval(object *exp, object *env) {
         } else if (is_assignment(exp)) {
             check_syntax(cdr(exp) && cddr(exp), exp);
             return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
-        } else if (is_load(exp)) {
-            check_syntax(cdr(exp) && !cddr(exp), exp);
-            check_syntax(is_string(cadr(exp)), exp);
-            load(to_string(cadr(exp)), env);
-            return null;
         } else if (is_assert(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             if (is_false(eval(cadr(exp), env)))
