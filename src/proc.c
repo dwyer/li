@@ -38,6 +38,13 @@ object *m_and(object *seq, object *env) {
     return car(seq);
 }
 
+object *m_assert(object *args, object *env) {
+    assert_nargs("assert", 1, args);
+    if (is_false(eval(car(args), env)))
+        error("assert", "assertion violated", car(args));
+    return null;
+}
+
 object *m_begin(object *seq, object *env) {
     for (; seq && cdr(seq); seq = cdr(seq))
         eval(car(seq), env);
@@ -1808,6 +1815,7 @@ void define_primitive_procedures(object *env) {
     struct reg *iter;
 
     append_variable(symbol("and"), primitive_macro(m_and), env);
+    append_variable(symbol("assert"), primitive_macro(m_assert), env);
     append_variable(symbol("begin"), primitive_macro(m_begin), env);
     append_variable(symbol("case"), primitive_macro(m_case), env);
     append_variable(symbol("cond"), primitive_macro(m_cond), env);

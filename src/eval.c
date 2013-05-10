@@ -9,7 +9,6 @@
 #define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
 
 #define is_application(exp)         is_list(exp)
-#define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
 #define is_let_star(exp)            is_tagged_list(exp, "let*")
 #define is_macro_expand(exp)        is_tagged_list(exp, "macro-expand")
@@ -90,11 +89,6 @@ object *eval(object *exp, object *env) {
         } else if (is_assignment(exp)) {
             check_syntax(cdr(exp) && cddr(exp), exp);
             return set_variable_value(cadr(exp), eval(caddr(exp), env), env);
-        } else if (is_assert(exp)) {
-            check_syntax(cdr(exp) && !cddr(exp), exp);
-            if (is_false(eval(cadr(exp), env)))
-                error("assert", "assertion violated", exp);
-            return null;
         } else if (is_macro_expand(exp)) {
             /* TODO: error checking */
             return expand_macro(eval(caadr(exp), env), cdadr(exp));
