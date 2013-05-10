@@ -13,7 +13,6 @@
 #define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
 #define is_begin(exp)               is_tagged_list(exp, "begin")
-#define is_case(exp)                is_tagged_list(exp, "case")
 #define is_cond(exp)                is_tagged_list(exp, "cond")
 #define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_defmacro(exp)            is_tagged_list(exp, "defmacro")
@@ -146,18 +145,6 @@ object *eval(object *exp, object *env) {
                         eval(car(seq), env);
                     break;
                 }
-            if (!seq)
-                return boolean(false);
-            exp = car(seq);
-        } else if (is_case(exp)) {
-            val = eval(cadr(exp), env);
-            for (exp = cddr(exp); exp; exp = cdr(exp))
-                for (seq = caar(exp); seq; seq = cdr(seq))
-                    if (is_eq(seq, symbol("else")) || is_eqv(car(seq), val)) {
-                        for (seq = cdar(exp); cdr(seq); seq = cdr(seq))
-                            eval(car(seq), env);
-                        break;
-                    }
             if (!seq)
                 return boolean(false);
             exp = car(seq);
