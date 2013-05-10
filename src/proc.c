@@ -94,9 +94,13 @@ object *m_define(object *seq, object *env) {
 }
 
 object *m_defmacro(object *seq, object *env) {
+    object *name, *vars, *body;
+
     assert_pair("defmacro", car(seq));
-    return define_variable(caar(seq), macro(cons(cdar(seq), cdr(seq)), env),
-			   env);
+    name = caar(seq);
+    vars = cdar(seq);
+    body = cdr(seq);
+    return define_variable(name, macro(vars, body, env), env);
 }
 
 

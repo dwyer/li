@@ -68,11 +68,12 @@ object *environment(object *base) {
     return obj;
 }
 
-object *macro(object *mac, object *env) {
+object *macro(object *vars, object *body, object *env) {
     object *obj;
 
     obj = create(T_MACRO);
-    obj->data.macro.mac = mac;
+    obj->data.macro.vars = vars;
+    obj->data.macro.body = body;
     obj->data.macro.env = env;
     return obj;
 }
@@ -215,7 +216,8 @@ void mark(object *obj) {
         mark(to_compound(obj).proc);
         mark(to_compound(obj).env);
     } else if (is_macro(obj)) {
-        mark(to_macro(obj).mac);
+        mark(to_macro(obj).vars);
+        mark(to_macro(obj).body);
         mark(to_macro(obj).env);
     }
 }
