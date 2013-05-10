@@ -170,9 +170,23 @@ object *m_or(object *seq, object *env) {
 }
 
 object *m_set(object *args, object *env) {
+    int i;
+    object *val, *var;
+
     assert_nargs("set!", 2, args);
     assert_symbol("set!", car(args));
-    return set_variable_value(car(args), eval(cadr(args), env), env);
+    var = car(args);
+    val = eval(cadr(args), env);
+    while (env) {
+        for (i = 0; i < env->data.env.size; i++)
+            if (env->data.env.array[i].var == var) {
+                env->data.env.array[i].val = val;
+                return cons(symbol("quote"), cons(var, null));
+            }
+        env = env->data.env.base;
+    }
+    error("set!", "unbound variable", var);
+    return null;
 }
 
 /*

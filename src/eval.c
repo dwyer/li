@@ -179,21 +179,6 @@ object *lookup_variable_value(object *var, object *env) {
     return null;
 }
 
-object *set_variable_value(object *var, object *val, object *env) {
-    int i;
-
-    while (env) {
-        for (i = 0; i < env->data.env.size; i++)
-            if (env->data.env.array[i].var == var) {
-                env->data.env.array[i].val = val;
-                return var;
-            }
-        env = env->data.env.base;
-    }
-    error("eval", "unbound variable", var);
-    return null;
-}
-
 object *setup_environment(void) {
     object *env;
 
