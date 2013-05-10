@@ -29,6 +29,14 @@
 #define assert_symbol(name, arg)    assert_type(name, symbol, arg)
 #define assert_vector(name, arg)    assert_type(name, vector, arg)
 
+object *m_begin(object *seq, object *env) {
+    for (; seq && cdr(seq); seq = cdr(seq))
+        eval(car(seq), env);
+    if (!seq)
+        return null;
+    return car(seq);
+}
+
 object *m_case(object *exp, object *env) {
     object *seq, *val;
 
@@ -1719,6 +1727,7 @@ struct reg {
 void define_primitive_procedures(object *env) {
     struct reg *iter;
 
+    append_variable(symbol("begin"), primitive_macro(m_begin), env);
     append_variable(symbol("case"), primitive_macro(m_case), env);
     append_variable(symbol("if"), primitive_macro(m_if), env);
     for (iter = regs; iter->var; iter++) {
