@@ -127,10 +127,28 @@ object *m_let(object *args, object *env) {
     vals = vars = null;
     for (; bindings; bindings = cdr(bindings)) {
         binding = car(bindings);
-        vals = cons(cadr(binding), vals);
 	vars = cons(car(binding), vars);
+        vals = cons(cadr(binding), vals);
     }
     return cons(make_lambda(vars, body), vals);
+}
+
+object *m_let_star(object *args, object *env) {
+    object *binding, *bindings, *body, *result, *vals, *vars;
+
+    body = cdr(args);
+    result = vals = vals = null;
+    for (bindings = car(args); bindings; bindings = cdr(bindings)) {
+        binding = car(bindings);
+	vars = cons(car(binding), null);
+	vals = cons(cadr(binding), null);
+	if (result == null)
+            result = cons(make_lambda(vars, body), vals);
+	else
+            set_cdr(cdar(result),
+                    cons(cons(make_lambda(vars, cddar(result)), vals), null));
+    }
+    return result;
 }
 
 object *m_load(object *args, object *env) {
@@ -1831,6 +1849,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("if"), primitive_macro(m_if), env);
     append_variable(symbol("lambda"), primitive_macro(m_lambda), env);
     append_variable(symbol("let"), primitive_macro(m_let), env);
+    append_variable(symbol("let*"), primitive_macro(m_let_star), env);
     append_variable(symbol("load"), primitive_macro(m_load), env);
     append_variable(symbol("or"), primitive_macro(m_or), env);
     append_variable(symbol("set!"), primitive_macro(m_set), env);

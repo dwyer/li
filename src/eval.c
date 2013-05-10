@@ -9,8 +9,6 @@
 #define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
 
 #define is_application(exp)         is_list(exp)
-#define is_let_star(exp)            is_tagged_list(exp, "let*")
-#define is_macro_expand(exp)        is_tagged_list(exp, "macro-expand")
 #define is_self_evaluating(exp)     (!exp || !(is_pair(exp) || is_symbol(exp)))
 #define is_quoted(exp)              is_tagged_list(exp, "quote")
 #define is_quasiquoted(exp)         is_tagged_list(exp, "quasiquote")
@@ -84,16 +82,6 @@ object *eval(object *exp, object *env) {
         } else if (is_quasiquoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return eval_quasiquote(cadr(exp), env);
-        } else if (is_macro_expand(exp)) {
-            /* TODO: error checking */
-            return expand_macro(eval(caadr(exp), env), cdadr(exp));
-        } else if (is_let_star(exp)) {
-            env = environment(env);
-            for (seq = cadr(exp); seq; seq = cdr(seq))
-                append_variable(caar(seq), eval(cadar(seq), env), env);
-            for (seq = cddr(exp); cdr(seq); seq = cdr(seq))
-                eval(car(seq), env);
-            exp = car(seq);
         } else if (is_application(exp)) {
             proc = eval(car(exp), env);
             if (is_macro(proc)) {
