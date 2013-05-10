@@ -11,7 +11,6 @@
 #define is_application(exp)         is_list(exp)
 #define is_assert(exp)              is_tagged_list(exp, "assert")
 #define is_assignment(exp)          is_tagged_list(exp, "set!")
-#define is_definition(exp)          is_tagged_list(exp, "define")
 #define is_defmacro(exp)            is_tagged_list(exp, "defmacro")
 #define is_let(exp)                 is_tagged_list(exp, "let")
 #define is_let_star(exp)            is_tagged_list(exp, "let*")
@@ -22,8 +21,6 @@
 #define is_unquoted(exp)            is_tagged_list(exp, "unquote")
 #define is_unquoted_splicing(exp)   is_tagged_list(exp, "unquote-splicing")
 #define is_variable(exp)            is_symbol(exp)
-
-#define make_lambda(p, b)           cons(symbol("lambda"), cons(p, b))
 
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
@@ -100,17 +97,6 @@ object *eval(object *exp, object *env) {
             if (is_false(eval(cadr(exp), env)))
                 error("assert", "assertion violated", exp);
             return null;
-        } else if (is_definition(exp)) {
-            check_syntax(cdr(exp) && cddr(exp), exp);
-            check_syntax(is_symbol(cadr(exp)) || is_pair(cadr(exp)), exp);
-            if (is_symbol(cadr(exp))) {
-                check_syntax(cddr(exp) && !cdddr(exp), exp);
-                return define_variable(cadr(exp), eval(caddr(exp), env), env);
-            } else {
-                var = caadr(exp);
-                val = make_lambda(cdadr(exp), cddr(exp));
-                exp = cons(car(exp), cons(var, cons(val, null)));
-            }
         } else if (is_defmacro(exp)) {
             check_syntax(cdr(exp) && cddr(exp), exp);
             check_syntax(is_pair(cadr(exp)), exp);

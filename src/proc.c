@@ -75,6 +75,17 @@ object *m_cond(object *seq, object *env) {
     return car(seq);
 }
 
+#define make_define(p, b)   cons(symbol("define"), cons(p, cons(b, null)));
+#define make_lambda(p, b)   cons(symbol("lambda"), cons(p, b))
+
+object *m_define(object *seq, object *env) {
+    if (is_symbol(car(seq))) {
+        return define_variable(car(seq), eval(cadr(seq), env), env);
+    } else {
+        return make_define(caar(seq), make_lambda(cdar(seq), cdr(seq)));
+    }
+}
+
 object *m_delay(object *seq, object *env) {
     return compound(cons(null, seq), env);
 }
@@ -1779,6 +1790,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("begin"), primitive_macro(m_begin), env);
     append_variable(symbol("case"), primitive_macro(m_case), env);
     append_variable(symbol("cond"), primitive_macro(m_cond), env);
+    append_variable(symbol("define"), primitive_macro(m_define), env);
     append_variable(symbol("delay"), primitive_macro(m_delay), env);
     append_variable(symbol("if"), primitive_macro(m_if), env);
     append_variable(symbol("lambda"), primitive_macro(m_lambda), env);
