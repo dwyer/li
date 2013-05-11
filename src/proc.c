@@ -1862,7 +1862,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("case"), syntax(m_case), env);
     append_variable(symbol("cond"), syntax(m_cond), env);
     append_variable(symbol("define"), syntax(m_define), env);
-    append_variable(symbol("defmacro"), syntax(m_define), env);
+    append_variable(symbol("defmacro"), syntax(m_defmacro), env);
     append_variable(symbol("delay"), syntax(m_delay), env);
     append_variable(symbol("if"), syntax(m_if), env);
     append_variable(symbol("lambda"), syntax(m_lambda), env);
