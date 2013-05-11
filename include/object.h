@@ -13,18 +13,20 @@
 /* Type checking. */
 #define is_type(obj, t)         ((obj) && (obj)->type == t)
 #define is_environment(obj)     is_type(obj, T_ENVIRONMENT)
-#define is_char(obj)            is_type(obj, T_CHAR)
+#define is_character(obj)       is_type(obj, T_CHARACTER)
 #define is_compound(obj)        is_type(obj, T_COMPOUND)
+#define is_integer(obj)         (is_number(obj) && \
+                                 to_number(obj) == to_integer(obj))
 #define is_macro(obj)           is_type(obj, T_MACRO)
 #define is_number(obj)          is_type(obj, T_NUMBER)
+#define is_pair(obj)            is_type(obj, T_PAIR)
 #define is_port(obj)            is_type(obj, T_PORT)
+#define is_primitive(obj)       is_type(obj, T_PRIMITIVE)
+#define is_procedure(obj)       (is_compound(obj) || is_primitive(obj))
 #define is_string(obj)          is_type(obj, T_STRING)
 #define is_symbol(obj)          is_type(obj, T_SYMBOL)
+#define is_syntax(obj)          is_type(obj, T_SYNTAX)
 #define is_vector(obj)          is_type(obj, T_VECTOR)
-#define is_pair(obj)            is_type(obj, T_PAIR)
-#define is_primitive(obj)       is_type(obj, T_PRIMITIVE)
-#define is_primitive_macro(obj) is_type(obj, T_PRIMITIVE_MACRO)
-#define is_procedure(obj)       (is_compound(obj) || is_primitive(obj))
 
 /* Booleans */
 #define boolean(obj)            (obj ? symbol("true") : symbol("false"))
@@ -38,27 +40,23 @@
 #define unlock(obj)             ((obj)->locked = false)
 #define is_locked(obj)          (obj)->locked
 
-#define to_char(obj)            (obj)->data.character
+#define to_character(obj)       (obj)->data.character
 #define to_compound(obj)        (obj)->data.compound
+#define to_integer(obj)         ((int)to_number(obj))
 #define to_macro(obj)           (obj)->data.macro
 #define to_number(obj)          (obj)->data.number
 #define to_pair(obj)            (obj)->data.pair
 #define to_port(obj)            (obj)->data.port
 #define to_primitive(obj)       (obj)->data.primitive
-#define to_primitive_macro(obj) (obj)->data.primitive_macro
+#define to_syntax(obj)          (obj)->data.syntax
 #define to_string(obj)          (obj)->data.string
 #define to_symbol(obj)          (obj)->data.symbol.string
 #define to_vector(obj)          (obj)->data.vector
 
-#define to_integer(obj)         (int)to_number(obj)
-
-#define is_integer(obj)         (is_number(obj) && \
-                                 to_number(obj) == to_integer(obj))
-
 #define is_string_eq(s1, s2)    (strcmp(to_string(s1), to_string(s2)) == 0)
 
-#define vector_length(obj)      to_vector(obj).length
-#define vector_ref(obj, k)      to_vector(obj).data[k]
+#define vector_length(vec)      to_vector(vec).length
+#define vector_ref(vec, k)      to_vector(vec).data[k]
 #define vector_set(vec, k, obj) (vector_ref(vec, k) = obj)
 
 #define cons(obj1, obj2)        pair(obj1, obj2)
@@ -98,7 +96,7 @@
 #define cddddr(obj)             cdr(cdr(cdr(cdr(obj))))
 
 enum {
-    T_CHAR,
+    T_CHARACTER,
     T_COMPOUND,
     T_ENVIRONMENT,
     T_MACRO,
@@ -106,7 +104,7 @@ enum {
     T_PAIR,
     T_PORT,
     T_PRIMITIVE,
-    T_PRIMITIVE_MACRO,
+    T_SYNTAX,
     T_STRING,
     T_SYMBOL,
     T_VECTOR,
@@ -115,17 +113,17 @@ enum {
 
 typedef struct object object;
 
-object *environment(object *base);
 object *character(int c);
 object *compound(object *vars, object *body, object *env);
+object *environment(object *base);
 object *number(double n);
 object *macro(object *vars, object *body, object *env);
 object *pair(object *car, object *cdr);
 object *port(const char *filename, const char *mode);
 object *primitive(object *(*proc)(object *));
-object *primitive_macro(object *(*proc)(object *, object *));
 object *string(char *s);
 object *symbol(char *s);
+object *syntax(object *(*proc)(object *, object *));
 object *vector(object *lst);
 
 void destroy(object *obj);
@@ -138,37 +136,9 @@ int length(object *obj);
 
 struct object {
     union {
+        /* character */
         int character;
-        double number;
-        struct {
-            object *car;
-            object *cdr;
-        } pair;
-        struct {
-            FILE *file;
-            char *filename;
-        } port;
-        char *string;
-        struct {
-            char *string;
-            object *next;
-            object *prev;
-            unsigned int hash;
-        } symbol;
-        struct {
-            object **data;
-            int length;
-        } vector;
-        struct {
-            object *vars;
-            object *body;
-            object *env;
-        } compound;
-        struct {
-            object *vars;
-            object *body;
-            object *env;
-        } macro;
+        /* env */
         struct {
             struct {
                 object *var;
@@ -178,8 +148,48 @@ struct object {
             int cap;
             object *base;
         } env;
+        /* compound */
+        struct {
+            object *vars;
+            object *body;
+            object *env;
+        } compound;
+        /* macro */
+        struct {
+            object *vars;
+            object *body;
+            object *env;
+        } macro;
+        /* number */
+        double number;
+        /* pair */
+        struct {
+            object *car;
+            object *cdr;
+        } pair;
+        /* port */
+        struct {
+            FILE *file;
+            char *filename;
+        } port;
+        /* primitive */
         object *(*primitive)(object *);
-        object *(*primitive_macro)(object *, object *);
+        /* string */
+        char *string;
+        /* symbol */
+        struct {
+            char *string;
+            object *next;
+            object *prev;
+            unsigned int hash;
+        } symbol;
+        /* syntax */
+        object *(*syntax)(object *, object *);
+        /* vector */
+        struct {
+            object **data;
+            int length;
+        } vector;
     } data;
     int type;
     int locked;

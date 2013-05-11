@@ -20,7 +20,7 @@
     error(name, "not a " #type, arg)
 #define assert_integer(name, arg)    if (!is_integer(arg)) \
     error(name, "not an integer", arg)
-#define assert_char(name, arg)      assert_type(name, char, arg)
+#define assert_character(name, arg)      assert_type(name, character, arg)
 #define assert_number(name, arg)    assert_type(name, number, arg)
 #define assert_pair(name, arg)      assert_type(name, pair, arg)
 #define assert_port(name, arg)      assert_type(name, port, arg)
@@ -960,48 +960,48 @@ object *p_string_to_symbol(object *args) {
 
 object *p_is_char(object *args) {
     assert_nargs("char?", 1, args);
-    return boolean(is_char(car(args)));
+    return boolean(is_character(car(args)));
 }
 
 object *p_is_char_eq(object *args) {
     assert_nargs("char=?", 2, args);
-    assert_char("char=?", car(args));
-    assert_char("char=?", cadr(args));
-    return boolean(to_char(car(args)) == to_char(cadr(args)));
+    assert_character("char=?", car(args));
+    assert_character("char=?", cadr(args));
+    return boolean(to_character(car(args)) == to_character(cadr(args)));
 }
 
 object *p_is_char_lt(object *args) {
     assert_nargs("char<?", 2, args);
-    assert_char("char<?", car(args));
-    assert_char("char<?", cadr(args));
-    return boolean(to_char(car(args)) < to_char(cadr(args)));
+    assert_character("char<?", car(args));
+    assert_character("char<?", cadr(args));
+    return boolean(to_character(car(args)) < to_character(cadr(args)));
 }
 
 object *p_is_char_gt(object *args) {
     assert_nargs("char>?", 2, args);
-    assert_char("char>?", car(args));
-    assert_char("char>?", cadr(args));
-    return boolean(to_char(car(args)) > to_char(cadr(args)));
+    assert_character("char>?", car(args));
+    assert_character("char>?", cadr(args));
+    return boolean(to_character(car(args)) > to_character(cadr(args)));
 }
 
 object *p_is_char_le(object *args) {
     assert_nargs("char<=?", 2, args);
-    assert_char("char<=?", car(args));
-    assert_char("char<=?", cadr(args));
-    return boolean(to_char(car(args)) <= to_char(cadr(args)));
+    assert_character("char<=?", car(args));
+    assert_character("char<=?", cadr(args));
+    return boolean(to_character(car(args)) <= to_character(cadr(args)));
 }
 
 object *p_is_char_ge(object *args) {
     assert_nargs("char>=?", 2, args);
-    assert_char("char>=?", car(args));
-    assert_char("char>=?", cadr(args));
-    return boolean(to_char(car(args)) >= to_char(cadr(args)));
+    assert_character("char>=?", car(args));
+    assert_character("char>=?", cadr(args));
+    return boolean(to_character(car(args)) >= to_character(cadr(args)));
 }
 
 object *p_char_to_integer(object *args) {
     assert_nargs("char->integer", 1, args);
-    assert_char("char->integer", car(args));
-    return number(to_char(car(args)));
+    assert_character("char->integer", car(args));
+    return number(to_character(car(args)));
 }
 
 object *p_integer_to_char(object *args) {
@@ -1029,11 +1029,11 @@ object *p_string(object *args) {
 
     str = calloc(length(args)+1, sizeof(char));
     for (i = 0; args; i++, args = cdr(args)) {
-        if (!is_char(car(args))) {
+        if (!is_character(car(args))) {
             free(str);
             error("string", "not a character", car(args));
         }
-        str[i] = to_char(car(args));
+        str[i] = to_character(car(args));
     }
     str[i] = '\0';
     return string(str);
@@ -1072,9 +1072,9 @@ object *p_string_set(object *args) {
     assert_nargs("string-set!", 3, args);
     assert_string("string-set!", car(args));
     assert_integer("string-set!", cadr(args));
-    assert_char("string-set!", caddr(args));
+    assert_character("string-set!", caddr(args));
     return character(to_string(car(args))[to_integer(cadr(args))] =
-                     to_char(caddr(args)));
+                     to_character(caddr(args)));
 }
 
 object *p_string_eq(object *args) {
@@ -1856,21 +1856,21 @@ struct reg {
 void define_primitive_procedures(object *env) {
     struct reg *iter;
 
-    append_variable(symbol("and"), primitive_macro(m_and), env);
-    append_variable(symbol("assert"), primitive_macro(m_assert), env);
-    append_variable(symbol("begin"), primitive_macro(m_begin), env);
-    append_variable(symbol("case"), primitive_macro(m_case), env);
-    append_variable(symbol("cond"), primitive_macro(m_cond), env);
-    append_variable(symbol("define"), primitive_macro(m_define), env);
-    append_variable(symbol("defmacro"), primitive_macro(m_define), env);
-    append_variable(symbol("delay"), primitive_macro(m_delay), env);
-    append_variable(symbol("if"), primitive_macro(m_if), env);
-    append_variable(symbol("lambda"), primitive_macro(m_lambda), env);
-    append_variable(symbol("let"), primitive_macro(m_let), env);
-    append_variable(symbol("let*"), primitive_macro(m_let_star), env);
-    append_variable(symbol("load"), primitive_macro(m_load), env);
-    append_variable(symbol("or"), primitive_macro(m_or), env);
-    append_variable(symbol("set!"), primitive_macro(m_set), env);
+    append_variable(symbol("and"), syntax(m_and), env);
+    append_variable(symbol("assert"), syntax(m_assert), env);
+    append_variable(symbol("begin"), syntax(m_begin), env);
+    append_variable(symbol("case"), syntax(m_case), env);
+    append_variable(symbol("cond"), syntax(m_cond), env);
+    append_variable(symbol("define"), syntax(m_define), env);
+    append_variable(symbol("defmacro"), syntax(m_define), env);
+    append_variable(symbol("delay"), syntax(m_delay), env);
+    append_variable(symbol("if"), syntax(m_if), env);
+    append_variable(symbol("lambda"), syntax(m_lambda), env);
+    append_variable(symbol("let"), syntax(m_let), env);
+    append_variable(symbol("let*"), syntax(m_let_star), env);
+    append_variable(symbol("load"), syntax(m_load), env);
+    append_variable(symbol("or"), syntax(m_or), env);
+    append_variable(symbol("set!"), syntax(m_set), env);
     for (iter = regs; iter->var; iter++) {
         object *var = symbol(iter->var);
         object *val = primitive(iter->val);

@@ -43,7 +43,7 @@ object *create(int type) {
 object *character(int c) {
     object *obj;
 
-    obj = create(T_CHAR);
+    obj = create(T_CHARACTER);
     obj->data.character = c;
     return obj;
 }
@@ -116,11 +116,11 @@ object *primitive(object *(*proc)(object *)) {
     return obj;
 }
 
-object *primitive_macro(object *(*proc)(object *, object *)) {
+object *syntax(object *(*proc)(object *, object *)) {
     object *obj;
 
-    obj = create(T_PRIMITIVE_MACRO);
-    obj->data.primitive_macro = proc;
+    obj = create(T_SYNTAX);
+    obj->data.syntax = proc;
     return obj;
 }
 

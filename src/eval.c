@@ -94,8 +94,8 @@ object *eval(object *exp, object *env) {
                 exp = expand_macro(proc, args);
             } else if (is_primitive(proc)) {
                 return to_primitive(proc)(args);
-            } else if (is_primitive_macro(proc)) {
-                exp = to_primitive_macro(proc)(args, env);
+            } else if (is_syntax(proc)) {
+                exp = to_syntax(proc)(args, env);
             } else {
                 error("apply", "not applicable", proc);
             }

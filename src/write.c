@@ -12,30 +12,30 @@ void write_object(object *obj, FILE *f, int h) {
         fprintf(f, "()");
     else if (is_locked(obj))
         fprintf(f, "...");
-    else if (is_char(obj) && h)
-        fprintf(f, "%c", to_char(obj));
-    else if (is_char(obj))
-        fprintf(f, "'%c'", to_char(obj));
+    else if (is_character(obj) && h)
+        fprintf(f, "%c", to_character(obj));
+    else if (is_character(obj))
+        fprintf(f, "'%c'", to_character(obj));
+    else if (is_compound(obj))
+        fprintf(f, "#[compound-procedure]");
+    else if (is_environment(obj))
+        fprintf(f, "#[environment]");
+    else if (is_macro(obj))
+        fprintf(f, "#[macro]");
     else if (is_number(obj))
         fprintf(f, "%.512g", to_number(obj));
+    else if (is_pair(obj))
+        write_pair(obj, f, h);
     else if (is_port(obj))
         fprintf(f, "#<port: %s %d>", to_port(obj).filename, fileno(to_port(obj).file));
+    else if (is_primitive(obj))
+        fprintf(f, "#[primitive-procedure]");
     else if (is_string(obj))
         write_string(obj, f, h);
     else if (is_symbol(obj))
         fprintf(f, "%s", to_symbol(obj));
-    else if (is_compound(obj))
-        fprintf(f, "#[compound-procedure]");
-    else if (is_primitive(obj))
-        fprintf(f, "#[primitive-procedure]");
-    else if (is_primitive_macro(obj))
-        fprintf(f, "#[primitive-macro]");
-    else if (is_macro(obj))
-        fprintf(f, "#[macro]");
-    else if (is_environment(obj))
-        fprintf(f, "#[environment]");
-    else if (is_pair(obj))
-        write_pair(obj, f, h);
+    else if (is_syntax(obj))
+        fprintf(f, "#[syntax]");
     else if (is_vector(obj))
         write_vector(obj, f, h);
 }
