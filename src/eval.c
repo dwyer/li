@@ -6,7 +6,7 @@
 #include "read.h"
 #include "proc.h"
 
-#define is_tagged_list(exp, tag)    (car(exp) == symbol(tag))
+#define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
 
 #define is_application(exp)         is_list(exp)
 #define is_self_evaluating(exp)     !(is_pair(exp) || is_symbol(exp))
