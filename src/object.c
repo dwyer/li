@@ -13,7 +13,7 @@ static struct {
     object *syms[HASHSIZE];
     int size;
     int cap;
-} heap = { .objs = null, .size = 0, .cap = 0 };
+} heap = { null };
 
 void add_to_heap(object *obj) {
     int i;
