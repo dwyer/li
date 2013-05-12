@@ -4,17 +4,22 @@ RM=rm -f
 RMDIR=rmdir
 
 CFILES=main.c read.c write.c object.c eval.c proc.c
-CFLAGS=-c -ansi -pedantic -O2 -Wall -I./include
+CFLAGS=-I./$(INCDIR) -O2 -Wall -ansi -pedantic
 LDFLAGS=-lm
+
+INCDIR=include
 OBJDIR=obj
 SRCDIR=src
-PROGRAM=subscm
-PREFIX=/usr
+
+PROG=subscm
+
+PREFIX=/usr/local
+TO_BIN=$(PREFIX)/bin
 
 OBJS=$(addprefix $(OBJDIR)/, $(CFILES:.c=.o))
 SRCS=$(addprefix $(SRCDIR)/, $(CFILES))
 
-all: $(OBJDIR) $(SRCS) $(PROGRAM)
+all: $(OBJDIR) $(SRCS) $(PROG)
 
 debug: CC+=-g -DDEBUG
 debug: all
@@ -22,25 +27,21 @@ debug: all
 profile: CC+=-pg
 profile: all
 
-$(PROGRAM): $(OBJS) $(BINDIR)
-	$(CC) $(OBJS) $(LDFLAGS) -o $@
+$(PROG): $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $+
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) $< -o $@
+$(OBJDIR)/%.o: $(SRCDIR)/%.c $(INCDIR)/%.h
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR):
 	$(MKDIR) $(OBJDIR)
 
 install: all
-	$(CP) $(PROGRAM) $(PREFIX)/bin/$(PROGRAM)
-	$(MKDIR) $(PREFIX)/lib/$(PROGRAM)
-	$(CP) lib/* $(PREFIX)/lib/$(PROGRAM)
+	$(CP) $(PROG) $(TO_BIN)
 
 uninstall:
-	$(RM) $(PREFIX)/bin/$(PROGRAM)
-	$(RM) $(PREFIX)/lib/$(PROGRAM)/*
-	$(RMDIR) $(PREFIX)/lib/$(PROGRAM)
+	cd $(TO_BIN) && $(RM) $(PROG)
 
 clean:
-	$(RM) $(PROGRAM) $(OBJS)
+	$(RM) $(PROG) $(OBJS)
 	$(RMDIR) $(OBJDIR)
