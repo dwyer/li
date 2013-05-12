@@ -1,5 +1,4 @@
 Change vector syntax from %(a b c) to [a b c].
 Change (load "name.sub") to (import name).
-Implement unquote-splicing.
 Implement file I/O.
 Fix ill-formed character bug.

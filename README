@@ -6,9 +6,10 @@ Data types:
 * Booleans
 * Chars
 * Numbers
+* Pairs
 * Ports
-* Promises
 * Strings
+* Symbols
 * Vectors
 
 Differences between subscm and Scheme
