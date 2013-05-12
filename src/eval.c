@@ -81,16 +81,16 @@ object *eval(object *exp, object *env) {
         } else if (is_application(exp)) {
             proc = eval(car(exp), env);
             args = cdr(exp);
-	    if (is_procedure(proc))
+            if (is_procedure(proc))
                 args = list_of_values(args, env);
             if (is_compound(proc)) {
-                env = to_compound(proc).env;
-                env = extend_environment(to_compound(proc).vars, args, env);
+                env = extend_environment(to_compound(proc).vars, args,
+                                         to_compound(proc).env);
                 for (seq = to_compound(proc).body; seq && cdr(seq);
-		     seq = cdr(seq))
+                     seq = cdr(seq))
                     eval(car(seq), env);
                 exp = car(seq);
-	    } else if (is_macro(proc)) {
+            } else if (is_macro(proc)) {
                 exp = expand_macro(proc, args);
             } else if (is_primitive(proc)) {
                 return to_primitive(proc)(args);
@@ -127,11 +127,9 @@ object *eval_quasiquote(object *exp, object *env) {
 }
 
 object *expand_macro(object *mac, object *args) {
-    object *ret, *seq;
-    object *env;
+    object *env, *ret, *seq;
 
-    env = to_macro(mac).env;
-    env = extend_environment(to_macro(mac).vars, args, env);
+    env = extend_environment(to_macro(mac).vars, args, to_macro(mac).env);
     for (seq = to_macro(mac).body; seq; seq = cdr(seq))
         ret = eval(car(seq), env);
     return ret;
