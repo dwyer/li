@@ -164,7 +164,7 @@ object *m_let_star(object *args, object *env) {
     object *binding, *bindings, *body, *result, *vals, *vars;
 
     body = cdr(args);
-    result = vals = vals = null;
+    result = vals = vars = null;
     for (bindings = car(args); bindings; bindings = cdr(bindings)) {
         binding = car(bindings);
         vars = cons(car(binding), null);
@@ -278,17 +278,6 @@ object *p_getenv(object *args) {
         return string(env);
     else
         return boolean(false);
-}
-
-object *p_setenv(object *args) {
-    int ret;
-
-    assert_nargs("setenv", 2, args);
-    assert_string("setenv", car(args));
-    assert_string("setenv", cadr(args));
-    if ((ret = setenv(to_string(car(args)), to_string(cadr(args)), 1)))
-        return number(ret);
-    return null;
 }
 
 object *p_system(object *args) {
@@ -1143,13 +1132,11 @@ object *p_string_to_number(object *args) {
 
 object *p_number_to_string(object *args) {
     char *s;
-    size_t sz;
 
     assert_nargs("number->string", 1, args);
     assert_number("number->string", car(args));
-    sz = 100;
-    s = allocate(null, sz, sizeof(char));
-    snprintf(s, sz, "%g", to_number(car(args)));
+    s = allocate(null, 30, sizeof(char));
+    sprintf(s, "%.15g", to_number(car(args)));
     return string(s);
 }
 
@@ -1720,7 +1707,6 @@ struct reg {
     { "rand", p_rand },
     { "remove", p_remove },
     { "rename", p_rename },
-    { "setenv", p_setenv },
     { "system", p_system },
     { "time", p_time },
     /* Equivalence predicates */

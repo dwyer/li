@@ -27,7 +27,7 @@ void write_object(object *obj, FILE *f, int h) {
     else if (is_pair(obj))
         write_pair(obj, f, h);
     else if (is_port(obj))
-        fprintf(f, "#<port: %s %d>", to_port(obj).filename, fileno(to_port(obj).file));
+        fprintf(f, "#<port: \"%s\">", to_port(obj).filename);
     else if (is_primitive(obj))
         fprintf(f, "#[primitive-procedure]");
     else if (is_string(obj))
