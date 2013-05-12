@@ -1,11 +1,10 @@
-CC=cc
 CP=cp -r
 MKDIR=mkdir -p
 RM=rm -f
 RMDIR=rmdir
 
 CFILES=main.c read.c write.c object.c eval.c proc.c
-CFLAGS=-c -ansi -pedantic -Wall -I./include
+CFLAGS=-c -ansi -pedantic -O2 -Wall -I./include
 LDFLAGS=-lm
 OBJDIR=obj
 SRCDIR=src
