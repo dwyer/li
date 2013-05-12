@@ -21,6 +21,7 @@
 #define assert_integer(name, arg)    if (!is_integer(arg)) \
     error(name, "not an integer", arg)
 #define assert_character(name, arg)      assert_type(name, character, arg)
+#define assert_list(name, arg)      assert_type(name, list, arg)
 #define assert_number(name, arg)    assert_type(name, number, arg)
 #define assert_pair(name, arg)      assert_type(name, pair, arg)
 #define assert_port(name, arg)      assert_type(name, port, arg)
@@ -85,12 +86,19 @@ object *m_cond(object *seq, object *env) {
 #define make_define(p, b)   cons(symbol("define"), cons(p, cons(b, null)));
 #define make_lambda(p, b)   cons(symbol("lambda"), cons(p, b))
 
-object *m_define(object *seq, object *env) {
-    if (is_symbol(car(seq))) {
-        return define_variable(car(seq), eval(cadr(seq), env), env);
-    } else {
-        return make_define(caar(seq), make_lambda(cdar(seq), cdr(seq)));
+object *m_define(object *args, object *env) {
+    object *val, *var;
+
+    /* TODO: check for at least one arg */
+    for (var = car(args), val = cdr(args); is_pair(var); var = car(var)) {
+        val = make_lambda(cdr(var), val);
     }
+    assert_symbol("define", var);
+    if (is_symbol(car(args))) {
+        assert_nargs("define", 2, args);
+        val = car(val);
+    }
+    return define_variable(var, eval(val, env), env);
 }
 
 object *m_defmacro(object *seq, object *env) {
@@ -124,17 +132,32 @@ object *m_lambda(object *seq, object *env) {
 }
 
 object *m_let(object *args, object *env) {
-    object *binding, *bindings, *body, *vals, *vars;
+    object *bindings, *body, *name, *vals, *vals_tail, *vars, *vars_tail;
 
-    bindings = car(args);
+    name = null;
+    if (is_symbol(car(args))) {
+        name = car(args);
+        args = cdr(args);
+    }
+    assert_list("let", car(args));
     body = cdr(args);
     vals = vars = null;
-    for (; bindings; bindings = cdr(bindings)) {
-        binding = car(bindings);
-	vars = cons(car(binding), vars);
-        vals = cons(cadr(binding), vals);
+    for (bindings = car(args); bindings; bindings = cdr(bindings)) {
+        args = car(bindings);
+        assert_nargs("let", 2, args);
+        assert_symbol("let", car(args));
+        if (!vars && !vals) {
+            vars_tail = vars = cons(car(args), null);
+            vals_tail = vals = cons(cadr(args), null);
+        } else {
+            vars_tail = set_cdr(vars_tail, cons(car(args), null));
+            vals_tail = set_cdr(vals_tail, cons(cadr(args), null));
+        }
     }
-    return cons(make_lambda(vars, body), vals);
+    body = make_lambda(vars, body);
+    if (name)
+        body = make_define(name, body);
+    return cons(body, vals);
 }
 
 object *m_let_star(object *args, object *env) {
@@ -144,11 +167,11 @@ object *m_let_star(object *args, object *env) {
     result = vals = vals = null;
     for (bindings = car(args); bindings; bindings = cdr(bindings)) {
         binding = car(bindings);
-	vars = cons(car(binding), null);
-	vals = cons(cadr(binding), null);
-	if (result == null)
+        vars = cons(car(binding), null);
+        vals = cons(cadr(binding), null);
+        if (result == null)
             result = cons(make_lambda(vars, body), vals);
-	else
+        else
             set_cdr(cdar(result),
                     cons(cons(make_lambda(vars, cddar(result)), vals), null));
     }
