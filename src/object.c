@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "object.h"
+#include "main.h"
 
 #define HASHSIZE        1024
-#define strdup(s)       strcpy(calloc(strlen(s)+1, sizeof(char)), s)
+#define strdup(s)       strcpy(allocate(null, strlen(s)+1, sizeof(char)), s)
 
 static struct {
     object **objs;
@@ -20,12 +21,12 @@ void add_to_heap(object *obj) {
     if (!heap.objs) {
         heap.cap = 1024;
         heap.size = 0;
-        heap.objs = calloc(heap.cap, sizeof(*heap.objs));
+        heap.objs = allocate(null, heap.cap, sizeof(*heap.objs));
         for (i = 0; i < HASHSIZE; i++)
             heap.syms[i] = null;
     } else if (heap.size == heap.cap) {
         heap.cap *= 2;
-        heap.objs = realloc(heap.objs, heap.cap * sizeof(*heap.objs));
+        heap.objs = allocate(heap.objs, heap.cap, sizeof(*heap.objs));
     }
     heap.objs[heap.size++] = obj;
 }
@@ -33,7 +34,7 @@ void add_to_heap(object *obj) {
 object *create(int type) {
     object *obj;
 
-    obj = malloc(sizeof(*obj));
+    obj = allocate(null, 1, sizeof(*obj));
     obj->type = type;
     obj->locked = 0;
     add_to_heap(obj);
@@ -64,7 +65,7 @@ object *environment(object *base) {
     obj = create(T_ENVIRONMENT);
     obj->data.env.cap = 4;
     obj->data.env.size = 0;
-    obj->data.env.array = calloc(obj->data.env.cap, sizeof(*obj->data.env.array));
+    obj->data.env.array = allocate(null, obj->data.env.cap, sizeof(*obj->data.env.array));
     obj->data.env.base = base;
     return obj;
 }
@@ -162,7 +163,7 @@ object *vector(object *lst) {
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
         ;
     obj = create(T_VECTOR);
-    obj->data.vector.data = calloc(k, sizeof(*obj->data.vector.data));
+    obj->data.vector.data = allocate(null, k, sizeof(*obj->data.vector.data));
     obj->data.vector.length = k;
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
         vector_set(obj, k, car(iter));

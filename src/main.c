@@ -10,6 +10,16 @@
 
 static jmp_buf buf;
 
+void *allocate(void *ptr, size_t count, size_t size) {
+    if (ptr)
+        ptr = realloc(ptr, count*size);
+    else
+        ptr = calloc(count, size);
+    if (!ptr)
+        error("*allocate*", "out of memory", null);
+    return ptr;
+}
+
 void error(char *who, char *msg, object *args) {
     fprintf(stderr, "# error: %s: %s: ", who, msg);
     write(args, stderr);

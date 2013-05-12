@@ -124,12 +124,12 @@ object *read_atom(FILE *f) {
 
     i = 0;
     if (!buf)
-        buf = calloc(buf_sz, sizeof(*buf));
+        buf = allocate(null, buf_sz, sizeof(*buf));
     do {
         buf[i++] = c = getc(f);
         if (i == buf_sz) {
             buf_sz *= 2;
-            buf = realloc(buf, buf_sz * sizeof(*buf));
+            buf = allocate(buf, buf_sz, sizeof(*buf));
         }
     } while (!isdelimiter(c));
     buf[i-1] = '\0';
@@ -198,7 +198,7 @@ object *read_string(FILE *f) {
     int i, c, isstringescaped;
 
     if (!buf)
-        buf = calloc(buf_sz, sizeof(*buf));
+        buf = allocate(null, buf_sz, sizeof(*buf));
     i = 0;
     do {
         isstringescaped = 0;
@@ -216,7 +216,7 @@ object *read_string(FILE *f) {
         buf[i++] = c;
         if (i == buf_sz) {
             buf_sz *= buf_sz;
-            buf = realloc(buf, buf_sz);
+            buf = allocate(buf, buf_sz, sizeof(char));
         }
     } while ((!isstring(c) || isstringescaped) && !iseof(c));
     buf[i-1] = '\0';

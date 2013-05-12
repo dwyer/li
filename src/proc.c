@@ -1050,7 +1050,7 @@ object *p_string(object *args) {
     char *str;
     int i;
 
-    str = calloc(length(args)+1, sizeof(char));
+    str = allocate(null, length(args)+1, sizeof(char));
     for (i = 0; args; i++, args = cdr(args)) {
         if (!is_character(car(args))) {
             free(str);
@@ -1070,7 +1070,7 @@ object *p_make_string(object *args) {
     assert_nargs("make-string", 1, args);
     assert_integer("make-string", car(args));
     k = to_integer(car(args)) + 1;
-    s = calloc(k, sizeof(*s));
+    s = allocate(null, k, sizeof(*s));
     while (k >= 0)
         s[k--] = '\0';
     obj = string(s);
@@ -1148,7 +1148,7 @@ object *p_number_to_string(object *args) {
     assert_nargs("number->string", 1, args);
     assert_number("number->string", car(args));
     sz = 100;
-    s = calloc(sz, sizeof(char));
+    s = allocate(null, sz, sizeof(char));
     snprintf(s, sz, "%g", to_number(car(args)));
     return string(s);
 }
@@ -1159,14 +1159,14 @@ object *p_string_append(object *args) {
     int size, i;
 
     size = 1;
-    s = calloc(size, sizeof(char));
+    s = allocate(null, size, sizeof(char));
     for (i = 0; args; args = cdr(args)) {
         assert_string("string-append", car(args));
         for (ss = to_string(car(args)); *ss; ss++) {
             s[i] = *ss;
             if (++i >= size) {
                 size *= 2;
-                s = realloc(s, sizeof(char) * size);
+                s = allocate(s, size, sizeof(char));
             }
         }
     }
