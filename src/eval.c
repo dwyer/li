@@ -128,6 +128,7 @@ object *eval_quasiquote(object *exp, object *env) {
 object *expand_macro(object *mac, object *args) {
     object *env, *ret, *seq;
 
+    ret = null;
     env = extend_environment(to_macro(mac).vars, args, to_macro(mac).env);
     for (seq = to_macro(mac).body; seq; seq = cdr(seq))
         ret = eval(car(seq), env);

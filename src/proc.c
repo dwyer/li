@@ -58,6 +58,7 @@ object *m_case(object *exp, object *env) {
     object *seq, *val;
 
     val = eval(car(exp), env);
+    seq = null;
     for (exp = cdr(exp); exp; exp = cdr(exp))
         for (seq = caar(exp); seq; seq = cdr(seq))
             if (is_eq(seq, symbol("else")) || is_eqv(car(seq), val)) {
@@ -141,7 +142,7 @@ object *m_let(object *args, object *env) {
     }
     assert_list("let", car(args));
     body = cdr(args);
-    vals = vars = null;
+    vals = vals_tail = vars = vars_tail = null;
     for (bindings = car(args); bindings; bindings = cdr(bindings)) {
         args = car(bindings);
         assert_nargs("let", 2, args);
@@ -840,6 +841,7 @@ object *p_filter(object *args) {
 
     assert_nargs("filter", 2, args);
     assert_procedure("filter", car(args));
+    tail = null;
     for (iter = cadr(args), head = temp = null; iter; iter = cdr(iter)) {
         assert_pair("filter", iter);
         if (temp)
@@ -1261,7 +1263,7 @@ object *p_map(object *args) {
     /* iterate clists */
     loop = 1;
     while (loop) {
-        cars = null;
+        cars = cars_iter = null;
         for (clists_iter = clists; clists_iter; clists_iter = cdr(clists_iter)) {
             /* get clist */
             if (!car(clists_iter)) {
