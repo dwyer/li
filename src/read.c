@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "object.h"
 #include "read.h"
-#include "main.h"
+#include "subscm.h"
 
 #define ischaracter(c)  ((c) == '\\')
 #define iscomment(c)    ((c) == '#')

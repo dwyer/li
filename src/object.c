@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "object.h"
-#include "main.h"
+#include "subscm.h"
 
 #define HASHSIZE        1024
 #define strdup(s)       strcpy(allocate(null, strlen(s)+1, sizeof(char)), s)

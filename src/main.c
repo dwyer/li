@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "object.h"
-#include "main.h"
+#include "subscm.h"
 #include "eval.h"
 #include "read.h"
 #include "write.h"
