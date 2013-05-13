@@ -4,10 +4,9 @@ RM=rm -f
 RMDIR=rmdir
 
 CFILES=main.c read.c write.c object.c eval.c proc.c
-CFLAGS=-I./$(INCDIR) -O2 -Wall -ansi -pedantic
+CFLAGS=-O2 -Wall -ansi -pedantic
 LDFLAGS=-lm
 
-INCDIR=include
 OBJDIR=obj
 SRCDIR=src
 
@@ -30,7 +29,7 @@ profile: all
 $(PROG): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $+
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(INCDIR)/%.h
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR):
