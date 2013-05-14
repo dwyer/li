@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "object.h"
 #include "subscm.h"
 #include "proc.h"
 

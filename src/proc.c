@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "object.h"
 #include "subscm.h"
 
 #define has_0args(args)     (!args)

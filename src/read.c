@@ -1,7 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "object.h"
 #include "subscm.h"
 
 #define ischaracter(c)  ((c) == '\\')

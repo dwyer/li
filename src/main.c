@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "object.h"
 #include "subscm.h"
 
 object *prompt(FILE *f) {

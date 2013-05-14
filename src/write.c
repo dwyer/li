@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
-#include "object.h"
+#include "subscm.h"
 
 void write_pair(object *obj, FILE *f, int h);
 void write_string(object *obj, FILE *f, int h);
