@@ -8,6 +8,7 @@
 void load(char *filename, object *env);
 void error(char *who, char *msg, object *args);
 int error_init(void);
+object *read(FILE *f);
 void write_object(object *obj, FILE *f, int h);
 
 #endif

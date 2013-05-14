@@ -4,7 +4,6 @@
 #include "object.h"
 #include "subscm.h"
 #include "eval.h"
-#include "read.h"
 
 object *prompt(FILE *f) {
     printf("> ");

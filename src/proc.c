@@ -6,7 +6,6 @@
 #include "object.h"
 #include "subscm.h"
 #include "eval.h"
-#include "read.h"
 
 #define has_0args(args)     (!args)
 #define has_1args(args)     (args && !cdr(args))
