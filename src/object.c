@@ -31,6 +31,16 @@ void add_to_heap(object *obj) {
     heap.objs[heap.size++] = obj;
 }
 
+void *allocate(void *ptr, size_t count, size_t size) {
+    if (ptr)
+        ptr = realloc(ptr, count*size);
+    else
+        ptr = calloc(count, size);
+    if (!ptr)
+        error("*allocate*", "out of memory", null);
+    return ptr;
+}
+
 object *create(int type) {
     object *obj;
 

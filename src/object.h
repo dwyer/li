@@ -126,6 +126,7 @@ object *symbol(char *s);
 object *syntax(object *(*proc)(object *, object *));
 object *vector(object *lst);
 
+void *allocate(void *ptr, size_t count, size_t size);
 void destroy(object *obj);
 void cleanup(object *env);
 

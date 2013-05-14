@@ -1,7 +1,6 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef SUBSCM_H
+#define SUBSCM_H
 
-void *allocate(void *ptr, size_t count, size_t size);
 void load(char *filename, object *env);
 void error(char *who, char *msg, object *args);
 int error_init(void);
