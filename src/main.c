@@ -1,4 +1,3 @@
-#include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -8,8 +7,6 @@
 #include "read.h"
 #include "write.h"
 
-static jmp_buf buf;
-
 void *allocate(void *ptr, size_t count, size_t size) {
     if (ptr)
         ptr = realloc(ptr, count*size);
@@ -18,13 +15,6 @@ void *allocate(void *ptr, size_t count, size_t size) {
     if (!ptr)
         error("*allocate*", "out of memory", null);
     return ptr;
-}
-
-void error(char *who, char *msg, object *args) {
-    fprintf(stderr, "# error: %s: %s: ", who, msg);
-    write(args, stderr);
-    newline(stderr);
-    longjmp(buf, 1);
 }
 
 void load(char *filename, object *env) {
@@ -48,7 +38,7 @@ object *prompt(FILE *f) {
 void repl(object *env) {
     object *exp;
 
-    if (setjmp(buf))
+    if (error_init())
         cleanup(env);
     while ((exp = prompt(stdin)) != eof) {
         if (exp) {
@@ -71,7 +61,7 @@ int main(int argc, char *argv[]) {
     for (args = null, i = argc - 1; i; i--)
         args = cons(string(argv[i]), args);
     append_variable(symbol("argv"), args, env);
-    if (setjmp(buf)) {
+    if (error_init()) {
         cleanup(null);
         exit(-1);
     }

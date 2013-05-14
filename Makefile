@@ -3,7 +3,7 @@ MKDIR=mkdir -p
 RM=rm -f
 RMDIR=rmdir
 
-CFILES=main.c read.c write.c object.c eval.c proc.c
+CFILES=main.c read.c write.c object.c eval.c proc.c error.c
 CFLAGS=-O2 -Wall -ansi -pedantic
 LDFLAGS=-lm
 
