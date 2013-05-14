@@ -3,7 +3,6 @@
 #include <time.h>
 #include "object.h"
 #include "subscm.h"
-#include "eval.h"
 
 object *prompt(FILE *f) {
     printf("> ");

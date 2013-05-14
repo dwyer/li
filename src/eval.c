@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "object.h"
 #include "subscm.h"
-#include "eval.h"
 #include "proc.h"
 
 #define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))

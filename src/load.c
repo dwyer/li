@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "object.h"
 #include "subscm.h"
-#include "eval.h"
 
 void load(char *filename, object *env) {
     FILE *f;
