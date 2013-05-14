@@ -1,7 +1,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include "object.h"
-#include "write.h"
+#include "subscm.h"
 
 static jmp_buf buf;
 

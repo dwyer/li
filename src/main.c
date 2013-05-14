@@ -5,7 +5,6 @@
 #include "subscm.h"
 #include "eval.h"
 #include "read.h"
-#include "write.h"
 
 object *prompt(FILE *f) {
     printf("> ");
