@@ -84,18 +84,13 @@ object *m_cond(object *seq, object *env) {
 #define make_lambda(p, b)   cons(symbol("lambda"), cons(p, b))
 
 object *m_define(object *args, object *env) {
-    object *val, *var;
+    object *var;
 
-    /* TODO: check for at least one arg */
-    for (var = car(args), val = cdr(args); is_pair(var); var = car(var)) {
-        val = make_lambda(cdr(var), val);
-    }
+    for (var = car(args), args = cdr(args); is_pair(var); var = car(var))
+        args = cons(make_lambda(cdr(var), args), null);
     assert_symbol("define", var);
-    if (is_symbol(car(args))) {
-        assert_nargs("define", 2, args);
-        val = car(val);
-    }
-    return define_variable(var, eval(val, env), env);
+    assert_nargs("define", 1, args);
+    return define_variable(var, eval(car(args), env), env);
 }
 
 object *m_defmacro(object *seq, object *env) {
