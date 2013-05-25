@@ -9,7 +9,7 @@
 #define has_1args(args)     (args && !cdr(args))
 #define has_2args(args)     (args && cdr(args) && !cddr(args))
 #define has_3args(args)     (args && cdr(args) && cddr(args) && !cdddr(args))
-#define assert_nargs(name, n, args) if (!has_##n##args(args)) \
+#define assert_nargs(name, n, as) if (!has_##n##args(as)) \
     error(name, "wrong number of args", args)
 
 #define assert_type(name, type, arg) if (!is_##type(arg)) \
