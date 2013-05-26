@@ -87,10 +87,15 @@ object *m_cond(object *seq, object *env) {
 object *m_define(object *args, object *env) {
     object *var;
 
-    for (var = car(args), args = cdr(args); is_pair(var); var = car(var))
-        args = cons(make_named_lambda(var, args), null);
+    for (var = car(args), args = cdr(args); is_pair(var); var = car(var)) {
+        if (is_pair(car(var)))
+            args = cons(make_lambda(cdr(var), args), null);
+        else
+            args = cons(make_named_lambda(var, args), null);
+    }
     assert_symbol("define", var);
     assert_nargs("define", 1, args);
+    print(args);
     return define_variable(var, eval(car(args), env), env);
 }
 
