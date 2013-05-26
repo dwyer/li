@@ -225,6 +225,7 @@ void mark(object *obj) {
         for (k = 0; k < vector_length(obj); k++)
             mark(vector_ref(obj, k));
     } else if (is_compound(obj)) {
+        mark(to_compound(obj).name);
         mark(to_compound(obj).vars);
         mark(to_compound(obj).body);
         mark(to_compound(obj).env);
