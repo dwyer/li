@@ -5,18 +5,18 @@
 #include <time.h>
 #include "subscm.h"
 
-#define has_0args(args)     (!args)
-#define has_1args(args)     (args && !cdr(args))
-#define has_2args(args)     (args && cdr(args) && !cddr(args))
-#define has_3args(args)     (args && cdr(args) && cddr(args) && !cdddr(args))
-#define assert_nargs(name, n, as) if (!has_##n##args(as)) \
-    error(name, "wrong number of args", args)
-
-#define assert_type(name, type, arg) if (!is_##type(arg)) \
-    error(name, "not a " #type, arg)
-#define assert_integer(name, arg)    if (!is_integer(arg)) \
-    error(name, "not an integer", arg)
-#define assert_character(name, arg)      assert_type(name, character, arg)
+#define has_0args(args)             (!args)
+#define has_1args(args)             (args && !cdr(args))
+#define has_2args(args)             (args && cdr(args) && !cddr(args))
+#define has_3args(args) \
+    (args && cdr(args) && cddr(args) && !cdddr(args))
+#define assert_nargs(name, n, as) \
+    if (!has_##n##args(as)) error(name, "wrong number of args", args)
+#define assert_type(name, type, arg) \
+    if (!is_##type(arg)) error(name, "not a " #type, arg)
+#define assert_integer(name, arg) \
+    if (!is_integer(arg)) error(name, "not an integer", arg)
+#define assert_character(name, arg) assert_type(name, character, arg)
 #define assert_list(name, arg)      assert_type(name, list, arg)
 #define assert_number(name, arg)    assert_type(name, number, arg)
 #define assert_pair(name, arg)      assert_type(name, pair, arg)
