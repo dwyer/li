@@ -7,17 +7,6 @@
         ((null? (cdr xs)) (car xs))
         (else (cons (car xs) (apply cons* (cdr xs))))))
 
-(define (print . args)
-  (let iter ((args args))
-    (if (not (null? args))
-      (begin
-        (display (car args))
-        (if (not (null? (cdr args)))
-          (begin
-            (display " ")
-            (iter (cdr args)))))))
-  (newline))
-
 (define (randint start end)
   (+ start (modulo (rand) (- end start -1))))
 
