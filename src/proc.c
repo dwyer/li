@@ -95,7 +95,6 @@ object *m_define(object *args, object *env) {
     }
     assert_symbol("define", var);
     assert_nargs("define", 1, args);
-    print(args);
     return define_variable(var, eval(car(args), env), env);
 }
 

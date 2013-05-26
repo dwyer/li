@@ -6,6 +6,11 @@ void write_pair(object *obj, FILE *f, int h);
 void write_string(object *obj, FILE *f, int h);
 void write_vector(object *obj, FILE *f, int h);
 
+void print_object(object *obj) {
+    display(obj, stdout);
+    newline(stdout);
+}
+
 void write_object(object *obj, FILE *f, int h) {
     if (is_null(obj))
         fprintf(f, "()");
