@@ -218,11 +218,6 @@ object *m_let_star(object *args, object *env) {
     return result;
 }
 
-void print(object *args) {
-    display(args, stdout);
-    newline(stdout);
-}
-
 object *m_letrec(object *args, object *env) {
     object *head, *iter, *tail;
 
