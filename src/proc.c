@@ -1216,6 +1216,30 @@ object *p_vector(object *args) {
     return vector(args);
 }
 
+object *p_make_vector(object *args) {
+    int k;
+    object *fill, *vec;
+
+    k = 0;
+    if (args) {
+        assert_integer("make-vector", car(args));
+        k = to_integer(car(args));
+    }
+    if (args && cdr(args)) {
+        assert_nargs("make-vector", 2, args);
+        fill = cadr(args);
+    } else {
+        assert_nargs("make-vector", 1, args);
+        fill = false;
+    }
+    vec = create(T_VECTOR);
+    vec->data.vector.data = allocate(null, k, sizeof(*vec->data.vector.data));
+    vec->data.vector.length = k;
+    while (k--)
+        vec->data.vector.data[k] = fill;
+    return vec;
+}
+
 /*
  * (vector-length vec)
  * Returns the length of the given vector.
@@ -1867,6 +1891,7 @@ struct reg {
     /* Vectors */
     { "vector?", p_is_vector },
     { "vector", p_vector },
+    { "make-vector", p_make_vector },
     { "vector-length", p_vector_length },
     { "vector-ref", p_vector_ref },
     { "vector-set!", p_vector_set },

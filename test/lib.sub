@@ -79,13 +79,6 @@
 
 # VECTORS
 
-(define (make-vector k . args)
-  (if (and (not (null? args)) (not (null? (cdr args))))
-    (error `make-vector "too many arguments"))
-  (if (or (not (integer? k)) (< k 0))
-    (error `make-vector "arg1 must be a positive integer" k))
-  (list->vector (make-list k (if (null? args) null (car args)))))
-
 (define (vector->list vec)
   (if (not (vector? vec))
     (error `vector->list "arg must be a vector" vec))

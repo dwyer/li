@@ -113,6 +113,7 @@ enum {
 
 typedef struct object object;
 
+object *create(int type);
 object *character(int c);
 object *compound(object *vars, object *body, object *env);
 object *environment(object *base);
