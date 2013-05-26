@@ -80,7 +80,7 @@ object *m_cond(object *seq, object *env) {
     return car(seq);
 }
 
-#define make_define(p, b)   cons(symbol("define"), cons(p, cons(b, null)));
+#define make_define(p, b)   cons(symbol("define"), cons(p, cons(b, null)))
 #define make_lambda(p, b)   cons(symbol("lambda"), cons(p, b))
 
 object *m_define(object *args, object *env) {
@@ -207,6 +207,21 @@ object *m_let_star(object *args, object *env) {
                     cons(cons(make_lambda(vars, cddar(result)), vals), null));
     }
     return result;
+}
+
+void print(object *args) {
+    display(args, stdout);
+    newline(stdout);
+}
+
+object *m_letrec(object *args, object *env) {
+    object *head, *iter, *tail;
+
+    head = tail = cons(symbol("begin"), null);
+    for (iter = car(args); iter; iter = cdr(iter))
+        tail = set_cdr(tail, cons(cons(symbol("define"), car(iter)), null));
+    set_cdr(tail, cdr(args));
+    return head;
 }
 
 object *m_load(object *args, object *env) {
@@ -1970,6 +1985,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("lambda"), syntax(m_lambda), env);
     append_variable(symbol("let"), syntax(m_let), env);
     append_variable(symbol("let*"), syntax(m_let_star), env);
+    append_variable(symbol("letrec"), syntax(m_letrec), env);
     append_variable(symbol("load"), syntax(m_load), env);
     append_variable(symbol("or"), syntax(m_or), env);
     append_variable(symbol("set!"), syntax(m_set), env);
