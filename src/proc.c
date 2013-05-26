@@ -1293,6 +1293,12 @@ object *p_vector_to_list(object *args) {
     return list;
 }
 
+object *p_list_to_vector(object *args) {
+    assert_nargs("list->vector", 1, args);
+    assert_list("list->vector", car(args));
+    return vector(car(args));
+}
+
 /********************
  * Control features *
  ********************/
@@ -1910,6 +1916,7 @@ struct reg {
     { "vector-ref", p_vector_ref },
     { "vector-set!", p_vector_set },
     { "vector->list", p_vector_to_list },
+    { "list->vector", p_list_to_vector },
     /* Control features */
     { "procedure?", p_is_procedure },
     { "apply", p_apply },

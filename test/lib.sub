@@ -79,11 +79,6 @@
 
 # VECTORS
 
-(define (list->vector lst)
-  (if (not (list? lst))
-    (error `list->vector "arg must be a list" lst))
-  (apply vector lst))
-
 (define (vector-fill! vec fill)
   (if (not (vector? vec))
     (error `vector-fill! "arg1 must be a vector" vec))
