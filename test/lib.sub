@@ -77,18 +77,6 @@
              (iter (+ k 1)))
             (else sub)))))
 
-# VECTORS
-
-(define (vector-fill! vec fill)
-  (if (not (vector? vec))
-    (error `vector-fill! "arg1 must be a vector" vec))
-  (let ((len (vector-length vec)))
-    (let iter ((k 0))
-      (if (< k len)
-        (begin (vector-set! vec k fill)
-               (iter (+ k 1)))
-        vec))))
-
 (define (map f x . ys)
   (if (null? x)
     null

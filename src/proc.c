@@ -1279,6 +1279,18 @@ object *p_vector_set(object *args) {
     return vector_set(car(args), to_integer(cadr(args)), caddr(args));
 }
 
+object *p_vector_fill(object *args) {
+    object *vect;
+    int k;
+
+    assert_nargs("vector->fill!", 2, args);
+    assert_vector("vector->fill!", car(args));
+    vect = car(args);
+    for (k = vector_length(vect); k--; )
+        vector_set(vect, k, cadr(args));
+    return vect;
+}
+
 object *p_vector_to_list(object *args) {
     object *list, *tail, *vect;
     int i, k;
@@ -1915,6 +1927,7 @@ struct reg {
     { "vector-length", p_vector_length },
     { "vector-ref", p_vector_ref },
     { "vector-set!", p_vector_set },
+    { "vector-fill!", p_vector_fill },
     { "vector->list", p_vector_to_list },
     { "list->vector", p_list_to_vector },
     /* Control features */
