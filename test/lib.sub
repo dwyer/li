@@ -76,13 +76,3 @@
              (string-set! sub k (string-ref str (+ start k)))
              (iter (+ k 1)))
             (else sub)))))
-
-(define (map f x . ys)
-  (if (null? x)
-    null
-    (cons (apply f (cons (car x) (map car ys)))
-          (apply map (cons* f (cdr x) (map cdr ys))))))
-
-(define (for-each f x . ys)
-  (apply map (cons* f x ys))
-  null)
