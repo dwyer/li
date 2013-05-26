@@ -200,12 +200,13 @@ struct object {
 
 /* error */
 void error(char *who, char *msg, object *args);
-int error_init(void);
+int try(void (*f1)(object *), void (*f2)(object *), object *arg);
 
 /* eval */
 object *apply(object *proc, object *args);
 object *append_variable(object *var, object *val, object *env);
 object *define_variable(object *var, object *val, object *env);
+object *lookup_variable_value(object *exp, object *env);
 object *eval(object *exp, object *env);
 object *setup_environment(void);
 
@@ -216,9 +217,11 @@ void load(char *filename, object *env);
 object *read(FILE *f);
 
 /* write */
+#define print(obj)              print_object(obj)
 #define write(obj, f)           write_object(obj, f, 0)
 #define display(obj, f)         write_object(obj, f, 1)
 #define newline(f)              fprintf(f, "\n")
+void print_object(object *obj);
 void write_object(object *obj, FILE *f, int h);
 
 #endif

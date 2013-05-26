@@ -17,7 +17,6 @@ object *eval_quasiquote(object *exp, object *env);
 object *expand_macro(object *mac, object *args);
 object *extend_environment(object *vars, object *vals, object *base_env);
 object *list_of_values(object *exps, object *env);
-object *lookup_variable_value(object *exp, object *env);
 
 object *apply(object *proc, object *args) {
     object *head, *tail, *obj;
