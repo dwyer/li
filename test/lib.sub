@@ -79,14 +79,6 @@
 
 # VECTORS
 
-(define (vector->list vec)
-  (if (not (vector? vec))
-    (error `vector->list "arg must be a vector" vec))
-  (let iter ((k 0))
-    (if (= k (vector-length vec))
-      null
-      (cons (vector-ref vec k) (iter (+ k 1))))))
-
 (define (list->vector lst)
   (if (not (list? lst))
     (error `list->vector "arg must be a list" lst))

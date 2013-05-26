@@ -1279,6 +1279,20 @@ object *p_vector_set(object *args) {
     return vector_set(car(args), to_integer(cadr(args)), caddr(args));
 }
 
+object *p_vector_to_list(object *args) {
+    object *list, *tail, *vect;
+    int i, k;
+
+    assert_nargs("vector->list", 1, args);
+    assert_vector("vector->list", car(args));
+    vect = car(args);
+    k = vector_length(vect);
+    list = tail = k ? cons(vector_ref(vect, 0), null) : null;
+    for (i = 1; i < k; ++i)
+        tail = set_cdr(tail, cons(vector_ref(vect, i), null));
+    return list;
+}
+
 /********************
  * Control features *
  ********************/
@@ -1895,6 +1909,7 @@ struct reg {
     { "vector-length", p_vector_length },
     { "vector-ref", p_vector_ref },
     { "vector-set!", p_vector_set },
+    { "vector->list", p_vector_to_list },
     /* Control features */
     { "procedure?", p_is_procedure },
     { "apply", p_apply },
