@@ -80,14 +80,15 @@ object *m_cond(object *seq, object *env) {
     return car(seq);
 }
 
-#define make_define(p, b)   cons(symbol("define"), cons(p, cons(b, null)))
-#define make_lambda(p, b)   cons(symbol("lambda"), cons(p, b))
+#define make_define(p, b)       cons(symbol("define"), cons(p, cons(b, null)))
+#define make_lambda(p, b)       cons(symbol("lambda"), cons(p, b))
+#define make_named_lambda(p, b)	cons(symbol("named-lambda"), cons(p, b))
 
 object *m_define(object *args, object *env) {
     object *var;
 
     for (var = car(args), args = cdr(args); is_pair(var); var = car(var))
-        args = cons(make_lambda(cdr(var), args), null);
+        args = cons(make_named_lambda(var, args), null);
     assert_symbol("define", var);
     assert_nargs("define", 1, args);
     return define_variable(var, eval(car(args), env), env);
@@ -105,7 +106,7 @@ object *m_defmacro(object *seq, object *env) {
 
 
 object *m_delay(object *seq, object *env) {
-    return compound(null, seq, env);
+    return compound(null, null, seq, env);
 }
 
 object *m_do(object *seq, object *env) {
@@ -159,7 +160,15 @@ object *m_if(object *seq, object *env) {
 }
 
 object *m_lambda(object *seq, object *env) {
-    return compound(car(seq), cdr(seq), env);
+    return compound(null, car(seq), cdr(seq), env);
+}
+
+object *m_named_lambda(object *seq, object *env) {
+    object *formals;
+
+    formals = car(seq);
+    assert_pair("named-lambda", formals);
+    return compound(car(formals), cdr(formals), cdr(seq), env);
 }
 
 object *m_let(object *args, object *env) {
@@ -1987,6 +1996,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("let*"), syntax(m_let_star), env);
     append_variable(symbol("letrec"), syntax(m_letrec), env);
     append_variable(symbol("load"), syntax(m_load), env);
+    append_variable(symbol("named-lambda"), syntax(m_named_lambda), env);
     append_variable(symbol("or"), syntax(m_or), env);
     append_variable(symbol("set!"), syntax(m_set), env);
     for (iter = regs; iter->var; iter++) {

@@ -58,10 +58,11 @@ object *character(int c) {
     return obj;
 }
 
-object *compound(object *vars, object *body, object *env) {
+object *compound(object *name, object *vars, object *body, object *env) {
     object *obj;
 
     obj = create(T_COMPOUND);
+    obj->data.compound.name = name;
     obj->data.compound.vars = vars;
     obj->data.compound.body = body;
     obj->data.compound.env = env;

@@ -115,7 +115,7 @@ typedef struct object object;
 
 object *create(int type);
 object *character(int c);
-object *compound(object *vars, object *body, object *env);
+object *compound(object *name, object *vars, object *body, object *env);
 object *environment(object *base);
 object *number(double n);
 object *macro(object *vars, object *body, object *env);
@@ -152,6 +152,7 @@ struct object {
         } env;
         /* compound */
         struct {
+            object *name;
             object *vars;
             object *body;
             object *env;
