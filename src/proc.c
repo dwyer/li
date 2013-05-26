@@ -108,6 +108,45 @@ object *m_delay(object *seq, object *env) {
     return compound(null, seq, env);
 }
 
+object *m_do(object *seq, object *env) {
+    object *binding;
+    object *head;
+    object *iter;
+    object *let_args;
+    object *let_bindings;
+    object *tail;
+
+    assert_pair("do", seq);
+    assert_pair("do", cdr(seq));
+    head = tail = cons(symbol("let"), null);
+    tail = set_cdr(tail, cons(symbol("#"), null));
+    let_args = null;
+    let_bindings = null;
+    for (iter = car(seq); iter; iter = cdr(iter)) {
+        binding = car(iter);
+        assert_pair("do", binding);
+        assert_pair("do", cdr(binding));
+	assert_symbol("do", car(binding));
+        if (cddr(binding)) {
+            let_args = cons(caddr(binding), let_args);
+            binding = cons(car(binding), cons(cadr(binding), null));
+        } else {
+            let_args = cons(car(binding), let_args);
+        }
+        let_bindings = cons(binding, let_bindings);
+    }
+    tail = set_cdr(tail, cons(let_bindings, null));
+    tail = set_cdr(tail, cons(null, null));
+    tail = set_car(tail, cons(symbol("cond"), null));
+    tail = set_cdr(tail, cons(cadr(seq), null));
+    tail = set_cdr(tail, cons(null, null));
+    tail = set_car(tail, cons(symbol("else"), null));
+    for (iter = cddr(seq); iter; iter = cdr(iter))
+        tail = set_cdr(tail, iter);
+    tail = set_cdr(tail, cons(cons(symbol("#"), let_args), null));
+    return head;
+}
+
 object *m_if(object *seq, object *env) {
     if (!seq || !cdr(seq))
         error("if", "invalid sequence", seq);
@@ -1866,6 +1905,7 @@ void define_primitive_procedures(object *env) {
     append_variable(symbol("define"), syntax(m_define), env);
     append_variable(symbol("defmacro"), syntax(m_defmacro), env);
     append_variable(symbol("delay"), syntax(m_delay), env);
+    append_variable(symbol("do"), syntax(m_do), env);
     append_variable(symbol("if"), syntax(m_if), env);
     append_variable(symbol("lambda"), syntax(m_lambda), env);
     append_variable(symbol("let"), syntax(m_let), env);
