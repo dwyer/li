@@ -273,9 +273,9 @@
 (assert (equal? (remainder -13 -4.0) -1.0)) # inexact
 (assert (equal? (gcd 32 -36) 4))
 (assert (equal? (gcd) 0))
-#(assert (equal? (lcm 32 -36) 288))
-#(assert (equal? (lcm 32.0 -36) 288.0)) # inexact
-#(assert (equal? (lcm) 1))
+(assert (equal? (lcm 32 -36) 288))
+(assert (equal? (lcm 32.0 -36) 288.0)) # inexact
+(assert (equal? (lcm) 1))
 #(assert (equal? (numerator (/ 6 4)) 3))
 #(assert (equal? (denominator (/ 6 4)) 2))
 #(assert (equal? (denominator
