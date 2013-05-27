@@ -25,6 +25,10 @@
 #define assert_string(name, arg)    assert_type(name, string, arg)
 #define assert_symbol(name, arg)    assert_type(name, symbol, arg)
 #define assert_vector(name, arg)    assert_type(name, vector, arg)
+#define append_primitive(name, proc, env) \
+    append_variable(symbol(name), primitive(proc), env)
+#define append_syntax(name, proc, env) \
+    append_variable(symbol(name), syntax(proc), env);
 
 object *m_and(object *seq, object *env) {
     for (; seq && cdr(seq); seq = cdr(seq))
@@ -1980,27 +1984,24 @@ struct reg {
 void define_primitive_procedures(object *env) {
     struct reg *iter;
 
-    append_variable(symbol("and"), syntax(m_and), env);
-    append_variable(symbol("assert"), syntax(m_assert), env);
-    append_variable(symbol("begin"), syntax(m_begin), env);
-    append_variable(symbol("case"), syntax(m_case), env);
-    append_variable(symbol("cond"), syntax(m_cond), env);
-    append_variable(symbol("define"), syntax(m_define), env);
-    append_variable(symbol("defmacro"), syntax(m_defmacro), env);
-    append_variable(symbol("delay"), syntax(m_delay), env);
-    append_variable(symbol("do"), syntax(m_do), env);
-    append_variable(symbol("if"), syntax(m_if), env);
-    append_variable(symbol("lambda"), syntax(m_lambda), env);
-    append_variable(symbol("let"), syntax(m_let), env);
-    append_variable(symbol("let*"), syntax(m_let_star), env);
-    append_variable(symbol("letrec"), syntax(m_letrec), env);
-    append_variable(symbol("load"), syntax(m_load), env);
-    append_variable(symbol("named-lambda"), syntax(m_named_lambda), env);
-    append_variable(symbol("or"), syntax(m_or), env);
-    append_variable(symbol("set!"), syntax(m_set), env);
-    for (iter = regs; iter->var; iter++) {
-        object *var = symbol(iter->var);
-        object *val = primitive(iter->val);
-        append_variable(var, val, env);
-    }
+    append_syntax("and",            m_and,          env);
+    append_syntax("assert",         m_assert,       env);
+    append_syntax("begin",          m_begin,        env);
+    append_syntax("case",           m_case,         env);
+    append_syntax("cond",           m_cond,         env);
+    append_syntax("define",         m_define,       env);
+    append_syntax("defmacro",       m_defmacro,     env);
+    append_syntax("delay",          m_delay,        env);
+    append_syntax("do",             m_do,           env);
+    append_syntax("if",             m_if,           env);
+    append_syntax("lambda",         m_lambda,       env);
+    append_syntax("let",            m_let,          env);
+    append_syntax("let*",           m_let_star,     env);
+    append_syntax("letrec",         m_letrec,       env);
+    append_syntax("load",           m_load,         env);
+    append_syntax("named-lambda",   m_named_lambda, env);
+    append_syntax("or",             m_or,           env);
+    append_syntax("set!",           m_set,          env);
+    for (iter = regs; iter->var; iter++)
+        append_primitive(iter->var, iter->val, env);
 }
