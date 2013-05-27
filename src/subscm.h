@@ -205,6 +205,7 @@ int try(void (*f1)(object *), void (*f2)(object *), object *arg);
 /* eval */
 object *apply(object *proc, object *args);
 object *append_variable(object *var, object *val, object *env);
+object *assign_variable(object *var, object *val, object *env);
 object *define_variable(object *var, object *val, object *env);
 object *lookup_variable_value(object *exp, object *env);
 object *eval(object *exp, object *env);

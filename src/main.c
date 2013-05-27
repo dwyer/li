@@ -13,9 +13,11 @@ object *prompt(FILE *f) {
 void repl(object *env) {
     object *exp;
 
+    append_variable(symbol("_"), null, env);
     while ((exp = prompt(stdin)) != eof) {
         if (exp) {
             exp = eval(exp, env);
+            assign_variable(symbol("_"), exp, env);
             if (exp) {
                 write(exp, stdout);
                 newline(stdout);

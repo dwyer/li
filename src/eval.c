@@ -50,6 +50,21 @@ object *append_variable(object *var, object *val, object *env) {
     return var;
 }
 
+object *assign_variable(object *var, object *val, object *env) {
+    int i;
+    
+    while (env) {
+        for (i = 0; i < env->data.env.size; i++)
+            if (env->data.env.array[i].var == var) {
+                env->data.env.array[i].val = val;
+                return cons(symbol("quote"), cons(var, null));
+            }
+        env = env->data.env.base;
+    }
+    error("set!", "unbound variable", var);
+    return null;
+}
+
 object *define_variable(object *var, object *val, object *env) {
     int i;
 
