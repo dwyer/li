@@ -140,7 +140,7 @@ struct object {
     union {
         /* character */
         int character;
-        /* env */
+        /* environment */
         struct {
             struct {
                 object *var;

@@ -75,7 +75,8 @@ object *environment(object *base) {
     obj = create(T_ENVIRONMENT);
     obj->data.env.cap = 4;
     obj->data.env.size = 0;
-    obj->data.env.array = allocate(null, obj->data.env.cap, sizeof(*obj->data.env.array));
+    obj->data.env.array = allocate(null, obj->data.env.cap,
+                                   sizeof(*obj->data.env.array));
     obj->data.env.base = base;
     return obj;
 }

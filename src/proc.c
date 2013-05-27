@@ -1811,8 +1811,8 @@ struct reg {
     object *(*val)(object *);
 } regs[] = {
     /* Non-standard */
-    { "error", p_error },
     { "clock", p_clock },
+    { "error", p_error },
     { "exit", p_exit },
     { "getenv", p_getenv },
     { "rand", p_rand },
