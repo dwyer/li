@@ -7,7 +7,7 @@ void load(char *filename, object *env) {
 
     if ((f = fopen(filename, "r")) == NULL)
         error("load", "unable to read file", string(filename));
-    while ((exp = read(f)) != eof) {
+    while ((exp = lread(f)) != eof) {
         exp = eval(exp, env);
         cleanup(env);
     }

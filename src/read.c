@@ -18,10 +18,10 @@
 #define isdelimiter(c)  (isspace(c) || isopener(c) || iscloser(c) || \
                          isstring(c) || iscomment(c) || iseof(c))
 
-#define read_quasi(f)   cons(symbol("quasiquote"), cons(read(f), null))
-#define read_quote(f)   cons(symbol("quote"), cons(read(f), null))
-#define read_unquote(f) cons(symbol("unquote"), cons(read(f), null))
-#define read_unquotes(f) cons(symbol("unquote-splicing"), cons(read(f), null))
+#define read_quasi(f)   cons(symbol("quasiquote"), cons(lread(f), null))
+#define read_quote(f)   cons(symbol("quote"), cons(lread(f), null))
+#define read_unquote(f) cons(symbol("unquote"), cons(lread(f), null))
+#define read_unquotes(f) cons(symbol("unquote-splicing"), cons(lread(f), null))
 
 static int buf_sz = 32;
 static char *buf = null;
@@ -85,7 +85,7 @@ int peek_char(FILE *f) {
     return c;
 }
 
-object *read(FILE *f) {
+object *read_object(FILE *f) {
     int c;
 
     if (iseof(c = getch(f))) {
@@ -162,14 +162,14 @@ object *read_sequence(FILE *f) {
     if (iscloser(c = getch(f)))
         return null;
     else if (c == '.' && isspace(peek_char(f))) {
-        obj = read(f);
+        obj = lread(f);
         if (iscloser(c = getch(f)))
             return obj;
         else
             error("read", "ill-formed dotted pair", null);
     }
     ungetc(c, f);
-    obj = read(f);
+    obj = lread(f);
     return cons(obj, read_sequence(f));
 }
 
@@ -185,7 +185,7 @@ object *read_special(FILE *f) {
         return character(getc(f));
     } else if (isopener(c)) {
         ungetc(c, f);
-        return vector(read(f));
+        return vector(lread(f));
     }
     error("read", "ill-formed special symbol", null);
     return null;

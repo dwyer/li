@@ -215,11 +215,12 @@ object *setup_environment(void);
 void load(char *filename, object *env);
 
 /* read */
-object *read(FILE *f);
+#define lread(f)                read_object(f)
+object *read_object(FILE *f);
 
 /* write */
 #define print(obj)              print_object(obj)
-#define write(obj, f)           write_object(obj, f, 0)
+#define lwrite(obj, f)          write_object(obj, f, 0)
 #define display(obj, f)         write_object(obj, f, 1)
 #define newline(f)              fprintf(f, "\n")
 void print_object(object *obj);

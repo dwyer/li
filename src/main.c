@@ -7,7 +7,7 @@
 
 object *prompt(FILE *f) {
     printf("> ");
-    return read(f);
+    return lread(f);
 }
 
 void repl(object *env) {
@@ -19,7 +19,7 @@ void repl(object *env) {
             exp = eval(exp, env);
             assign_variable(symbol("_"), exp, env);
             if (exp) {
-                write(exp, stdout);
+                lwrite(exp, stdout);
                 newline(stdout);
             }
         }

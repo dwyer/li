@@ -1469,7 +1469,7 @@ object *p_read(object *args) {
         assert_port("read", car(args));
         f = to_port(car(args)).file;
     }
-    return read(f);
+    return lread(f);
 }
 
 object *p_read_char(object *args) {
@@ -1526,7 +1526,7 @@ object *p_write(object *args) {
     } else {
         assert_nargs("write", 1, args);
     }
-    write(car(args), f);
+    lwrite(car(args), f);
     return null;
 }
 
