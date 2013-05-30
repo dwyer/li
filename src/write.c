@@ -21,8 +21,7 @@ void write_object(object *obj, FILE *f, int h) {
     else if (is_character(obj))
         fprintf(f, "'%c'", to_character(obj));
     else if (is_compound(obj))
-        fprintf(f, "#[compound-procedure %x %s]",
-        (unsigned int)obj,
+        fprintf(f, "#[compound-procedure %s]",
         to_compound(obj).name ? to_string(to_compound(obj).name) : "\b");
     else if (is_environment(obj))
         fprintf(f, "#[environment]");
