@@ -60,5 +60,5 @@ uninstall:
 	cd $(TO_BIN) && $(RM) $(LI_BIN)
 
 clean:
-	$(RM) $(LI_BIN) $(ALL_OBJS) src/parse.c src/read.[ch]
+	$(RM) $(LI_BIN) $(LI_LIB) $(ALL_OBJS) src/parse.c src/read.[ch]
 	$(RMDIR) $(OBJDIR)
