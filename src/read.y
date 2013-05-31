@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "subscm.h"
+
 #define make_tagged_list(str, obj) cons(symbol(str), cons(obj, null))
 
 void yyerror(char *);
@@ -26,31 +27,34 @@ extern void pop_buffer(void);
 %token <obj> NUMBER
 %token <obj> STRING
 %token <obj> SYMBOL
+
 %type <obj> data datum start
+
 %start start
+
 %%
 
-start : datum { obj = $1; return 0; }
-      ;
+start   : datum { obj = $$ = $1; return 0; }
+        ;
 
-data : { $$ = null; }
-     | data datum { $$ = append($1, cons($2, null)); }
-     ;
+datum   : _EOF { $$ = $1; }
+        | CHARACTER { $$ = $1; }
+        | NUMBER { $$ = $1; }
+        | STRING { $$ = $1; }
+        | SYMBOL { $$ = $1; }
+        | '(' data ')' { $$ = $2; }
+        | '(' data datum '.' datum ')' { $$ = append($2, cons($3, $5)); }
+        | '[' data ']' { $$ = vector($2); }
+        | '%' '(' data ')' { $$ = vector($3); } /* TODO: remove this */
+        | '\'' datum { $$ = make_tagged_list("quote", $2); }
+        | '`' datum { $$ = make_tagged_list("quasiquote", $2); }
+        | ',' datum { $$ = make_tagged_list("unquote", $2); }
+        | ',' '@' datum { $$ = make_tagged_list("unquote-splicing", $3); }
+        ;
 
-datum : _EOF { obj = $$ = $1; }
-      | CHARACTER { obj = $$ = $1; }
-      | NUMBER { obj = $$ = $1; }
-      | STRING { obj = $$ = $1; }
-      | SYMBOL { obj = $$ = $1; }
-      | '(' data ')' { obj = $$ = $2; }
-      | '(' data datum '.' datum ')' { obj = $$ = append($2, cons($3, $5)); }
-      | '[' data ']' { obj = $$ = vector($2); }
-      | '%' '(' data ')' { obj = $$ = vector($3); } /* TODO: change this */
-      | '\'' datum { obj = $$ = make_tagged_list("quote", $2); }
-      | '`' datum { obj = $$ = make_tagged_list("quasiquote", $2); }
-      | ',' datum { obj = $$ = make_tagged_list("unquote", $2); }
-      | ',' '@' datum { obj = $$ = make_tagged_list("unquote-splicing", $3); }
-      ;
+data    : { $$ = null; }
+        | data datum { $$ = append($1, cons($2, null)); }
+        ;
 
 %%
 

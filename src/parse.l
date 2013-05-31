@@ -1,9 +1,13 @@
 %{
+
 #include <stdio.h>
 #include "subscm.h"
 #include "read.h"
+
 %}
+
 %option noinput nounput yylineno
+
 /* simple patterns, order doesn't matter */
 character               %\\.
 comment                 [#;].*$
@@ -13,6 +17,7 @@ peculiar_identifier     ([+-]|\.\.\.)
 special_initial         [!$%&*/:<=>?^_~]
 special_subsequent      [+-.@]
 whitespace              [ \n\t]*
+
 /* complex patterns, order does matter */
 initial                 ({letter}|{special_initial})
 subsequent              ({initial}|{digit}|{special_subsequent})
@@ -21,7 +26,9 @@ symbol                  {identifier}
 num10                   [+-]?{digit}+\.?{digit}*(e[+-]?{digit}+)?
 num16                   [+-]?0x[A-Fa-f0-9]+
 number                  ({num10}|{num16})
+
 %%
+
 [%()\[\].'`,@\\]        return *yytext;
 <<EOF>>                 yylval.obj = eof; return _EOF;
 {character}             yylval.obj = character(yytext[3]); return CHARACTER;
@@ -40,8 +47,12 @@ number                  ({num10}|{num16})
 {symbol}                yylval.obj = symbol(yytext); return SYMBOL;
 {whitespace}            ; /* ignore whitespace */
 {comment}               ; /* ignore comments */
+
 %%
-int yywrap(void) { return 1; }
+
+int yywrap(void) {
+    return 1;
+}
 
 void push_buffer(void) {
     if (!yyin)
