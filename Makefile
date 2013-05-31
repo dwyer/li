@@ -12,21 +12,18 @@ YACC=yacc -d
 CFLAGS=-O2 -Wall -ansi -pedantic
 LDFLAGS=-lm
 
-OBJDIR=obj
-SRCDIR=src
-
-LI_BIN=li
-LI_OBJS=li.o
-
-LI_LIB=libli.a
-LI_LIB_OBJS=read.o parse.o write.o object.o eval.o proc.o error.o
-
 PREFIX=/usr/local
 TO_BIN=$(PREFIX)/bin
 
-DEPS=read.o parse.o write.o object.o eval.o proc.o error.o li.o
-SRCS=$(addprefix $(SRCDIR)/, $(DEPS:.o=.c))
-OBJS=$(addprefix $(OBJDIR)/, $(DEPS))
+OBJDIR=obj
+SRCDIR=src
+LI_BIN=li
+LI_LIB=libli.a
+LI_OBJS_=li.o
+LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
+LI_LIB_OBJS_=read.o parse.o write.o object.o eval.o proc.o error.o
+LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
+ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
 
 all: $(LI_BIN)
 
@@ -41,14 +38,14 @@ debug: all
 profile: CFLAGS+=-pg
 profile: all
 
-$(LI_BIN): $(OBJS)
+$(LI_BIN): $(LI_LIB) $(LI_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $+
 
 $(LI_LIB): $(LI_LIB_OBJS)
 	$(AR) $@ $(LI_LIB_OBJS)
 	$(RANLIB) $@
 
-$(OBJS): $(OBJDIR)
+$(ALL_OBJS): $(OBJDIR)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -63,5 +60,5 @@ uninstall:
 	cd $(TO_BIN) && $(RM) $(LI_BIN)
 
 clean:
-	$(RM) $(LI_BIN) $(OBJS) src/parse.c src/read.[ch]
+	$(RM) $(LI_BIN) $(ALL_OBJS) src/parse.c src/read.[ch]
 	$(RMDIR) $(OBJDIR)
