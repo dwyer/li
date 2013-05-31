@@ -27,6 +27,8 @@ num10                   [+-]?{digit}+\.?{digit}*(e[+-]?{digit}+)?
 num16                   [+-]?0x[A-Fa-f0-9]+
 number                  ({num10}|{num16})
 
+%x XSTRING
+
 %%
 
 [%()\[\].'`,@\\]        return *yytext;
@@ -36,15 +38,11 @@ number                  ({num10}|{num16})
 %\\space                yylval.obj = character(' '); return CHARACTER;
 %\\tab                  yylval.obj = character('\t'); return CHARACTER;
 {number}                yylval.obj = number(atof(yytext)); return NUMBER;
-\"[^"]*\"               {
-                            char *buf;
-
-                            buf = allocate(null, yyleng-1, sizeof(*buf));
-                            buf = strncpy(buf, yytext+1, yyleng-2);
-                            yylval.obj = string(buf);
-                            return STRING;
-                        }
 {symbol}                yylval.obj = symbol(yytext); return SYMBOL;
+<INITIAL>\"             BEGIN(XSTRING);
+<XSTRING>\"             BEGIN(INITIAL);
+<XSTRING>[^"]*          yylval.obj = string(yytext); return STRING;
+\"\"                    yylval.obj = string(""); return STRING;
 {whitespace}            ; /* ignore whitespace */
 {comment}               ; /* ignore comments */
 
