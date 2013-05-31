@@ -32,17 +32,17 @@ number                  ({num10}|{num16})
 %%
 
 [%()\[\].'`,@\\]        return *yytext;
-<<EOF>>                 yylval.obj = eof; return _EOF;
+<<EOF>>                 yylval.obj = eof; return EOF_OBJECT;
 {character}             yylval.obj = character(yytext[3]); return CHARACTER;
 %\\newline              yylval.obj = character('\n'); return CHARACTER;
 %\\space                yylval.obj = character(' '); return CHARACTER;
 %\\tab                  yylval.obj = character('\t'); return CHARACTER;
 {number}                yylval.obj = number(atof(yytext)); return NUMBER;
 {symbol}                yylval.obj = symbol(yytext); return SYMBOL;
+\"\"                    yylval.obj = string(""); return STRING;
 <INITIAL>\"             BEGIN(XSTRING);
 <XSTRING>\"             BEGIN(INITIAL);
 <XSTRING>[^"]*          yylval.obj = string(yytext); return STRING;
-\"\"                    yylval.obj = string(""); return STRING;
 {whitespace}            ; /* ignore whitespace */
 {comment}               ; /* ignore comments */
 

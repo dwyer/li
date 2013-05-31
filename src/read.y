@@ -22,8 +22,8 @@ extern void pop_buffer(void);
 
 %union { object *obj; }
 
-%token <obj> _EOF
 %token <obj> CHARACTER
+%token <obj> EOF_OBJECT
 %token <obj> NUMBER
 %token <obj> STRING
 %token <obj> SYMBOL
@@ -37,7 +37,7 @@ extern void pop_buffer(void);
 start   : datum { obj = $$ = $1; return 0; }
         ;
 
-datum   : _EOF { $$ = $1; }
+datum   : EOF_OBJECT { $$ = eof; }
         | CHARACTER { $$ = $1; }
         | NUMBER { $$ = $1; }
         | STRING { $$ = $1; }
