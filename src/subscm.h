@@ -215,8 +215,7 @@ object *setup_environment(void);
 void load(char *filename, object *env);
 
 /* read */
-#define lread(f)                read_object(f)
-object *read_object(FILE *f);
+object *lread(FILE *f);
 
 /* write */
 #define print(obj)              print_object(obj)

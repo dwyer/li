@@ -2,8 +2,9 @@ CP=cp -r
 MKDIR=mkdir -p
 RM=rm -f
 RMDIR=rmdir
+YACC+=-d
 
-CFILES=main.c read.c write.c object.c eval.c proc.c error.c load.c
+CFILES=read.c parse.c write.c object.c eval.c proc.c error.c main.c
 CFLAGS=-O2 -Wall -ansi -pedantic
 LDFLAGS=-lm
 
@@ -19,6 +20,11 @@ OBJS=$(addprefix $(OBJDIR)/, $(CFILES:.c=.o))
 SRCS=$(addprefix $(SRCDIR)/, $(CFILES))
 
 all: $(OBJDIR) $(SRCS) $(PROG)
+
+$(SRCDIR)/read.c: $(SRCDIR)/read.y
+	yacc -d $(SRCDIR)/read.y
+	mv y.tab.c $(SRCDIR)/read.c
+	mv y.tab.h $(SRCDIR)/read.h
 
 debug: CC+=-g -DDEBUG
 debug: all
@@ -42,5 +48,5 @@ uninstall:
 	cd $(TO_BIN) && $(RM) $(PROG)
 
 clean:
-	$(RM) $(PROG) $(OBJS)
+	$(RM) $(PROG) $(OBJS) src/parse.c src/read.[ch]
 	$(RMDIR) $(OBJDIR)
