@@ -86,7 +86,7 @@ object *m_cond(object *seq, object *env) {
 
 #define make_define(p, b)       cons(symbol("define"), cons(p, cons(b, null)))
 #define make_lambda(p, b)       cons(symbol("lambda"), cons(p, b))
-#define make_named_lambda(p, b)	cons(symbol("named-lambda"), cons(p, b))
+#define make_named_lambda(p, b) cons(symbol("named-lambda"), cons(p, b))
 
 object *m_define(object *args, object *env) {
     object *var;
@@ -135,7 +135,7 @@ object *m_do(object *seq, object *env) {
         binding = car(iter);
         assert_pair("do", binding);
         assert_pair("do", cdr(binding));
-	assert_symbol("do", car(binding));
+        assert_symbol("do", car(binding));
         if (cddr(binding)) {
             let_args = cons(caddr(binding), let_args);
             binding = cons(car(binding), cons(cadr(binding), null));

@@ -41,8 +41,8 @@ object *append_variable(object *var, object *val, object *env) {
         error("eval", "not a variable", var);
     if (env->data.env.size == env->data.env.cap) {
         env->data.env.cap *= 2;
-		env->data.env.array = allocate(env->data.env.array, env->data.env.cap,
-									   sizeof(*env->data.env.array));
+        env->data.env.array = allocate(env->data.env.array, env->data.env.cap,
+                                       sizeof(*env->data.env.array));
     }
     env->data.env.array[env->data.env.size].var = var;
     env->data.env.array[env->data.env.size].val = val;

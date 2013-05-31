@@ -12,14 +12,14 @@ void error(char *who, char *msg, object *args) {
 }
 
 int try(void (*f1)(object *), void (*f2)(object *), object *arg) {
-	int ret;
+    int ret;
 
-	if ((ret = setjmp(buf))) {
-		if (f2)
-			f2(arg);
-		else
-			return ret;
-	}
-	f1(arg);
-	return 0;
+    if ((ret = setjmp(buf))) {
+        if (f2)
+            f2(arg);
+        else
+            return ret;
+    }
+    f1(arg);
+    return 0;
 }
