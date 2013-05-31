@@ -1,4 +1,7 @@
 *~
-*.o
+*.[ao]
+li
+parse.c
+read.[ch]
 subscm
 misc
