@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "subscm.h"
+#include "li.h"
 
 #define make_tagged_list(str, obj) cons(symbol(str), cons(obj, null))
 

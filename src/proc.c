@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "subscm.h"
+#include "li.h"
 
 #define has_0args(args)             (!args)
 #define has_1args(args)             (args && !cdr(args))

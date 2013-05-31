@@ -1,6 +1,6 @@
 #include <setjmp.h>
 #include <stdio.h>
-#include "subscm.h"
+#include "li.h"
 
 static jmp_buf buf;
 

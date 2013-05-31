@@ -1,27 +1,16 @@
-subscm is a is very simple Lisp-1 based on Scheme.
+li is a little lisp library and interpreter based on Scheme.
 
-What is supported
-=================
-Data types:
-* Booleans
-* Chars
-* Numbers
-* Pairs
-* Ports
-* Strings
-* Symbols
-* Vectors
+li is the lisp interpreter. libli.a is the li library.
 
-Differences between subscm and Scheme
-=====================================
-* Comments may start with a bash (#) or semicolon (;).
-* #t and #f are true and false respectively.
-* Booleans are `true' and `false' rather than #t and #f.
-* Chars begin with %\ rather than #\
-* Vectors are in the form [...] instead of #(...).
-* There's no numerical tower. All numbers are doubles, like in Javascript.
-* No continuations. 
-* Macros are not hygenic.
+Differences between li and Scheme
+=================================
+* Comments may start with a bash (#) or semicolon (;), as such...
+    * Booleans are `true` and `false` rather than #t and #f.
+    * Chars begin with `%\` rather than `#\`.
+    * Vectors are of the form [...] instead of #(...).
+* Numbers are just doubles, so no bignums or numberical tower.
+* No continuations (yet).
+* Unhygenic macros.
 
 Bugs
 ====

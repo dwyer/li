@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "subscm.h"
+#include "li.h"
 
 #define ARGV_SYMBOL symbol("args")
 

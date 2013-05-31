@@ -1,7 +1,7 @@
 %{
 
 #include <stdio.h>
-#include "subscm.h"
+#include "li.h"
 #include "read.h"
 
 %}
@@ -22,7 +22,7 @@ whitespace              [ \n\t]*
 initial                 ({letter}|{special_initial})
 subsequent              ({initial}|{digit}|{special_subsequent})
 identifier              ({initial}{subsequent}*|{peculiar_identifier})
-symbol                  {identifier}
+symbol                  ({identifier}|\|[^|]*\|)
 num10                   [+-]?{digit}+\.?{digit}*(e[+-]?{digit}+)?
 num16                   [+-]?0x[A-Fa-f0-9]+
 number                  ({num10}|{num16})

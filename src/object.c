@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "subscm.h"
+#include "li.h"
 
 #define HASHSIZE        1024
 #define strdup(s)       strcpy(allocate(null, strlen(s)+1, sizeof(char)), s)
