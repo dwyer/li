@@ -72,11 +72,11 @@ void write_string(object *obj, FILE *f, int h) {
 void write_vector(object *obj, FILE *f, int h) {
     int k;
 
-    fprintf(f, "%%(");
+    fprintf(f, "[");
     for (k = 0; k < vector_length(obj); k++) {
         write_object(vector_ref(obj, k), f, h);
         if (k < vector_length(obj) - 1)
             fprintf(f, " ");
     }
-    fprintf(f, ")");
+    fprintf(f, "]");
 }

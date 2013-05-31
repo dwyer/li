@@ -45,7 +45,6 @@ datum   : EOF_OBJECT { $$ = eof; }
         | '(' data ')' { $$ = $2; }
         | '(' data datum '.' datum ')' { $$ = append($2, cons($3, $5)); }
         | '[' data ']' { $$ = vector($2); }
-        | '%' '(' data ')' { $$ = vector($3); } /* TODO: remove this */
         | '\'' datum { $$ = make_tagged_list("quote", $2); }
         | '`' datum { $$ = make_tagged_list("quasiquote", $2); }
         | ',' datum { $$ = make_tagged_list("unquote", $2); }
