@@ -14,12 +14,11 @@ Data types:
 
 Differences between subscm and Scheme
 =====================================
-* Comments start with bash (#) instead of semicolon (;).
+* Comments may start with a bash (#) or semicolon (;).
 * #t and #f are true and false respectively.
-* Booleans are just the symbols true and false, they're not a primitive type.
-* Characters are denoted the same way they are in C ('a', 'b', '\n', etc.).
-* There's no quote ('), just quasiquote (`) which does the same job.
-* Vectors are in the form %(...) instead of #(...).
+* Booleans are `true' and `false' rather than #t and #f.
+* Chars begin with %\ rather than #\
+* Vectors are in the form [...] instead of #(...).
 * There's no numerical tower. All numbers are doubles, like in Javascript.
 * No continuations. 
 * Macros are not hygenic.
