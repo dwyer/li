@@ -99,7 +99,7 @@ object *m_define(object *args, object *env) {
     }
     assert_symbol("define", var);
     assert_nargs("define", 1, args);
-    return environment_define(var, eval(car(args), env), env);
+    return environment_define(env, var, eval(car(args), env));
 }
 
 object *m_defmacro(object *seq, object *env) {
@@ -109,7 +109,7 @@ object *m_defmacro(object *seq, object *env) {
     name = caar(seq);
     vars = cdar(seq);
     body = cdr(seq);
-    return environment_define(name, macro(vars, body, env), env);
+    return environment_define(env, name, macro(vars, body, env));
 }
 
 
@@ -261,7 +261,7 @@ object *m_set(object *args, object *env) {
     assert_symbol("set!", car(args));
     var = car(args);
     val = eval(cadr(args), env);
-    return(environment_assign(var, val, env));
+    return(environment_assign(env, var, val));
 }
 
 /*

@@ -41,7 +41,7 @@ object *eval(object *exp, object *env) {
 
     while (!is_self_evaluating(exp)) {
         if (is_symbol(exp)) {
-            return environment_lookup(exp, env);
+            return environment_lookup(env, exp);
         } else if (is_quoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return cadr(exp);

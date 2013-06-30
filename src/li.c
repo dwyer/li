@@ -17,7 +17,7 @@ void repl(object *env) {
     while ((exp = prompt(stdin)) != eof) {
         if (exp) {
             exp = eval(exp, env);
-            environment_assign(symbol("_"), exp, env);
+            environment_assign(env, symbol("_"), exp);
             if (exp) {
                 lwrite(exp, stdout);
                 newline(stdout);
@@ -30,7 +30,7 @@ void repl(object *env) {
 void script(object *env) {
     object *args;
 
-    args = environment_lookup(ARGV_SYMBOL, env);
+    args = environment_lookup(env, ARGV_SYMBOL);
     load(to_string(car(args)), env);
 }
 

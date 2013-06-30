@@ -133,9 +133,9 @@ object *syntax(object *(*proc)(object *, object *));
 object *vector(object *lst);
 
 
-object *environment_assign(object *var, object *val, object *env);
-object *environment_define(object *var, object *val, object *env);
-object *environment_lookup(object *exp, object *env);
+object *environment_assign(object *env, object *var, object *val);
+object *environment_define(object *env, object *var, object *val);
+object *environment_lookup(object *env, object *var);
 int is_equal(object *obj1, object *obj2);
 int is_eqv(object *obj1, object *obj2);
 int is_list(object *obj);

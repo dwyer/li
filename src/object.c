@@ -95,7 +95,7 @@ object *environment(object *base) {
     return obj;
 }
 
-object *environment_assign(object *var, object *val, object *env) {
+object *environment_assign(object *env, object *var, object *val) {
     int i;
     
     while (env) {
@@ -110,7 +110,7 @@ object *environment_assign(object *var, object *val, object *env) {
     return null;
 }
 
-object *environment_define(object *var, object *val, object *env) {
+object *environment_define(object *env, object *var, object *val) {
     int i;
 
     for (i = 0; i < env->data.env.size; i++)
@@ -121,7 +121,7 @@ object *environment_define(object *var, object *val, object *env) {
     return append_variable(var, val, env);
 }
 
-object *environment_lookup(object *var, object *env) {
+object *environment_lookup(object *env, object *var) {
     int i;
 
     while (env) {
