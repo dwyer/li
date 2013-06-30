@@ -113,12 +113,17 @@ enum {
 
 typedef struct object object;
 
+void *allocate(void *ptr, size_t count, size_t size);
 object *create(int type);
+
+void cleanup(object *env);
+void destroy(object *obj);
+
 object *character(int c);
 object *compound(object *name, object *vars, object *body, object *env);
 object *environment(object *base);
-object *number(double n);
 object *macro(object *vars, object *body, object *env);
+object *number(double n);
 object *pair(object *car, object *cdr);
 object *port(const char *filename, const char *mode);
 object *primitive(object *(*proc)(object *));
@@ -127,10 +132,10 @@ object *symbol(char *s);
 object *syntax(object *(*proc)(object *, object *));
 object *vector(object *lst);
 
-void *allocate(void *ptr, size_t count, size_t size);
-void destroy(object *obj);
-void cleanup(object *env);
 
+object *environment_assign(object *var, object *val, object *env);
+object *environment_define(object *var, object *val, object *env);
+object *environment_lookup(object *exp, object *env);
 int is_equal(object *obj1, object *obj2);
 int is_eqv(object *obj1, object *obj2);
 int is_list(object *obj);
@@ -205,9 +210,6 @@ int try(void (*f1)(object *), void (*f2)(object *), object *arg);
 /* eval */
 object *apply(object *proc, object *args);
 object *append_variable(object *var, object *val, object *env);
-object *environment_assign(object *var, object *val, object *env);
-object *environment_define(object *var, object *val, object *env);
-object *environment_lookup(object *exp, object *env);
 object *eval(object *exp, object *env);
 object *setup_environment(void);
 
