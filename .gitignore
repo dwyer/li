@@ -1,8 +1,8 @@
-*~
 *.[ao]
+*~
 li
+misc
 parse.c
 read.[ch]
 subscm
-misc
 tags
