@@ -30,6 +30,20 @@ void add_to_heap(object *obj) {
     heap.objs[heap.size++] = obj;
 }
 
+object *append_variable(object *var, object *val, object *env) {
+    if (!is_symbol(var))
+        error("eval", "not a variable", var);
+    if (env->data.env.size == env->data.env.cap) {
+        env->data.env.cap *= 2;
+        env->data.env.array = allocate(env->data.env.array, env->data.env.cap,
+                                       sizeof(*env->data.env.array));
+    }
+    env->data.env.array[env->data.env.size].var = var;
+    env->data.env.array[env->data.env.size].val = val;
+    env->data.env.size++;
+    return var;
+}
+
 void *allocate(void *ptr, size_t count, size_t size) {
     if (ptr)
         ptr = realloc(ptr, count*size);
@@ -79,6 +93,45 @@ object *environment(object *base) {
                                    sizeof(*obj->data.env.array));
     obj->data.env.base = base;
     return obj;
+}
+
+object *environment_assign(object *var, object *val, object *env) {
+    int i;
+    
+    while (env) {
+        for (i = 0; i < env->data.env.size; i++)
+            if (env->data.env.array[i].var == var) {
+                env->data.env.array[i].val = val;
+                return cons(symbol("quote"), cons(var, null));
+            }
+        env = env->data.env.base;
+    }
+    error("set!", "unbound variable", var);
+    return null;
+}
+
+object *environment_define(object *var, object *val, object *env) {
+    int i;
+
+    for (i = 0; i < env->data.env.size; i++)
+        if (env->data.env.array[i].var == var) {
+            env->data.env.array[i].val = val;
+            return var;
+        }
+    return append_variable(var, val, env);
+}
+
+object *environment_lookup(object *var, object *env) {
+    int i;
+
+    while (env) {
+        for (i = 0; i < env->data.env.size; i++)
+            if (env->data.env.array[i].var == var)
+                return env->data.env.array[i].val;
+        env = env->data.env.base;
+    }
+    error("eval", "unbound variable", var);
+    return null;
 }
 
 object *macro(object *vars, object *body, object *env) {

@@ -36,52 +36,12 @@ object *apply(object *proc, object *args) {
     return eval(cons(proc, head), to_compound(proc).env);
 }
 
-object *append_variable(object *var, object *val, object *env) {
-    if (!is_symbol(var))
-        error("eval", "not a variable", var);
-    if (env->data.env.size == env->data.env.cap) {
-        env->data.env.cap *= 2;
-        env->data.env.array = allocate(env->data.env.array, env->data.env.cap,
-                                       sizeof(*env->data.env.array));
-    }
-    env->data.env.array[env->data.env.size].var = var;
-    env->data.env.array[env->data.env.size].val = val;
-    env->data.env.size++;
-    return var;
-}
-
-object *assign_variable(object *var, object *val, object *env) {
-    int i;
-    
-    while (env) {
-        for (i = 0; i < env->data.env.size; i++)
-            if (env->data.env.array[i].var == var) {
-                env->data.env.array[i].val = val;
-                return cons(symbol("quote"), cons(var, null));
-            }
-        env = env->data.env.base;
-    }
-    error("set!", "unbound variable", var);
-    return null;
-}
-
-object *define_variable(object *var, object *val, object *env) {
-    int i;
-
-    for (i = 0; i < env->data.env.size; i++)
-        if (env->data.env.array[i].var == var) {
-            env->data.env.array[i].val = val;
-            return var;
-        }
-    return append_variable(var, val, env);
-}
-
 object *eval(object *exp, object *env) {
     object *seq, *proc, *args;
 
     while (!is_self_evaluating(exp)) {
         if (is_symbol(exp)) {
-            return lookup_variable_value(exp, env);
+            return environment_lookup(exp, env);
         } else if (is_quoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return cadr(exp);
@@ -171,19 +131,6 @@ object *list_of_values(object *exps, object *env) {
         exps = cdr(exps);
     }
     return head;
-}
-
-object *lookup_variable_value(object *var, object *env) {
-    int i;
-
-    while (env) {
-        for (i = 0; i < env->data.env.size; i++)
-            if (env->data.env.array[i].var == var)
-                return env->data.env.array[i].val;
-        env = env->data.env.base;
-    }
-    error("eval", "unbound variable", var);
-    return null;
 }
 
 object *setup_environment(void) {
