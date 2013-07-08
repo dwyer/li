@@ -102,7 +102,7 @@ object *environment_assign(object *env, object *var, object *val) {
         for (i = 0; i < env->data.env.size; i++)
             if (env->data.env.array[i].var == var) {
                 env->data.env.array[i].val = val;
-                return cons(symbol("quote"), cons(var, null));
+                return cons(symbol("quote"), cons(val, null));
             }
         env = env->data.env.base;
     }
