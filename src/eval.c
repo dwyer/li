@@ -77,15 +77,20 @@ object *eval(object *exp, object *env) {
 }
 
 object *eval_quasiquote(object *exp, object *env) {
-    object *head, *tail;
+    object *head, *iter, *tail;
 
     if (!is_pair(exp))
         return exp;
     else if (is_unquoted(exp))
         return eval(cadr(exp), env);
     else if (is_unquoted_splicing(car(exp))) {
-        head = eval(cadar(exp), env);
-        for (tail = head; tail && cdr(tail); tail = cdr(tail));
+        head = tail = null;
+        for (iter = eval(cadar(exp), env); iter; iter = cdr(iter)) {
+            if (head)
+                tail = set_cdr(tail, cons(car(iter), null));
+            else
+                head = tail = cons(car(iter), null);
+        }
         if (tail) {
             set_cdr(tail, eval_quasiquote(cdr(exp), env));
             return head;
