@@ -1397,6 +1397,24 @@ object *p_vector_to_list(object *args) {
     return list;
 }
 
+object *p_vector_to_string(object *args) {
+    object *str, *vec;
+    int k;
+    char *s;
+
+    assert_nargs("vector->string", 1, args);
+    assert_vector("vector->string", car(args));
+    vec = car(args);
+    k = vector_length(vec);
+    s = allocate(null, k, sizeof(*s));
+    while (k--) {
+        assert_character("vector->string", vector_ref(vec, k));
+        s[k] = to_character(vector_ref(vec, k));
+    }
+    str = string(s);
+    free(s);
+    return str;
+}
 
 object *p_list_to_string(object *args) {
     object *lst, *str;
@@ -2046,6 +2064,7 @@ struct reg {
     { "vector-set!", p_vector_set },
     { "vector-fill!", p_vector_fill },
     { "vector->list", p_vector_to_list },
+    { "vector->string", p_vector_to_string },
     { "list->string", p_list_to_string },
     { "list->vector", p_list_to_vector },
     /* Control features */
