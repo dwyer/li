@@ -811,6 +811,24 @@ object *p_is_list(object *args) {
     return boolean(true);
 }
 
+object *p_make_list(object *args) {
+    int k;
+    object *fill, *head, *tail;
+
+    assert_nargs("make-list", 2, args);
+    assert_integer("make-list", car(args));
+    k = to_integer(car(args));
+    fill = cadr(args);
+    head = tail = null;
+    while (k--) {
+        if (head)
+            tail = set_cdr(tail, cons(fill, null));
+        else
+            head = tail = cons(fill, null);
+    }
+    return head;
+}
+
 object *p_list(object *args) {
     return args;
 }
@@ -1902,6 +1920,7 @@ struct reg {
     { "null?", p_is_null },
     { "list?", p_is_list },
     { "list", p_list },
+    { "make-list", p_make_list },
     { "list-tail", p_list_tail },
     { "list-ref", p_list_ref },
     { "length", p_length },

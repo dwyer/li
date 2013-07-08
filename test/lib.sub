@@ -25,13 +25,6 @@
           (apply lcm (cons (algorithm (car args) (cadr args))
                            (cddr args))))))
 
-(define (make-list len . fill)
-  (assert (positive? len))
-  (let iter ((k 0) (fill (if (null? fill) null (car fill))))
-    (if (< k len)
-      (cons fill (iter (+ k 1) fill))
-      null)))
-
 # PORTS
 
 (define (open-input-file str)
