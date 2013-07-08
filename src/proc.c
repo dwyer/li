@@ -1196,6 +1196,24 @@ object *p_string_gt(object *args) {
     return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) > 0);
 }
 
+object *p_string_to_list(object *args) {
+    object *head, *tail;
+    char *str;
+    int i;
+
+    assert_nargs("string->list", 1, args);
+    assert_string("string->list", car(args));
+    str = to_string(car(args));
+    head = tail = null;
+    for (i = 0; i < strlen(str); ++i) {
+        if (head)
+            tail = set_cdr(tail, cons(character(str[i]), null));
+        else
+            head = tail = cons(character(str[i]), null);
+    }
+    return head;
+}
+
 object *p_string_to_number(object *args) {
     assert_nargs("string->number", 1, args);
     assert_string("string->number", car(args));
@@ -1343,6 +1361,27 @@ object *p_vector_to_list(object *args) {
     for (i = 1; i < k; ++i)
         tail = set_cdr(tail, cons(vector_ref(vect, i), null));
     return list;
+}
+
+
+object *p_list_to_string(object *args) {
+    object *lst, *str;
+    int i, n;
+    char *s;
+
+    assert_nargs("list->string", 1, args);
+    assert_list("list->string", car(args));
+    lst = car(args);
+    n = length(lst);
+    s = allocate(null, n, sizeof(*s));
+    for (i = 0; i < n; i++) {
+        assert_character("list->string", car(lst));
+        s[i] = to_character(car(lst));
+        lst = cdr(lst);
+    }
+    str = string(s);
+    free(s);
+    return str;
 }
 
 object *p_list_to_vector(object *args) {
@@ -1959,6 +1998,7 @@ struct reg {
     { "string<=?", p_string_le },
     { "string<?", p_string_lt },
     { "string-append", p_string_append },
+    { "string->list", p_string_to_list },
     { "string->number", p_string_to_number },
     { "number->string", p_number_to_string },
     /* Vectors */
@@ -1970,6 +2010,7 @@ struct reg {
     { "vector-set!", p_vector_set },
     { "vector-fill!", p_vector_fill },
     { "vector->list", p_vector_to_list },
+    { "list->string", p_list_to_string },
     { "list->vector", p_list_to_vector },
     /* Control features */
     { "procedure?", p_is_procedure },

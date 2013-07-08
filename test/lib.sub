@@ -41,20 +41,6 @@
 
 # STRINGS
 
-(define (string->list str)
-  (let iter ((k 0) (len (string-length str)))
-    (if (< k len)
-      (cons (string-ref str k)
-            (iter (+ k 1) len))
-      null)))
-
-(define (list->string lst)
-  (let iter ((lst lst) (str (make-string (length lst))) (k 0))
-    (if (null? lst)
-      str
-      (begin (string-set! str k (car lst))
-             (iter (cdr lst) str (+ k 1))))))
-
 (define (string-copy str)
   (substring str 0 (string-length str)))
 
