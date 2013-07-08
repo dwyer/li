@@ -1235,6 +1235,25 @@ object *p_string_to_number(object *args) {
     return number(atof(to_string(car(args))));
 }
 
+object *p_string_to_vector(object *args) {
+    object *head, *tail;
+    int i, n;
+    char *s;
+
+    assert_nargs("string->vector", 1, args);
+    assert_string("string->vector", car(args));
+    s = to_string(car(args));
+    n = strlen(s);
+    head = tail = null;
+    for (i = 0; i < n; ++i) {
+        if (head)
+            tail = set_cdr(tail, cons(character(s[i]), null));
+        else
+            head = tail = cons(character(s[i]), null);
+    }
+    return vector(head);
+}
+
 object *p_number_to_string(object *args) {
     char *s;
 
@@ -2016,6 +2035,7 @@ struct reg {
     { "string-append", p_string_append },
     { "string->list", p_string_to_list },
     { "string->number", p_string_to_number },
+    { "string->vector", p_string_to_vector },
     { "number->string", p_number_to_string },
     /* Vectors */
     { "vector?", p_is_vector },
