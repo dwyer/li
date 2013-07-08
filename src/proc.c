@@ -863,6 +863,21 @@ object *p_list_ref(object *args) {
     return car(lst);
 }
 
+object *p_list_set(object *args) {
+    object *lst, *obj;
+    int k;
+
+    assert_nargs("list-set!", 3, args);
+    assert_list("list-set!", car(args));
+    assert_integer("list-set!", cadr(args));
+    lst = car(args);
+    k = to_integer(cadr(args));
+    obj = caddr(args);
+    while (k--)
+        lst = cdr(lst);
+    return set_car(lst, obj);
+}
+
 object *p_length(object *args) {
     int ret;
     object *lst;
@@ -1962,6 +1977,7 @@ struct reg {
     { "make-list", p_make_list },
     { "list-tail", p_list_tail },
     { "list-ref", p_list_ref },
+    { "list-set!", p_list_set },
     { "length", p_length },
     { "append", p_append },
     { "filter", p_filter },
