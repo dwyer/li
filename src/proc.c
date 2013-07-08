@@ -102,6 +102,7 @@ object *m_define(object *args, object *env) {
     return environment_define(env, var, eval(car(args), env));
 }
 
+/* (defmacro (name . args) . body) */
 object *m_defmacro(object *seq, object *env) {
     object *name, *vars, *body;
 
@@ -111,7 +112,6 @@ object *m_defmacro(object *seq, object *env) {
     body = cdr(seq);
     return environment_define(env, name, macro(vars, body, env));
 }
-
 
 object *m_delay(object *seq, object *env) {
     return compound(null, null, seq, env);
@@ -241,6 +241,11 @@ object *m_load(object *args, object *env) {
     assert_string("load", car(args));
     load(to_string(car(args)), env);
     return null;
+}
+
+/* (macro params . body) */
+object *m_macro(object *seq, object *env) {
+    return macro(car(seq), cdr(seq), env);
 }
 
 object *m_or(object *seq, object *env) {
@@ -1989,6 +1994,7 @@ void define_primitive_procedures(object *env) {
     append_syntax("let*",           m_let_star,     env);
     append_syntax("letrec",         m_letrec,       env);
     append_syntax("load",           m_load,         env);
+    append_syntax("macro",          m_macro,        env);
     append_syntax("named-lambda",   m_named_lambda, env);
     append_syntax("or",             m_or,           env);
     append_syntax("set!",           m_set,          env);
