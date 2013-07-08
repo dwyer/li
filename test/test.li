@@ -1,4 +1,4 @@
-(load "test/lib.sub")
+(load "test/lib.li")
 (define x 28)
 (assert (equal? x 28))
 (assert (equal? (quote a) 'a))
