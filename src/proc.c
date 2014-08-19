@@ -1126,7 +1126,7 @@ li_object *p_string(li_object *args) {
     char *str;
     int i;
 
-    str = allocate(li_null, length(args)+1, sizeof(char));
+    str = li_allocate(li_null, length(args)+1, sizeof(char));
     for (i = 0; args; i++, args = cdr(args)) {
         if (!li_is_character(car(args))) {
             free(str);
@@ -1146,7 +1146,7 @@ li_object *p_make_string(li_object *args) {
     assert_nargs("make-string", 1, args);
     assert_integer("make-string", car(args));
     k = li_to_integer(car(args)) + 1;
-    s = allocate(li_null, k, sizeof(*s));
+    s = li_allocate(li_null, k, sizeof(*s));
     while (k >= 0)
         s[k--] = '\0';
     obj = string(s);
@@ -1259,7 +1259,7 @@ li_object *p_number_to_string(li_object *args) {
 
     assert_nargs("number->string", 1, args);
     assert_number("number->string", car(args));
-    s = allocate(li_null, 30, sizeof(char));
+    s = li_allocate(li_null, 30, sizeof(char));
     sprintf(s, "%.15g", li_to_number(car(args)));
     return string(s);
 }
@@ -1270,14 +1270,14 @@ li_object *p_string_append(li_object *args) {
     int size, i;
 
     size = 1;
-    s = allocate(li_null, size, sizeof(char));
+    s = li_allocate(li_null, size, sizeof(char));
     for (i = 0; args; args = cdr(args)) {
         assert_string("string-append", car(args));
         for (ss = li_to_string(car(args)); *ss; ss++) {
             s[i] = *ss;
             if (++i >= size) {
                 size *= 2;
-                s = allocate(s, size, sizeof(char));
+                s = li_allocate(s, size, sizeof(char));
             }
         }
     }
@@ -1325,7 +1325,7 @@ li_object *p_make_vector(li_object *args) {
         fill = li_false;
     }
     vec = create(T_VECTOR);
-    vec->data.vector.data = allocate(li_null, k, sizeof(*vec->data.vector.data));
+    vec->data.vector.data = li_allocate(li_null, k, sizeof(*vec->data.vector.data));
     vec->data.vector.length = k;
     while (k--)
         vec->data.vector.data[k] = fill;
@@ -1406,7 +1406,7 @@ li_object *p_vector_to_string(li_object *args) {
     assert_vector("vector->string", car(args));
     vec = car(args);
     k = vector_length(vec);
-    s = allocate(li_null, k, sizeof(*s));
+    s = li_allocate(li_null, k, sizeof(*s));
     while (k--) {
         assert_character("vector->string", vector_ref(vec, k));
         s[k] = li_to_character(vector_ref(vec, k));
@@ -1425,7 +1425,7 @@ li_object *p_list_to_string(li_object *args) {
     assert_list("list->string", car(args));
     lst = car(args);
     n = length(lst);
-    s = allocate(li_null, n, sizeof(*s));
+    s = li_allocate(li_null, n, sizeof(*s));
     for (i = 0; i < n; i++) {
         assert_character("list->string", car(lst));
         s[i] = li_to_character(car(lst));

@@ -113,7 +113,7 @@ enum {
 
 typedef struct li_object li_object;
 
-extern void *allocate(void *ptr, size_t count, size_t size);
+extern void *li_allocate(void *ptr, size_t count, size_t size);
 extern li_object *create(int type);
 
 extern void cleanup(li_object *env);

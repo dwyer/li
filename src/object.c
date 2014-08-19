@@ -4,8 +4,8 @@
 #include <string.h>
 #include "li.h"
 
-#define HASHSIZE        1024
-#define strdup(s)       strcpy(allocate(li_null, strlen(s)+1, sizeof(char)), s)
+#define HASHSIZE    1024
+#define strdup(s)   strcpy(li_allocate(li_null, strlen(s)+1, sizeof(char)), s)
 
 static struct {
     li_object **objs;
@@ -20,12 +20,12 @@ void add_to_heap(li_object *obj) {
     if (!heap.objs) {
         heap.cap = 1024;
         heap.size = 0;
-        heap.objs = allocate(li_null, heap.cap, sizeof(*heap.objs));
+        heap.objs = li_allocate(li_null, heap.cap, sizeof(*heap.objs));
         for (i = 0; i < HASHSIZE; i++)
             heap.syms[i] = li_null;
     } else if (heap.size == heap.cap) {
         heap.cap *= 2;
-        heap.objs = allocate(heap.objs, heap.cap, sizeof(*heap.objs));
+        heap.objs = li_allocate(heap.objs, heap.cap, sizeof(*heap.objs));
     }
     heap.objs[heap.size++] = obj;
 }
@@ -35,8 +35,8 @@ li_object *append_variable(li_object *var, li_object *val, li_object *env) {
         error("eval", "not a variable", var);
     if (env->data.env.size == env->data.env.cap) {
         env->data.env.cap *= 2;
-        env->data.env.array = allocate(env->data.env.array, env->data.env.cap,
-                                       sizeof(*env->data.env.array));
+        env->data.env.array = li_allocate(env->data.env.array,
+                env->data.env.cap, sizeof(*env->data.env.array));
     }
     env->data.env.array[env->data.env.size].var = var;
     env->data.env.array[env->data.env.size].val = val;
@@ -44,20 +44,20 @@ li_object *append_variable(li_object *var, li_object *val, li_object *env) {
     return var;
 }
 
-void *allocate(void *ptr, size_t count, size_t size) {
+void *li_allocate(void *ptr, size_t count, size_t size) {
     if (ptr)
         ptr = realloc(ptr, count*size);
     else
         ptr = calloc(count, size);
     if (!ptr)
-        error("*allocate*", "out of memory", li_null);
+        error("*li_allocate*", "out of memory", li_null);
     return ptr;
 }
 
 li_object *create(int type) {
     li_object *obj;
 
-    obj = allocate(li_null, 1, sizeof(*obj));
+    obj = li_allocate(li_null, 1, sizeof(*obj));
     obj->type = type;
     obj->locked = 0;
     add_to_heap(obj);
@@ -72,7 +72,8 @@ li_object *character(int c) {
     return obj;
 }
 
-li_object *compound(li_object *name, li_object *vars, li_object *body, li_object *env) {
+li_object *compound(li_object *name, li_object *vars, li_object *body,
+        li_object *env) {
     li_object *obj;
 
     obj = create(T_COMPOUND);
@@ -89,7 +90,7 @@ li_object *environment(li_object *base) {
     obj = create(T_ENVIRONMENT);
     obj->data.env.cap = 4;
     obj->data.env.size = 0;
-    obj->data.env.array = allocate(li_null, obj->data.env.cap,
+    obj->data.env.array = li_allocate(li_null, obj->data.env.cap,
                                    sizeof(*obj->data.env.array));
     obj->data.env.base = base;
     return obj;
@@ -227,7 +228,8 @@ li_object *vector(li_object *lst) {
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
         ;
     obj = create(T_VECTOR);
-    obj->data.vector.data = allocate(li_null, k, sizeof(*obj->data.vector.data));
+    obj->data.vector.data = li_allocate(li_null, k,
+            sizeof(*obj->data.vector.data));
     obj->data.vector.length = k;
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
         vector_set(obj, k, car(iter));
