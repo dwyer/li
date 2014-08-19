@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     for (args = li_null, i = argc - 1; i; i--)
         args = cons(li_string(argv[i]), args);
     append_variable(ARGV_SYMBOL, args, env);
-    ret = argc == 1 ? try(repl, li_cleanup, env) : try(script, NULL, env);
+    ret = argc == 1 ? li_try(repl, li_cleanup, env) : li_try(script, NULL, env);
     li_cleanup(li_null);
     exit(ret);
 }

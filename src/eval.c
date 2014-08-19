@@ -11,7 +11,7 @@
 #define li_is_unquoted(exp)         li_is_tagged_list(exp, "unquote")
 #define li_is_unquoted_splicing(exp) li_is_tagged_list(exp, "unquote-splicing")
 
-#define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
+#define check_syntax(pred, exp) if (!(pred)) li_error("eval", "bad syntax", exp);
 
 static li_object *eval_quasiquote(li_object *exp, li_object *env);
 static li_object *expand_macro(li_object *mac, li_object *args);
@@ -68,10 +68,10 @@ li_object *eval(li_object *exp, li_object *env) {
             } else if (li_is_syntax(proc)) {
                 exp = li_to_syntax(proc)(args, env);
             } else {
-                error("apply", "not applicable", proc);
+                li_error("apply", "not applicable", proc);
             }
         } else {
-            error("eval", "unknown expression type", exp);
+            li_error("eval", "unknown expression type", exp);
         }
     }
     return exp;
@@ -124,7 +124,7 @@ li_object *extend_environment(li_object *vars, li_object *vals, li_object *env)
         append_variable(car(vars), car(vals), env);
     }
     if (vars || vals)
-        error("#[anonymous-procedure]", "wrong number of args", vars);
+        li_error("#[anonymous-procedure]", "wrong number of args", vars);
     return env;
 }
 

@@ -203,8 +203,8 @@ struct li_object {
 };
 
 /* error */
-extern void error(char *who, char *msg, li_object *args);
-extern int try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg);
+extern void li_error(char *who, char *msg, li_object *args);
+extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg);
 
 /* eval */
 extern li_object *apply(li_object *proc, li_object *args);

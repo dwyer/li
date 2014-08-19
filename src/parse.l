@@ -54,7 +54,7 @@ int yywrap(void) {
 
 void push_buffer(void) {
     if (!yyin)
-        error("read", "null buffer", li_null);
+        li_error("read", "null buffer", li_null);
     yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
 }
 

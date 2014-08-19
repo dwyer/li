@@ -77,7 +77,7 @@ void load(char *filename, li_object *env) {
         pop = 1;
     }
     if ((f = fopen(filename, "r")) == NULL)
-        error("load", "unable to read file", li_string(filename));
+        li_error("load", "unable to read file", li_string(filename));
     while ((exp = lread(f)) != li_eof) {
         exp = eval(exp, env);
         li_cleanup(env);
@@ -94,5 +94,5 @@ li_object *lread(FILE *f) {
 }
 
 void yyerror(char *s) {
-    error("read", s, li_number(yylineno));
+    li_error("read", s, li_number(yylineno));
 }
