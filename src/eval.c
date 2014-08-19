@@ -26,15 +26,15 @@ li_object *li_apply(li_object *proc, li_object *args) {
         return li_to_primitive(proc)(args);
     head = tail = li_null;
     while (args) {
-        obj = cons(li_symbol("quasiquote"), cons(car(args), li_null));
+        obj = li_cons(li_symbol("quasiquote"), li_cons(car(args), li_null));
         if (!tail)
-            head = tail = cons(obj, li_null);
+            head = tail = li_cons(obj, li_null);
         else {
-            tail = set_cdr(tail, cons(obj, li_null));
+            tail = set_cdr(tail, li_cons(obj, li_null));
         }
         args = cdr(args);
     }
-    return li_eval(cons(proc, head), li_to_compound(proc).env);
+    return li_eval(li_cons(proc, head), li_to_compound(proc).env);
 }
 
 li_object *li_eval(li_object *exp, li_object *env) {
@@ -88,9 +88,9 @@ li_object *eval_quasiquote(li_object *exp, li_object *env) {
         head = tail = li_null;
         for (iter = li_eval(cadar(exp), env); iter; iter = cdr(iter)) {
             if (head)
-                tail = set_cdr(tail, cons(car(iter), li_null));
+                tail = set_cdr(tail, li_cons(car(iter), li_null));
             else
-                head = tail = cons(car(iter), li_null);
+                head = tail = li_cons(car(iter), li_null);
         }
         if (tail) {
             set_cdr(tail, eval_quasiquote(cdr(exp), env));
@@ -99,7 +99,7 @@ li_object *eval_quasiquote(li_object *exp, li_object *env) {
             return eval_quasiquote(cdr(exp), env);
         }
     }
-    return cons(eval_quasiquote(car(exp), env), eval_quasiquote(cdr(exp), env));
+    return li_cons(eval_quasiquote(car(exp), env), eval_quasiquote(cdr(exp), env));
 }
 
 li_object *expand_macro(li_object *mac, li_object *args) {
@@ -133,7 +133,7 @@ li_object *list_of_values(li_object *exps, li_object *env) {
 
     head = li_null;
     while (exps) {
-        tail = cons(li_eval(car(exps), env), li_null);
+        tail = li_cons(li_eval(car(exps), env), li_null);
         node = head ? set_cdr(node, tail) : (head = tail);
         exps = cdr(exps);
     }

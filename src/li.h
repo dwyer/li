@@ -59,7 +59,7 @@
 #define li_vector_ref(v, k)     li_to_vector(v).data[k]
 #define li_vector_set(v, k, o)  (li_vector_ref(v, k) = o)
 
-#define cons(obj1, obj2)        li_pair(obj1, obj2)
+#define li_cons(obj1, obj2)     li_pair(obj1, obj2)
 #define car(obj)                li_to_pair(obj).car
 #define cdr(obj)                li_to_pair(obj).cdr
 #define set_car(obj1, obj2)     (car(obj1) = obj2)

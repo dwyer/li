@@ -103,7 +103,7 @@ li_object *li_environment_assign(li_object *env, li_object *var, li_object *val)
         for (i = 0; i < env->data.env.size; i++)
             if (env->data.env.array[i].var == var) {
                 env->data.env.array[i].val = val;
-                return cons(li_symbol("quote"), cons(val, li_null));
+                return li_cons(li_symbol("quote"), li_cons(val, li_null));
             }
         env = env->data.env.base;
     }

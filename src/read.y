@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "li.h"
 
-#define make_tagged_list(str, obj) cons(li_symbol(str), cons(obj, li_null))
+#define make_tagged_list(str, obj) li_cons(li_symbol(str), li_cons(obj, li_null))
 
 void yyerror(char *);
 extern int yylex(void);
@@ -43,7 +43,7 @@ datum   : EOF_OBJECT { $$ = li_eof; }
         | STRING { $$ = $1; }
         | SYMBOL { $$ = $1; }
         | '(' data ')' { $$ = $2; }
-        | '(' data datum '.' datum ')' { $$ = append($2, cons($3, $5)); }
+        | '(' data datum '.' datum ')' { $$ = append($2, li_cons($3, $5)); }
         | '[' data ']' { $$ = li_vector($2); }
         | '\'' datum { $$ = make_tagged_list("quote", $2); }
         | '`' datum { $$ = make_tagged_list("quasiquote", $2); }
@@ -52,7 +52,7 @@ datum   : EOF_OBJECT { $$ = li_eof; }
         ;
 
 data    : { $$ = li_null; }
-        | data datum { $$ = append($1, cons($2, li_null)); }
+        | data datum { $$ = append($1, li_cons($2, li_null)); }
         ;
 
 %%
