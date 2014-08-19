@@ -7,9 +7,9 @@
 
 #define has_0args(args)             (!args)
 #define has_1args(args)             (args && !li_cdr(args))
-#define has_2args(args)             (args && li_cdr(args) && !cddr(args))
+#define has_2args(args)             (args && li_cdr(args) && !li_cddr(args))
 #define has_3args(args) \
-    (args && li_cdr(args) && cddr(args) && !cdddr(args))
+    (args && li_cdr(args) && li_cddr(args) && !li_cdddr(args))
 #define assert_nargs(name, n, as) \
     if (!has_##n##args(as)) li_error(name, "wrong number of args", args)
 #define assert_type(name, type, arg) \
@@ -60,9 +60,9 @@ li_object *m_case(li_object *exp, li_object *env) {
     val = li_eval(li_car(exp), env);
     seq = li_null;
     for (exp = li_cdr(exp); exp; exp = li_cdr(exp))
-        for (seq = caar(exp); seq; seq = li_cdr(seq))
+        for (seq = li_caar(exp); seq; seq = li_cdr(seq))
             if (li_is_eq(seq, li_symbol("else")) || li_is_eqv(li_car(seq), val)) {
-                for (seq = cdar(exp); li_cdr(seq); seq = li_cdr(seq))
+                for (seq = li_cdar(exp); li_cdr(seq); seq = li_cdr(seq))
                     li_eval(li_car(seq), env);
                 break;
             }
@@ -73,9 +73,9 @@ li_object *m_case(li_object *exp, li_object *env) {
 
 li_object *m_cond(li_object *seq, li_object *env) {
     for (; seq; seq = li_cdr(seq))
-        if (li_is_eq(caar(seq), li_symbol("else")) ||
-            li_is_true(li_eval(caar(seq), env))) {
-            for (seq = cdar(seq); li_cdr(seq); seq = li_cdr(seq))
+        if (li_is_eq(li_caar(seq), li_symbol("else")) ||
+            li_is_true(li_eval(li_caar(seq), env))) {
+            for (seq = li_cdar(seq); li_cdr(seq); seq = li_cdr(seq))
                 li_eval(li_car(seq), env);
             break;
         }
@@ -107,8 +107,8 @@ li_object *m_defmacro(li_object *seq, li_object *env) {
     li_object *name, *vars, *body;
 
     assert_pair("defmacro", li_car(seq));
-    name = caar(seq);
-    vars = cdar(seq);
+    name = li_caar(seq);
+    vars = li_cdar(seq);
     body = li_cdr(seq);
     return li_environment_define(env, name, li_macro(vars, body, env));
 }
@@ -136,9 +136,9 @@ li_object *m_do(li_object *seq, li_object *env) {
         assert_pair("do", binding);
         assert_pair("do", li_cdr(binding));
         assert_symbol("do", li_car(binding));
-        if (cddr(binding)) {
-            let_args = li_cons(caddr(binding), let_args);
-            binding = li_cons(li_car(binding), li_cons(cadr(binding), li_null));
+        if (li_cddr(binding)) {
+            let_args = li_cons(li_caddr(binding), let_args);
+            binding = li_cons(li_car(binding), li_cons(li_cadr(binding), li_null));
         } else {
             let_args = li_cons(li_car(binding), let_args);
         }
@@ -147,10 +147,10 @@ li_object *m_do(li_object *seq, li_object *env) {
     tail = li_set_cdr(tail, li_cons(let_bindings, li_null));
     tail = li_set_cdr(tail, li_cons(li_null, li_null));
     tail = li_set_car(tail, li_cons(li_symbol("cond"), li_null));
-    tail = li_set_cdr(tail, li_cons(cadr(seq), li_null));
+    tail = li_set_cdr(tail, li_cons(li_cadr(seq), li_null));
     tail = li_set_cdr(tail, li_cons(li_null, li_null));
     tail = li_set_car(tail, li_cons(li_symbol("else"), li_null));
-    for (iter = cddr(seq); iter; iter = li_cdr(iter))
+    for (iter = li_cddr(seq); iter; iter = li_cdr(iter))
         tail = li_set_cdr(tail, iter);
     tail = li_set_cdr(tail, li_cons(li_cons(li_symbol("#"), let_args), li_null));
     return head;
@@ -160,9 +160,9 @@ li_object *m_if(li_object *seq, li_object *env) {
     if (!seq || !li_cdr(seq))
         li_error("if", "invalid sequence", seq);
     if (li_is_true(li_eval(li_car(seq), env)))
-        return cadr(seq);
-    else if (cddr(seq))
-        return caddr(seq);
+        return li_cadr(seq);
+    else if (li_cddr(seq))
+        return li_caddr(seq);
     else
         return li_boolean(li_false);
 }
@@ -196,10 +196,10 @@ li_object *m_let(li_object *args, li_object *env) {
         assert_symbol("let", li_car(args));
         if (!vars && !vals) {
             vars_tail = vars = li_cons(li_car(args), li_null);
-            vals_tail = vals = li_cons(cadr(args), li_null);
+            vals_tail = vals = li_cons(li_cadr(args), li_null);
         } else {
             vars_tail = li_set_cdr(vars_tail, li_cons(li_car(args), li_null));
-            vals_tail = li_set_cdr(vals_tail, li_cons(cadr(args), li_null));
+            vals_tail = li_set_cdr(vals_tail, li_cons(li_cadr(args), li_null));
         }
     }
     body = make_lambda(vars, body);
@@ -216,12 +216,12 @@ li_object *m_let_star(li_object *args, li_object *env) {
     for (bindings = li_car(args); bindings; bindings = li_cdr(bindings)) {
         binding = li_car(bindings);
         vars = li_cons(li_car(binding), li_null);
-        vals = li_cons(cadr(binding), li_null);
+        vals = li_cons(li_cadr(binding), li_null);
         if (result == li_null)
             result = li_cons(make_lambda(vars, body), vals);
         else
-            li_set_cdr(cdar(result),
-                    li_cons(li_cons(make_lambda(vars, cddar(result)), vals), li_null));
+            li_set_cdr(li_cdar(result),
+                    li_cons(li_cons(make_lambda(vars, li_cddar(result)), vals), li_null));
     }
     return result;
 }
@@ -265,7 +265,7 @@ li_object *m_set(li_object *args, li_object *env) {
     assert_nargs("set!", 2, args);
     assert_symbol("set!", li_car(args));
     var = li_car(args);
-    val = li_eval(cadr(args), env);
+    val = li_eval(li_cadr(args), env);
     return(li_environment_assign(env, var, val));
 }
 
@@ -280,8 +280,8 @@ li_object *p_error(li_object *args) {
     if (!args || !li_cdr(args))
         li_error("error", "wrong number of args", args);
     assert_symbol("error", li_car(args));
-    assert_string("error", cadr(args));
-    li_error(li_to_symbol(li_car(args)), li_to_string(cadr(args)), cddr(args));
+    assert_string("error", li_cadr(args));
+    li_error(li_to_symbol(li_car(args)), li_to_string(li_cadr(args)), li_cddr(args));
     return li_null;
 }
 
@@ -318,8 +318,8 @@ li_object *p_remove(li_object *args) {
 li_object *p_rename(li_object *args) {
     assert_nargs("rename", 2, args);
     assert_string("rename", li_car(args));
-    assert_string("rename", cadr(args));
-    return li_number(rename(li_to_string(li_car(args)), li_to_string(cadr(args))));
+    assert_string("rename", li_cadr(args));
+    return li_number(rename(li_to_string(li_car(args)), li_to_string(li_cadr(args))));
 }
 
 li_object *p_getenv(li_object *args) {
@@ -360,7 +360,7 @@ li_object *p_time(li_object *args) {
  */
 li_object *p_is_eq(li_object *args) {
     assert_nargs("eq?", 2, args);
-    return li_boolean(li_is_eq(li_car(args), cadr(args)));
+    return li_boolean(li_is_eq(li_car(args), li_cadr(args)));
 }
 
 /* 
@@ -369,7 +369,7 @@ li_object *p_is_eq(li_object *args) {
  */
 li_object *p_is_eqv(li_object *args) {
     assert_nargs("eqv?", 2, args);
-    return li_boolean(li_is_eqv(li_car(args), cadr(args)));
+    return li_boolean(li_is_eqv(li_car(args), li_cadr(args)));
 }
 
 /*
@@ -378,7 +378,7 @@ li_object *p_is_eqv(li_object *args) {
  */
 li_object *p_is_equal(li_object *args) {
     assert_nargs("equal?", 2, args);
-    return li_boolean(li_is_equal(li_car(args), cadr(args)));
+    return li_boolean(li_is_equal(li_car(args), li_cadr(args)));
 }
 
 /************************
@@ -460,8 +460,8 @@ li_object *p_eq(li_object *args) {
         assert_number("=", li_car(args));
         if (!li_cdr(args))
             return li_boolean(li_true);
-        assert_number("=", cadr(args));
-        if (!(li_to_number(li_car(args)) == li_to_number(cadr(args))))
+        assert_number("=", li_cadr(args));
+        if (!(li_to_number(li_car(args)) == li_to_number(li_cadr(args))))
             return li_boolean(li_false);
         args = li_cdr(args);
     }
@@ -473,8 +473,8 @@ li_object *p_lt(li_object *args) {
         assert_number("<", li_car(args));
         if (!li_cdr(args))
             return li_boolean(li_true);
-        assert_number("<", cadr(args));
-        if (!(li_to_number(li_car(args)) < li_to_number(cadr(args))))
+        assert_number("<", li_cadr(args));
+        if (!(li_to_number(li_car(args)) < li_to_number(li_cadr(args))))
             return li_boolean(li_false);
         args = li_cdr(args);
     }
@@ -486,8 +486,8 @@ li_object *p_gt(li_object *args) {
         assert_number(">", li_car(args));
         if (!li_cdr(args))
             return li_boolean(li_true);
-        assert_number(">", cadr(args));
-        if (!(li_to_number(li_car(args)) > li_to_number(cadr(args))))
+        assert_number(">", li_cadr(args));
+        if (!(li_to_number(li_car(args)) > li_to_number(li_cadr(args))))
             return li_boolean(li_false);
         args = li_cdr(args);
     }
@@ -569,31 +569,31 @@ li_object *p_abs(li_object *args) {
 li_object *p_quotient(li_object *args) {
     assert_nargs("quotient", 2, args);
     assert_integer("quotient", li_car(args));
-    assert_integer("quotient", cadr(args));
-    if (!li_to_integer(cadr(args)))
+    assert_integer("quotient", li_cadr(args));
+    if (!li_to_integer(li_cadr(args)))
         li_error("quotient", "arg2 must be non-zero", args);
-    return li_number(li_to_integer(li_car(args)) / li_to_integer(cadr(args)));
+    return li_number(li_to_integer(li_car(args)) / li_to_integer(li_cadr(args)));
 }
 
 li_object *p_remainder(li_object *args) {
     assert_nargs("remainder", 2, args);
     assert_integer("remainder", li_car(args));
-    assert_integer("remainder", cadr(args));
-    if (!li_to_integer(cadr(args)))
-        li_error("remainder", "arg2 must be non-zero", cadr(args));
-    return li_number(li_to_integer(li_car(args)) % li_to_integer(cadr(args)));
+    assert_integer("remainder", li_cadr(args));
+    if (!li_to_integer(li_cadr(args)))
+        li_error("remainder", "arg2 must be non-zero", li_cadr(args));
+    return li_number(li_to_integer(li_car(args)) % li_to_integer(li_cadr(args)));
 }
 
 li_object *p_modulo(li_object *args) {
     int n1, n2, nm;
 
     assert_nargs("modulo", 2, args);
-    if (!li_is_integer(li_car(args)) || !li_is_integer(cadr(args)))
+    if (!li_is_integer(li_car(args)) || !li_is_integer(li_cadr(args)))
         li_error("modulo", "args must be integers", args);
-    if (!li_to_integer(cadr(args)))
-        li_error("modulo", "arg2 must be non-zero", cadr(args));
+    if (!li_to_integer(li_cadr(args)))
+        li_error("modulo", "arg2 must be non-zero", li_cadr(args));
     n1 = li_to_integer(li_car(args));
-    n2 = li_to_integer(cadr(args));
+    n2 = li_to_integer(li_cadr(args));
     nm = n1 % n2;
     if (nm * n2 < 0)
         nm += n2;
@@ -689,8 +689,8 @@ li_object *p_atan(li_object *args) {
     assert_number("atan", li_car(args));
     if (li_cdr(args)) {
         assert_nargs("atan", 2, args);
-        assert_number("atan", cadr(args));
-        return li_number(atan2(li_to_number(cadr(args)), li_to_number(li_car(args))));
+        assert_number("atan", li_cadr(args));
+        return li_number(atan2(li_to_number(li_cadr(args)), li_to_number(li_car(args))));
     }
     return li_number(atan(li_to_number(li_car(args))));
 }
@@ -704,8 +704,8 @@ li_object *p_sqrt(li_object *args) {
 li_object *p_expt(li_object *args) {
     assert_nargs("expt", 2, args);
     assert_number("expt", li_car(args));
-    assert_number("expt", cadr(args));
-    return li_number(pow(li_to_number(li_car(args)), li_to_number(cadr(args))));
+    assert_number("expt", li_cadr(args));
+    return li_number(pow(li_to_number(li_car(args)), li_to_number(li_cadr(args))));
 }
 
 /************
@@ -748,7 +748,7 @@ li_object *p_is_pair(li_object *args) {
  */
 li_object *p_cons(li_object *args) {
     assert_nargs("cons", 2, args);
-    return li_cons(li_car(args), cadr(args));
+    return li_cons(li_car(args), li_cadr(args));
 }
 
 /*
@@ -758,7 +758,7 @@ li_object *p_cons(li_object *args) {
 li_object *p_car(li_object *args) {
     assert_nargs("car", 1, args);
     assert_pair("car", li_car(args));
-    return caar(args);
+    return li_caar(args);
 }
 
 /* 
@@ -768,7 +768,7 @@ li_object *p_car(li_object *args) {
 li_object *p_cdr(li_object *args) {
     assert_nargs("cdr", 1, args);
     assert_pair("cdr", li_car(args));
-    return cdar(args);
+    return li_cdar(args);
 }
 
 /*
@@ -778,7 +778,7 @@ li_object *p_cdr(li_object *args) {
 li_object *p_set_car(li_object *args) {
     assert_nargs("set-car!", 2, args);
     assert_pair("set-car!", li_car(args));
-    li_set_car(li_car(args), cadr(args));
+    li_set_car(li_car(args), li_cadr(args));
     return li_null;
 }
 
@@ -789,7 +789,7 @@ li_object *p_set_car(li_object *args) {
 li_object *p_set_cdr(li_object *args) {
     assert_nargs("set-cdr!", 2, args);
     assert_pair("set-cdr!", li_car(args));
-    li_set_cdr(li_car(args), cadr(args));
+    li_set_cdr(li_car(args), li_cadr(args));
     return li_null;
 }
 
@@ -818,7 +818,7 @@ li_object *p_make_list(li_object *args) {
     assert_nargs("make-list", 2, args);
     assert_integer("make-list", li_car(args));
     k = li_to_integer(li_car(args));
-    fill = cadr(args);
+    fill = li_cadr(args);
     head = tail = li_null;
     while (k--) {
         if (head)
@@ -838,9 +838,9 @@ li_object *p_list_tail(li_object *args) {
     int k;
 
     assert_nargs("list-tail", 2, args);
-    assert_integer("list-tail", cadr(args));
+    assert_integer("list-tail", li_cadr(args));
     lst = li_car(args);
-    for (k = li_to_integer(cadr(args)); k; k--) {
+    for (k = li_to_integer(li_cadr(args)); k; k--) {
         if (lst && !li_is_pair(lst))
             li_error("list-tail", "not a list", li_car(args));
         lst = li_cdr(lst);
@@ -853,9 +853,9 @@ li_object *p_list_ref(li_object *args) {
     int k;
 
     assert_nargs("list-ref", 2, args);
-    assert_integer("list-ref", cadr(args));
+    assert_integer("list-ref", li_cadr(args));
     lst = li_car(args);
-    for (k = li_to_integer(cadr(args)); k; k--) {
+    for (k = li_to_integer(li_cadr(args)); k; k--) {
         if (lst && !li_is_pair(lst))
             li_error("list-ref", "not a list", li_car(args));
         lst = li_cdr(lst);
@@ -869,10 +869,10 @@ li_object *p_list_set(li_object *args) {
 
     assert_nargs("list-set!", 3, args);
     assert_list("list-set!", li_car(args));
-    assert_integer("list-set!", cadr(args));
+    assert_integer("list-set!", li_cadr(args));
     lst = li_car(args);
-    k = li_to_integer(cadr(args));
-    obj = caddr(args);
+    k = li_to_integer(li_cadr(args));
+    obj = li_caddr(args);
     while (k--)
         lst = li_cdr(lst);
     return li_set_car(lst, obj);
@@ -927,7 +927,7 @@ li_object *p_filter(li_object *args) {
     assert_nargs("filter", 2, args);
     assert_procedure("filter", li_car(args));
     tail = li_null;
-    for (iter = cadr(args), head = temp = li_null; iter; iter = li_cdr(iter)) {
+    for (iter = li_cadr(args), head = temp = li_null; iter; iter = li_cdr(iter)) {
         assert_pair("filter", iter);
         if (temp)
             li_set_car(temp, li_car(iter));
@@ -957,10 +957,10 @@ li_object *p_assq(li_object *args) {
     li_object *lst;
 
     assert_nargs("assq", 2, args);
-    for (lst = cadr(args); lst; lst = li_cdr(lst)) {
+    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
         if (!li_is_pair(lst))
-            li_error("assq", "not a list", cadr(args));
-        if (li_is_eq(li_car(args), caar(lst)))
+            li_error("assq", "not a list", li_cadr(args));
+        if (li_is_eq(li_car(args), li_caar(lst)))
             return li_car(lst);
     }
     return li_boolean(li_false);
@@ -970,10 +970,10 @@ li_object *p_assv(li_object *args) {
     li_object *lst;
 
     assert_nargs("assv", 2, args);
-    for (lst = cadr(args); lst; lst = li_cdr(lst)) {
+    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
         if (!li_is_pair(lst))
-            li_error("assv", "not a list", cadr(args));
-        if (li_is_eqv(li_car(args), caar(lst)))
+            li_error("assv", "not a list", li_cadr(args));
+        if (li_is_eqv(li_car(args), li_caar(lst)))
             return li_car(lst);
     }
     return li_boolean(li_false);
@@ -983,10 +983,10 @@ li_object *p_assoc(li_object *args) {
     li_object *lst;
 
     assert_nargs("assoc", 2, args);
-    for (lst = cadr(args); lst; lst = li_cdr(lst)) {
+    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
         if (!li_is_pair(lst))
-            li_error("assoc", "not a list", cadr(args));
-        if (li_is_equal(li_car(args), caar(lst)))
+            li_error("assoc", "not a list", li_cadr(args));
+        if (li_is_equal(li_car(args), li_caar(lst)))
             return li_car(lst);
     }
     return li_boolean(li_false);
@@ -995,9 +995,9 @@ li_object *p_assoc(li_object *args) {
 li_object *p_memq(li_object *args) {
     li_object *lst;
 
-    for (lst = cadr(args); lst; lst = li_cdr(lst)) {
+    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
         if (!li_is_pair(lst))
-            li_error("memq", "not a list", cadr(args));
+            li_error("memq", "not a list", li_cadr(args));
         if (li_is_eq(li_car(args), li_car(lst)))
             return lst;
     }
@@ -1007,9 +1007,9 @@ li_object *p_memq(li_object *args) {
 li_object *p_memv(li_object *args) {
     li_object *lst;
 
-    for (lst = cadr(args); lst; lst = li_cdr(lst)) {
+    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
         if (!li_is_pair(lst))
-            li_error("memv", "not a list", cadr(args));
+            li_error("memv", "not a list", li_cadr(args));
         if (li_is_eqv(li_car(args), li_car(lst)))
             return lst;
     }
@@ -1019,9 +1019,9 @@ li_object *p_memv(li_object *args) {
 li_object *p_member(li_object *args) {
     li_object *lst;
 
-    for (lst = cadr(args); lst; lst = li_cdr(lst)) {
+    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
         if (!li_is_pair(lst))
-            li_error("member", "not a list", cadr(args));
+            li_error("member", "not a list", li_cadr(args));
         if (li_is_equal(li_car(args), li_car(lst)))
             return lst;
     }
@@ -1065,36 +1065,36 @@ li_object *p_is_char(li_object *args) {
 li_object *p_is_char_eq(li_object *args) {
     assert_nargs("char=?", 2, args);
     assert_character("char=?", li_car(args));
-    assert_character("char=?", cadr(args));
-    return li_boolean(li_to_character(li_car(args)) == li_to_character(cadr(args)));
+    assert_character("char=?", li_cadr(args));
+    return li_boolean(li_to_character(li_car(args)) == li_to_character(li_cadr(args)));
 }
 
 li_object *p_is_char_lt(li_object *args) {
     assert_nargs("char<?", 2, args);
     assert_character("char<?", li_car(args));
-    assert_character("char<?", cadr(args));
-    return li_boolean(li_to_character(li_car(args)) < li_to_character(cadr(args)));
+    assert_character("char<?", li_cadr(args));
+    return li_boolean(li_to_character(li_car(args)) < li_to_character(li_cadr(args)));
 }
 
 li_object *p_is_char_gt(li_object *args) {
     assert_nargs("char>?", 2, args);
     assert_character("char>?", li_car(args));
-    assert_character("char>?", cadr(args));
-    return li_boolean(li_to_character(li_car(args)) > li_to_character(cadr(args)));
+    assert_character("char>?", li_cadr(args));
+    return li_boolean(li_to_character(li_car(args)) > li_to_character(li_cadr(args)));
 }
 
 li_object *p_is_char_le(li_object *args) {
     assert_nargs("char<=?", 2, args);
     assert_character("char<=?", li_car(args));
-    assert_character("char<=?", cadr(args));
-    return li_boolean(li_to_character(li_car(args)) <= li_to_character(cadr(args)));
+    assert_character("char<=?", li_cadr(args));
+    return li_boolean(li_to_character(li_car(args)) <= li_to_character(li_cadr(args)));
 }
 
 li_object *p_is_char_ge(li_object *args) {
     assert_nargs("char>=?", 2, args);
     assert_character("char>=?", li_car(args));
-    assert_character("char>=?", cadr(args));
-    return li_boolean(li_to_character(li_car(args)) >= li_to_character(cadr(args)));
+    assert_character("char>=?", li_cadr(args));
+    return li_boolean(li_to_character(li_car(args)) >= li_to_character(li_cadr(args)));
 }
 
 li_object *p_char_to_integer(li_object *args) {
@@ -1163,52 +1163,52 @@ li_object *p_string_length(li_object *args) {
 li_object *p_string_ref(li_object *args) {
     assert_nargs("string-ref", 2, args);
     assert_string("string-ref", li_car(args));
-    assert_integer("string-ref", cadr(args));
-    return li_character(li_to_string(li_car(args))[li_to_integer(cadr(args))]);
+    assert_integer("string-ref", li_cadr(args));
+    return li_character(li_to_string(li_car(args))[li_to_integer(li_cadr(args))]);
 }
 
 li_object *p_string_set(li_object *args) {
     assert_nargs("string-set!", 3, args);
     assert_string("string-set!", li_car(args));
-    assert_integer("string-set!", cadr(args));
-    assert_character("string-set!", caddr(args));
-    return li_character(li_to_string(li_car(args))[li_to_integer(cadr(args))] =
-                     li_to_character(caddr(args)));
+    assert_integer("string-set!", li_cadr(args));
+    assert_character("string-set!", li_caddr(args));
+    return li_character(li_to_string(li_car(args))[li_to_integer(li_cadr(args))] =
+                     li_to_character(li_caddr(args)));
 }
 
 li_object *p_string_eq(li_object *args) {
     assert_nargs("string=?", 2, args);
     assert_string("string=?", li_car(args));
-    assert_string("string=?", cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(cadr(args))) == 0);
+    assert_string("string=?", li_cadr(args));
+    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) == 0);
 }
 
 li_object *p_string_le(li_object *args) {
     assert_nargs("string<=?", 2, args);
     assert_string("string<=?", li_car(args));
-    assert_string("string<=?", cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(cadr(args))) <= 0);
+    assert_string("string<=?", li_cadr(args));
+    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) <= 0);
 }
 
 li_object *p_string_lt(li_object *args) {
     assert_nargs("string<?", 2, args);
     assert_string("string<?", li_car(args));
-    assert_string("string<?", cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(cadr(args))) < 0);
+    assert_string("string<?", li_cadr(args));
+    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) < 0);
 }
 
 li_object *p_string_ge(li_object *args) {
     assert_nargs("string>=?", 2, args);
     assert_string("string>=?", li_car(args));
-    assert_string("string>=?", cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(cadr(args))) >= 0);
+    assert_string("string>=?", li_cadr(args));
+    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) >= 0);
 }
 
 li_object *p_string_gt(li_object *args) {
     assert_nargs("string>?", 2, args);
     assert_string("string>?", li_car(args));
-    assert_string("string>?", cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(cadr(args))) > 0);
+    assert_string("string>?", li_cadr(args));
+    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) > 0);
 }
 
 li_object *p_string_to_list(li_object *args) {
@@ -1319,7 +1319,7 @@ li_object *p_make_vector(li_object *args) {
     }
     if (args && li_cdr(args)) {
         assert_nargs("make-vector", 2, args);
-        fill = cadr(args);
+        fill = li_cadr(args);
     } else {
         assert_nargs("make-vector", 1, args);
         fill = li_false;
@@ -1350,11 +1350,11 @@ li_object *p_vector_length(li_object *args) {
 li_object *p_vector_ref(li_object *args) {
     assert_nargs("vector-ref", 2, args);
     assert_vector("vector-ref", li_car(args));
-    assert_integer("vector-ref", cadr(args));
-    if (li_to_number(cadr(args)) < 0 ||
-        li_to_number(cadr(args)) >= li_vector_length(li_car(args)))
-        li_error("vector-ref", "out of range", cadr(args));
-    return li_vector_ref(li_car(args), li_to_integer(cadr(args)));
+    assert_integer("vector-ref", li_cadr(args));
+    if (li_to_number(li_cadr(args)) < 0 ||
+        li_to_number(li_cadr(args)) >= li_vector_length(li_car(args)))
+        li_error("vector-ref", "out of range", li_cadr(args));
+    return li_vector_ref(li_car(args), li_to_integer(li_cadr(args)));
 }
 
 /*
@@ -1364,11 +1364,11 @@ li_object *p_vector_ref(li_object *args) {
 li_object *p_vector_set(li_object *args) {
     assert_nargs("vector-set!", 3, args);
     assert_vector("vector-set!", li_car(args));
-    assert_integer("vector-set!", cadr(args));
-    if (li_to_number(cadr(args)) < 0 ||
-        li_to_number(cadr(args)) >= li_vector_length(li_car(args)))
-        li_error("vector-set!", "out of range", cadr(args));
-    return li_vector_set(li_car(args), li_to_integer(cadr(args)), caddr(args));
+    assert_integer("vector-set!", li_cadr(args));
+    if (li_to_number(li_cadr(args)) < 0 ||
+        li_to_number(li_cadr(args)) >= li_vector_length(li_car(args)))
+        li_error("vector-set!", "out of range", li_cadr(args));
+    return li_vector_set(li_car(args), li_to_integer(li_cadr(args)), li_caddr(args));
 }
 
 li_object *p_vector_fill(li_object *args) {
@@ -1379,7 +1379,7 @@ li_object *p_vector_fill(li_object *args) {
     assert_vector("vector->fill!", li_car(args));
     vect = li_car(args);
     for (k = li_vector_length(vect); k--; )
-        li_vector_set(vect, k, cadr(args));
+        li_vector_set(vect, k, li_cadr(args));
     return vect;
 }
 
@@ -1464,7 +1464,7 @@ li_object *p_is_procedure(li_object *args) {
 li_object *p_apply(li_object *args) {
     assert_nargs("apply", 2, args);
     assert_procedure("apply", li_car(args));
-    return li_apply(li_car(args), cadr(args));
+    return li_apply(li_car(args), li_cadr(args));
 }
 
 li_object *p_map(li_object *args) {
@@ -1490,11 +1490,11 @@ li_object *p_map(li_object *args) {
             assert_pair("map", li_car(clists_iter));
             /* get cars */
             if (cars)
-                cars_iter = li_set_cdr(cars_iter, li_cons(caar(clists_iter),
+                cars_iter = li_set_cdr(cars_iter, li_cons(li_caar(clists_iter),
                             li_null));
             else
-                cars = cars_iter = li_cons(caar(clists_iter), li_null);
-            li_set_car(clists_iter, cdar(clists_iter));
+                cars = cars_iter = li_cons(li_caar(clists_iter), li_null);
+            li_set_car(clists_iter, li_cdar(clists_iter));
         }
         if (loop) {
             if (list)
@@ -1513,7 +1513,7 @@ li_object *p_for_each(li_object *args) {
     assert_nargs("map", 2, args);
     assert_procedure("map", li_car(args));
     proc = li_car(args);
-    iter = cadr(args);
+    iter = li_cadr(args);
     while (iter) {
         li_apply(proc, li_cons(li_car(iter), li_null));
         iter = li_cdr(iter);
@@ -1529,7 +1529,7 @@ li_object *p_force(li_object *args) {
 
 li_object *p_eval(li_object *args) {
     assert_nargs("eval", 2, args);
-    return li_eval(li_car(args), cadr(args));
+    return li_eval(li_car(args), li_cadr(args));
 }
 
 /*********
@@ -1554,8 +1554,8 @@ li_object *p_open(li_object *args) {
 
     if (has_2args(args)) {
         assert_nargs("open", 2, args);
-        assert_string("open", cadr(args));
-        mode = li_to_string(cadr(args));
+        assert_string("open", li_cadr(args));
+        mode = li_to_string(li_cadr(args));
     } else {
         assert_nargs("open", 1, args);
         mode = "r";
@@ -1637,8 +1637,8 @@ li_object *p_write(li_object *args) {
     f = stdout;
     if (has_2args(args)) {
         assert_nargs("write", 2, args);
-        assert_port("write", cadr(args));
-        f = li_to_port(cadr(args)).file;
+        assert_port("write", li_cadr(args));
+        f = li_to_port(li_cadr(args)).file;
     } else {
         assert_nargs("write", 1, args);
     }
@@ -1656,8 +1656,8 @@ li_object *p_display(li_object *args) {
     f = stdout;
     if (has_2args(args)) {
         assert_nargs("display", 2, args);
-        assert_port("display", cadr(args));
-        f = li_to_port(cadr(args)).file;
+        assert_port("display", li_cadr(args));
+        f = li_to_port(li_cadr(args)).file;
     } else {
         assert_nargs("display", 1, args);
     }
@@ -1700,220 +1700,220 @@ li_object *p_caar(li_object *args) {
     assert_nargs("caar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))))
         li_error("caar", "list is too short", li_car(args));
-    return caar(li_car(args));
+    return li_caar(li_car(args));
 }
 
 li_object *p_cadr(li_object *args) {
     assert_nargs("cadr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))))
         li_error("cadr", "list is too short", li_car(args));
-    return cadr(li_car(args));
+    return li_cadr(li_car(args));
 }
 
 li_object *p_cdar(li_object *args) {
     assert_nargs("cdar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))))
         li_error("cdar", "list is too short", li_car(args));
-    return cdar(li_car(args));
+    return li_cdar(li_car(args));
 }
 
 li_object *p_cddr(li_object *args) {
     assert_nargs("cddr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))))
         li_error("cddr", "list is too short", li_car(args));
-    return cddr(li_car(args));
+    return li_cddr(li_car(args));
 }
 
 li_object *p_caaar(li_object *args) {
     assert_nargs("caaar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))))
         li_error("caaar", "list is too short", li_car(args));
-    return caaar(li_car(args));
+    return li_caaar(li_car(args));
 }
 
 li_object *p_caadr(li_object *args) {
     assert_nargs("caadr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))))
         li_error("caadr", "list is too short", li_car(args));
-    return caadr(li_car(args));
+    return li_caadr(li_car(args));
 }
 
 li_object *p_cadar(li_object *args) {
     assert_nargs("cadar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))))
         li_error("cadar", "list is too short", li_car(args));
-    return cadar(li_car(args));
+    return li_cadar(li_car(args));
 }
 
 li_object *p_caddr(li_object *args) {
     assert_nargs("caddr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))))
         li_error("caddr", "list is too short", li_car(args));
-    return caddr(li_car(args));
+    return li_caddr(li_car(args));
 }
 
 li_object *p_cdaar(li_object *args) {
     assert_nargs("cdaar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))))
         li_error("cdaar", "list is too short", li_car(args));
-    return cdaar(li_car(args));
+    return li_cdaar(li_car(args));
 }
 
 li_object *p_cdadr(li_object *args) {
     assert_nargs("cdadr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))))
         li_error("cdadr", "list is too short", li_car(args));
-    return cdadr(li_car(args));
+    return li_cdadr(li_car(args));
 }
 
 li_object *p_cddar(li_object *args) {
     assert_nargs("cddar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))))
         li_error("cddar", "list is too short", li_car(args));
-    return cddar(li_car(args));
+    return li_cddar(li_car(args));
 }
 
 li_object *p_cdddr(li_object *args) {
     assert_nargs("cdddr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))))
         li_error("cdddr", "list is too short", li_car(args));
-    return cdddr(li_car(args));
+    return li_cdddr(li_car(args));
 }
 
 li_object *p_caaaar(li_object *args) {
     assert_nargs("caaaar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("caaaar", "list is too short", li_car(args));
-    return caaaar(li_car(args));
+    return li_caaaar(li_car(args));
 }
 
 li_object *p_caaadr(li_object *args) {
     assert_nargs("caaadr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("caaadr", "list is too short", li_car(args));
-    return caaadr(li_car(args));
+    return li_caaadr(li_car(args));
 }
 
 li_object *p_caadar(li_object *args) {
     assert_nargs("caadar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("caadar", "list is too short", li_car(args));
-    return caadar(li_car(args));
+    return li_caadar(li_car(args));
 }
 
 li_object *p_caaddr(li_object *args) {
     assert_nargs("caaddr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("caaddr", "list is too short", li_car(args));
-    return caaddr(li_car(args));
+    return li_caaddr(li_car(args));
 }
 
 li_object *p_cadaar(li_object *args) {
     assert_nargs("cadaar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cadaar", "list is too short", li_car(args));
-    return cadaar(li_car(args));
+    return li_cadaar(li_car(args));
 }
 
 li_object *p_cadadr(li_object *args) {
     assert_nargs("cadadr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cadadr", "list is too short", li_car(args));
-    return cadadr(li_car(args));
+    return li_cadadr(li_car(args));
 }
 
 li_object *p_caddar(li_object *args) {
     assert_nargs("caddar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("caddar", "list is too short", li_car(args));
-    return caddar(li_car(args));
+    return li_caddar(li_car(args));
 }
 
 li_object *p_cadddr(li_object *args) {
     assert_nargs("cadddr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cadddr", "list is too short", li_car(args));
-    return cadddr(li_car(args));
+    return li_cadddr(li_car(args));
 }
 
 li_object *p_cdaaar(li_object *args) {
     assert_nargs("cdaaar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cdaaar", "list is too short", li_car(args));
-    return cdaaar(li_car(args));
+    return li_cdaaar(li_car(args));
 }
 
 li_object *p_cdaadr(li_object *args) {
     assert_nargs("cdaadr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cdaadr", "list is too short", li_car(args));
-    return cdaadr(li_car(args));
+    return li_cdaadr(li_car(args));
 }
 
 li_object *p_cdadar(li_object *args) {
     assert_nargs("cdadar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cdadar", "list is too short", li_car(args));
-    return cdadar(li_car(args));
+    return li_cdadar(li_car(args));
 }
 
 li_object *p_cdaddr(li_object *args) {
     assert_nargs("cdaddr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cdaddr", "list is too short", li_car(args));
-    return cdaddr(li_car(args));
+    return li_cdaddr(li_car(args));
 }
 
 li_object *p_cddaar(li_object *args) {
     assert_nargs("cddaar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cddaar", "list is too short", li_car(args));
-    return cddaar(li_car(args));
+    return li_cddaar(li_car(args));
 }
 
 li_object *p_cddadr(li_object *args) {
     assert_nargs("cddadr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cddadr", "list is too short", li_car(args));
-    return cddadr(li_car(args));
+    return li_cddadr(li_car(args));
 }
 
 li_object *p_cdddar(li_object *args) {
     assert_nargs("cdddar", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cdddar", "list is too short", li_car(args));
-    return cdddar(li_car(args));
+    return li_cdddar(li_car(args));
 }
 
 li_object *p_cddddr(li_object *args) {
     assert_nargs("cddddr", 1, args);
     if (!li_is_pair(li_car(args)) && !li_is_pair(li_cdr(li_car(args))) &&
-        !li_is_pair(cddr(li_car(args))) && !li_is_pair(cdddr(li_car(args))))
+        !li_is_pair(li_cddr(li_car(args))) && !li_is_pair(li_cdddr(li_car(args))))
         li_error("cddddr", "list is too short", li_car(args));
-    return cddddr(li_car(args));
+    return li_cddddr(li_car(args));
 }
 
 struct reg {

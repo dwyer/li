@@ -44,11 +44,11 @@ li_object *li_eval(li_object *exp, li_object *env) {
         if (li_is_symbol(exp)) {
             return li_environment_lookup(env, exp);
         } else if (li_is_quoted(exp)) {
-            check_syntax(li_cdr(exp) && !cddr(exp), exp);
-            return cadr(exp);
+            check_syntax(li_cdr(exp) && !li_cddr(exp), exp);
+            return li_cadr(exp);
         } else if (li_is_quasiquoted(exp)) {
-            check_syntax(li_cdr(exp) && !cddr(exp), exp);
-            return eval_quasiquote(cadr(exp), env);
+            check_syntax(li_cdr(exp) && !li_cddr(exp), exp);
+            return eval_quasiquote(li_cadr(exp), env);
         } else if (li_is_application(exp)) {
             proc = li_eval(li_car(exp), env);
             args = li_cdr(exp);
@@ -83,10 +83,10 @@ li_object *eval_quasiquote(li_object *exp, li_object *env) {
     if (!li_is_pair(exp))
         return exp;
     else if (li_is_unquoted(exp))
-        return li_eval(cadr(exp), env);
+        return li_eval(li_cadr(exp), env);
     else if (li_is_unquoted_splicing(li_car(exp))) {
         head = tail = li_null;
-        for (iter = li_eval(cadar(exp), env); iter; iter = li_cdr(iter)) {
+        for (iter = li_eval(li_cadar(exp), env); iter; iter = li_cdr(iter)) {
             if (head)
                 tail = li_set_cdr(tail, li_cons(li_car(iter), li_null));
             else
