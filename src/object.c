@@ -236,7 +236,7 @@ li_object *li_vector(li_object *lst) {
     return obj;
 }
 
-void destroy(li_object *obj) {
+void li_destroy(li_object *obj) {
     if (!obj || li_is_locked(obj))
         return;
     if (li_is_environment(obj))
@@ -295,7 +295,7 @@ void mark(li_object *obj) {
 /* 
  * Garbage collector. 
  */
-void cleanup(li_object *env) {
+void li_cleanup(li_object *env) {
     int i, j, k;
 
     mark(env);
@@ -305,7 +305,7 @@ void cleanup(li_object *env) {
             li_unlock(heap.objs[i]);
             heap.objs[j++] = heap.objs[i];
         } else {
-            destroy(heap.objs[i]);
+            li_destroy(heap.objs[i]);
             heap.size--;
         }
     }

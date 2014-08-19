@@ -116,8 +116,8 @@ typedef struct li_object li_object;
 extern void *li_allocate(void *ptr, size_t count, size_t size);
 extern li_object *li_create(int type);
 
-extern void cleanup(li_object *env);
-extern void destroy(li_object *obj);
+extern void li_cleanup(li_object *env);
+extern void li_destroy(li_object *obj);
 
 extern li_object *li_character(int c);
 extern li_object *li_compound(li_object *name, li_object *vars, li_object *body, li_object *env);

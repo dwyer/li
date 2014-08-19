@@ -80,7 +80,7 @@ void load(char *filename, li_object *env) {
         error("load", "unable to read file", li_string(filename));
     while ((exp = lread(f)) != li_eof) {
         exp = eval(exp, env);
-        cleanup(env);
+        li_cleanup(env);
     }
     fclose(f);
     if (pop) pop_buffer();
