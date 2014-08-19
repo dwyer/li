@@ -48,7 +48,7 @@ void write_object(li_object *obj, FILE *f, int h) {
 void write_pair(li_object *obj, FILE *f, int h) {
     li_object *iter;
 
-    lock(obj);
+    li_lock(obj);
     iter = obj;
     fprintf(f, "(");
     do {
@@ -62,7 +62,7 @@ void write_pair(li_object *obj, FILE *f, int h) {
         write_object(iter, f, h);
     }
     fprintf(f, ")");
-    unlock(obj);
+    li_unlock(obj);
 }
 
 void write_string(li_object *obj, FILE *f, int h) {

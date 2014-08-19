@@ -264,7 +264,7 @@ void mark(li_object *obj) {
 
     if (!obj || li_is_locked(obj))
         return;
-    lock(obj);
+    li_lock(obj);
     if (li_is_environment(obj)) {
         for (; obj; obj = obj->data.env.base)
             for (i = 0; i < obj->data.env.size; i++) {
@@ -300,7 +300,7 @@ void cleanup(li_object *env) {
     k = heap.size;
     for (i = j = 0; i < k; i++) {
         if (li_is_locked(heap.objs[i])) {
-            unlock(heap.objs[i]);
+            li_unlock(heap.objs[i]);
             heap.objs[j++] = heap.objs[i];
         } else {
             destroy(heap.objs[i]);

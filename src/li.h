@@ -36,8 +36,8 @@
 #define li_is_false(obj)        li_not(obj)
 #define li_is_true(obj)         !li_not(obj)
 
-#define lock(obj)               ((obj)->locked = li_true)
-#define unlock(obj)             ((obj)->locked = li_false)
+#define li_lock(obj)            ((obj)->locked = li_true)
+#define li_unlock(obj)          ((obj)->locked = li_false)
 #define li_is_locked(obj)       (obj)->locked
 
 #define to_character(obj)       (obj)->data.character
