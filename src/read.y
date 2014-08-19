@@ -62,7 +62,7 @@ li_object *append(li_object *lst, li_object *obj) {
         
     for (tail = lst; tail && cdr(tail); tail = cdr(tail));
     if (!tail) return obj;
-    set_cdr(tail, obj);
+    li_set_cdr(tail, obj);
     return lst;
 }
 

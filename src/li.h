@@ -62,11 +62,11 @@
 #define li_cons(obj1, obj2)     li_pair(obj1, obj2)
 #define car(obj)                li_to_pair(obj).car
 #define cdr(obj)                li_to_pair(obj).cdr
-#define set_car(obj1, obj2)     (car(obj1) = obj2)
-#define set_cdr(obj1, obj2)     (cdr(obj1) = obj2)
+#define li_set_car(obj1, obj2)  (car(obj1) = obj2)
+#define li_set_cdr(obj1, obj2)  (cdr(obj1) = obj2)
 
 /* is this overkill? */
-#define caar(obj)               car (car(obj))
+#define caar(obj)               car(car(obj))
 #define cadr(obj)               car(cdr(obj))
 #define cdar(obj)               cdr(car(obj))
 #define cddr(obj)               cdr(cdr(obj))

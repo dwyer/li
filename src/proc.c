@@ -128,7 +128,7 @@ li_object *m_do(li_object *seq, li_object *env) {
     assert_pair("do", seq);
     assert_pair("do", cdr(seq));
     head = tail = li_cons(li_symbol("let"), li_null);
-    tail = set_cdr(tail, li_cons(li_symbol("#"), li_null));
+    tail = li_set_cdr(tail, li_cons(li_symbol("#"), li_null));
     let_args = li_null;
     let_bindings = li_null;
     for (iter = car(seq); iter; iter = cdr(iter)) {
@@ -144,15 +144,15 @@ li_object *m_do(li_object *seq, li_object *env) {
         }
         let_bindings = li_cons(binding, let_bindings);
     }
-    tail = set_cdr(tail, li_cons(let_bindings, li_null));
-    tail = set_cdr(tail, li_cons(li_null, li_null));
-    tail = set_car(tail, li_cons(li_symbol("cond"), li_null));
-    tail = set_cdr(tail, li_cons(cadr(seq), li_null));
-    tail = set_cdr(tail, li_cons(li_null, li_null));
-    tail = set_car(tail, li_cons(li_symbol("else"), li_null));
+    tail = li_set_cdr(tail, li_cons(let_bindings, li_null));
+    tail = li_set_cdr(tail, li_cons(li_null, li_null));
+    tail = li_set_car(tail, li_cons(li_symbol("cond"), li_null));
+    tail = li_set_cdr(tail, li_cons(cadr(seq), li_null));
+    tail = li_set_cdr(tail, li_cons(li_null, li_null));
+    tail = li_set_car(tail, li_cons(li_symbol("else"), li_null));
     for (iter = cddr(seq); iter; iter = cdr(iter))
-        tail = set_cdr(tail, iter);
-    tail = set_cdr(tail, li_cons(li_cons(li_symbol("#"), let_args), li_null));
+        tail = li_set_cdr(tail, iter);
+    tail = li_set_cdr(tail, li_cons(li_cons(li_symbol("#"), let_args), li_null));
     return head;
 }
 
@@ -198,8 +198,8 @@ li_object *m_let(li_object *args, li_object *env) {
             vars_tail = vars = li_cons(car(args), li_null);
             vals_tail = vals = li_cons(cadr(args), li_null);
         } else {
-            vars_tail = set_cdr(vars_tail, li_cons(car(args), li_null));
-            vals_tail = set_cdr(vals_tail, li_cons(cadr(args), li_null));
+            vars_tail = li_set_cdr(vars_tail, li_cons(car(args), li_null));
+            vals_tail = li_set_cdr(vals_tail, li_cons(cadr(args), li_null));
         }
     }
     body = make_lambda(vars, body);
@@ -220,7 +220,7 @@ li_object *m_let_star(li_object *args, li_object *env) {
         if (result == li_null)
             result = li_cons(make_lambda(vars, body), vals);
         else
-            set_cdr(cdar(result),
+            li_set_cdr(cdar(result),
                     li_cons(li_cons(make_lambda(vars, cddar(result)), vals), li_null));
     }
     return result;
@@ -231,8 +231,8 @@ li_object *m_letrec(li_object *args, li_object *env) {
 
     head = tail = li_cons(li_symbol("begin"), li_null);
     for (iter = car(args); iter; iter = cdr(iter))
-        tail = set_cdr(tail, li_cons(li_cons(li_symbol("define"), car(iter)), li_null));
-    set_cdr(tail, cdr(args));
+        tail = li_set_cdr(tail, li_cons(li_cons(li_symbol("define"), car(iter)), li_null));
+    li_set_cdr(tail, cdr(args));
     return head;
 }
 
@@ -778,7 +778,7 @@ li_object *p_cdr(li_object *args) {
 li_object *p_set_car(li_object *args) {
     assert_nargs("set-car!", 2, args);
     assert_pair("set-car!", car(args));
-    set_car(car(args), cadr(args));
+    li_set_car(car(args), cadr(args));
     return li_null;
 }
 
@@ -789,7 +789,7 @@ li_object *p_set_car(li_object *args) {
 li_object *p_set_cdr(li_object *args) {
     assert_nargs("set-cdr!", 2, args);
     assert_pair("set-cdr!", car(args));
-    set_cdr(car(args), cadr(args));
+    li_set_cdr(car(args), cadr(args));
     return li_null;
 }
 
@@ -822,7 +822,7 @@ li_object *p_make_list(li_object *args) {
     head = tail = li_null;
     while (k--) {
         if (head)
-            tail = set_cdr(tail, li_cons(fill, li_null));
+            tail = li_set_cdr(tail, li_cons(fill, li_null));
         else
             head = tail = li_cons(fill, li_null);
     }
@@ -875,7 +875,7 @@ li_object *p_list_set(li_object *args) {
     obj = caddr(args);
     while (k--)
         lst = cdr(lst);
-    return set_car(lst, obj);
+    return li_set_car(lst, obj);
 }
 
 li_object *p_length(li_object *args) {
@@ -902,13 +902,13 @@ li_object *p_append(li_object *args) {
         while (list) {
             if (li_is_pair(list)) {
                 if (head)
-                    tail = set_cdr(tail, li_cons(car(list), li_null));
+                    tail = li_set_cdr(tail, li_cons(car(list), li_null));
                 else
                     head = tail = li_cons(car(list), li_null);
                 list = cdr(list);
             } else if (!cdr(args)) {
                 if (head)
-                    tail = set_cdr(tail, list);
+                    tail = li_set_cdr(tail, list);
                 else
                     head = tail = list;
                 list = li_null;
@@ -930,11 +930,11 @@ li_object *p_filter(li_object *args) {
     for (iter = cadr(args), head = temp = li_null; iter; iter = cdr(iter)) {
         assert_pair("filter", iter);
         if (temp)
-            set_car(temp, car(iter));
+            li_set_car(temp, car(iter));
         else
             temp = li_cons(car(iter), li_null);
         if (li_is_true(li_apply(car(args), temp))) {
-            tail = head ? set_cdr(tail, temp) : (head = temp);
+            tail = head ? li_set_cdr(tail, temp) : (head = temp);
             temp = li_null;
         }
     }
@@ -1222,7 +1222,7 @@ li_object *p_string_to_list(li_object *args) {
     head = tail = li_null;
     for (i = 0; i < strlen(str); ++i) {
         if (head)
-            tail = set_cdr(tail, li_cons(li_character(str[i]), li_null));
+            tail = li_set_cdr(tail, li_cons(li_character(str[i]), li_null));
         else
             head = tail = li_cons(li_character(str[i]), li_null);
     }
@@ -1247,7 +1247,7 @@ li_object *p_string_to_vector(li_object *args) {
     head = tail = li_null;
     for (i = 0; i < n; ++i) {
         if (head)
-            tail = set_cdr(tail, li_cons(li_character(s[i]), li_null));
+            tail = li_set_cdr(tail, li_cons(li_character(s[i]), li_null));
         else
             head = tail = li_cons(li_character(s[i]), li_null);
     }
@@ -1393,7 +1393,7 @@ li_object *p_vector_to_list(li_object *args) {
     k = li_vector_length(vect);
     list = tail = k ? li_cons(li_vector_ref(vect, 0), li_null) : li_null;
     for (i = 1; i < k; ++i)
-        tail = set_cdr(tail, li_cons(li_vector_ref(vect, i), li_null));
+        tail = li_set_cdr(tail, li_cons(li_vector_ref(vect, i), li_null));
     return list;
 }
 
@@ -1490,14 +1490,16 @@ li_object *p_map(li_object *args) {
             assert_pair("map", car(clists_iter));
             /* get cars */
             if (cars)
-                cars_iter = set_cdr(cars_iter, li_cons(caar(clists_iter), li_null));
+                cars_iter = li_set_cdr(cars_iter, li_cons(caar(clists_iter),
+                            li_null));
             else
                 cars = cars_iter = li_cons(caar(clists_iter), li_null);
-            set_car(clists_iter, cdar(clists_iter));
+            li_set_car(clists_iter, cdar(clists_iter));
         }
         if (loop) {
             if (list)
-                list_iter = set_cdr(list_iter, li_cons(li_apply(proc, cars), li_null));
+                list_iter = li_set_cdr(list_iter, li_cons(li_apply(proc, cars),
+                            li_null));
             else
                 list = list_iter = li_cons(li_apply(proc, cars), li_null);
         }

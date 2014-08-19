@@ -30,7 +30,7 @@ li_object *li_apply(li_object *proc, li_object *args) {
         if (!tail)
             head = tail = li_cons(obj, li_null);
         else {
-            tail = set_cdr(tail, li_cons(obj, li_null));
+            tail = li_set_cdr(tail, li_cons(obj, li_null));
         }
         args = cdr(args);
     }
@@ -88,12 +88,12 @@ li_object *eval_quasiquote(li_object *exp, li_object *env) {
         head = tail = li_null;
         for (iter = li_eval(cadar(exp), env); iter; iter = cdr(iter)) {
             if (head)
-                tail = set_cdr(tail, li_cons(car(iter), li_null));
+                tail = li_set_cdr(tail, li_cons(car(iter), li_null));
             else
                 head = tail = li_cons(car(iter), li_null);
         }
         if (tail) {
-            set_cdr(tail, eval_quasiquote(cdr(exp), env));
+            li_set_cdr(tail, eval_quasiquote(cdr(exp), env));
             return head;
         } else {
             return eval_quasiquote(cdr(exp), env);
@@ -134,7 +134,7 @@ li_object *list_of_values(li_object *exps, li_object *env) {
     head = li_null;
     while (exps) {
         tail = li_cons(li_eval(car(exps), env), li_null);
-        node = head ? set_cdr(node, tail) : (head = tail);
+        node = head ? li_set_cdr(node, tail) : (head = tail);
         exps = cdr(exps);
     }
     return head;
