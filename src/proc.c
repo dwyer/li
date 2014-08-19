@@ -495,11 +495,11 @@ li_object *p_gt(li_object *args) {
 }
 
 li_object *p_le(li_object *args) {
-    return boolean(not(p_gt(args)));
+    return boolean(li_not(p_gt(args)));
 }
 
 li_object *p_ge(li_object *args) {
-    return boolean(not(p_lt(args)));
+    return boolean(li_not(p_lt(args)));
 }
 
 li_object *p_add(li_object *args) {
@@ -718,7 +718,7 @@ li_object *p_expt(li_object *args) {
  */
 li_object *p_not(li_object *args) {
     assert_nargs("not", 1, args);
-    return boolean(not(car(args)));
+    return boolean(li_not(car(args)));
 }
 
 /* (boolean? obj)

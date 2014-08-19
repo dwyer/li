@@ -30,11 +30,11 @@
 
 /* Booleans */
 #define boolean(obj)            (obj ? symbol("true") : symbol("false"))
-#define not(obj)                li_is_eq(obj, boolean(li_false))
+#define li_not(obj)             li_is_eq(obj, boolean(li_false))
 #define li_is_boolean(obj)      (li_is_eq(obj, boolean(li_true)) || \
                                  li_is_eq(obj, boolean(li_false)))
-#define li_is_false(obj)        not(obj)
-#define li_is_true(obj)         !not(obj)
+#define li_is_false(obj)        li_not(obj)
+#define li_is_true(obj)         !li_not(obj)
 
 #define lock(obj)               ((obj)->locked = li_true)
 #define unlock(obj)             ((obj)->locked = li_false)
