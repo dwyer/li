@@ -144,8 +144,8 @@ object *setup_environment(void) {
     env = environment(null);
     append_variable(symbol("user-initial-environment"), env, env);
     append_variable(symbol("null"), null, env);
-    append_variable(boolean(true), boolean(true), env);
-    append_variable(boolean(false), boolean(false), env);
+    append_variable(boolean(li_true), boolean(li_true), env);
+    append_variable(boolean(li_false), boolean(li_false), env);
     define_primitive_procedures(env);
     return env;
 }

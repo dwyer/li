@@ -166,7 +166,7 @@ object *port(const char *filename, const char *mode) {
     FILE *f;
 
     if (!(f = fopen(filename, mode)))
-        return boolean(false);
+        return boolean(li_false);
     obj = create(T_PORT);
     obj->data.port.file = f;
     obj->data.port.filename = strdup(filename);
@@ -319,16 +319,16 @@ int is_equal_vectors(object *obj1, object *obj2) {
     int k;
 
     if (vector_length(obj1) != vector_length(obj2))
-        return false;
+        return li_false;
     for (k = 0; k < vector_length(obj1); k++)
         if (!is_equal(vector_ref(obj1, k), vector_ref(obj2, k)))
-            return false;
-    return true;
+            return li_false;
+    return li_true;
 }
 
 int is_equal(object *obj1, object *obj2) {
     if (is_eqv(obj1, obj2))
-        return true;
+        return li_true;
     else if (is_pair(obj1) && is_pair(obj2))
         return (is_equal(car(obj1), car(obj2)) &&
                 is_equal(cdr(obj2), cdr(obj2)));
@@ -336,19 +336,19 @@ int is_equal(object *obj1, object *obj2) {
         return is_string_eq(obj1, obj2);
     else if (is_vector(obj1) && is_vector(obj2))
         return is_equal_vectors(obj1, obj2);
-    return false;
+    return li_false;
 }
 
 int is_eqv(object *obj1, object *obj2) {
     if (is_eq(obj1, obj2))
-        return true;
+        return li_true;
     else if (!obj1 || !obj2)
-        return false;
+        return li_false;
     else if (obj1->type != obj2->type)
-        return false;
+        return li_false;
     else if (is_number(obj1) && is_number(obj2))
         return to_number(obj1) == to_number(obj2);
-    return false;
+    return li_false;
 }
 
 int is_list(object *obj) {

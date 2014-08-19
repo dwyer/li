@@ -1,10 +1,10 @@
 #ifndef SUBSCM_H
 #define SUBSCM_H
 
-#define false 0
-#define true !false
+#define li_false                0
+#define li_true                 !li_false
 
-#define null                     NULL
+#define null                    NULL
 #define eof                     symbol("#<eof>")
 
 #define is_eq(obj1, obj2)       ((obj1) == (obj2))
@@ -30,14 +30,14 @@
 
 /* Booleans */
 #define boolean(obj)            (obj ? symbol("true") : symbol("false"))
-#define not(obj)                is_eq(obj, boolean(false))
-#define is_boolean(obj)         (is_eq(obj, boolean(true)) || \
-                                 is_eq(obj, boolean(false)))
+#define not(obj)                is_eq(obj, boolean(li_false))
+#define is_boolean(obj)         (is_eq(obj, boolean(li_true)) || \
+                                 is_eq(obj, boolean(li_false)))
 #define is_false(obj)           not(obj)
 #define is_true(obj)            !not(obj)
 
-#define lock(obj)               ((obj)->locked = true)
-#define unlock(obj)             ((obj)->locked = false)
+#define lock(obj)               ((obj)->locked = li_true)
+#define unlock(obj)             ((obj)->locked = li_false)
 #define is_locked(obj)          (obj)->locked
 
 #define to_character(obj)       (obj)->data.character

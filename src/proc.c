@@ -33,9 +33,9 @@
 object *m_and(object *seq, object *env) {
     for (; seq && cdr(seq); seq = cdr(seq))
         if (is_false(eval(car(seq), env)))
-            return boolean(false);
+            return boolean(li_false);
     if (!seq)
-        return boolean(true);
+        return boolean(li_true);
     return car(seq);
 }
 
@@ -67,7 +67,7 @@ object *m_case(object *exp, object *env) {
                 break;
             }
     if (!seq)
-        return boolean(false);
+        return boolean(li_false);
     return car(seq);
 }
 
@@ -80,7 +80,7 @@ object *m_cond(object *seq, object *env) {
             break;
         }
     if (!seq)
-        return boolean(false);
+        return boolean(li_false);
     return car(seq);
 }
 
@@ -164,7 +164,7 @@ object *m_if(object *seq, object *env) {
     else if (cddr(seq))
         return caddr(seq);
     else
-        return boolean(false);
+        return boolean(li_false);
 }
 
 object *m_lambda(object *seq, object *env) {
@@ -255,7 +255,7 @@ object *m_or(object *seq, object *env) {
         if (is_true(val = eval(car(seq), env)))
             return cons(symbol("quote"), cons(val, null));
     if (!seq)
-        return boolean(false);
+        return boolean(li_false);
     return car(seq);
 }
 
@@ -330,7 +330,7 @@ object *p_getenv(object *args) {
     if ((env = getenv(to_string(car(args)))))
         return string(env);
     else
-        return boolean(false);
+        return boolean(li_false);
 }
 
 object *p_system(object *args) {
@@ -459,39 +459,39 @@ object *p_eq(object *args) {
     while (args) {
         assert_number("=", car(args));
         if (!cdr(args))
-            return boolean(true);
+            return boolean(li_true);
         assert_number("=", cadr(args));
         if (!(to_number(car(args)) == to_number(cadr(args))))
-            return boolean(false);
+            return boolean(li_false);
         args = cdr(args);
     }
-    return boolean(true);
+    return boolean(li_true);
 }
 
 object *p_lt(object *args) {
     while (args) {
         assert_number("<", car(args));
         if (!cdr(args))
-            return boolean(true);
+            return boolean(li_true);
         assert_number("<", cadr(args));
         if (!(to_number(car(args)) < to_number(cadr(args))))
-            return boolean(false);
+            return boolean(li_false);
         args = cdr(args);
     }
-    return boolean(true);
+    return boolean(li_true);
 }
 
 object *p_gt(object *args) {
     while (args) {
         assert_number(">", car(args));
         if (!cdr(args))
-            return boolean(true);
+            return boolean(li_true);
         assert_number(">", cadr(args));
         if (!(to_number(car(args)) > to_number(cadr(args))))
-            return boolean(false);
+            return boolean(li_false);
         args = cdr(args);
     }
-    return boolean(true);
+    return boolean(li_true);
 }
 
 object *p_le(object *args) {
@@ -807,8 +807,8 @@ object *p_is_list(object *args) {
     assert_nargs("list?", 1, args);
     for (args = car(args); args; args = cdr(args))
         if (args && !is_pair(args))
-            return boolean(false);
-    return boolean(true);
+            return boolean(li_false);
+    return boolean(li_true);
 }
 
 object *p_make_list(object *args) {
@@ -963,7 +963,7 @@ object *p_assq(object *args) {
         if (is_eq(car(args), caar(lst)))
             return car(lst);
     }
-    return boolean(false);
+    return boolean(li_false);
 }
 
 object *p_assv(object *args) {
@@ -976,7 +976,7 @@ object *p_assv(object *args) {
         if (is_eqv(car(args), caar(lst)))
             return car(lst);
     }
-    return boolean(false);
+    return boolean(li_false);
 }
 
 object *p_assoc(object *args) {
@@ -989,7 +989,7 @@ object *p_assoc(object *args) {
         if (is_equal(car(args), caar(lst)))
             return car(lst);
     }
-    return boolean(false);
+    return boolean(li_false);
 }
 
 object *p_memq(object *args) {
@@ -1001,7 +1001,7 @@ object *p_memq(object *args) {
         if (is_eq(car(args), car(lst)))
             return lst;
     }
-    return boolean(false);
+    return boolean(li_false);
 }
 
 object *p_memv(object *args) {
@@ -1013,7 +1013,7 @@ object *p_memv(object *args) {
         if (is_eqv(car(args), car(lst)))
             return lst;
     }
-    return boolean(false);
+    return boolean(li_false);
 }
 
 object *p_member(object *args) {
@@ -1025,7 +1025,7 @@ object *p_member(object *args) {
         if (is_equal(car(args), car(lst)))
             return lst;
     }
-    return boolean(false);
+    return boolean(li_false);
 }
 
 /***********
@@ -1322,7 +1322,7 @@ object *p_make_vector(object *args) {
         fill = cadr(args);
     } else {
         assert_nargs("make-vector", 1, args);
-        fill = false;
+        fill = li_false;
     }
     vec = create(T_VECTOR);
     vec->data.vector.data = allocate(null, k, sizeof(*vec->data.vector.data));
