@@ -1324,7 +1324,7 @@ li_object *p_make_vector(li_object *args) {
         assert_nargs("make-vector", 1, args);
         fill = li_false;
     }
-    vec = li_create(T_VECTOR);
+    vec = li_create(LI_T_VECTOR);
     vec->data.vector.data = li_allocate(li_null, k, sizeof(*vec->data.vector.data));
     vec->data.vector.length = k;
     while (k--)

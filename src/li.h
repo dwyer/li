@@ -12,21 +12,21 @@
 
 /* Type checking. */
 #define li_is_type(obj, t)      ((obj) && (obj)->type == t)
-#define li_is_environment(obj)  li_is_type(obj, T_ENVIRONMENT)
-#define li_is_character(obj)    li_is_type(obj, T_CHARACTER)
-#define li_is_compound(obj)     li_is_type(obj, T_COMPOUND)
+#define li_is_environment(obj)  li_is_type(obj, LI_T_ENVIRONMENT)
+#define li_is_character(obj)    li_is_type(obj, LI_T_CHARACTER)
+#define li_is_compound(obj)     li_is_type(obj, LI_T_COMPOUND)
 #define li_is_integer(obj)      (li_is_number(obj) && \
                                  li_to_number(obj) == li_to_integer(obj))
-#define li_is_macro(obj)        li_is_type(obj, T_MACRO)
-#define li_is_number(obj)       li_is_type(obj, T_NUMBER)
-#define li_is_pair(obj)         li_is_type(obj, T_PAIR)
-#define li_is_port(obj)         li_is_type(obj, T_PORT)
-#define li_is_primitive(obj)    li_is_type(obj, T_PRIMITIVE)
+#define li_is_macro(obj)        li_is_type(obj, LI_T_MACRO)
+#define li_is_number(obj)       li_is_type(obj, LI_T_NUMBER)
+#define li_is_pair(obj)         li_is_type(obj, LI_T_PAIR)
+#define li_is_port(obj)         li_is_type(obj, LI_T_PORT)
+#define li_is_primitive(obj)    li_is_type(obj, LI_T_PRIMITIVE)
 #define li_is_procedure(obj)    (li_is_compound(obj) || li_is_primitive(obj))
-#define li_is_string(obj)       li_is_type(obj, T_STRING)
-#define li_is_symbol(obj)       li_is_type(obj, T_SYMBOL)
-#define li_is_syntax(obj)       li_is_type(obj, T_SYNTAX)
-#define li_is_vector(obj)       li_is_type(obj, T_VECTOR)
+#define li_is_string(obj)       li_is_type(obj, LI_T_STRING)
+#define li_is_symbol(obj)       li_is_type(obj, LI_T_SYMBOL)
+#define li_is_syntax(obj)       li_is_type(obj, LI_T_SYNTAX)
+#define li_is_vector(obj)       li_is_type(obj, LI_T_VECTOR)
 
 /* Booleans */
 #define li_boolean(obj)         (obj ? li_symbol("true") : li_symbol("false"))
@@ -96,19 +96,19 @@
 #define li_cddddr(obj)          li_cdr(li_cdr(li_cdr(li_cdr(obj))))
 
 enum {
-    T_CHARACTER,
-    T_COMPOUND,
-    T_ENVIRONMENT,
-    T_MACRO,
-    T_NUMBER,
-    T_PAIR,
-    T_PORT,
-    T_PRIMITIVE,
-    T_SYNTAX,
-    T_STRING,
-    T_SYMBOL,
-    T_VECTOR,
-    N_TYPES
+    LI_T_CHARACTER,
+    LI_T_COMPOUND,
+    LI_T_ENVIRONMENT,
+    LI_T_MACRO,
+    LI_T_NUMBER,
+    LI_T_PAIR,
+    LI_T_PORT,
+    LI_T_PRIMITIVE,
+    LI_T_SYNTAX,
+    LI_T_STRING,
+    LI_T_SYMBOL,
+    LI_T_VECTOR,
+    LI_NUM_TYPES
 };
 
 typedef struct li_object li_object;
