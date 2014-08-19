@@ -217,11 +217,11 @@ extern void li_load(char *filename, li_object *env);
 extern li_object *li_read(FILE *f);
 
 /* write */
-#define print(obj)              print_object(obj)
-#define lwrite(obj, f)          write_object(obj, f, 0)
-#define display(obj, f)         write_object(obj, f, 1)
-#define newline(f)              fprintf(f, "\n")
-extern void print_object(li_object *obj);
-extern void write_object(li_object *obj, FILE *f, int h);
+#define li_print(obj)           li_print_object(obj)
+#define li_write(obj, f)        li_write_object(obj, f, 0)
+#define li_display(obj, f)      li_write_object(obj, f, 1)
+#define li_newline(f)           fprintf(f, "\n")
+extern void li_print_object(li_object *obj);
+extern void li_write_object(li_object *obj, FILE *f, int h);
 
 #endif

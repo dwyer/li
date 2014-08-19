@@ -5,6 +5,10 @@
 
 #define ARGV_SYMBOL li_symbol("args")
 
+static li_object *prompt(FILE *f);
+static void repl(li_object *env);
+static void script(li_object *env);
+
 li_object *prompt(FILE *f) {
     printf("> ");
     return li_read(f);
@@ -19,8 +23,8 @@ void repl(li_object *env) {
             exp = li_eval(exp, env);
             li_environment_assign(env, li_symbol("_"), exp);
             if (exp) {
-                lwrite(exp, stdout);
-                newline(stdout);
+                li_write(exp, stdout);
+                li_newline(stdout);
             }
         }
         li_cleanup(env);

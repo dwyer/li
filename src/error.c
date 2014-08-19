@@ -6,8 +6,8 @@ static jmp_buf buf;
 
 void li_error(char *who, char *msg, li_object *args) {
     fprintf(stderr, "# error: %s: %s: ", who, msg);
-    lwrite(args, stderr);
-    newline(stderr);
+    li_write(args, stderr);
+    li_newline(stderr);
     longjmp(buf, 1);
 }
 

@@ -1640,7 +1640,7 @@ li_object *p_write(li_object *args) {
     } else {
         assert_nargs("write", 1, args);
     }
-    lwrite(car(args), f);
+    li_write(car(args), f);
     return li_null;
 }
 
@@ -1659,7 +1659,7 @@ li_object *p_display(li_object *args) {
     } else {
         assert_nargs("display", 1, args);
     }
-    display(car(args), f);
+    li_display(car(args), f);
     return li_null;
 }
 
@@ -1676,17 +1676,17 @@ li_object *p_newline(li_object *args) {
         assert_port("newline", car(args));
         f = li_to_port(car(args)).file;
     }
-    newline(f);
+    li_newline(f);
     return li_null;
 }
 
 li_object *p_print(li_object *args) {
     for (; args; args = cdr(args)) {
-        display(car(args), stdout);
+        li_display(car(args), stdout);
         if (cdr(args))
-            display(li_character(' '), stdout);
+            li_display(li_character(' '), stdout);
     }
-    newline(stdout);
+    li_newline(stdout);
     return li_null;
 }
 
