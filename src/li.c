@@ -5,13 +5,13 @@
 
 #define ARGV_SYMBOL symbol("args")
 
-object *prompt(FILE *f) {
+li_object *prompt(FILE *f) {
     printf("> ");
     return lread(f);
 }
 
-void repl(object *env) {
-    object *exp;
+void repl(li_object *env) {
+    li_object *exp;
 
     append_variable(symbol("_"), li_null, env);
     while ((exp = prompt(stdin)) != li_eof) {
@@ -27,15 +27,15 @@ void repl(object *env) {
     }
 }
 
-void script(object *env) {
-    object *args;
+void script(li_object *env) {
+    li_object *args;
 
     args = environment_lookup(env, ARGV_SYMBOL);
     load(to_string(car(args)), env);
 }
 
 int main(int argc, char *argv[]) {
-    object *env, *args;
+    li_object *env, *args;
     int i, ret;
 
     ret = 0;

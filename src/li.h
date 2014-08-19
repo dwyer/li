@@ -4,7 +4,7 @@
 #define li_false                0
 #define li_true                 !li_false
 
-#define li_null                 ((object *)NULL)
+#define li_null                 ((li_object *)NULL)
 #define li_eof                  symbol("#<eof>")
 
 #define is_eq(obj1, obj2)       ((obj1) == (obj2))
@@ -111,69 +111,70 @@ enum {
     N_TYPES
 };
 
-typedef struct object object;
+typedef struct li_object li_object;
 
 void *allocate(void *ptr, size_t count, size_t size);
-object *create(int type);
+li_object *create(int type);
 
-void cleanup(object *env);
-void destroy(object *obj);
+void cleanup(li_object *env);
+void destroy(li_object *obj);
 
-object *character(int c);
-object *compound(object *name, object *vars, object *body, object *env);
-object *environment(object *base);
-object *macro(object *vars, object *body, object *env);
-object *number(double n);
-object *pair(object *car, object *cdr);
-object *port(const char *filename, const char *mode);
-object *primitive(object *(*proc)(object *));
-object *string(char *s);
-object *symbol(char *s);
-object *syntax(object *(*proc)(object *, object *));
-object *vector(object *lst);
+li_object *character(int c);
+li_object *compound(li_object *name, li_object *vars, li_object *body,
+        li_object *env);
+li_object *environment(li_object *base);
+li_object *macro(li_object *vars, li_object *body, li_object *env);
+li_object *number(double n);
+li_object *pair(li_object *car, li_object *cdr);
+li_object *port(const char *filename, const char *mode);
+li_object *primitive(li_object *(*proc)(li_object *));
+li_object *string(char *s);
+li_object *symbol(char *s);
+li_object *syntax(li_object *(*proc)(li_object *, li_object *));
+li_object *vector(li_object *lst);
 
 
-object *environment_assign(object *env, object *var, object *val);
-object *environment_define(object *env, object *var, object *val);
-object *environment_lookup(object *env, object *var);
-int is_equal(object *obj1, object *obj2);
-int is_eqv(object *obj1, object *obj2);
-int is_list(object *obj);
-int length(object *obj);
+li_object *environment_assign(li_object *env, li_object *var, li_object *val);
+li_object *environment_define(li_object *env, li_object *var, li_object *val);
+li_object *environment_lookup(li_object *env, li_object *var);
+int is_equal(li_object *obj1, li_object *obj2);
+int is_eqv(li_object *obj1, li_object *obj2);
+int is_list(li_object *obj);
+int length(li_object *obj);
 
-struct object {
+struct li_object {
     union {
         /* character */
         int character;
         /* environment */
         struct {
             struct {
-                object *var;
-                object *val;
+                li_object *var;
+                li_object *val;
             } *array;
             int size;
             int cap;
-            object *base;
+            li_object *base;
         } env;
         /* compound */
         struct {
-            object *name;
-            object *vars;
-            object *body;
-            object *env;
+            li_object *name;
+            li_object *vars;
+            li_object *body;
+            li_object *env;
         } compound;
         /* macro */
         struct {
-            object *vars;
-            object *body;
-            object *env;
+            li_object *vars;
+            li_object *body;
+            li_object *env;
         } macro;
         /* number */
         double number;
         /* pair */
         struct {
-            object *car;
-            object *cdr;
+            li_object *car;
+            li_object *cdr;
         } pair;
         /* port */
         struct {
@@ -181,21 +182,21 @@ struct object {
             char *filename;
         } port;
         /* primitive */
-        object *(*primitive)(object *);
+        li_object *(*primitive)(li_object *);
         /* string */
         char *string;
         /* symbol */
         struct {
             char *string;
-            object *next;
-            object *prev;
+            li_object *next;
+            li_object *prev;
             unsigned int hash;
         } symbol;
         /* syntax */
-        object *(*syntax)(object *, object *);
+        li_object *(*syntax)(li_object *, li_object *);
         /* vector */
         struct {
-            object **data;
+            li_object **data;
             int length;
         } vector;
     } data;
@@ -204,27 +205,27 @@ struct object {
 };
 
 /* error */
-void error(char *who, char *msg, object *args);
-int try(void (*f1)(object *), void (*f2)(object *), object *arg);
+void error(char *who, char *msg, li_object *args);
+int try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg);
 
 /* eval */
-object *apply(object *proc, object *args);
-object *append_variable(object *var, object *val, object *env);
-object *eval(object *exp, object *env);
-object *setup_environment(void);
+li_object *apply(li_object *proc, li_object *args);
+li_object *append_variable(li_object *var, li_object *val, li_object *env);
+li_object *eval(li_object *exp, li_object *env);
+li_object *setup_environment(void);
 
 /* load */
-void load(char *filename, object *env);
+void load(char *filename, li_object *env);
 
 /* read */
-object *lread(FILE *f);
+li_object *lread(FILE *f);
 
 /* write */
 #define print(obj)              print_object(obj)
 #define lwrite(obj, f)          write_object(obj, f, 0)
 #define display(obj, f)         write_object(obj, f, 1)
 #define newline(f)              fprintf(f, "\n")
-void print_object(object *obj);
-void write_object(object *obj, FILE *f, int h);
+void print_object(li_object *obj);
+void write_object(li_object *obj, FILE *f, int h);
 
 #endif

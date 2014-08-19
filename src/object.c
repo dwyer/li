@@ -8,13 +8,13 @@
 #define strdup(s)       strcpy(allocate(li_null, strlen(s)+1, sizeof(char)), s)
 
 static struct {
-    object **objs;
-    object *syms[HASHSIZE];
+    li_object **objs;
+    li_object *syms[HASHSIZE];
     int size;
     int cap;
 } heap = { NULL };
 
-void add_to_heap(object *obj) {
+void add_to_heap(li_object *obj) {
     int i;
 
     if (!heap.objs) {
@@ -30,7 +30,7 @@ void add_to_heap(object *obj) {
     heap.objs[heap.size++] = obj;
 }
 
-object *append_variable(object *var, object *val, object *env) {
+li_object *append_variable(li_object *var, li_object *val, li_object *env) {
     if (!is_symbol(var))
         error("eval", "not a variable", var);
     if (env->data.env.size == env->data.env.cap) {
@@ -54,8 +54,8 @@ void *allocate(void *ptr, size_t count, size_t size) {
     return ptr;
 }
 
-object *create(int type) {
-    object *obj;
+li_object *create(int type) {
+    li_object *obj;
 
     obj = allocate(li_null, 1, sizeof(*obj));
     obj->type = type;
@@ -64,16 +64,16 @@ object *create(int type) {
     return obj;
 }
 
-object *character(int c) {
-    object *obj;
+li_object *character(int c) {
+    li_object *obj;
 
     obj = create(T_CHARACTER);
     obj->data.character = c;
     return obj;
 }
 
-object *compound(object *name, object *vars, object *body, object *env) {
-    object *obj;
+li_object *compound(li_object *name, li_object *vars, li_object *body, li_object *env) {
+    li_object *obj;
 
     obj = create(T_COMPOUND);
     obj->data.compound.name = name;
@@ -83,8 +83,8 @@ object *compound(object *name, object *vars, object *body, object *env) {
     return obj;
 }
 
-object *environment(object *base) {
-    object *obj;
+li_object *environment(li_object *base) {
+    li_object *obj;
 
     obj = create(T_ENVIRONMENT);
     obj->data.env.cap = 4;
@@ -95,7 +95,7 @@ object *environment(object *base) {
     return obj;
 }
 
-object *environment_assign(object *env, object *var, object *val) {
+li_object *environment_assign(li_object *env, li_object *var, li_object *val) {
     int i;
     
     while (env) {
@@ -110,7 +110,7 @@ object *environment_assign(object *env, object *var, object *val) {
     return li_null;
 }
 
-object *environment_define(object *env, object *var, object *val) {
+li_object *environment_define(li_object *env, li_object *var, li_object *val) {
     int i;
 
     for (i = 0; i < env->data.env.size; i++)
@@ -121,7 +121,7 @@ object *environment_define(object *env, object *var, object *val) {
     return append_variable(var, val, env);
 }
 
-object *environment_lookup(object *env, object *var) {
+li_object *environment_lookup(li_object *env, li_object *var) {
     int i;
 
     while (env) {
@@ -134,8 +134,8 @@ object *environment_lookup(object *env, object *var) {
     return li_null;
 }
 
-object *macro(object *vars, object *body, object *env) {
-    object *obj;
+li_object *macro(li_object *vars, li_object *body, li_object *env) {
+    li_object *obj;
 
     obj = create(T_MACRO);
     obj->data.macro.vars = vars;
@@ -144,16 +144,16 @@ object *macro(object *vars, object *body, object *env) {
     return obj;
 }
 
-object *number(double n) {
-    object *obj;
+li_object *number(double n) {
+    li_object *obj;
 
     obj = create(T_NUMBER);
     obj->data.number = n;
     return obj;
 }
 
-object *pair(object *car, object *cdr) {
-    object *obj;
+li_object *pair(li_object *car, li_object *cdr) {
+    li_object *obj;
 
     obj = create(T_PAIR); 
     obj->data.pair.car = car;
@@ -161,8 +161,8 @@ object *pair(object *car, object *cdr) {
     return obj;
 }
 
-object *port(const char *filename, const char *mode) {
-    object *obj;
+li_object *port(const char *filename, const char *mode) {
+    li_object *obj;
     FILE *f;
 
     if (!(f = fopen(filename, mode)))
@@ -173,32 +173,32 @@ object *port(const char *filename, const char *mode) {
     return obj;
 }
 
-object *primitive(object *(*proc)(object *)) {
-    object *obj;
+li_object *primitive(li_object *(*proc)(li_object *)) {
+    li_object *obj;
 
     obj = create(T_PRIMITIVE);
     obj->data.primitive = proc;
     return obj;
 }
 
-object *syntax(object *(*proc)(object *, object *)) {
-    object *obj;
+li_object *syntax(li_object *(*proc)(li_object *, li_object *)) {
+    li_object *obj;
 
     obj = create(T_SYNTAX);
     obj->data.syntax = proc;
     return obj;
 }
 
-object *string(char *s) {
-    object *obj;
+li_object *string(char *s) {
+    li_object *obj;
 
     obj = create(T_STRING);
     obj->data.string = strdup(s);
     return obj;
 }
 
-object *symbol(char *s) {
-    object *obj;
+li_object *symbol(char *s) {
+    li_object *obj;
     unsigned int i, hash;
 
     for (i = hash = 0; s[i]; i++)
@@ -219,9 +219,9 @@ object *symbol(char *s) {
     return obj;
 }
 
-object *vector(object *lst) {
-    object *obj;
-    object *iter;
+li_object *vector(li_object *lst) {
+    li_object *obj;
+    li_object *iter;
     int k;
 
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
@@ -234,7 +234,7 @@ object *vector(object *lst) {
     return obj;
 }
 
-void destroy(object *obj) {
+void destroy(li_object *obj) {
     if (!obj || is_locked(obj))
         return;
     if (is_environment(obj))
@@ -259,7 +259,7 @@ void destroy(object *obj) {
     free(obj);
 }
 
-void mark(object *obj) {
+void mark(li_object *obj) {
     int i;
 
     if (!obj || is_locked(obj))
@@ -293,7 +293,7 @@ void mark(object *obj) {
 /* 
  * Garbage collector. 
  */
-void cleanup(object *env) {
+void cleanup(li_object *env) {
     int i, j, k;
 
     mark(env);
@@ -315,7 +315,7 @@ void cleanup(object *env) {
     }
 }
 
-int is_equal_vectors(object *obj1, object *obj2) {
+int is_equal_vectors(li_object *obj1, li_object *obj2) {
     int k;
 
     if (vector_length(obj1) != vector_length(obj2))
@@ -326,7 +326,7 @@ int is_equal_vectors(object *obj1, object *obj2) {
     return li_true;
 }
 
-int is_equal(object *obj1, object *obj2) {
+int is_equal(li_object *obj1, li_object *obj2) {
     if (is_eqv(obj1, obj2))
         return li_true;
     else if (is_pair(obj1) && is_pair(obj2))
@@ -339,7 +339,7 @@ int is_equal(object *obj1, object *obj2) {
     return li_false;
 }
 
-int is_eqv(object *obj1, object *obj2) {
+int is_eqv(li_object *obj1, li_object *obj2) {
     if (is_eq(obj1, obj2))
         return li_true;
     else if (!obj1 || !obj2)
@@ -351,7 +351,7 @@ int is_eqv(object *obj1, object *obj2) {
     return li_false;
 }
 
-int is_list(object *obj) {
+int is_list(li_object *obj) {
     while (obj) {
         if (!is_pair(obj))
             return 0;
@@ -360,7 +360,7 @@ int is_list(object *obj) {
     return 1;
 }
 
-int length(object *obj) {
+int length(li_object *obj) {
     int k;
 
     for (k = 0; obj; k++)

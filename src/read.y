@@ -13,14 +13,14 @@ extern char *yytext;
 extern FILE *yyin;
 extern int YY_BUF_SIZE;
 
-static object *obj = li_null;
-object *append(object *lst, object *obj);
+static li_object *obj = li_null;
+li_object *append(li_object *lst, li_object *obj);
 extern void push_buffer(void);
 extern void pop_buffer(void);
 
 %}
 
-%union { object *obj; }
+%union { li_object *obj; }
 
 %token <obj> CHARACTER
 %token <obj> EOF_OBJECT
@@ -57,8 +57,8 @@ data    : { $$ = li_null; }
 
 %%
 
-object *append(object *lst, object *obj) {
-    object *tail;
+li_object *append(li_object *lst, li_object *obj) {
+    li_object *tail;
         
     for (tail = lst; tail && cdr(tail); tail = cdr(tail));
     if (!tail) return obj;
@@ -66,9 +66,9 @@ object *append(object *lst, object *obj) {
     return lst;
 }
 
-void load(char *filename, object *env) {
+void load(char *filename, li_object *env) {
     FILE *f;
-    object *exp;
+    li_object *exp;
     int pop;
 
     pop = 0;
@@ -86,7 +86,7 @@ void load(char *filename, object *env) {
     if (pop) pop_buffer();
 }
 
-object *lread(FILE *f) {
+li_object *lread(FILE *f) {
     obj = li_null;
     yyin = f;
     if (yyparse()) return li_null;

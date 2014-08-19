@@ -30,7 +30,7 @@
 #define append_syntax(name, proc, env) \
     append_variable(symbol(name), syntax(proc), env);
 
-object *m_and(object *seq, object *env) {
+li_object *m_and(li_object *seq, li_object *env) {
     for (; seq && cdr(seq); seq = cdr(seq))
         if (is_false(eval(car(seq), env)))
             return boolean(li_false);
@@ -39,14 +39,14 @@ object *m_and(object *seq, object *env) {
     return car(seq);
 }
 
-object *m_assert(object *args, object *env) {
+li_object *m_assert(li_object *args, li_object *env) {
     assert_nargs("assert", 1, args);
     if (is_false(eval(car(args), env)))
         error("assert", "assertion violated", car(args));
     return li_null;
 }
 
-object *m_begin(object *seq, object *env) {
+li_object *m_begin(li_object *seq, li_object *env) {
     for (; seq && cdr(seq); seq = cdr(seq))
         eval(car(seq), env);
     if (!seq)
@@ -54,8 +54,8 @@ object *m_begin(object *seq, object *env) {
     return car(seq);
 }
 
-object *m_case(object *exp, object *env) {
-    object *seq, *val;
+li_object *m_case(li_object *exp, li_object *env) {
+    li_object *seq, *val;
 
     val = eval(car(exp), env);
     seq = li_null;
@@ -71,7 +71,7 @@ object *m_case(object *exp, object *env) {
     return car(seq);
 }
 
-object *m_cond(object *seq, object *env) {
+li_object *m_cond(li_object *seq, li_object *env) {
     for (; seq; seq = cdr(seq))
         if (is_eq(caar(seq), symbol("else")) ||
             is_true(eval(caar(seq), env))) {
@@ -88,8 +88,8 @@ object *m_cond(object *seq, object *env) {
 #define make_lambda(p, b)       cons(symbol("lambda"), cons(p, b))
 #define make_named_lambda(p, b) cons(symbol("named-lambda"), cons(p, b))
 
-object *m_define(object *args, object *env) {
-    object *var;
+li_object *m_define(li_object *args, li_object *env) {
+    li_object *var;
 
     for (var = car(args), args = cdr(args); is_pair(var); var = car(var)) {
         if (is_pair(car(var)))
@@ -103,8 +103,8 @@ object *m_define(object *args, object *env) {
 }
 
 /* (defmacro (name . args) . body) */
-object *m_defmacro(object *seq, object *env) {
-    object *name, *vars, *body;
+li_object *m_defmacro(li_object *seq, li_object *env) {
+    li_object *name, *vars, *body;
 
     assert_pair("defmacro", car(seq));
     name = caar(seq);
@@ -113,17 +113,17 @@ object *m_defmacro(object *seq, object *env) {
     return environment_define(env, name, macro(vars, body, env));
 }
 
-object *m_delay(object *seq, object *env) {
+li_object *m_delay(li_object *seq, li_object *env) {
     return compound(li_null, li_null, seq, env);
 }
 
-object *m_do(object *seq, object *env) {
-    object *binding;
-    object *head;
-    object *iter;
-    object *let_args;
-    object *let_bindings;
-    object *tail;
+li_object *m_do(li_object *seq, li_object *env) {
+    li_object *binding;
+    li_object *head;
+    li_object *iter;
+    li_object *let_args;
+    li_object *let_bindings;
+    li_object *tail;
 
     assert_pair("do", seq);
     assert_pair("do", cdr(seq));
@@ -156,7 +156,7 @@ object *m_do(object *seq, object *env) {
     return head;
 }
 
-object *m_if(object *seq, object *env) {
+li_object *m_if(li_object *seq, li_object *env) {
     if (!seq || !cdr(seq))
         error("if", "invalid sequence", seq);
     if (is_true(eval(car(seq), env)))
@@ -167,20 +167,20 @@ object *m_if(object *seq, object *env) {
         return boolean(li_false);
 }
 
-object *m_lambda(object *seq, object *env) {
+li_object *m_lambda(li_object *seq, li_object *env) {
     return compound(li_null, car(seq), cdr(seq), env);
 }
 
-object *m_named_lambda(object *seq, object *env) {
-    object *formals;
+li_object *m_named_lambda(li_object *seq, li_object *env) {
+    li_object *formals;
 
     formals = car(seq);
     assert_pair("named-lambda", formals);
     return compound(car(formals), cdr(formals), cdr(seq), env);
 }
 
-object *m_let(object *args, object *env) {
-    object *bindings, *body, *name, *vals, *vals_tail, *vars, *vars_tail;
+li_object *m_let(li_object *args, li_object *env) {
+    li_object *bindings, *body, *name, *vals, *vals_tail, *vars, *vars_tail;
 
     name = li_null;
     if (is_symbol(car(args))) {
@@ -208,8 +208,8 @@ object *m_let(object *args, object *env) {
     return cons(body, vals);
 }
 
-object *m_let_star(object *args, object *env) {
-    object *binding, *bindings, *body, *result, *vals, *vars;
+li_object *m_let_star(li_object *args, li_object *env) {
+    li_object *binding, *bindings, *body, *result, *vals, *vars;
 
     body = cdr(args);
     result = vals = vars = li_null;
@@ -226,8 +226,8 @@ object *m_let_star(object *args, object *env) {
     return result;
 }
 
-object *m_letrec(object *args, object *env) {
-    object *head, *iter, *tail;
+li_object *m_letrec(li_object *args, li_object *env) {
+    li_object *head, *iter, *tail;
 
     head = tail = cons(symbol("begin"), li_null);
     for (iter = car(args); iter; iter = cdr(iter))
@@ -236,7 +236,7 @@ object *m_letrec(object *args, object *env) {
     return head;
 }
 
-object *m_load(object *args, object *env) {
+li_object *m_load(li_object *args, li_object *env) {
     assert_nargs("load", 1, args);
     assert_string("load", car(args));
     load(to_string(car(args)), env);
@@ -244,12 +244,12 @@ object *m_load(object *args, object *env) {
 }
 
 /* (macro params . body) */
-object *m_macro(object *seq, object *env) {
+li_object *m_macro(li_object *seq, li_object *env) {
     return macro(car(seq), cdr(seq), env);
 }
 
-object *m_or(object *seq, object *env) {
-    object *val;
+li_object *m_or(li_object *seq, li_object *env) {
+    li_object *val;
 
     for (; seq && cdr(seq); seq = cdr(seq))
         if (is_true(val = eval(car(seq), env)))
@@ -259,8 +259,8 @@ object *m_or(object *seq, object *env) {
     return car(seq);
 }
 
-object *m_set(object *args, object *env) {
-    object *val, *var;
+li_object *m_set(li_object *args, li_object *env) {
+    li_object *val, *var;
 
     assert_nargs("set!", 2, args);
     assert_symbol("set!", car(args));
@@ -276,7 +276,7 @@ object *m_set(object *args, object *env) {
  * irritants should be the objects that caused the error, each of which will be
  * printed.
  */
-object *p_error(object *args) {
+li_object *p_error(li_object *args) {
     if (!args || !cdr(args))
         error("error", "wrong number of args", args);
     assert_symbol("error", car(args));
@@ -285,19 +285,19 @@ object *p_error(object *args) {
     return li_null;
 }
 
-object *p_clock(object *args) {
+li_object *p_clock(li_object *args) {
     assert_nargs("clock", 0, args);
     return number(clock());
 }
 
-object *p_exit(object *args) {
+li_object *p_exit(li_object *args) {
     assert_nargs("exit", 1, args);
     assert_integer("exit", car(args));
     exit(to_integer(car(args)));
     return li_null;
 }
 
-object *p_rand(object *args) {
+li_object *p_rand(li_object *args) {
     int n;
 
     n = rand();
@@ -309,20 +309,20 @@ object *p_rand(object *args) {
     return number(n);
 }
 
-object *p_remove(object *args) {
+li_object *p_remove(li_object *args) {
     assert_nargs("remove", 1, args);
     assert_string("remove", car(args));
     return number(remove(to_string(car(args))));
 }
 
-object *p_rename(object *args) {
+li_object *p_rename(li_object *args) {
     assert_nargs("rename", 2, args);
     assert_string("rename", car(args));
     assert_string("rename", cadr(args));
     return number(rename(to_string(car(args)), to_string(cadr(args))));
 }
 
-object *p_getenv(object *args) {
+li_object *p_getenv(li_object *args) {
     char *env;
 
     assert_nargs("getenv", 1, args);
@@ -333,7 +333,7 @@ object *p_getenv(object *args) {
         return boolean(li_false);
 }
 
-object *p_system(object *args) {
+li_object *p_system(li_object *args) {
     int ret;
 
     assert_nargs("system", 1, args);
@@ -343,7 +343,7 @@ object *p_system(object *args) {
     return li_null;
 }
 
-object *p_time(object *args) {
+li_object *p_time(li_object *args) {
     assert_nargs("time", 0, args);
     return number(time(NULL));
 }
@@ -354,11 +354,11 @@ object *p_time(object *args) {
 
 /*
  * (eq? obj1 obj2)
- * Returns #t if the objects are literally the same object with the same
+ * Returns #t if the objects are literally the same li_object with the same
  * address. Will always return #t for identical objects, but not necessarily for
  * numbers, strings, etc.
  */
-object *p_is_eq(object *args) {
+li_object *p_is_eq(li_object *args) {
     assert_nargs("eq?", 2, args);
     return boolean(is_eq(car(args), cadr(args)));
 }
@@ -367,7 +367,7 @@ object *p_is_eq(object *args) {
  * (eqv? obj1 obj2)
  * Same as eq?, but guarantees #t for equivalent numbers.
  */
-object *p_is_eqv(object *args) {
+li_object *p_is_eqv(li_object *args) {
     assert_nargs("eqv?", 2, args);
     return boolean(is_eqv(car(args), cadr(args)));
 }
@@ -376,7 +376,7 @@ object *p_is_eqv(object *args) {
  * (equal? obj1 obj2)
  * Same as eqv? but guarantees #t for equivalent strings, pairs and vectors.
  */
-object *p_is_equal(object *args) {
+li_object *p_is_equal(li_object *args) {
     assert_nargs("equal?", 2, args);
     return boolean(is_equal(car(args), cadr(args)));
 }
@@ -389,7 +389,7 @@ object *p_is_equal(object *args) {
  * (number? obj)
  * Returns #t is the object is a number, #f otherwise.
  */
-object *p_is_number(object *args) {
+li_object *p_is_number(li_object *args) {
     assert_nargs("number?", 1, args);
     return boolean(is_number(car(args)));
 }
@@ -398,42 +398,42 @@ object *p_is_number(object *args) {
  * (integer? obj)
  * Return #t is the object is an integer, #f otherwise.
  */
-object *p_is_integer(object *args) {
+li_object *p_is_integer(li_object *args) {
     assert_nargs("integer?", 1, args);
     return boolean(is_integer(car(args)));
 }
 
-object *p_is_zero(object *args) {
+li_object *p_is_zero(li_object *args) {
     assert_nargs("zero?", 1, args);
     assert_number("zero?", car(args));
     return boolean(to_number(car(args)) == 0);
 }
 
-object *p_is_positive(object *args) {
+li_object *p_is_positive(li_object *args) {
     assert_nargs("positive?", 1, args);
     assert_number("positive?", car(args));
     return boolean(to_number(car(args)) >= 0);
 }
 
-object *p_is_negative(object *args) {
+li_object *p_is_negative(li_object *args) {
     assert_nargs("negative?", 1, args);
     assert_number("negative?", car(args));
     return boolean(to_number(car(args)) < 0);
 }
 
-object *p_is_odd(object *args) {
+li_object *p_is_odd(li_object *args) {
     assert_nargs("odd?", 1, args);
     assert_integer("odd?", car(args));
     return boolean(to_integer(car(args)) % 2 != 0);
 }
 
-object *p_is_even(object *args) {
+li_object *p_is_even(li_object *args) {
     assert_nargs("even?", 1, args);
     assert_integer("even?", car(args));
     return boolean(to_integer(car(args)) % 2 == 0);
 }
 
-object *p_max(object *args) {
+li_object *p_max(li_object *args) {
     double max;
 
     if (!args)
@@ -444,7 +444,7 @@ object *p_max(object *args) {
     return number(max);
 }
 
-object *p_min(object *args) {
+li_object *p_min(li_object *args) {
     double min;
 
     if (!args)
@@ -455,7 +455,7 @@ object *p_min(object *args) {
     return number(min);
 }
 
-object *p_eq(object *args) {
+li_object *p_eq(li_object *args) {
     while (args) {
         assert_number("=", car(args));
         if (!cdr(args))
@@ -468,7 +468,7 @@ object *p_eq(object *args) {
     return boolean(li_true);
 }
 
-object *p_lt(object *args) {
+li_object *p_lt(li_object *args) {
     while (args) {
         assert_number("<", car(args));
         if (!cdr(args))
@@ -481,7 +481,7 @@ object *p_lt(object *args) {
     return boolean(li_true);
 }
 
-object *p_gt(object *args) {
+li_object *p_gt(li_object *args) {
     while (args) {
         assert_number(">", car(args));
         if (!cdr(args))
@@ -494,15 +494,15 @@ object *p_gt(object *args) {
     return boolean(li_true);
 }
 
-object *p_le(object *args) {
+li_object *p_le(li_object *args) {
     return boolean(not(p_gt(args)));
 }
 
-object *p_ge(object *args) {
+li_object *p_ge(li_object *args) {
     return boolean(not(p_lt(args)));
 }
 
-object *p_add(object *args) {
+li_object *p_add(li_object *args) {
     double result = 0;
 
     while (args) {
@@ -513,7 +513,7 @@ object *p_add(object *args) {
     return number(result);
 }
 
-object *p_mul(object *args) {
+li_object *p_mul(li_object *args) {
     double result = 1.0;
 
     while (args) {
@@ -524,7 +524,7 @@ object *p_mul(object *args) {
     return number(result);
 }
 
-object *p_sub(object *args) {
+li_object *p_sub(li_object *args) {
     double result;
 
     if (!args)
@@ -542,7 +542,7 @@ object *p_sub(object *args) {
     return number(result);
 }
 
-object *p_div(object *args) {
+li_object *p_div(li_object *args) {
     double result;
 
     if (!args)
@@ -560,13 +560,13 @@ object *p_div(object *args) {
     return number(result);
 }
 
-object *p_abs(object *args) {
+li_object *p_abs(li_object *args) {
     assert_nargs("abs", 1, args);
     assert_number("abs", car(args));
     return number(fabs(to_number(car(args))));
 }
 
-object *p_quotient(object *args) {
+li_object *p_quotient(li_object *args) {
     assert_nargs("quotient", 2, args);
     assert_integer("quotient", car(args));
     assert_integer("quotient", cadr(args));
@@ -575,7 +575,7 @@ object *p_quotient(object *args) {
     return number(to_integer(car(args)) / to_integer(cadr(args)));
 }
 
-object *p_remainder(object *args) {
+li_object *p_remainder(li_object *args) {
     assert_nargs("remainder", 2, args);
     assert_integer("remainder", car(args));
     assert_integer("remainder", cadr(args));
@@ -584,7 +584,7 @@ object *p_remainder(object *args) {
     return number(to_integer(car(args)) % to_integer(cadr(args)));
 }
 
-object *p_modulo(object *args) {
+li_object *p_modulo(li_object *args) {
     int n1, n2, nm;
 
     assert_nargs("modulo", 2, args);
@@ -600,7 +600,7 @@ object *p_modulo(object *args) {
     return number(nm);
 }
 
-object *p_gcd(object *args) {
+li_object *p_gcd(li_object *args) {
     int a, b, c;
 
     if (!args)
@@ -619,73 +619,73 @@ object *p_gcd(object *args) {
     return number(a);
 }
 
-object *p_floor(object *args) {
+li_object *p_floor(li_object *args) {
     assert_nargs("floor", 1, args);
     assert_number("floor", car(args));
     return number(floor(to_number(car(args))));
 }
 
-object *p_ceiling(object *args) {
+li_object *p_ceiling(li_object *args) {
     assert_nargs("ceiling", 1, args);
     assert_number("ceiling", car(args));
     return number(ceil(to_number(car(args))));
 }
 
-object *p_truncate(object *args) {
+li_object *p_truncate(li_object *args) {
     assert_nargs("truncate", 1, args);
     assert_number("truncate", car(args));
     return number(ceil(to_number(car(args)) - 0.5));
 }
 
-object *p_round(object *args) {
+li_object *p_round(li_object *args) {
     assert_nargs("round", 1, args);
     assert_number("round", car(args));
     return number(floor(to_number(car(args)) + 0.5));
 }
 
-object *p_exp(object *args) {
+li_object *p_exp(li_object *args) {
     assert_nargs("exp", 1, args);
     assert_number("exp", car(args));
     return number(exp(to_number(car(args))));
 }
 
-object *p_log(object *args) {
+li_object *p_log(li_object *args) {
     assert_nargs("log", 1, args);
     assert_number("log", car(args));
     return number(log(to_number(car(args))));
 }
 
-object *p_sin(object *args) {
+li_object *p_sin(li_object *args) {
     assert_nargs("sin", 1, args);
     assert_number("sin", car(args));
     return number(sin(to_number(car(args))));
 }
 
-object *p_cos(object *args) {
+li_object *p_cos(li_object *args) {
     assert_nargs("cos", 1, args);
     assert_number("cos", car(args));
     return number(cos(to_number(car(args))));
 }
 
-object *p_tan(object *args) {
+li_object *p_tan(li_object *args) {
     assert_nargs("tan", 1, args);
     assert_number("tan", car(args));
     return number(tan(to_number(car(args))));
 }
 
-object *p_asin(object *args) {
+li_object *p_asin(li_object *args) {
     assert_nargs("asin", 1, args);
     assert_number("asin", car(args));
     return number(asin(to_number(car(args))));
 }
 
-object *p_acos(object *args) {
+li_object *p_acos(li_object *args) {
     assert_nargs("acos", 1, args);
     assert_number("acos", car(args));
     return number(acos(to_number(car(args))));
 }
 
-object *p_atan(object *args) {
+li_object *p_atan(li_object *args) {
     assert_number("atan", car(args));
     if (cdr(args)) {
         assert_nargs("atan", 2, args);
@@ -695,13 +695,13 @@ object *p_atan(object *args) {
     return number(atan(to_number(car(args))));
 }
 
-object *p_sqrt(object *args) {
+li_object *p_sqrt(li_object *args) {
     assert_nargs("sqrt", 1, args);
     assert_number("sqrt", car(args));
     return number(sqrt(to_number(car(args))));
 }
 
-object *p_expt(object *args) {
+li_object *p_expt(li_object *args) {
     assert_nargs("expt", 2, args);
     assert_number("expt", car(args));
     assert_number("expt", cadr(args));
@@ -716,7 +716,7 @@ object *p_expt(object *args) {
  * (not obj)
  * Returns #t is obj is #f, returns #f otherwise.
  */
-object *p_not(object *args) {
+li_object *p_not(li_object *args) {
     assert_nargs("not", 1, args);
     return boolean(not(car(args)));
 }
@@ -724,7 +724,7 @@ object *p_not(object *args) {
 /* (boolean? obj)
  * Return #t is the object is #t or #f, return #f otherwise.
  */
-object *p_is_boolean(object *args) {
+li_object *p_is_boolean(li_object *args) {
     assert_nargs("boolean?", 1, args);
     return boolean(is_boolean(car(args)));
 }
@@ -737,7 +737,7 @@ object *p_is_boolean(object *args) {
  * (pair? obj)
  * Returns #t is the object is a pair, #f otherwise.
  */
-object *p_is_pair(object *args) {
+li_object *p_is_pair(li_object *args) {
     assert_nargs("pair?", 1, args);
     return boolean(is_pair(car(args)));
 }
@@ -746,7 +746,7 @@ object *p_is_pair(object *args) {
  * (cons obj1 obj2)
  * Returns a pair containing obj1 and obj2.
  */
-object *p_cons(object *args) {
+li_object *p_cons(li_object *args) {
     assert_nargs("cons", 2, args);
     return cons(car(args), cadr(args));
 }
@@ -755,7 +755,7 @@ object *p_cons(object *args) {
  * (car pair)
  * Returns the first element of the given pair.
  */
-object *p_car(object *args) {
+li_object *p_car(li_object *args) {
     assert_nargs("car", 1, args);
     assert_pair("car", car(args));
     return caar(args);
@@ -765,7 +765,7 @@ object *p_car(object *args) {
  * (cdr pair)
  * Returns the second element of the given pair.
  */
-object *p_cdr(object *args) {
+li_object *p_cdr(li_object *args) {
     assert_nargs("cdr", 1, args);
     assert_pair("cdr", car(args));
     return cdar(args);
@@ -775,7 +775,7 @@ object *p_cdr(object *args) {
  * (set-car! pair obj)
  * Sets the first element of the given pair to the given object.
  */
-object *p_set_car(object *args) {
+li_object *p_set_car(li_object *args) {
     assert_nargs("set-car!", 2, args);
     assert_pair("set-car!", car(args));
     set_car(car(args), cadr(args));
@@ -786,7 +786,7 @@ object *p_set_car(object *args) {
  * (set-cdr! pair obj)
  * Sets the second element of the given pair to the given object.
  */
-object *p_set_cdr(object *args) {
+li_object *p_set_cdr(li_object *args) {
     assert_nargs("set-cdr!", 2, args);
     assert_pair("set-cdr!", car(args));
     set_cdr(car(args), cadr(args));
@@ -798,12 +798,12 @@ object *p_set_cdr(object *args) {
  * Returns #t if the object is null, aka null, aka ``the empty list'',
  * represented in Scheme as ().
  */
-object *p_is_null(object *args) {
+li_object *p_is_null(li_object *args) {
     assert_nargs("null?", 1, args);
     return boolean(is_null(car(args)));
 }
  
-object *p_is_list(object *args) {
+li_object *p_is_list(li_object *args) {
     assert_nargs("list?", 1, args);
     for (args = car(args); args; args = cdr(args))
         if (args && !is_pair(args))
@@ -811,9 +811,9 @@ object *p_is_list(object *args) {
     return boolean(li_true);
 }
 
-object *p_make_list(object *args) {
+li_object *p_make_list(li_object *args) {
     int k;
-    object *fill, *head, *tail;
+    li_object *fill, *head, *tail;
 
     assert_nargs("make-list", 2, args);
     assert_integer("make-list", car(args));
@@ -829,12 +829,12 @@ object *p_make_list(object *args) {
     return head;
 }
 
-object *p_list(object *args) {
+li_object *p_list(li_object *args) {
     return args;
 }
 
-object *p_list_tail(object *args) {
-    object *lst;
+li_object *p_list_tail(li_object *args) {
+    li_object *lst;
     int k;
 
     assert_nargs("list-tail", 2, args);
@@ -848,8 +848,8 @@ object *p_list_tail(object *args) {
     return lst;
 }
 
-object *p_list_ref(object *args) {
-    object *lst;
+li_object *p_list_ref(li_object *args) {
+    li_object *lst;
     int k;
 
     assert_nargs("list-ref", 2, args);
@@ -863,8 +863,8 @@ object *p_list_ref(object *args) {
     return car(lst);
 }
 
-object *p_list_set(object *args) {
-    object *lst, *obj;
+li_object *p_list_set(li_object *args) {
+    li_object *lst, *obj;
     int k;
 
     assert_nargs("list-set!", 3, args);
@@ -878,9 +878,9 @@ object *p_list_set(object *args) {
     return set_car(lst, obj);
 }
 
-object *p_length(object *args) {
+li_object *p_length(li_object *args) {
     int ret;
-    object *lst;
+    li_object *lst;
 
     assert_nargs("length", 1, args);
     for (ret = 0, lst = car(args); lst; ret++, lst = cdr(lst))
@@ -889,8 +889,8 @@ object *p_length(object *args) {
     return number(ret);
 }
 
-object *p_append(object *args) {
-    object *head, *tail, *list;
+li_object *p_append(li_object *args) {
+    li_object *head, *tail, *list;
 
     if (!args)
         return li_null;
@@ -921,8 +921,8 @@ object *p_append(object *args) {
     return head;
 }
 
-object *p_filter(object *args) {
-    object *iter, *head, *tail, *temp;
+li_object *p_filter(li_object *args) {
+    li_object *iter, *head, *tail, *temp;
 
     assert_nargs("filter", 2, args);
     assert_procedure("filter", car(args));
@@ -941,8 +941,8 @@ object *p_filter(object *args) {
     return head;
 }
 
-object *p_reverse(object *args) {
-    object *lst, *tsl;
+li_object *p_reverse(li_object *args) {
+    li_object *lst, *tsl;
 
     assert_nargs("reverse", 1, args);
     for (tsl = li_null, lst = car(args); lst; lst = cdr(lst)) {
@@ -953,8 +953,8 @@ object *p_reverse(object *args) {
     return tsl;
 }
 
-object *p_assq(object *args) {
-    object *lst;
+li_object *p_assq(li_object *args) {
+    li_object *lst;
 
     assert_nargs("assq", 2, args);
     for (lst = cadr(args); lst; lst = cdr(lst)) {
@@ -966,8 +966,8 @@ object *p_assq(object *args) {
     return boolean(li_false);
 }
 
-object *p_assv(object *args) {
-    object *lst;
+li_object *p_assv(li_object *args) {
+    li_object *lst;
 
     assert_nargs("assv", 2, args);
     for (lst = cadr(args); lst; lst = cdr(lst)) {
@@ -979,8 +979,8 @@ object *p_assv(object *args) {
     return boolean(li_false);
 }
 
-object *p_assoc(object *args) {
-    object *lst;
+li_object *p_assoc(li_object *args) {
+    li_object *lst;
 
     assert_nargs("assoc", 2, args);
     for (lst = cadr(args); lst; lst = cdr(lst)) {
@@ -992,8 +992,8 @@ object *p_assoc(object *args) {
     return boolean(li_false);
 }
 
-object *p_memq(object *args) {
-    object *lst;
+li_object *p_memq(li_object *args) {
+    li_object *lst;
 
     for (lst = cadr(args); lst; lst = cdr(lst)) {
         if (!is_pair(lst))
@@ -1004,8 +1004,8 @@ object *p_memq(object *args) {
     return boolean(li_false);
 }
 
-object *p_memv(object *args) {
-    object *lst;
+li_object *p_memv(li_object *args) {
+    li_object *lst;
 
     for (lst = cadr(args); lst; lst = cdr(lst)) {
         if (!is_pair(lst))
@@ -1016,8 +1016,8 @@ object *p_memv(object *args) {
     return boolean(li_false);
 }
 
-object *p_member(object *args) {
-    object *lst;
+li_object *p_member(li_object *args) {
+    li_object *lst;
 
     for (lst = cadr(args); lst; lst = cdr(lst)) {
         if (!is_pair(lst))
@@ -1036,18 +1036,18 @@ object *p_member(object *args) {
  * (symbol? obj)
  * Returns #t if the object is a symbol, #f otherwise.
  */
-object *p_is_symbol(object *args) {
+li_object *p_is_symbol(li_object *args) {
     assert_nargs("symbol?", 1, args);
     return boolean(is_symbol(car(args)));
 }
 
-object *p_symbol_to_string(object *args) {
+li_object *p_symbol_to_string(li_object *args) {
     assert_nargs("symbol->string", 1, args);
     assert_symbol("symbol->string", car(args));
     return string(to_symbol(car(args)));
 }
 
-object *p_string_to_symbol(object *args) {
+li_object *p_string_to_symbol(li_object *args) {
     assert_nargs("string->symbol", 1, args);
     assert_string("string->symbol", car(args));
     return symbol(to_string(car(args)));
@@ -1057,53 +1057,53 @@ object *p_string_to_symbol(object *args) {
  * Characters *
  **************/
 
-object *p_is_char(object *args) {
+li_object *p_is_char(li_object *args) {
     assert_nargs("char?", 1, args);
     return boolean(is_character(car(args)));
 }
 
-object *p_is_char_eq(object *args) {
+li_object *p_is_char_eq(li_object *args) {
     assert_nargs("char=?", 2, args);
     assert_character("char=?", car(args));
     assert_character("char=?", cadr(args));
     return boolean(to_character(car(args)) == to_character(cadr(args)));
 }
 
-object *p_is_char_lt(object *args) {
+li_object *p_is_char_lt(li_object *args) {
     assert_nargs("char<?", 2, args);
     assert_character("char<?", car(args));
     assert_character("char<?", cadr(args));
     return boolean(to_character(car(args)) < to_character(cadr(args)));
 }
 
-object *p_is_char_gt(object *args) {
+li_object *p_is_char_gt(li_object *args) {
     assert_nargs("char>?", 2, args);
     assert_character("char>?", car(args));
     assert_character("char>?", cadr(args));
     return boolean(to_character(car(args)) > to_character(cadr(args)));
 }
 
-object *p_is_char_le(object *args) {
+li_object *p_is_char_le(li_object *args) {
     assert_nargs("char<=?", 2, args);
     assert_character("char<=?", car(args));
     assert_character("char<=?", cadr(args));
     return boolean(to_character(car(args)) <= to_character(cadr(args)));
 }
 
-object *p_is_char_ge(object *args) {
+li_object *p_is_char_ge(li_object *args) {
     assert_nargs("char>=?", 2, args);
     assert_character("char>=?", car(args));
     assert_character("char>=?", cadr(args));
     return boolean(to_character(car(args)) >= to_character(cadr(args)));
 }
 
-object *p_char_to_integer(object *args) {
+li_object *p_char_to_integer(li_object *args) {
     assert_nargs("char->integer", 1, args);
     assert_character("char->integer", car(args));
     return number(to_character(car(args)));
 }
 
-object *p_integer_to_char(object *args) {
+li_object *p_integer_to_char(li_object *args) {
     assert_nargs("integer->char", 1, args);
     assert_integer("integer->char", car(args));
     return character(to_integer(car(args)));
@@ -1117,12 +1117,12 @@ object *p_integer_to_char(object *args) {
  * (string? obj)
  * Returns #t if the object is a string, #f otherwise.
  */
-object *p_is_string(object *args) {
+li_object *p_is_string(li_object *args) {
     assert_nargs("string?", 1, args);
     return boolean(is_string(car(args)));
 }
 
-object *p_string(object *args) {
+li_object *p_string(li_object *args) {
     char *str;
     int i;
 
@@ -1138,8 +1138,8 @@ object *p_string(object *args) {
     return string(str);
 }
 
-object *p_make_string(object *args) {
-    object *obj;
+li_object *p_make_string(li_object *args) {
+    li_object *obj;
     char *s;
     int k;
 
@@ -1154,20 +1154,20 @@ object *p_make_string(object *args) {
     return obj;
 }
 
-object *p_string_length(object *args) {
+li_object *p_string_length(li_object *args) {
     assert_nargs("string-length", 1, args);
     assert_string("string-length", car(args));
     return number(strlen(to_string(car(args))));
 }
 
-object *p_string_ref(object *args) {
+li_object *p_string_ref(li_object *args) {
     assert_nargs("string-ref", 2, args);
     assert_string("string-ref", car(args));
     assert_integer("string-ref", cadr(args));
     return character(to_string(car(args))[to_integer(cadr(args))]);
 }
 
-object *p_string_set(object *args) {
+li_object *p_string_set(li_object *args) {
     assert_nargs("string-set!", 3, args);
     assert_string("string-set!", car(args));
     assert_integer("string-set!", cadr(args));
@@ -1176,43 +1176,43 @@ object *p_string_set(object *args) {
                      to_character(caddr(args)));
 }
 
-object *p_string_eq(object *args) {
+li_object *p_string_eq(li_object *args) {
     assert_nargs("string=?", 2, args);
     assert_string("string=?", car(args));
     assert_string("string=?", cadr(args));
     return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) == 0);
 }
 
-object *p_string_le(object *args) {
+li_object *p_string_le(li_object *args) {
     assert_nargs("string<=?", 2, args);
     assert_string("string<=?", car(args));
     assert_string("string<=?", cadr(args));
     return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) <= 0);
 }
 
-object *p_string_lt(object *args) {
+li_object *p_string_lt(li_object *args) {
     assert_nargs("string<?", 2, args);
     assert_string("string<?", car(args));
     assert_string("string<?", cadr(args));
     return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) < 0);
 }
 
-object *p_string_ge(object *args) {
+li_object *p_string_ge(li_object *args) {
     assert_nargs("string>=?", 2, args);
     assert_string("string>=?", car(args));
     assert_string("string>=?", cadr(args));
     return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) >= 0);
 }
 
-object *p_string_gt(object *args) {
+li_object *p_string_gt(li_object *args) {
     assert_nargs("string>?", 2, args);
     assert_string("string>?", car(args));
     assert_string("string>?", cadr(args));
     return boolean(strcmp(to_string(car(args)), to_string(cadr(args))) > 0);
 }
 
-object *p_string_to_list(object *args) {
-    object *head, *tail;
+li_object *p_string_to_list(li_object *args) {
+    li_object *head, *tail;
     char *str;
     int i;
 
@@ -1229,14 +1229,14 @@ object *p_string_to_list(object *args) {
     return head;
 }
 
-object *p_string_to_number(object *args) {
+li_object *p_string_to_number(li_object *args) {
     assert_nargs("string->number", 1, args);
     assert_string("string->number", car(args));
     return number(atof(to_string(car(args))));
 }
 
-object *p_string_to_vector(object *args) {
-    object *head, *tail;
+li_object *p_string_to_vector(li_object *args) {
+    li_object *head, *tail;
     int i, n;
     char *s;
 
@@ -1254,7 +1254,7 @@ object *p_string_to_vector(object *args) {
     return vector(head);
 }
 
-object *p_number_to_string(object *args) {
+li_object *p_number_to_string(li_object *args) {
     char *s;
 
     assert_nargs("number->string", 1, args);
@@ -1264,8 +1264,8 @@ object *p_number_to_string(object *args) {
     return string(s);
 }
 
-object *p_string_append(object *args) {
-    object *str;
+li_object *p_string_append(li_object *args) {
+    li_object *str;
     char *s, *ss;
     int size, i;
 
@@ -1295,7 +1295,7 @@ object *p_string_append(object *args) {
  * (vector? obj)
  * Returns #t if the object is a vector, #f otherwise.
  */
-object *p_is_vector(object *args) {
+li_object *p_is_vector(li_object *args) {
     assert_nargs("vector?", 1, args);
     return boolean(is_vector(car(args)));
 }
@@ -1304,13 +1304,13 @@ object *p_is_vector(object *args) {
  * (vector . args)
  * Returns a vector containing the given args.
  */
-object *p_vector(object *args) {
+li_object *p_vector(li_object *args) {
     return vector(args);
 }
 
-object *p_make_vector(object *args) {
+li_object *p_make_vector(li_object *args) {
     int k;
-    object *fill, *vec;
+    li_object *fill, *vec;
 
     k = 0;
     if (args) {
@@ -1336,7 +1336,7 @@ object *p_make_vector(object *args) {
  * (vector-length vec)
  * Returns the length of the given vector.
  */
-object *p_vector_length(object *args) {
+li_object *p_vector_length(li_object *args) {
     assert_nargs("vector-length", 1, args);
     assert_vector("vector-length", car(args));
     return number(vector_length(car(args)));
@@ -1347,7 +1347,7 @@ object *p_vector_length(object *args) {
  * Return element k of the given vector where k is a positive integer less than
  * the length of the vector.
  */
-object *p_vector_ref(object *args) {
+li_object *p_vector_ref(li_object *args) {
     assert_nargs("vector-ref", 2, args);
     assert_vector("vector-ref", car(args));
     assert_integer("vector-ref", cadr(args));
@@ -1361,7 +1361,7 @@ object *p_vector_ref(object *args) {
  * (vector-set! vec k obj)
  * Sets element k of vector vec to object obj where k is a positive integer.
  */
-object *p_vector_set(object *args) {
+li_object *p_vector_set(li_object *args) {
     assert_nargs("vector-set!", 3, args);
     assert_vector("vector-set!", car(args));
     assert_integer("vector-set!", cadr(args));
@@ -1371,8 +1371,8 @@ object *p_vector_set(object *args) {
     return vector_set(car(args), to_integer(cadr(args)), caddr(args));
 }
 
-object *p_vector_fill(object *args) {
-    object *vect;
+li_object *p_vector_fill(li_object *args) {
+    li_object *vect;
     int k;
 
     assert_nargs("vector->fill!", 2, args);
@@ -1383,8 +1383,8 @@ object *p_vector_fill(object *args) {
     return vect;
 }
 
-object *p_vector_to_list(object *args) {
-    object *list, *tail, *vect;
+li_object *p_vector_to_list(li_object *args) {
+    li_object *list, *tail, *vect;
     int i, k;
 
     assert_nargs("vector->list", 1, args);
@@ -1397,8 +1397,8 @@ object *p_vector_to_list(object *args) {
     return list;
 }
 
-object *p_vector_to_string(object *args) {
-    object *str, *vec;
+li_object *p_vector_to_string(li_object *args) {
+    li_object *str, *vec;
     int k;
     char *s;
 
@@ -1416,8 +1416,8 @@ object *p_vector_to_string(object *args) {
     return str;
 }
 
-object *p_list_to_string(object *args) {
-    object *lst, *str;
+li_object *p_list_to_string(li_object *args) {
+    li_object *lst, *str;
     int i, n;
     char *s;
 
@@ -1436,7 +1436,7 @@ object *p_list_to_string(object *args) {
     return str;
 }
 
-object *p_list_to_vector(object *args) {
+li_object *p_list_to_vector(li_object *args) {
     assert_nargs("list->vector", 1, args);
     assert_list("list->vector", car(args));
     return vector(car(args));
@@ -1450,7 +1450,7 @@ object *p_list_to_vector(object *args) {
  * (procedure? obj)
  * Returns #t if the object is a procedure, #f otherwise.
  */
-object *p_is_procedure(object *args) {
+li_object *p_is_procedure(li_object *args) {
     assert_nargs("procedure?", 1, args);
     return boolean(is_procedure(car(args)));
 }
@@ -1461,16 +1461,16 @@ object *p_is_procedure(object *args) {
  * args must be a list whose length is equal to the number of args the
  * procedure accepts.
  */
-object *p_apply(object *args) {
+li_object *p_apply(li_object *args) {
     assert_nargs("apply", 2, args);
     assert_procedure("apply", car(args));
     return apply(car(args), cadr(args));
 }
 
-object *p_map(object *args) {
-    object *proc, *clists, *clists_iter;
-    object *list, *list_iter;
-    object *cars, *cars_iter;
+li_object *p_map(li_object *args) {
+    li_object *proc, *clists, *clists_iter;
+    li_object *list, *list_iter;
+    li_object *cars, *cars_iter;
     int loop;
 
     proc = car(args);
@@ -1505,8 +1505,8 @@ object *p_map(object *args) {
     return list;
 }
 
-object *p_for_each(object *args) {
-    object *proc, *iter;
+li_object *p_for_each(li_object *args) {
+    li_object *proc, *iter;
 
     assert_nargs("map", 2, args);
     assert_procedure("map", car(args));
@@ -1519,13 +1519,13 @@ object *p_for_each(object *args) {
     return li_null;
 }
 
-object *p_force(object *args) {
+li_object *p_force(li_object *args) {
     assert_nargs("force", 1, args);
     assert_procedure("force", car(args));
     return apply(car(args), li_null);
 }
 
-object *p_eval(object *args) {
+li_object *p_eval(li_object *args) {
     assert_nargs("eval", 2, args);
     return eval(car(args), cadr(args));
 }
@@ -1538,7 +1538,7 @@ object *p_eval(object *args) {
  * (port? obj)
  * Returns true is obj is a port, false otherwise.
  */
-object *p_is_port(object *args) {
+li_object *p_is_port(li_object *args) {
     assert_nargs("port?", 1, args);
     return boolean(is_port(car(args)));
 }
@@ -1546,8 +1546,8 @@ object *p_is_port(object *args) {
 /*
  * (open filename mode)
  */
-object *p_open(object *args) {
-    object *p;
+li_object *p_open(li_object *args) {
+    li_object *p;
     char *mode;
 
     if (has_2args(args)) {
@@ -1564,7 +1564,7 @@ object *p_open(object *args) {
     return p;
 }
 
-object *p_close(object *args) {
+li_object *p_close(li_object *args) {
     assert_nargs("close", 1, args);
     assert_port("close", car(args));
     return number(fclose(to_port(car(args)).file));
@@ -1574,7 +1574,7 @@ object *p_close(object *args) {
  * (read [port])
  * Reads and returns the next evaluative object.
  */
-object *p_read(object *args) {
+li_object *p_read(li_object *args) {
     FILE *f;
 
     f = stdin;
@@ -1586,7 +1586,7 @@ object *p_read(object *args) {
     return lread(f);
 }
 
-object *p_read_char(object *args) {
+li_object *p_read_char(li_object *args) {
     int c;
     FILE *f;
 
@@ -1601,7 +1601,7 @@ object *p_read_char(object *args) {
     return character(c);
 }
 
-object *p_peek_char(object *args) {
+li_object *p_peek_char(li_object *args) {
     int c;
     FILE *f;
 
@@ -1616,7 +1616,7 @@ object *p_peek_char(object *args) {
     return character(c);
 }
 
-object *p_is_eof_object(object *args) {
+li_object *p_is_eof_object(li_object *args) {
     assert_nargs("eof-object?", 1, args);
     return boolean(car(args) == li_eof);
 }
@@ -1627,9 +1627,9 @@ object *p_is_eof_object(object *args) {
 
 /*
  * (write obj)
- * Displays an object. Always returns null.
+ * Displays an li_object. Always returns null.
  */
-object *p_write(object *args) {
+li_object *p_write(li_object *args) {
     FILE *f;
 
     f = stdout;
@@ -1648,7 +1648,7 @@ object *p_write(object *args) {
  * (display obj)
  * Displays an object. Always returns null.
  */
-object *p_display(object *args) {
+li_object *p_display(li_object *args) {
     FILE *f;
 
     f = stdout;
@@ -1667,7 +1667,7 @@ object *p_display(object *args) {
  * (newline)
  * Displays a newline.
  */
-object *p_newline(object *args) {
+li_object *p_newline(li_object *args) {
     FILE *f;
 
     f = stdout;
@@ -1680,7 +1680,7 @@ object *p_newline(object *args) {
     return li_null;
 }
 
-object *p_print(object *args) {
+li_object *p_print(li_object *args) {
     for (; args; args = cdr(args)) {
         display(car(args), stdout);
         if (cdr(args))
@@ -1694,35 +1694,35 @@ object *p_print(object *args) {
  * CARS AND CDRS *
  *****************/
 
-object *p_caar(object *args) {
+li_object *p_caar(li_object *args) {
     assert_nargs("caar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
         error("caar", "list is too short", car(args));
     return caar(car(args));
 }
 
-object *p_cadr(object *args) {
+li_object *p_cadr(li_object *args) {
     assert_nargs("cadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
         error("cadr", "list is too short", car(args));
     return cadr(car(args));
 }
 
-object *p_cdar(object *args) {
+li_object *p_cdar(li_object *args) {
     assert_nargs("cdar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
         error("cdar", "list is too short", car(args));
     return cdar(car(args));
 }
 
-object *p_cddr(object *args) {
+li_object *p_cddr(li_object *args) {
     assert_nargs("cddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))))
         error("cddr", "list is too short", car(args));
     return cddr(car(args));
 }
 
-object *p_caaar(object *args) {
+li_object *p_caaar(li_object *args) {
     assert_nargs("caaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
@@ -1730,7 +1730,7 @@ object *p_caaar(object *args) {
     return caaar(car(args));
 }
 
-object *p_caadr(object *args) {
+li_object *p_caadr(li_object *args) {
     assert_nargs("caadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
@@ -1738,7 +1738,7 @@ object *p_caadr(object *args) {
     return caadr(car(args));
 }
 
-object *p_cadar(object *args) {
+li_object *p_cadar(li_object *args) {
     assert_nargs("cadar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
@@ -1746,7 +1746,7 @@ object *p_cadar(object *args) {
     return cadar(car(args));
 }
 
-object *p_caddr(object *args) {
+li_object *p_caddr(li_object *args) {
     assert_nargs("caddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
@@ -1754,7 +1754,7 @@ object *p_caddr(object *args) {
     return caddr(car(args));
 }
 
-object *p_cdaar(object *args) {
+li_object *p_cdaar(li_object *args) {
     assert_nargs("cdaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
@@ -1762,7 +1762,7 @@ object *p_cdaar(object *args) {
     return cdaar(car(args));
 }
 
-object *p_cdadr(object *args) {
+li_object *p_cdadr(li_object *args) {
     assert_nargs("cdadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
@@ -1770,7 +1770,7 @@ object *p_cdadr(object *args) {
     return cdadr(car(args));
 }
 
-object *p_cddar(object *args) {
+li_object *p_cddar(li_object *args) {
     assert_nargs("cddar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
@@ -1778,7 +1778,7 @@ object *p_cddar(object *args) {
     return cddar(car(args));
 }
 
-object *p_cdddr(object *args) {
+li_object *p_cdddr(li_object *args) {
     assert_nargs("cdddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))))
@@ -1786,7 +1786,7 @@ object *p_cdddr(object *args) {
     return cdddr(car(args));
 }
 
-object *p_caaaar(object *args) {
+li_object *p_caaaar(li_object *args) {
     assert_nargs("caaaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1794,7 +1794,7 @@ object *p_caaaar(object *args) {
     return caaaar(car(args));
 }
 
-object *p_caaadr(object *args) {
+li_object *p_caaadr(li_object *args) {
     assert_nargs("caaadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1802,7 +1802,7 @@ object *p_caaadr(object *args) {
     return caaadr(car(args));
 }
 
-object *p_caadar(object *args) {
+li_object *p_caadar(li_object *args) {
     assert_nargs("caadar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1810,7 +1810,7 @@ object *p_caadar(object *args) {
     return caadar(car(args));
 }
 
-object *p_caaddr(object *args) {
+li_object *p_caaddr(li_object *args) {
     assert_nargs("caaddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1818,7 +1818,7 @@ object *p_caaddr(object *args) {
     return caaddr(car(args));
 }
 
-object *p_cadaar(object *args) {
+li_object *p_cadaar(li_object *args) {
     assert_nargs("cadaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1826,7 +1826,7 @@ object *p_cadaar(object *args) {
     return cadaar(car(args));
 }
 
-object *p_cadadr(object *args) {
+li_object *p_cadadr(li_object *args) {
     assert_nargs("cadadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1834,7 +1834,7 @@ object *p_cadadr(object *args) {
     return cadadr(car(args));
 }
 
-object *p_caddar(object *args) {
+li_object *p_caddar(li_object *args) {
     assert_nargs("caddar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1842,7 +1842,7 @@ object *p_caddar(object *args) {
     return caddar(car(args));
 }
 
-object *p_cadddr(object *args) {
+li_object *p_cadddr(li_object *args) {
     assert_nargs("cadddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1850,7 +1850,7 @@ object *p_cadddr(object *args) {
     return cadddr(car(args));
 }
 
-object *p_cdaaar(object *args) {
+li_object *p_cdaaar(li_object *args) {
     assert_nargs("cdaaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1858,7 +1858,7 @@ object *p_cdaaar(object *args) {
     return cdaaar(car(args));
 }
 
-object *p_cdaadr(object *args) {
+li_object *p_cdaadr(li_object *args) {
     assert_nargs("cdaadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1866,7 +1866,7 @@ object *p_cdaadr(object *args) {
     return cdaadr(car(args));
 }
 
-object *p_cdadar(object *args) {
+li_object *p_cdadar(li_object *args) {
     assert_nargs("cdadar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1874,7 +1874,7 @@ object *p_cdadar(object *args) {
     return cdadar(car(args));
 }
 
-object *p_cdaddr(object *args) {
+li_object *p_cdaddr(li_object *args) {
     assert_nargs("cdaddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1882,7 +1882,7 @@ object *p_cdaddr(object *args) {
     return cdaddr(car(args));
 }
 
-object *p_cddaar(object *args) {
+li_object *p_cddaar(li_object *args) {
     assert_nargs("cddaar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1890,7 +1890,7 @@ object *p_cddaar(object *args) {
     return cddaar(car(args));
 }
 
-object *p_cddadr(object *args) {
+li_object *p_cddadr(li_object *args) {
     assert_nargs("cddadr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1898,7 +1898,7 @@ object *p_cddadr(object *args) {
     return cddadr(car(args));
 }
 
-object *p_cdddar(object *args) {
+li_object *p_cdddar(li_object *args) {
     assert_nargs("cdddar", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1906,7 +1906,7 @@ object *p_cdddar(object *args) {
     return cdddar(car(args));
 }
 
-object *p_cddddr(object *args) {
+li_object *p_cddddr(li_object *args) {
     assert_nargs("cddddr", 1, args);
     if (!is_pair(car(args)) && !is_pair(cdr(car(args))) &&
         !is_pair(cddr(car(args))) && !is_pair(cdddr(car(args))))
@@ -1916,7 +1916,7 @@ object *p_cddddr(object *args) {
 
 struct reg {
     char *var;
-    object *(*val)(object *);
+    li_object *(*val)(li_object *);
 } regs[] = {
     /* Non-standard */
     { "clock", p_clock },
@@ -2092,7 +2092,7 @@ struct reg {
     { NULL, NULL }
 };
 
-void define_primitive_procedures(object *env) {
+void define_primitive_procedures(li_object *env) {
     struct reg *iter;
 
     append_syntax("and",            m_and,          env);

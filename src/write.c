@@ -2,16 +2,16 @@
 #include <stdio.h>
 #include "li.h"
 
-void write_pair(object *obj, FILE *f, int h);
-void write_string(object *obj, FILE *f, int h);
-void write_vector(object *obj, FILE *f, int h);
+void write_pair(li_object *obj, FILE *f, int h);
+void write_string(li_object *obj, FILE *f, int h);
+void write_vector(li_object *obj, FILE *f, int h);
 
-void print_object(object *obj) {
+void print_object(li_object *obj) {
     display(obj, stdout);
     newline(stdout);
 }
 
-void write_object(object *obj, FILE *f, int h) {
+void write_object(li_object *obj, FILE *f, int h) {
     if (is_null(obj))
         fprintf(f, "()");
     else if (is_locked(obj))
@@ -45,8 +45,8 @@ void write_object(object *obj, FILE *f, int h) {
         write_vector(obj, f, h);
 }
 
-void write_pair(object *obj, FILE *f, int h) {
-    object *iter;
+void write_pair(li_object *obj, FILE *f, int h) {
+    li_object *iter;
 
     lock(obj);
     iter = obj;
@@ -65,11 +65,11 @@ void write_pair(object *obj, FILE *f, int h) {
     unlock(obj);
 }
 
-void write_string(object *obj, FILE *f, int h) {
+void write_string(li_object *obj, FILE *f, int h) {
     fprintf(f, h ? "%s" : "\"%s\"", to_string(obj));
 }
 
-void write_vector(object *obj, FILE *f, int h) {
+void write_vector(li_object *obj, FILE *f, int h) {
     int k;
 
     fprintf(f, "[");

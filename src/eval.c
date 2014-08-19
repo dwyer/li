@@ -13,13 +13,14 @@
 
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
-object *eval_quasiquote(object *exp, object *env);
-object *expand_macro(object *mac, object *args);
-object *extend_environment(object *vars, object *vals, object *base_env);
-object *list_of_values(object *exps, object *env);
+static li_object *eval_quasiquote(li_object *exp, li_object *env);
+static li_object *expand_macro(li_object *mac, li_object *args);
+static li_object *extend_environment(li_object *vars, li_object *vals,
+        li_object *base_env);
+static li_object *list_of_values(li_object *exps, li_object *env);
 
-object *apply(object *proc, object *args) {
-    object *head, *tail, *obj;
+li_object *apply(li_object *proc, li_object *args) {
+    li_object *head, *tail, *obj;
 
     if (is_primitive(proc))
         return to_primitive(proc)(args);
@@ -36,8 +37,8 @@ object *apply(object *proc, object *args) {
     return eval(cons(proc, head), to_compound(proc).env);
 }
 
-object *eval(object *exp, object *env) {
-    object *seq, *proc, *args;
+li_object *eval(li_object *exp, li_object *env) {
+    li_object *seq, *proc, *args;
 
     while (!is_self_evaluating(exp)) {
         if (is_symbol(exp)) {
@@ -76,8 +77,8 @@ object *eval(object *exp, object *env) {
     return exp;
 }
 
-object *eval_quasiquote(object *exp, object *env) {
-    object *head, *iter, *tail;
+li_object *eval_quasiquote(li_object *exp, li_object *env) {
+    li_object *head, *iter, *tail;
 
     if (!is_pair(exp))
         return exp;
@@ -101,8 +102,8 @@ object *eval_quasiquote(object *exp, object *env) {
     return cons(eval_quasiquote(car(exp), env), eval_quasiquote(cdr(exp), env));
 }
 
-object *expand_macro(object *mac, object *args) {
-    object *env, *ret, *seq;
+li_object *expand_macro(li_object *mac, li_object *args) {
+    li_object *env, *ret, *seq;
 
     ret = li_null;
     env = extend_environment(to_macro(mac).vars, args, to_macro(mac).env);
@@ -111,7 +112,8 @@ object *expand_macro(object *mac, object *args) {
     return ret;
 }
 
-object *extend_environment(object *vars, object *vals, object *env) {
+li_object *extend_environment(li_object *vars, li_object *vals, li_object *env)
+{
     for (env = environment(env); vars; vars = cdr(vars), vals = cdr(vals)) {
         if (is_symbol(vars)) {
             append_variable(vars, vals, env);
@@ -126,8 +128,8 @@ object *extend_environment(object *vars, object *vals, object *env) {
     return env;
 }
 
-object *list_of_values(object *exps, object *env) {
-    object *head, *node, *tail;
+li_object *list_of_values(li_object *exps, li_object *env) {
+    li_object *head, *node, *tail;
 
     head = li_null;
     while (exps) {
@@ -138,8 +140,8 @@ object *list_of_values(object *exps, object *env) {
     return head;
 }
 
-object *setup_environment(void) {
-    object *env;
+li_object *setup_environment(void) {
+    li_object *env;
 
     env = environment(li_null);
     append_variable(symbol("user-initial-environment"), env, env);
