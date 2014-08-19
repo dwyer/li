@@ -23,13 +23,13 @@ object *apply(object *proc, object *args) {
 
     if (is_primitive(proc))
         return to_primitive(proc)(args);
-    head = tail = null;
+    head = tail = li_null;
     while (args) {
-        obj = cons(symbol("quasiquote"), cons(car(args), null));
+        obj = cons(symbol("quasiquote"), cons(car(args), li_null));
         if (!tail)
-            head = tail = cons(obj, null);
+            head = tail = cons(obj, li_null);
         else {
-            tail = set_cdr(tail, cons(obj, null));
+            tail = set_cdr(tail, cons(obj, li_null));
         }
         args = cdr(args);
     }
@@ -84,12 +84,12 @@ object *eval_quasiquote(object *exp, object *env) {
     else if (is_unquoted(exp))
         return eval(cadr(exp), env);
     else if (is_unquoted_splicing(car(exp))) {
-        head = tail = null;
+        head = tail = li_null;
         for (iter = eval(cadar(exp), env); iter; iter = cdr(iter)) {
             if (head)
-                tail = set_cdr(tail, cons(car(iter), null));
+                tail = set_cdr(tail, cons(car(iter), li_null));
             else
-                head = tail = cons(car(iter), null);
+                head = tail = cons(car(iter), li_null);
         }
         if (tail) {
             set_cdr(tail, eval_quasiquote(cdr(exp), env));
@@ -104,7 +104,7 @@ object *eval_quasiquote(object *exp, object *env) {
 object *expand_macro(object *mac, object *args) {
     object *env, *ret, *seq;
 
-    ret = null;
+    ret = li_null;
     env = extend_environment(to_macro(mac).vars, args, to_macro(mac).env);
     for (seq = to_macro(mac).body; seq; seq = cdr(seq))
         ret = eval(car(seq), env);
@@ -129,9 +129,9 @@ object *extend_environment(object *vars, object *vals, object *env) {
 object *list_of_values(object *exps, object *env) {
     object *head, *node, *tail;
 
-    head = null;
+    head = li_null;
     while (exps) {
-        tail = cons(eval(car(exps), env), null);
+        tail = cons(eval(car(exps), env), li_null);
         node = head ? set_cdr(node, tail) : (head = tail);
         exps = cdr(exps);
     }
@@ -141,9 +141,9 @@ object *list_of_values(object *exps, object *env) {
 object *setup_environment(void) {
     object *env;
 
-    env = environment(null);
+    env = environment(li_null);
     append_variable(symbol("user-initial-environment"), env, env);
-    append_variable(symbol("null"), null, env);
+    append_variable(symbol("null"), li_null, env);
     append_variable(boolean(li_true), boolean(li_true), env);
     append_variable(boolean(li_false), boolean(li_false), env);
     define_primitive_procedures(env);

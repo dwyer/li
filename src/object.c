@@ -5,14 +5,14 @@
 #include "li.h"
 
 #define HASHSIZE        1024
-#define strdup(s)       strcpy(allocate(null, strlen(s)+1, sizeof(char)), s)
+#define strdup(s)       strcpy(allocate(li_null, strlen(s)+1, sizeof(char)), s)
 
 static struct {
     object **objs;
     object *syms[HASHSIZE];
     int size;
     int cap;
-} heap = { null };
+} heap = { NULL };
 
 void add_to_heap(object *obj) {
     int i;
@@ -20,9 +20,9 @@ void add_to_heap(object *obj) {
     if (!heap.objs) {
         heap.cap = 1024;
         heap.size = 0;
-        heap.objs = allocate(null, heap.cap, sizeof(*heap.objs));
+        heap.objs = allocate(li_null, heap.cap, sizeof(*heap.objs));
         for (i = 0; i < HASHSIZE; i++)
-            heap.syms[i] = null;
+            heap.syms[i] = li_null;
     } else if (heap.size == heap.cap) {
         heap.cap *= 2;
         heap.objs = allocate(heap.objs, heap.cap, sizeof(*heap.objs));
@@ -50,14 +50,14 @@ void *allocate(void *ptr, size_t count, size_t size) {
     else
         ptr = calloc(count, size);
     if (!ptr)
-        error("*allocate*", "out of memory", null);
+        error("*allocate*", "out of memory", li_null);
     return ptr;
 }
 
 object *create(int type) {
     object *obj;
 
-    obj = allocate(null, 1, sizeof(*obj));
+    obj = allocate(li_null, 1, sizeof(*obj));
     obj->type = type;
     obj->locked = 0;
     add_to_heap(obj);
@@ -89,7 +89,7 @@ object *environment(object *base) {
     obj = create(T_ENVIRONMENT);
     obj->data.env.cap = 4;
     obj->data.env.size = 0;
-    obj->data.env.array = allocate(null, obj->data.env.cap,
+    obj->data.env.array = allocate(li_null, obj->data.env.cap,
                                    sizeof(*obj->data.env.array));
     obj->data.env.base = base;
     return obj;
@@ -102,12 +102,12 @@ object *environment_assign(object *env, object *var, object *val) {
         for (i = 0; i < env->data.env.size; i++)
             if (env->data.env.array[i].var == var) {
                 env->data.env.array[i].val = val;
-                return cons(symbol("quote"), cons(val, null));
+                return cons(symbol("quote"), cons(val, li_null));
             }
         env = env->data.env.base;
     }
     error("set!", "unbound variable", var);
-    return null;
+    return li_null;
 }
 
 object *environment_define(object *env, object *var, object *val) {
@@ -131,7 +131,7 @@ object *environment_lookup(object *env, object *var) {
         env = env->data.env.base;
     }
     error("eval", "unbound variable", var);
-    return null;
+    return li_null;
 }
 
 object *macro(object *vars, object *body, object *env) {
@@ -210,7 +210,7 @@ object *symbol(char *s) {
                 return obj;
     obj = create(T_SYMBOL);
     obj->data.symbol.string = strdup(s);
-    obj->data.symbol.prev = null;
+    obj->data.symbol.prev = li_null;
     obj->data.symbol.next = heap.syms[hash];
     if (obj->data.symbol.next)
         obj->data.symbol.next->data.symbol.prev = obj;
@@ -227,7 +227,7 @@ object *vector(object *lst) {
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
         ;
     obj = create(T_VECTOR);
-    obj->data.vector.data = allocate(null, k, sizeof(*obj->data.vector.data));
+    obj->data.vector.data = allocate(li_null, k, sizeof(*obj->data.vector.data));
     obj->data.vector.length = k;
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
         vector_set(obj, k, car(iter));
@@ -309,7 +309,7 @@ void cleanup(object *env) {
     }
     if (!env) {
         free(heap.objs);
-        heap.objs = null;
+        heap.objs = NULL;
         heap.size = 0;
         heap.cap = 0;
     }

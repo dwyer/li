@@ -43,14 +43,14 @@ object *m_assert(object *args, object *env) {
     assert_nargs("assert", 1, args);
     if (is_false(eval(car(args), env)))
         error("assert", "assertion violated", car(args));
-    return null;
+    return li_null;
 }
 
 object *m_begin(object *seq, object *env) {
     for (; seq && cdr(seq); seq = cdr(seq))
         eval(car(seq), env);
     if (!seq)
-        return null;
+        return li_null;
     return car(seq);
 }
 
@@ -58,7 +58,7 @@ object *m_case(object *exp, object *env) {
     object *seq, *val;
 
     val = eval(car(exp), env);
-    seq = null;
+    seq = li_null;
     for (exp = cdr(exp); exp; exp = cdr(exp))
         for (seq = caar(exp); seq; seq = cdr(seq))
             if (is_eq(seq, symbol("else")) || is_eqv(car(seq), val)) {
@@ -84,7 +84,7 @@ object *m_cond(object *seq, object *env) {
     return car(seq);
 }
 
-#define make_define(p, b)       cons(symbol("define"), cons(p, cons(b, null)))
+#define make_define(p, b)       cons(symbol("define"), cons(p, cons(b, li_null)))
 #define make_lambda(p, b)       cons(symbol("lambda"), cons(p, b))
 #define make_named_lambda(p, b) cons(symbol("named-lambda"), cons(p, b))
 
@@ -93,9 +93,9 @@ object *m_define(object *args, object *env) {
 
     for (var = car(args), args = cdr(args); is_pair(var); var = car(var)) {
         if (is_pair(car(var)))
-            args = cons(make_lambda(cdr(var), args), null);
+            args = cons(make_lambda(cdr(var), args), li_null);
         else
-            args = cons(make_named_lambda(var, args), null);
+            args = cons(make_named_lambda(var, args), li_null);
     }
     assert_symbol("define", var);
     assert_nargs("define", 1, args);
@@ -114,7 +114,7 @@ object *m_defmacro(object *seq, object *env) {
 }
 
 object *m_delay(object *seq, object *env) {
-    return compound(null, null, seq, env);
+    return compound(li_null, li_null, seq, env);
 }
 
 object *m_do(object *seq, object *env) {
@@ -127,10 +127,10 @@ object *m_do(object *seq, object *env) {
 
     assert_pair("do", seq);
     assert_pair("do", cdr(seq));
-    head = tail = cons(symbol("let"), null);
-    tail = set_cdr(tail, cons(symbol("#"), null));
-    let_args = null;
-    let_bindings = null;
+    head = tail = cons(symbol("let"), li_null);
+    tail = set_cdr(tail, cons(symbol("#"), li_null));
+    let_args = li_null;
+    let_bindings = li_null;
     for (iter = car(seq); iter; iter = cdr(iter)) {
         binding = car(iter);
         assert_pair("do", binding);
@@ -138,21 +138,21 @@ object *m_do(object *seq, object *env) {
         assert_symbol("do", car(binding));
         if (cddr(binding)) {
             let_args = cons(caddr(binding), let_args);
-            binding = cons(car(binding), cons(cadr(binding), null));
+            binding = cons(car(binding), cons(cadr(binding), li_null));
         } else {
             let_args = cons(car(binding), let_args);
         }
         let_bindings = cons(binding, let_bindings);
     }
-    tail = set_cdr(tail, cons(let_bindings, null));
-    tail = set_cdr(tail, cons(null, null));
-    tail = set_car(tail, cons(symbol("cond"), null));
-    tail = set_cdr(tail, cons(cadr(seq), null));
-    tail = set_cdr(tail, cons(null, null));
-    tail = set_car(tail, cons(symbol("else"), null));
+    tail = set_cdr(tail, cons(let_bindings, li_null));
+    tail = set_cdr(tail, cons(li_null, li_null));
+    tail = set_car(tail, cons(symbol("cond"), li_null));
+    tail = set_cdr(tail, cons(cadr(seq), li_null));
+    tail = set_cdr(tail, cons(li_null, li_null));
+    tail = set_car(tail, cons(symbol("else"), li_null));
     for (iter = cddr(seq); iter; iter = cdr(iter))
         tail = set_cdr(tail, iter);
-    tail = set_cdr(tail, cons(cons(symbol("#"), let_args), null));
+    tail = set_cdr(tail, cons(cons(symbol("#"), let_args), li_null));
     return head;
 }
 
@@ -168,7 +168,7 @@ object *m_if(object *seq, object *env) {
 }
 
 object *m_lambda(object *seq, object *env) {
-    return compound(null, car(seq), cdr(seq), env);
+    return compound(li_null, car(seq), cdr(seq), env);
 }
 
 object *m_named_lambda(object *seq, object *env) {
@@ -182,24 +182,24 @@ object *m_named_lambda(object *seq, object *env) {
 object *m_let(object *args, object *env) {
     object *bindings, *body, *name, *vals, *vals_tail, *vars, *vars_tail;
 
-    name = null;
+    name = li_null;
     if (is_symbol(car(args))) {
         name = car(args);
         args = cdr(args);
     }
     assert_list("let", car(args));
     body = cdr(args);
-    vals = vals_tail = vars = vars_tail = null;
+    vals = vals_tail = vars = vars_tail = li_null;
     for (bindings = car(args); bindings; bindings = cdr(bindings)) {
         args = car(bindings);
         assert_nargs("let", 2, args);
         assert_symbol("let", car(args));
         if (!vars && !vals) {
-            vars_tail = vars = cons(car(args), null);
-            vals_tail = vals = cons(cadr(args), null);
+            vars_tail = vars = cons(car(args), li_null);
+            vals_tail = vals = cons(cadr(args), li_null);
         } else {
-            vars_tail = set_cdr(vars_tail, cons(car(args), null));
-            vals_tail = set_cdr(vals_tail, cons(cadr(args), null));
+            vars_tail = set_cdr(vars_tail, cons(car(args), li_null));
+            vals_tail = set_cdr(vals_tail, cons(cadr(args), li_null));
         }
     }
     body = make_lambda(vars, body);
@@ -212,16 +212,16 @@ object *m_let_star(object *args, object *env) {
     object *binding, *bindings, *body, *result, *vals, *vars;
 
     body = cdr(args);
-    result = vals = vars = null;
+    result = vals = vars = li_null;
     for (bindings = car(args); bindings; bindings = cdr(bindings)) {
         binding = car(bindings);
-        vars = cons(car(binding), null);
-        vals = cons(cadr(binding), null);
-        if (result == null)
+        vars = cons(car(binding), li_null);
+        vals = cons(cadr(binding), li_null);
+        if (result == li_null)
             result = cons(make_lambda(vars, body), vals);
         else
             set_cdr(cdar(result),
-                    cons(cons(make_lambda(vars, cddar(result)), vals), null));
+                    cons(cons(make_lambda(vars, cddar(result)), vals), li_null));
     }
     return result;
 }
@@ -229,9 +229,9 @@ object *m_let_star(object *args, object *env) {
 object *m_letrec(object *args, object *env) {
     object *head, *iter, *tail;
 
-    head = tail = cons(symbol("begin"), null);
+    head = tail = cons(symbol("begin"), li_null);
     for (iter = car(args); iter; iter = cdr(iter))
-        tail = set_cdr(tail, cons(cons(symbol("define"), car(iter)), null));
+        tail = set_cdr(tail, cons(cons(symbol("define"), car(iter)), li_null));
     set_cdr(tail, cdr(args));
     return head;
 }
@@ -240,7 +240,7 @@ object *m_load(object *args, object *env) {
     assert_nargs("load", 1, args);
     assert_string("load", car(args));
     load(to_string(car(args)), env);
-    return null;
+    return li_null;
 }
 
 /* (macro params . body) */
@@ -253,7 +253,7 @@ object *m_or(object *seq, object *env) {
 
     for (; seq && cdr(seq); seq = cdr(seq))
         if (is_true(val = eval(car(seq), env)))
-            return cons(symbol("quote"), cons(val, null));
+            return cons(symbol("quote"), cons(val, li_null));
     if (!seq)
         return boolean(li_false);
     return car(seq);
@@ -282,7 +282,7 @@ object *p_error(object *args) {
     assert_symbol("error", car(args));
     assert_string("error", cadr(args));
     error(to_symbol(car(args)), to_string(cadr(args)), cddr(args));
-    return null;
+    return li_null;
 }
 
 object *p_clock(object *args) {
@@ -294,7 +294,7 @@ object *p_exit(object *args) {
     assert_nargs("exit", 1, args);
     assert_integer("exit", car(args));
     exit(to_integer(car(args)));
-    return null;
+    return li_null;
 }
 
 object *p_rand(object *args) {
@@ -340,7 +340,7 @@ object *p_system(object *args) {
     assert_string("system", car(args));
     if ((ret = system(to_string(car(args)))))
         return number(ret);
-    return null;
+    return li_null;
 }
 
 object *p_time(object *args) {
@@ -779,7 +779,7 @@ object *p_set_car(object *args) {
     assert_nargs("set-car!", 2, args);
     assert_pair("set-car!", car(args));
     set_car(car(args), cadr(args));
-    return null;
+    return li_null;
 }
 
 /*
@@ -790,7 +790,7 @@ object *p_set_cdr(object *args) {
     assert_nargs("set-cdr!", 2, args);
     assert_pair("set-cdr!", car(args));
     set_cdr(car(args), cadr(args));
-    return null;
+    return li_null;
 }
 
 /*
@@ -819,12 +819,12 @@ object *p_make_list(object *args) {
     assert_integer("make-list", car(args));
     k = to_integer(car(args));
     fill = cadr(args);
-    head = tail = null;
+    head = tail = li_null;
     while (k--) {
         if (head)
-            tail = set_cdr(tail, cons(fill, null));
+            tail = set_cdr(tail, cons(fill, li_null));
         else
-            head = tail = cons(fill, null);
+            head = tail = cons(fill, li_null);
     }
     return head;
 }
@@ -893,25 +893,25 @@ object *p_append(object *args) {
     object *head, *tail, *list;
 
     if (!args)
-        return null;
+        return li_null;
     else if (!cdr(args))
         return car(args);
-    head = tail = list = null;
+    head = tail = list = li_null;
     while (args) {
         list = car(args);
         while (list) {
             if (is_pair(list)) {
                 if (head)
-                    tail = set_cdr(tail, cons(car(list), null));
+                    tail = set_cdr(tail, cons(car(list), li_null));
                 else
-                    head = tail = cons(car(list), null);
+                    head = tail = cons(car(list), li_null);
                 list = cdr(list);
             } else if (!cdr(args)) {
                 if (head)
                     tail = set_cdr(tail, list);
                 else
                     head = tail = list;
-                list = null;
+                list = li_null;
             } else {
                 error("append", "not a list", list);
             }
@@ -926,16 +926,16 @@ object *p_filter(object *args) {
 
     assert_nargs("filter", 2, args);
     assert_procedure("filter", car(args));
-    tail = null;
-    for (iter = cadr(args), head = temp = null; iter; iter = cdr(iter)) {
+    tail = li_null;
+    for (iter = cadr(args), head = temp = li_null; iter; iter = cdr(iter)) {
         assert_pair("filter", iter);
         if (temp)
             set_car(temp, car(iter));
         else
-            temp = cons(car(iter), null);
+            temp = cons(car(iter), li_null);
         if (is_true(apply(car(args), temp))) {
             tail = head ? set_cdr(tail, temp) : (head = temp);
-            temp = null;
+            temp = li_null;
         }
     }
     return head;
@@ -945,7 +945,7 @@ object *p_reverse(object *args) {
     object *lst, *tsl;
 
     assert_nargs("reverse", 1, args);
-    for (tsl = null, lst = car(args); lst; lst = cdr(lst)) {
+    for (tsl = li_null, lst = car(args); lst; lst = cdr(lst)) {
         if (!is_pair(lst))
             error("reverse", "not a list", car(args));
         tsl = cons(car(lst), tsl);
@@ -1126,7 +1126,7 @@ object *p_string(object *args) {
     char *str;
     int i;
 
-    str = allocate(null, length(args)+1, sizeof(char));
+    str = allocate(li_null, length(args)+1, sizeof(char));
     for (i = 0; args; i++, args = cdr(args)) {
         if (!is_character(car(args))) {
             free(str);
@@ -1146,7 +1146,7 @@ object *p_make_string(object *args) {
     assert_nargs("make-string", 1, args);
     assert_integer("make-string", car(args));
     k = to_integer(car(args)) + 1;
-    s = allocate(null, k, sizeof(*s));
+    s = allocate(li_null, k, sizeof(*s));
     while (k >= 0)
         s[k--] = '\0';
     obj = string(s);
@@ -1219,12 +1219,12 @@ object *p_string_to_list(object *args) {
     assert_nargs("string->list", 1, args);
     assert_string("string->list", car(args));
     str = to_string(car(args));
-    head = tail = null;
+    head = tail = li_null;
     for (i = 0; i < strlen(str); ++i) {
         if (head)
-            tail = set_cdr(tail, cons(character(str[i]), null));
+            tail = set_cdr(tail, cons(character(str[i]), li_null));
         else
-            head = tail = cons(character(str[i]), null);
+            head = tail = cons(character(str[i]), li_null);
     }
     return head;
 }
@@ -1244,12 +1244,12 @@ object *p_string_to_vector(object *args) {
     assert_string("string->vector", car(args));
     s = to_string(car(args));
     n = strlen(s);
-    head = tail = null;
+    head = tail = li_null;
     for (i = 0; i < n; ++i) {
         if (head)
-            tail = set_cdr(tail, cons(character(s[i]), null));
+            tail = set_cdr(tail, cons(character(s[i]), li_null));
         else
-            head = tail = cons(character(s[i]), null);
+            head = tail = cons(character(s[i]), li_null);
     }
     return vector(head);
 }
@@ -1259,7 +1259,7 @@ object *p_number_to_string(object *args) {
 
     assert_nargs("number->string", 1, args);
     assert_number("number->string", car(args));
-    s = allocate(null, 30, sizeof(char));
+    s = allocate(li_null, 30, sizeof(char));
     sprintf(s, "%.15g", to_number(car(args)));
     return string(s);
 }
@@ -1270,7 +1270,7 @@ object *p_string_append(object *args) {
     int size, i;
 
     size = 1;
-    s = allocate(null, size, sizeof(char));
+    s = allocate(li_null, size, sizeof(char));
     for (i = 0; args; args = cdr(args)) {
         assert_string("string-append", car(args));
         for (ss = to_string(car(args)); *ss; ss++) {
@@ -1325,7 +1325,7 @@ object *p_make_vector(object *args) {
         fill = li_false;
     }
     vec = create(T_VECTOR);
-    vec->data.vector.data = allocate(null, k, sizeof(*vec->data.vector.data));
+    vec->data.vector.data = allocate(li_null, k, sizeof(*vec->data.vector.data));
     vec->data.vector.length = k;
     while (k--)
         vec->data.vector.data[k] = fill;
@@ -1391,9 +1391,9 @@ object *p_vector_to_list(object *args) {
     assert_vector("vector->list", car(args));
     vect = car(args);
     k = vector_length(vect);
-    list = tail = k ? cons(vector_ref(vect, 0), null) : null;
+    list = tail = k ? cons(vector_ref(vect, 0), li_null) : li_null;
     for (i = 1; i < k; ++i)
-        tail = set_cdr(tail, cons(vector_ref(vect, i), null));
+        tail = set_cdr(tail, cons(vector_ref(vect, i), li_null));
     return list;
 }
 
@@ -1406,7 +1406,7 @@ object *p_vector_to_string(object *args) {
     assert_vector("vector->string", car(args));
     vec = car(args);
     k = vector_length(vec);
-    s = allocate(null, k, sizeof(*s));
+    s = allocate(li_null, k, sizeof(*s));
     while (k--) {
         assert_character("vector->string", vector_ref(vec, k));
         s[k] = to_character(vector_ref(vec, k));
@@ -1425,7 +1425,7 @@ object *p_list_to_string(object *args) {
     assert_list("list->string", car(args));
     lst = car(args);
     n = length(lst);
-    s = allocate(null, n, sizeof(*s));
+    s = allocate(li_null, n, sizeof(*s));
     for (i = 0; i < n; i++) {
         assert_character("list->string", car(lst));
         s[i] = to_character(car(lst));
@@ -1475,12 +1475,12 @@ object *p_map(object *args) {
 
     proc = car(args);
     clists = cdr(args);
-    list = list_iter = null;
+    list = list_iter = li_null;
     assert_procedure("map", proc);
     /* iterate clists */
     loop = 1;
     while (loop) {
-        cars = cars_iter = null;
+        cars = cars_iter = li_null;
         for (clists_iter = clists; clists_iter; clists_iter = cdr(clists_iter)) {
             /* get clist */
             if (!car(clists_iter)) {
@@ -1490,16 +1490,16 @@ object *p_map(object *args) {
             assert_pair("map", car(clists_iter));
             /* get cars */
             if (cars)
-                cars_iter = set_cdr(cars_iter, cons(caar(clists_iter), null));
+                cars_iter = set_cdr(cars_iter, cons(caar(clists_iter), li_null));
             else
-                cars = cars_iter = cons(caar(clists_iter), null);
+                cars = cars_iter = cons(caar(clists_iter), li_null);
             set_car(clists_iter, cdar(clists_iter));
         }
         if (loop) {
             if (list)
-                list_iter = set_cdr(list_iter, cons(apply(proc, cars), null));
+                list_iter = set_cdr(list_iter, cons(apply(proc, cars), li_null));
             else
-                list = list_iter = cons(apply(proc, cars), null);
+                list = list_iter = cons(apply(proc, cars), li_null);
         }
     }
     return list;
@@ -1513,16 +1513,16 @@ object *p_for_each(object *args) {
     proc = car(args);
     iter = cadr(args);
     while (iter) {
-        apply(proc, cons(car(iter), null));
+        apply(proc, cons(car(iter), li_null));
         iter = cdr(iter);
     }
-    return null;
+    return li_null;
 }
 
 object *p_force(object *args) {
     assert_nargs("force", 1, args);
     assert_procedure("force", car(args));
-    return apply(car(args), null);
+    return apply(car(args), li_null);
 }
 
 object *p_eval(object *args) {
@@ -1641,7 +1641,7 @@ object *p_write(object *args) {
         assert_nargs("write", 1, args);
     }
     lwrite(car(args), f);
-    return null;
+    return li_null;
 }
 
 /*
@@ -1660,7 +1660,7 @@ object *p_display(object *args) {
         assert_nargs("display", 1, args);
     }
     display(car(args), f);
-    return null;
+    return li_null;
 }
 
 /*
@@ -1677,7 +1677,7 @@ object *p_newline(object *args) {
         f = to_port(car(args)).file;
     }
     newline(f);
-    return null;
+    return li_null;
 }
 
 object *p_print(object *args) {
@@ -1687,7 +1687,7 @@ object *p_print(object *args) {
             display(character(' '), stdout);
     }
     newline(stdout);
-    return null;
+    return li_null;
 }
 
 /*****************
@@ -2089,7 +2089,7 @@ struct reg {
     { "newline", p_newline },
     { "print", p_print },
     /* sentinel */
-    { null, null }
+    { NULL, NULL }
 };
 
 void define_primitive_procedures(object *env) {

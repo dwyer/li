@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "li.h"
 
-#define make_tagged_list(str, obj) cons(symbol(str), cons(obj, null))
+#define make_tagged_list(str, obj) cons(symbol(str), cons(obj, li_null))
 
 void yyerror(char *);
 extern int yylex(void);
@@ -13,7 +13,7 @@ extern char *yytext;
 extern FILE *yyin;
 extern int YY_BUF_SIZE;
 
-static object *obj = null;
+static object *obj = li_null;
 object *append(object *lst, object *obj);
 extern void push_buffer(void);
 extern void pop_buffer(void);
@@ -51,8 +51,8 @@ datum   : EOF_OBJECT { $$ = eof; }
         | ',' '@' datum { $$ = make_tagged_list("unquote-splicing", $3); }
         ;
 
-data    : { $$ = null; }
-        | data datum { $$ = append($1, cons($2, null)); }
+data    : { $$ = li_null; }
+        | data datum { $$ = append($1, cons($2, li_null)); }
         ;
 
 %%
@@ -87,9 +87,9 @@ void load(char *filename, object *env) {
 }
 
 object *lread(FILE *f) {
-    obj = null;
+    obj = li_null;
     yyin = f;
-    if (yyparse()) return null;
+    if (yyparse()) return li_null;
     return obj;
 }
 

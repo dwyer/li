@@ -4,11 +4,11 @@
 #define li_false                0
 #define li_true                 !li_false
 
-#define null                    NULL
+#define li_null                 ((object *)NULL)
 #define eof                     symbol("#<eof>")
 
 #define is_eq(obj1, obj2)       ((obj1) == (obj2))
-#define is_null(obj)            is_eq(obj, null)
+#define is_null(obj)            is_eq(obj, li_null)
 
 /* Type checking. */
 #define is_type(obj, t)         ((obj) && (obj)->type == t)
