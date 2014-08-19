@@ -232,7 +232,7 @@ li_object *li_vector(li_object *lst) {
             sizeof(*obj->data.vector.data));
     obj->data.vector.length = k;
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
-        li_vector_set(obj, k, car(iter));
+        li_vector_set(obj, k, li_car(iter));
     return obj;
 }
 
@@ -274,7 +274,7 @@ void mark(li_object *obj) {
                 mark(obj->data.env.array[i].val);
             }
     } else if (li_is_pair(obj)) {
-        mark(car(obj));
+        mark(li_car(obj));
         mark(cdr(obj));
     } else if (li_is_vector(obj)) {
         int k;
@@ -332,7 +332,7 @@ int li_is_equal(li_object *obj1, li_object *obj2) {
     if (li_is_eqv(obj1, obj2))
         return li_true;
     else if (li_is_pair(obj1) && li_is_pair(obj2))
-        return (li_is_equal(car(obj1), car(obj2)) &&
+        return (li_is_equal(li_car(obj1), li_car(obj2)) &&
                 li_is_equal(cdr(obj2), cdr(obj2)));
     else if (li_is_string(obj1) && li_is_string(obj2))
         return li_is_string_eq(obj1, obj2);

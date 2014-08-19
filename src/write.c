@@ -52,7 +52,7 @@ void write_pair(li_object *obj, FILE *f, int h) {
     iter = obj;
     fprintf(f, "(");
     do {
-        li_write_object(car(iter), f, h);
+        li_write_object(li_car(iter), f, h);
         iter = cdr(iter);
         if (iter)
             fprintf(f, " ");

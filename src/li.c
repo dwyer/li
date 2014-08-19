@@ -35,7 +35,7 @@ void script(li_object *env) {
     li_object *args;
 
     args = li_environment_lookup(env, ARGV_SYMBOL);
-    li_load(li_to_string(car(args)), env);
+    li_load(li_to_string(li_car(args)), env);
 }
 
 int main(int argc, char *argv[]) {
