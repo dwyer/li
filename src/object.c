@@ -96,7 +96,7 @@ li_object *li_environment(li_object *base) {
     return obj;
 }
 
-li_object *environment_assign(li_object *env, li_object *var, li_object *val) {
+li_object *li_environment_assign(li_object *env, li_object *var, li_object *val) {
     int i;
     
     while (env) {
@@ -111,7 +111,7 @@ li_object *environment_assign(li_object *env, li_object *var, li_object *val) {
     return li_null;
 }
 
-li_object *environment_define(li_object *env, li_object *var, li_object *val) {
+li_object *li_environment_define(li_object *env, li_object *var, li_object *val) {
     int i;
 
     for (i = 0; i < env->data.env.size; i++)
@@ -122,7 +122,7 @@ li_object *environment_define(li_object *env, li_object *var, li_object *val) {
     return append_variable(var, val, env);
 }
 
-li_object *environment_lookup(li_object *env, li_object *var) {
+li_object *li_environment_lookup(li_object *env, li_object *var) {
     int i;
 
     while (env) {
@@ -362,7 +362,7 @@ int li_is_list(li_object *obj) {
     return 1;
 }
 
-int length(li_object *obj) {
+int li_length(li_object *obj) {
     int k;
 
     for (k = 0; obj; k++)

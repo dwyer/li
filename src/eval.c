@@ -42,7 +42,7 @@ li_object *eval(li_object *exp, li_object *env) {
 
     while (!li_is_self_evaluating(exp)) {
         if (li_is_symbol(exp)) {
-            return environment_lookup(env, exp);
+            return li_environment_lookup(env, exp);
         } else if (li_is_quoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return cadr(exp);

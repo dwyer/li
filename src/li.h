@@ -132,13 +132,13 @@ extern li_object *li_symbol(char *s);
 extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *));
 extern li_object *li_vector(li_object *lst);
 
-extern li_object *environment_assign(li_object *env, li_object *var, li_object *val);
-extern li_object *environment_define(li_object *env, li_object *var, li_object *val);
-extern li_object *environment_lookup(li_object *env, li_object *var);
+extern li_object *li_environment_assign(li_object *env, li_object *var, li_object *val);
+extern li_object *li_environment_define(li_object *env, li_object *var, li_object *val);
+extern li_object *li_environment_lookup(li_object *env, li_object *var);
 extern int li_is_equal(li_object *obj1, li_object *obj2);
 extern int li_is_eqv(li_object *obj1, li_object *obj2);
 extern int li_is_list(li_object *obj);
-extern int length(li_object *obj);
+extern int li_length(li_object *obj);
 
 struct li_object {
     union {

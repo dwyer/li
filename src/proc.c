@@ -99,7 +99,7 @@ li_object *m_define(li_object *args, li_object *env) {
     }
     assert_symbol("define", var);
     assert_nargs("define", 1, args);
-    return environment_define(env, var, eval(car(args), env));
+    return li_environment_define(env, var, eval(car(args), env));
 }
 
 /* (defmacro (name . args) . body) */
@@ -110,7 +110,7 @@ li_object *m_defmacro(li_object *seq, li_object *env) {
     name = caar(seq);
     vars = cdar(seq);
     body = cdr(seq);
-    return environment_define(env, name, li_macro(vars, body, env));
+    return li_environment_define(env, name, li_macro(vars, body, env));
 }
 
 li_object *m_delay(li_object *seq, li_object *env) {
@@ -266,7 +266,7 @@ li_object *m_set(li_object *args, li_object *env) {
     assert_symbol("set!", car(args));
     var = car(args);
     val = eval(cadr(args), env);
-    return(environment_assign(env, var, val));
+    return(li_environment_assign(env, var, val));
 }
 
 /*
@@ -1126,7 +1126,7 @@ li_object *p_string(li_object *args) {
     char *str;
     int i;
 
-    str = li_allocate(li_null, length(args)+1, sizeof(char));
+    str = li_allocate(li_null, li_length(args)+1, sizeof(char));
     for (i = 0; args; i++, args = cdr(args)) {
         if (!li_is_character(car(args))) {
             free(str);
@@ -1424,7 +1424,7 @@ li_object *p_list_to_string(li_object *args) {
     assert_nargs("list->string", 1, args);
     assert_list("list->string", car(args));
     lst = car(args);
-    n = length(lst);
+    n = li_length(lst);
     s = li_allocate(li_null, n, sizeof(*s));
     for (i = 0; i < n; i++) {
         assert_character("list->string", car(lst));

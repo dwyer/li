@@ -17,7 +17,7 @@ void repl(li_object *env) {
     while ((exp = prompt(stdin)) != li_eof) {
         if (exp) {
             exp = eval(exp, env);
-            environment_assign(env, li_symbol("_"), exp);
+            li_environment_assign(env, li_symbol("_"), exp);
             if (exp) {
                 lwrite(exp, stdout);
                 newline(stdout);
@@ -30,7 +30,7 @@ void repl(li_object *env) {
 void script(li_object *env) {
     li_object *args;
 
-    args = environment_lookup(env, ARGV_SYMBOL);
+    args = li_environment_lookup(env, ARGV_SYMBOL);
     load(li_to_string(car(args)), env);
 }
 
