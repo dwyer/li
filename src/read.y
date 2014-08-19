@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include "li.h"
 
-#define make_tagged_list(str, obj) cons(symbol(str), cons(obj, li_null))
+#define make_tagged_list(str, obj) cons(li_symbol(str), cons(obj, li_null))
 
 void yyerror(char *);
 extern int yylex(void);
@@ -44,7 +44,7 @@ datum   : EOF_OBJECT { $$ = li_eof; }
         | SYMBOL { $$ = $1; }
         | '(' data ')' { $$ = $2; }
         | '(' data datum '.' datum ')' { $$ = append($2, cons($3, $5)); }
-        | '[' data ']' { $$ = vector($2); }
+        | '[' data ']' { $$ = li_vector($2); }
         | '\'' datum { $$ = make_tagged_list("quote", $2); }
         | '`' datum { $$ = make_tagged_list("quasiquote", $2); }
         | ',' datum { $$ = make_tagged_list("unquote", $2); }
@@ -77,7 +77,7 @@ void load(char *filename, li_object *env) {
         pop = 1;
     }
     if ((f = fopen(filename, "r")) == NULL)
-        error("load", "unable to read file", string(filename));
+        error("load", "unable to read file", li_string(filename));
     while ((exp = lread(f)) != li_eof) {
         exp = eval(exp, env);
         cleanup(env);
@@ -94,5 +94,5 @@ li_object *lread(FILE *f) {
 }
 
 void yyerror(char *s) {
-    error("read", s, number(yylineno));
+    error("read", s, li_number(yylineno));
 }

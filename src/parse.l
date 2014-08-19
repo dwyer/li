@@ -33,16 +33,16 @@ number                  ({num10}|{num16})
 
 [%()\[\].'`,@\\]        return *yytext;
 <<EOF>>                 yylval.obj = li_eof; return EOF_OBJECT;
-{character}             yylval.obj = character(yytext[3]); return CHARACTER;
-%\\newline              yylval.obj = character('\n'); return CHARACTER;
-%\\space                yylval.obj = character(' '); return CHARACTER;
-%\\tab                  yylval.obj = character('\t'); return CHARACTER;
-{number}                yylval.obj = number(atof(yytext)); return NUMBER;
-{symbol}                yylval.obj = symbol(yytext); return SYMBOL;
-\"\"                    yylval.obj = string(""); return STRING;
+{character}             yylval.obj = li_character(yytext[3]); return CHARACTER;
+%\\newline              yylval.obj = li_character('\n'); return CHARACTER;
+%\\space                yylval.obj = li_character(' '); return CHARACTER;
+%\\tab                  yylval.obj = li_character('\t'); return CHARACTER;
+{number}                yylval.obj = li_number(atof(yytext)); return NUMBER;
+{symbol}                yylval.obj = li_symbol(yytext); return SYMBOL;
+\"\"                    yylval.obj = li_string(""); return STRING;
 <INITIAL>\"             BEGIN(XSTRING);
 <XSTRING>\"             BEGIN(INITIAL);
-<XSTRING>[^"]*          yylval.obj = string(yytext); return STRING;
+<XSTRING>[^"]*          yylval.obj = li_string(yytext); return STRING;
 {whitespace}            ; /* ignore whitespace */
 {comment}               ; /* ignore comments */
 

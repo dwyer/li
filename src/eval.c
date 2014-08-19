@@ -2,7 +2,7 @@
 #include "li.h"
 #include "proc.h"
 
-#define li_is_tagged_list(exp, tag) (li_is_pair(exp) && car(exp) == symbol(tag))
+#define li_is_tagged_list(exp, tag) (li_is_pair(exp) && car(exp) == li_symbol(tag))
 
 #define li_is_application(exp)      li_is_list(exp)
 #define li_is_self_evaluating(exp)  !(li_is_pair(exp) || li_is_symbol(exp))
@@ -26,7 +26,7 @@ li_object *apply(li_object *proc, li_object *args) {
         return li_to_primitive(proc)(args);
     head = tail = li_null;
     while (args) {
-        obj = cons(symbol("quasiquote"), cons(car(args), li_null));
+        obj = cons(li_symbol("quasiquote"), cons(car(args), li_null));
         if (!tail)
             head = tail = cons(obj, li_null);
         else {
@@ -114,7 +114,7 @@ li_object *expand_macro(li_object *mac, li_object *args) {
 
 li_object *extend_environment(li_object *vars, li_object *vals, li_object *env)
 {
-    for (env = environment(env); vars; vars = cdr(vars), vals = cdr(vals)) {
+    for (env = li_environment(env); vars; vars = cdr(vars), vals = cdr(vals)) {
         if (li_is_symbol(vars)) {
             append_variable(vars, vals, env);
             return env;
@@ -143,11 +143,11 @@ li_object *list_of_values(li_object *exps, li_object *env) {
 li_object *setup_environment(void) {
     li_object *env;
 
-    env = environment(li_null);
-    append_variable(symbol("user-initial-environment"), env, env);
-    append_variable(symbol("null"), li_null, env);
-    append_variable(boolean(li_true), boolean(li_true), env);
-    append_variable(boolean(li_false), boolean(li_false), env);
+    env = li_environment(li_null);
+    append_variable(li_symbol("user-initial-environment"), env, env);
+    append_variable(li_symbol("null"), li_null, env);
+    append_variable(li_boolean(li_true), li_boolean(li_true), env);
+    append_variable(li_boolean(li_false), li_boolean(li_false), env);
     define_primitive_procedures(env);
     return env;
 }

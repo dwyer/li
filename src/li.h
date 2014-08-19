@@ -5,7 +5,7 @@
 #define li_true                 !li_false
 
 #define li_null                 ((li_object *)NULL)
-#define li_eof                  symbol("#<eof>")
+#define li_eof                  li_symbol("#<eof>")
 
 #define li_is_eq(obj1, obj2)    ((obj1) == (obj2))
 #define li_is_null(obj)         li_is_eq(obj, li_null)
@@ -29,10 +29,10 @@
 #define li_is_vector(obj)       li_is_type(obj, T_VECTOR)
 
 /* Booleans */
-#define boolean(obj)            (obj ? symbol("true") : symbol("false"))
-#define li_not(obj)             li_is_eq(obj, boolean(li_false))
-#define li_is_boolean(obj)      (li_is_eq(obj, boolean(li_true)) || \
-                                 li_is_eq(obj, boolean(li_false)))
+#define li_boolean(obj)         (obj ? li_symbol("true") : li_symbol("false"))
+#define li_not(obj)             li_is_eq(obj, li_boolean(li_false))
+#define li_is_boolean(obj)      (li_is_eq(obj, li_boolean(li_true)) || \
+                                 li_is_eq(obj, li_boolean(li_false)))
 #define li_is_false(obj)        li_not(obj)
 #define li_is_true(obj)         !li_not(obj)
 
@@ -59,7 +59,7 @@
 #define vector_ref(vec, k)      li_to_vector(vec).data[k]
 #define vector_set(vec, k, obj) (vector_ref(vec, k) = obj)
 
-#define cons(obj1, obj2)        pair(obj1, obj2)
+#define cons(obj1, obj2)        li_pair(obj1, obj2)
 #define car(obj)                li_to_pair(obj).car
 #define cdr(obj)                li_to_pair(obj).cdr
 #define set_car(obj1, obj2)     (car(obj1) = obj2)
@@ -119,18 +119,18 @@ extern li_object *li_create(int type);
 extern void cleanup(li_object *env);
 extern void destroy(li_object *obj);
 
-extern li_object *character(int c);
-extern li_object *compound(li_object *name, li_object *vars, li_object *body, li_object *env);
-extern li_object *environment(li_object *base);
-extern li_object *macro(li_object *vars, li_object *body, li_object *env);
-extern li_object *number(double n);
-extern li_object *pair(li_object *car, li_object *cdr);
-extern li_object *port(const char *filename, const char *mode);
-extern li_object *primitive(li_object *(*proc)(li_object *));
-extern li_object *string(char *s);
-extern li_object *symbol(char *s);
-extern li_object *syntax(li_object *(*proc)(li_object *, li_object *));
-extern li_object *vector(li_object *lst);
+extern li_object *li_character(int c);
+extern li_object *li_compound(li_object *name, li_object *vars, li_object *body, li_object *env);
+extern li_object *li_environment(li_object *base);
+extern li_object *li_macro(li_object *vars, li_object *body, li_object *env);
+extern li_object *li_number(double n);
+extern li_object *li_pair(li_object *car, li_object *cdr);
+extern li_object *li_port(const char *filename, const char *mode);
+extern li_object *li_primitive(li_object *(*proc)(li_object *));
+extern li_object *li_string(char *s);
+extern li_object *li_symbol(char *s);
+extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *));
+extern li_object *li_vector(li_object *lst);
 
 extern li_object *environment_assign(li_object *env, li_object *var, li_object *val);
 extern li_object *environment_define(li_object *env, li_object *var, li_object *val);

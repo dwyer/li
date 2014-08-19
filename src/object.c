@@ -64,7 +64,7 @@ li_object *li_create(int type) {
     return obj;
 }
 
-li_object *character(int c) {
+li_object *li_character(int c) {
     li_object *obj;
 
     obj = li_create(T_CHARACTER);
@@ -72,7 +72,7 @@ li_object *character(int c) {
     return obj;
 }
 
-li_object *compound(li_object *name, li_object *vars, li_object *body,
+li_object *li_compound(li_object *name, li_object *vars, li_object *body,
         li_object *env) {
     li_object *obj;
 
@@ -84,7 +84,7 @@ li_object *compound(li_object *name, li_object *vars, li_object *body,
     return obj;
 }
 
-li_object *environment(li_object *base) {
+li_object *li_environment(li_object *base) {
     li_object *obj;
 
     obj = li_create(T_ENVIRONMENT);
@@ -103,7 +103,7 @@ li_object *environment_assign(li_object *env, li_object *var, li_object *val) {
         for (i = 0; i < env->data.env.size; i++)
             if (env->data.env.array[i].var == var) {
                 env->data.env.array[i].val = val;
-                return cons(symbol("quote"), cons(val, li_null));
+                return cons(li_symbol("quote"), cons(val, li_null));
             }
         env = env->data.env.base;
     }
@@ -135,7 +135,7 @@ li_object *environment_lookup(li_object *env, li_object *var) {
     return li_null;
 }
 
-li_object *macro(li_object *vars, li_object *body, li_object *env) {
+li_object *li_macro(li_object *vars, li_object *body, li_object *env) {
     li_object *obj;
 
     obj = li_create(T_MACRO);
@@ -145,7 +145,7 @@ li_object *macro(li_object *vars, li_object *body, li_object *env) {
     return obj;
 }
 
-li_object *number(double n) {
+li_object *li_number(double n) {
     li_object *obj;
 
     obj = li_create(T_NUMBER);
@@ -153,7 +153,7 @@ li_object *number(double n) {
     return obj;
 }
 
-li_object *pair(li_object *car, li_object *cdr) {
+li_object *li_pair(li_object *car, li_object *cdr) {
     li_object *obj;
 
     obj = li_create(T_PAIR); 
@@ -162,19 +162,19 @@ li_object *pair(li_object *car, li_object *cdr) {
     return obj;
 }
 
-li_object *port(const char *filename, const char *mode) {
+li_object *li_port(const char *filename, const char *mode) {
     li_object *obj;
     FILE *f;
 
     if (!(f = fopen(filename, mode)))
-        return boolean(li_false);
+        return li_boolean(li_false);
     obj = li_create(T_PORT);
     obj->data.port.file = f;
     obj->data.port.filename = strdup(filename);
     return obj;
 }
 
-li_object *primitive(li_object *(*proc)(li_object *)) {
+li_object *li_primitive(li_object *(*proc)(li_object *)) {
     li_object *obj;
 
     obj = li_create(T_PRIMITIVE);
@@ -182,7 +182,7 @@ li_object *primitive(li_object *(*proc)(li_object *)) {
     return obj;
 }
 
-li_object *syntax(li_object *(*proc)(li_object *, li_object *)) {
+li_object *li_syntax(li_object *(*proc)(li_object *, li_object *)) {
     li_object *obj;
 
     obj = li_create(T_SYNTAX);
@@ -190,7 +190,7 @@ li_object *syntax(li_object *(*proc)(li_object *, li_object *)) {
     return obj;
 }
 
-li_object *string(char *s) {
+li_object *li_string(char *s) {
     li_object *obj;
 
     obj = li_create(T_STRING);
@@ -198,7 +198,7 @@ li_object *string(char *s) {
     return obj;
 }
 
-li_object *symbol(char *s) {
+li_object *li_symbol(char *s) {
     li_object *obj;
     unsigned int i, hash;
 
@@ -220,7 +220,7 @@ li_object *symbol(char *s) {
     return obj;
 }
 
-li_object *vector(li_object *lst) {
+li_object *li_vector(li_object *lst) {
     li_object *obj;
     li_object *iter;
     int k;

@@ -3,7 +3,7 @@
 #include <time.h>
 #include "li.h"
 
-#define ARGV_SYMBOL symbol("args")
+#define ARGV_SYMBOL li_symbol("args")
 
 li_object *prompt(FILE *f) {
     printf("> ");
@@ -13,11 +13,11 @@ li_object *prompt(FILE *f) {
 void repl(li_object *env) {
     li_object *exp;
 
-    append_variable(symbol("_"), li_null, env);
+    append_variable(li_symbol("_"), li_null, env);
     while ((exp = prompt(stdin)) != li_eof) {
         if (exp) {
             exp = eval(exp, env);
-            environment_assign(env, symbol("_"), exp);
+            environment_assign(env, li_symbol("_"), exp);
             if (exp) {
                 lwrite(exp, stdout);
                 newline(stdout);
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     srand(time(NULL));
     env = setup_environment();
     for (args = li_null, i = argc - 1; i; i--)
-        args = cons(string(argv[i]), args);
+        args = cons(li_string(argv[i]), args);
     append_variable(ARGV_SYMBOL, args, env);
     ret = argc == 1 ? try(repl, cleanup, env) : try(script, NULL, env);
     cleanup(li_null);
