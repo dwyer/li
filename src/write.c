@@ -12,36 +12,36 @@ void print_object(li_object *obj) {
 }
 
 void write_object(li_object *obj, FILE *f, int h) {
-    if (is_null(obj))
+    if (li_is_null(obj))
         fprintf(f, "()");
-    else if (is_locked(obj))
+    else if (li_is_locked(obj))
         fprintf(f, "...");
-    else if (is_character(obj) && h)
+    else if (li_is_character(obj) && h)
         fprintf(f, "%c", to_character(obj));
-    else if (is_character(obj))
+    else if (li_is_character(obj))
         fprintf(f, "'%c'", to_character(obj));
-    else if (is_compound(obj))
+    else if (li_is_compound(obj))
         fprintf(f, "#[compound-procedure %s]",
         to_compound(obj).name ? to_string(to_compound(obj).name) : "\b");
-    else if (is_environment(obj))
+    else if (li_is_environment(obj))
         fprintf(f, "#[environment]");
-    else if (is_macro(obj))
+    else if (li_is_macro(obj))
         fprintf(f, "#[macro]");
-    else if (is_number(obj))
+    else if (li_is_number(obj))
         fprintf(f, "%.512g", to_number(obj));
-    else if (is_pair(obj))
+    else if (li_is_pair(obj))
         write_pair(obj, f, h);
-    else if (is_port(obj))
+    else if (li_is_port(obj))
         fprintf(f, "#[port \"%s\"]", to_port(obj).filename);
-    else if (is_primitive(obj))
+    else if (li_is_primitive(obj))
         fprintf(f, "#[primitive-procedure]");
-    else if (is_string(obj))
+    else if (li_is_string(obj))
         write_string(obj, f, h);
-    else if (is_symbol(obj))
+    else if (li_is_symbol(obj))
         fprintf(f, "%s", to_symbol(obj));
-    else if (is_syntax(obj))
+    else if (li_is_syntax(obj))
         fprintf(f, "#[syntax]");
-    else if (is_vector(obj))
+    else if (li_is_vector(obj))
         write_vector(obj, f, h);
 }
 
@@ -56,7 +56,7 @@ void write_pair(li_object *obj, FILE *f, int h) {
         iter = cdr(iter);
         if (iter)
             fprintf(f, " ");
-    } while (is_pair(iter) && !is_locked(iter));
+    } while (li_is_pair(iter) && !li_is_locked(iter));
     if (iter) {
         fprintf(f, ". ");
         write_object(iter, f, h);

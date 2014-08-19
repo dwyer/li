@@ -2,14 +2,14 @@
 #include "li.h"
 #include "proc.h"
 
-#define is_tagged_list(exp, tag)    (is_pair(exp) && car(exp) == symbol(tag))
+#define li_is_tagged_list(exp, tag) (li_is_pair(exp) && car(exp) == symbol(tag))
 
-#define is_application(exp)         is_list(exp)
-#define is_self_evaluating(exp)     !(is_pair(exp) || is_symbol(exp))
-#define is_quoted(exp)              is_tagged_list(exp, "quote")
-#define is_quasiquoted(exp)         is_tagged_list(exp, "quasiquote")
-#define is_unquoted(exp)            is_tagged_list(exp, "unquote")
-#define is_unquoted_splicing(exp)   is_tagged_list(exp, "unquote-splicing")
+#define li_is_application(exp)      li_is_list(exp)
+#define li_is_self_evaluating(exp)  !(li_is_pair(exp) || li_is_symbol(exp))
+#define li_is_quoted(exp)           li_is_tagged_list(exp, "quote")
+#define li_is_quasiquoted(exp)      li_is_tagged_list(exp, "quasiquote")
+#define li_is_unquoted(exp)         li_is_tagged_list(exp, "unquote")
+#define li_is_unquoted_splicing(exp) li_is_tagged_list(exp, "unquote-splicing")
 
 #define check_syntax(pred, exp) if (!(pred)) error("eval", "bad syntax", exp);
 
@@ -22,7 +22,7 @@ static li_object *list_of_values(li_object *exps, li_object *env);
 li_object *apply(li_object *proc, li_object *args) {
     li_object *head, *tail, *obj;
 
-    if (is_primitive(proc))
+    if (li_is_primitive(proc))
         return to_primitive(proc)(args);
     head = tail = li_null;
     while (args) {
@@ -40,32 +40,32 @@ li_object *apply(li_object *proc, li_object *args) {
 li_object *eval(li_object *exp, li_object *env) {
     li_object *seq, *proc, *args;
 
-    while (!is_self_evaluating(exp)) {
-        if (is_symbol(exp)) {
+    while (!li_is_self_evaluating(exp)) {
+        if (li_is_symbol(exp)) {
             return environment_lookup(env, exp);
-        } else if (is_quoted(exp)) {
+        } else if (li_is_quoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return cadr(exp);
-        } else if (is_quasiquoted(exp)) {
+        } else if (li_is_quasiquoted(exp)) {
             check_syntax(cdr(exp) && !cddr(exp), exp);
             return eval_quasiquote(cadr(exp), env);
-        } else if (is_application(exp)) {
+        } else if (li_is_application(exp)) {
             proc = eval(car(exp), env);
             args = cdr(exp);
-            if (is_procedure(proc))
+            if (li_is_procedure(proc))
                 args = list_of_values(args, env);
-            if (is_compound(proc)) {
+            if (li_is_compound(proc)) {
                 env = extend_environment(to_compound(proc).vars, args,
                                          to_compound(proc).env);
                 for (seq = to_compound(proc).body; seq && cdr(seq);
                      seq = cdr(seq))
                     eval(car(seq), env);
                 exp = car(seq);
-            } else if (is_macro(proc)) {
+            } else if (li_is_macro(proc)) {
                 exp = expand_macro(proc, args);
-            } else if (is_primitive(proc)) {
+            } else if (li_is_primitive(proc)) {
                 return to_primitive(proc)(args);
-            } else if (is_syntax(proc)) {
+            } else if (li_is_syntax(proc)) {
                 exp = to_syntax(proc)(args, env);
             } else {
                 error("apply", "not applicable", proc);
@@ -80,11 +80,11 @@ li_object *eval(li_object *exp, li_object *env) {
 li_object *eval_quasiquote(li_object *exp, li_object *env) {
     li_object *head, *iter, *tail;
 
-    if (!is_pair(exp))
+    if (!li_is_pair(exp))
         return exp;
-    else if (is_unquoted(exp))
+    else if (li_is_unquoted(exp))
         return eval(cadr(exp), env);
-    else if (is_unquoted_splicing(car(exp))) {
+    else if (li_is_unquoted_splicing(car(exp))) {
         head = tail = li_null;
         for (iter = eval(cadar(exp), env); iter; iter = cdr(iter)) {
             if (head)
@@ -115,7 +115,7 @@ li_object *expand_macro(li_object *mac, li_object *args) {
 li_object *extend_environment(li_object *vars, li_object *vals, li_object *env)
 {
     for (env = environment(env); vars; vars = cdr(vars), vals = cdr(vals)) {
-        if (is_symbol(vars)) {
+        if (li_is_symbol(vars)) {
             append_variable(vars, vals, env);
             return env;
         }

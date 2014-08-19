@@ -31,7 +31,7 @@ void add_to_heap(li_object *obj) {
 }
 
 li_object *append_variable(li_object *var, li_object *val, li_object *env) {
-    if (!is_symbol(var))
+    if (!li_is_symbol(var))
         error("eval", "not a variable", var);
     if (env->data.env.size == env->data.env.cap) {
         env->data.env.cap *= 2;
@@ -235,17 +235,17 @@ li_object *vector(li_object *lst) {
 }
 
 void destroy(li_object *obj) {
-    if (!obj || is_locked(obj))
+    if (!obj || li_is_locked(obj))
         return;
-    if (is_environment(obj))
+    if (li_is_environment(obj))
         free(obj->data.env.array);
-    if (is_port(obj)) {
+    if (li_is_port(obj)) {
         fclose(obj->data.port.file);
         free(obj->data.port.filename);
     }
-    if (is_string(obj))
+    if (li_is_string(obj))
         free(to_string(obj));
-    if (is_symbol(obj)) {
+    if (li_is_symbol(obj)) {
         if (obj->data.symbol.next)
             obj->data.symbol.next->data.symbol.prev = obj->data.symbol.prev;
         if (obj->data.symbol.prev)
@@ -254,7 +254,7 @@ void destroy(li_object *obj) {
             heap.syms[obj->data.symbol.hash] = obj->data.symbol.next;
         free(to_symbol(obj));
     }
-    if (is_vector(obj))
+    if (li_is_vector(obj))
         free(to_vector(obj).data);
     free(obj);
 }
@@ -262,28 +262,28 @@ void destroy(li_object *obj) {
 void mark(li_object *obj) {
     int i;
 
-    if (!obj || is_locked(obj))
+    if (!obj || li_is_locked(obj))
         return;
     lock(obj);
-    if (is_environment(obj)) {
+    if (li_is_environment(obj)) {
         for (; obj; obj = obj->data.env.base)
             for (i = 0; i < obj->data.env.size; i++) {
                 mark(obj->data.env.array[i].var);
                 mark(obj->data.env.array[i].val);
             }
-    } else if (is_pair(obj)) {
+    } else if (li_is_pair(obj)) {
         mark(car(obj));
         mark(cdr(obj));
-    } else if (is_vector(obj)) {
+    } else if (li_is_vector(obj)) {
         int k;
         for (k = 0; k < vector_length(obj); k++)
             mark(vector_ref(obj, k));
-    } else if (is_compound(obj)) {
+    } else if (li_is_compound(obj)) {
         mark(to_compound(obj).name);
         mark(to_compound(obj).vars);
         mark(to_compound(obj).body);
         mark(to_compound(obj).env);
-    } else if (is_macro(obj)) {
+    } else if (li_is_macro(obj)) {
         mark(to_macro(obj).vars);
         mark(to_macro(obj).body);
         mark(to_macro(obj).env);
@@ -299,7 +299,7 @@ void cleanup(li_object *env) {
     mark(env);
     k = heap.size;
     for (i = j = 0; i < k; i++) {
-        if (is_locked(heap.objs[i])) {
+        if (li_is_locked(heap.objs[i])) {
             unlock(heap.objs[i]);
             heap.objs[j++] = heap.objs[i];
         } else {
@@ -315,45 +315,45 @@ void cleanup(li_object *env) {
     }
 }
 
-int is_equal_vectors(li_object *obj1, li_object *obj2) {
+int li_is_equal_vectors(li_object *obj1, li_object *obj2) {
     int k;
 
     if (vector_length(obj1) != vector_length(obj2))
         return li_false;
     for (k = 0; k < vector_length(obj1); k++)
-        if (!is_equal(vector_ref(obj1, k), vector_ref(obj2, k)))
+        if (!li_is_equal(vector_ref(obj1, k), vector_ref(obj2, k)))
             return li_false;
     return li_true;
 }
 
-int is_equal(li_object *obj1, li_object *obj2) {
-    if (is_eqv(obj1, obj2))
+int li_is_equal(li_object *obj1, li_object *obj2) {
+    if (li_is_eqv(obj1, obj2))
         return li_true;
-    else if (is_pair(obj1) && is_pair(obj2))
-        return (is_equal(car(obj1), car(obj2)) &&
-                is_equal(cdr(obj2), cdr(obj2)));
-    else if (is_string(obj1) && is_string(obj2))
-        return is_string_eq(obj1, obj2);
-    else if (is_vector(obj1) && is_vector(obj2))
-        return is_equal_vectors(obj1, obj2);
+    else if (li_is_pair(obj1) && li_is_pair(obj2))
+        return (li_is_equal(car(obj1), car(obj2)) &&
+                li_is_equal(cdr(obj2), cdr(obj2)));
+    else if (li_is_string(obj1) && li_is_string(obj2))
+        return li_is_string_eq(obj1, obj2);
+    else if (li_is_vector(obj1) && li_is_vector(obj2))
+        return li_is_equal_vectors(obj1, obj2);
     return li_false;
 }
 
-int is_eqv(li_object *obj1, li_object *obj2) {
-    if (is_eq(obj1, obj2))
+int li_is_eqv(li_object *obj1, li_object *obj2) {
+    if (li_is_eq(obj1, obj2))
         return li_true;
     else if (!obj1 || !obj2)
         return li_false;
     else if (obj1->type != obj2->type)
         return li_false;
-    else if (is_number(obj1) && is_number(obj2))
+    else if (li_is_number(obj1) && li_is_number(obj2))
         return to_number(obj1) == to_number(obj2);
     return li_false;
 }
 
-int is_list(li_object *obj) {
+int li_is_list(li_object *obj) {
     while (obj) {
-        if (!is_pair(obj))
+        if (!li_is_pair(obj))
             return 0;
         obj = cdr(obj);
     }
@@ -364,7 +364,7 @@ int length(li_object *obj) {
     int k;
 
     for (k = 0; obj; k++)
-        if (is_pair(obj))
+        if (li_is_pair(obj))
             obj = cdr(obj);
         else
             return -1;

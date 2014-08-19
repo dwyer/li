@@ -7,38 +7,38 @@
 #define li_null                 ((li_object *)NULL)
 #define li_eof                  symbol("#<eof>")
 
-#define is_eq(obj1, obj2)       ((obj1) == (obj2))
-#define is_null(obj)            is_eq(obj, li_null)
+#define li_is_eq(obj1, obj2)    ((obj1) == (obj2))
+#define li_is_null(obj)         li_is_eq(obj, li_null)
 
 /* Type checking. */
 #define li_is_type(obj, t)      ((obj) && (obj)->type == t)
-#define is_environment(obj)     li_is_type(obj, T_ENVIRONMENT)
-#define is_character(obj)       li_is_type(obj, T_CHARACTER)
-#define is_compound(obj)        li_is_type(obj, T_COMPOUND)
-#define is_integer(obj)         (is_number(obj) && \
+#define li_is_environment(obj)  li_is_type(obj, T_ENVIRONMENT)
+#define li_is_character(obj)    li_is_type(obj, T_CHARACTER)
+#define li_is_compound(obj)     li_is_type(obj, T_COMPOUND)
+#define li_is_integer(obj)      (li_is_number(obj) && \
                                  to_number(obj) == to_integer(obj))
-#define is_macro(obj)           li_is_type(obj, T_MACRO)
-#define is_number(obj)          li_is_type(obj, T_NUMBER)
-#define is_pair(obj)            li_is_type(obj, T_PAIR)
-#define is_port(obj)            li_is_type(obj, T_PORT)
-#define is_primitive(obj)       li_is_type(obj, T_PRIMITIVE)
-#define is_procedure(obj)       (is_compound(obj) || is_primitive(obj))
-#define is_string(obj)          li_is_type(obj, T_STRING)
-#define is_symbol(obj)          li_is_type(obj, T_SYMBOL)
-#define is_syntax(obj)          li_is_type(obj, T_SYNTAX)
-#define is_vector(obj)          li_is_type(obj, T_VECTOR)
+#define li_is_macro(obj)        li_is_type(obj, T_MACRO)
+#define li_is_number(obj)       li_is_type(obj, T_NUMBER)
+#define li_is_pair(obj)         li_is_type(obj, T_PAIR)
+#define li_is_port(obj)         li_is_type(obj, T_PORT)
+#define li_is_primitive(obj)    li_is_type(obj, T_PRIMITIVE)
+#define li_is_procedure(obj)    (li_is_compound(obj) || li_is_primitive(obj))
+#define li_is_string(obj)       li_is_type(obj, T_STRING)
+#define li_is_symbol(obj)       li_is_type(obj, T_SYMBOL)
+#define li_is_syntax(obj)       li_is_type(obj, T_SYNTAX)
+#define li_is_vector(obj)       li_is_type(obj, T_VECTOR)
 
 /* Booleans */
 #define boolean(obj)            (obj ? symbol("true") : symbol("false"))
-#define not(obj)                is_eq(obj, boolean(li_false))
-#define is_boolean(obj)         (is_eq(obj, boolean(li_true)) || \
-                                 is_eq(obj, boolean(li_false)))
-#define is_false(obj)           not(obj)
-#define is_true(obj)            !not(obj)
+#define not(obj)                li_is_eq(obj, boolean(li_false))
+#define li_is_boolean(obj)      (li_is_eq(obj, boolean(li_true)) || \
+                                 li_is_eq(obj, boolean(li_false)))
+#define li_is_false(obj)        not(obj)
+#define li_is_true(obj)         !not(obj)
 
 #define lock(obj)               ((obj)->locked = li_true)
 #define unlock(obj)             ((obj)->locked = li_false)
-#define is_locked(obj)          (obj)->locked
+#define li_is_locked(obj)       (obj)->locked
 
 #define to_character(obj)       (obj)->data.character
 #define to_compound(obj)        (obj)->data.compound
@@ -53,7 +53,7 @@
 #define to_symbol(obj)          (obj)->data.symbol.string
 #define to_vector(obj)          (obj)->data.vector
 
-#define is_string_eq(s1, s2)    (strcmp(to_string(s1), to_string(s2)) == 0)
+#define li_is_string_eq(s1, s2) (strcmp(to_string(s1), to_string(s2)) == 0)
 
 #define vector_length(vec)      to_vector(vec).length
 #define vector_ref(vec, k)      to_vector(vec).data[k]
@@ -135,9 +135,9 @@ extern li_object *vector(li_object *lst);
 extern li_object *environment_assign(li_object *env, li_object *var, li_object *val);
 extern li_object *environment_define(li_object *env, li_object *var, li_object *val);
 extern li_object *environment_lookup(li_object *env, li_object *var);
-extern int is_equal(li_object *obj1, li_object *obj2);
-extern int is_eqv(li_object *obj1, li_object *obj2);
-extern int is_list(li_object *obj);
+extern int li_is_equal(li_object *obj1, li_object *obj2);
+extern int li_is_eqv(li_object *obj1, li_object *obj2);
+extern int li_is_list(li_object *obj);
 extern int length(li_object *obj);
 
 struct li_object {
