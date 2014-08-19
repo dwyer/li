@@ -73,9 +73,9 @@ void write_vector(li_object *obj, FILE *f, int h) {
     int k;
 
     fprintf(f, "[");
-    for (k = 0; k < vector_length(obj); k++) {
-        li_write_object(vector_ref(obj, k), f, h);
-        if (k < vector_length(obj) - 1)
+    for (k = 0; k < li_vector_length(obj); k++) {
+        li_write_object(li_vector_ref(obj, k), f, h);
+        if (k < li_vector_length(obj) - 1)
             fprintf(f, " ");
     }
     fprintf(f, "]");

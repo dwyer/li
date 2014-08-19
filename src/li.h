@@ -55,9 +55,9 @@
 
 #define li_is_string_eq(s1, s2) (strcmp(li_to_string(s1), li_to_string(s2)) == 0)
 
-#define vector_length(vec)      li_to_vector(vec).length
-#define vector_ref(vec, k)      li_to_vector(vec).data[k]
-#define vector_set(vec, k, obj) (vector_ref(vec, k) = obj)
+#define li_vector_length(v)     li_to_vector(v).length
+#define li_vector_ref(v, k)     li_to_vector(v).data[k]
+#define li_vector_set(v, k, o)  (li_vector_ref(v, k) = o)
 
 #define cons(obj1, obj2)        li_pair(obj1, obj2)
 #define car(obj)                li_to_pair(obj).car

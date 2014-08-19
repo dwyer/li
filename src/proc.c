@@ -1339,7 +1339,7 @@ li_object *p_make_vector(li_object *args) {
 li_object *p_vector_length(li_object *args) {
     assert_nargs("vector-length", 1, args);
     assert_vector("vector-length", car(args));
-    return li_number(vector_length(car(args)));
+    return li_number(li_vector_length(car(args)));
 }
 
 /*
@@ -1352,9 +1352,9 @@ li_object *p_vector_ref(li_object *args) {
     assert_vector("vector-ref", car(args));
     assert_integer("vector-ref", cadr(args));
     if (li_to_number(cadr(args)) < 0 ||
-        li_to_number(cadr(args)) >= vector_length(car(args)))
+        li_to_number(cadr(args)) >= li_vector_length(car(args)))
         li_error("vector-ref", "out of range", cadr(args));
-    return vector_ref(car(args), li_to_integer(cadr(args)));
+    return li_vector_ref(car(args), li_to_integer(cadr(args)));
 }
 
 /*
@@ -1366,9 +1366,9 @@ li_object *p_vector_set(li_object *args) {
     assert_vector("vector-set!", car(args));
     assert_integer("vector-set!", cadr(args));
     if (li_to_number(cadr(args)) < 0 ||
-        li_to_number(cadr(args)) >= vector_length(car(args)))
+        li_to_number(cadr(args)) >= li_vector_length(car(args)))
         li_error("vector-set!", "out of range", cadr(args));
-    return vector_set(car(args), li_to_integer(cadr(args)), caddr(args));
+    return li_vector_set(car(args), li_to_integer(cadr(args)), caddr(args));
 }
 
 li_object *p_vector_fill(li_object *args) {
@@ -1378,8 +1378,8 @@ li_object *p_vector_fill(li_object *args) {
     assert_nargs("vector->fill!", 2, args);
     assert_vector("vector->fill!", car(args));
     vect = car(args);
-    for (k = vector_length(vect); k--; )
-        vector_set(vect, k, cadr(args));
+    for (k = li_vector_length(vect); k--; )
+        li_vector_set(vect, k, cadr(args));
     return vect;
 }
 
@@ -1390,10 +1390,10 @@ li_object *p_vector_to_list(li_object *args) {
     assert_nargs("vector->list", 1, args);
     assert_vector("vector->list", car(args));
     vect = car(args);
-    k = vector_length(vect);
-    list = tail = k ? cons(vector_ref(vect, 0), li_null) : li_null;
+    k = li_vector_length(vect);
+    list = tail = k ? cons(li_vector_ref(vect, 0), li_null) : li_null;
     for (i = 1; i < k; ++i)
-        tail = set_cdr(tail, cons(vector_ref(vect, i), li_null));
+        tail = set_cdr(tail, cons(li_vector_ref(vect, i), li_null));
     return list;
 }
 
@@ -1405,11 +1405,11 @@ li_object *p_vector_to_string(li_object *args) {
     assert_nargs("vector->string", 1, args);
     assert_vector("vector->string", car(args));
     vec = car(args);
-    k = vector_length(vec);
+    k = li_vector_length(vec);
     s = li_allocate(li_null, k, sizeof(*s));
     while (k--) {
-        assert_character("vector->string", vector_ref(vec, k));
-        s[k] = li_to_character(vector_ref(vec, k));
+        assert_character("vector->string", li_vector_ref(vec, k));
+        s[k] = li_to_character(li_vector_ref(vec, k));
     }
     str = li_string(s);
     free(s);

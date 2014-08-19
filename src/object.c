@@ -232,7 +232,7 @@ li_object *li_vector(li_object *lst) {
             sizeof(*obj->data.vector.data));
     obj->data.vector.length = k;
     for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
-        vector_set(obj, k, car(iter));
+        li_vector_set(obj, k, car(iter));
     return obj;
 }
 
@@ -278,8 +278,8 @@ void mark(li_object *obj) {
         mark(cdr(obj));
     } else if (li_is_vector(obj)) {
         int k;
-        for (k = 0; k < vector_length(obj); k++)
-            mark(vector_ref(obj, k));
+        for (k = 0; k < li_vector_length(obj); k++)
+            mark(li_vector_ref(obj, k));
     } else if (li_is_compound(obj)) {
         mark(li_to_compound(obj).name);
         mark(li_to_compound(obj).vars);
@@ -320,10 +320,10 @@ void li_cleanup(li_object *env) {
 int li_is_equal_vectors(li_object *obj1, li_object *obj2) {
     int k;
 
-    if (vector_length(obj1) != vector_length(obj2))
+    if (li_vector_length(obj1) != li_vector_length(obj2))
         return li_false;
-    for (k = 0; k < vector_length(obj1); k++)
-        if (!li_is_equal(vector_ref(obj1, k), vector_ref(obj2, k)))
+    for (k = 0; k < li_vector_length(obj1); k++)
+        if (!li_is_equal(li_vector_ref(obj1, k), li_vector_ref(obj2, k)))
             return li_false;
     return li_true;
 }
