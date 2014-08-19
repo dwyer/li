@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "li.h"
-#include "proc.h"
+#include "li_proc.h"
 
 #define li_is_tagged_list(exp, tag) (li_is_pair(exp) && li_car(exp) == li_symbol(tag))
 

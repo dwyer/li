@@ -21,16 +21,17 @@ LI_BIN=li
 LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
-LI_LIB_OBJS_=read.o parse.o write.o object.o eval.o proc.o error.o
+LI_LIB_OBJS_=li_read.o li_parse.o li_write.o li_object.o li_eval.o li_proc.o \
+	     li_error.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
 
 all: $(LI_BIN)
 
-$(SRCDIR)/read.c: $(SRCDIR)/read.y
-	yacc -d $(SRCDIR)/read.y
-	mv y.tab.c $(SRCDIR)/read.c
-	mv y.tab.h $(SRCDIR)/read.h
+$(SRCDIR)/li_read.c: $(SRCDIR)/li_read.y
+	yacc -d $(SRCDIR)/li_read.y
+	mv y.tab.c $(SRCDIR)/li_read.c
+	mv y.tab.h $(SRCDIR)/li_read.h
 
 debug: CFLAGS+=-g -DDEBUG
 debug: all
@@ -60,5 +61,5 @@ uninstall:
 	cd $(TO_BIN) && $(RM) $(LI_BIN)
 
 clean:
-	$(RM) $(LI_BIN) $(LI_LIB) $(ALL_OBJS) src/parse.c src/read.[ch]
+	$(RM) $(LI_BIN) $(LI_LIB) $(ALL_OBJS) src/li_parse.c src/li_read.[ch]
 	$(RMDIR) $(OBJDIR)

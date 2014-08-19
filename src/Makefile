@@ -14,7 +14,8 @@ LI_BIN=li
 LI_OBJS=li.o
 
 LI_LIB=libli.a
-LI_LIB_OBJS=read.o parse.o error.o eval.o object.o proc.o write.o
+LI_LIB_OBJS=li_read.o li_parse.o li_error.o li_eval.o li_object.o li_proc.o \
+	    li_write.o
 
 ALL_OBJS=$(LI_LIB_OBJS) $(LI_OBJS)
 
@@ -27,17 +28,17 @@ $(LI_LIB): $(LI_LIB_OBJS)
 	$(AR) $@ $(LI_LIB_OBJS)
 	$(RANLIB) $@
 
-parse.o: parse.c read.y
+li_parse.o: li_parse.c li_read.y
 
-parse.c: parse.l
-	$(LEX) -o $@ parse.l
+li_parse.c: li_parse.l
+	$(LEX) -o $@ li_parse.l
 
-read.c: read.y
-	$(YACC) -d read.y
-	$(MV) y.tab.c read.c
-	$(MV) y.tab.h read.h
+li_read.c: li_read.y
+	$(YACC) -d li_read.y
+	$(MV) y.tab.c li_read.c
+	$(MV) y.tab.h li_read.h
 
 $(ALL_OBJS): li.h
 
 clean:
-	$(RM) $(LI_BIN) $(LI_LIB) $(ALL_OBJS) parse.c read.c read.h
+	$(RM) $(LI_BIN) $(LI_LIB) $(ALL_OBJS) li_parse.c li_read.c li_read.h

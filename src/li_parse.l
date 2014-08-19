@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include "li.h"
-#include "read.h"
+#include "li_read.h"
 
 %}
 

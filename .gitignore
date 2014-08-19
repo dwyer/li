@@ -1,8 +1,7 @@
 *.[ao]
 *~
 li
+li_parse.c
+li_read.[ch]
 misc
-parse.c
-read.[ch]
-subscm
 tags
