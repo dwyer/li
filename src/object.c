@@ -7,6 +7,9 @@
 #define HASHSIZE    1024
 #define strdup(s)   strcpy(li_allocate(li_null, strlen(s)+1, sizeof(char)), s)
 
+#define li_is_string_eq(s1, s2) \
+    (strcmp(li_to_string(s1), li_to_string(s2)) == 0)
+
 static struct {
     li_object **objs;
     li_object *syms[HASHSIZE];
@@ -21,6 +24,7 @@ void add_to_heap(li_object *obj) {
         heap.cap = 1024;
         heap.size = 0;
         heap.objs = li_allocate(li_null, heap.cap, sizeof(*heap.objs));
+        /* TODO: test if this is necessary. */
         for (i = 0; i < HASHSIZE; i++)
             heap.syms[i] = li_null;
     } else if (heap.size == heap.cap) {
@@ -91,34 +95,38 @@ li_object *li_environment(li_object *base) {
     obj->data.env.cap = 4;
     obj->data.env.size = 0;
     obj->data.env.array = li_allocate(li_null, obj->data.env.cap,
-                                   sizeof(*obj->data.env.array));
+            sizeof(*obj->data.env.array));
     obj->data.env.base = base;
     return obj;
 }
 
-li_object *li_environment_assign(li_object *env, li_object *var, li_object *val) {
+li_object *li_environment_assign(li_object *env, li_object *var, li_object *val)
+{
     int i;
     
     while (env) {
-        for (i = 0; i < env->data.env.size; i++)
+        for (i = 0; i < env->data.env.size; i++) {
             if (env->data.env.array[i].var == var) {
                 env->data.env.array[i].val = val;
                 return li_cons(li_symbol("quote"), li_cons(val, li_null));
             }
+        }
         env = env->data.env.base;
     }
     li_error("set!", "unbound variable", var);
     return li_null;
 }
 
-li_object *li_environment_define(li_object *env, li_object *var, li_object *val) {
+li_object *li_environment_define(li_object *env, li_object *var, li_object *val)
+{
     int i;
 
-    for (i = 0; i < env->data.env.size; i++)
+    for (i = 0; i < env->data.env.size; i++) {
         if (env->data.env.array[i].var == var) {
             env->data.env.array[i].val = val;
             return var;
         }
+    }
     return li_append_variable(var, val, env);
 }
 

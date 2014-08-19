@@ -1,99 +1,75 @@
-#ifndef SUBSCM_H
-#define SUBSCM_H
+#ifndef _li_h
+#define _li_h
 
-#define li_false                0
+/* C types. */
+#define li_false                ((int)0)
 #define li_true                 !li_false
 
-#define li_null                 ((li_object *)NULL)
-#define li_eof                  li_symbol("#<eof>")
+/* object.c */
 
+typedef struct li_object li_object;
+
+typedef int li_character_t;
+typedef double li_number_t;
+typedef li_object *(*li_primitive_procedure_t)(li_object *);
+typedef li_object *(*li_primitive_syntax_t)(li_object *, li_object *);
+
+/** The all important null object. */
+#define li_null                 ((li_object *)NULL)
+
+/** Creating, destroying and garbage collecting objects. */
+extern void *li_allocate(void *ptr, size_t count, size_t size);
+extern li_object *li_create(int type);
+extern void li_destroy(li_object *obj);
+extern void li_cleanup(li_object *env);
+
+/** Object constructors. */
+extern li_object *li_character(int c);
+extern li_object *li_compound(li_object *name, li_object *vars, li_object *body,
+        li_object *env);
+extern li_object *li_environment(li_object *base);
+extern li_object *li_macro(li_object *vars, li_object *body, li_object *env);
+extern li_object *li_number(double n);
+extern li_object *li_pair(li_object *car, li_object *cdr);
+extern li_object *li_port(const char *filename, const char *mode);
+extern li_object *li_primitive(li_object *(*proc)(li_object *));
+extern li_object *li_string(char *s);
+extern li_object *li_symbol(char *s);
+extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *));
+extern li_object *li_vector(li_object *lst);
+
+/** EOF, true and false are just special symbols. */
+#define li_eof                  li_symbol("#<eof>")
+#define li_false_obj            li_symbol("false")
+#define li_true_obj             li_symbol("true")
+#define li_boolean(p)           (p ? li_true_obj : li_false_obj)
+
+/** Let cons be an alias for pair. */
+#define li_cons li_pair
+
+/** Predicates */
 #define li_is_eq(obj1, obj2)    ((obj1) == (obj2))
 #define li_is_null(obj)         li_is_eq(obj, li_null)
-
-/* Type checking. */
-#define li_is_type(obj, t)      ((obj) && (obj)->type == t)
-#define li_is_environment(obj)  li_is_type(obj, LI_T_ENVIRONMENT)
-#define li_is_character(obj)    li_is_type(obj, LI_T_CHARACTER)
-#define li_is_compound(obj)     li_is_type(obj, LI_T_COMPOUND)
-#define li_is_integer(obj)      (li_is_number(obj) && \
-                                 li_to_number(obj) == li_to_integer(obj))
-#define li_is_macro(obj)        li_is_type(obj, LI_T_MACRO)
-#define li_is_number(obj)       li_is_type(obj, LI_T_NUMBER)
-#define li_is_pair(obj)         li_is_type(obj, LI_T_PAIR)
-#define li_is_port(obj)         li_is_type(obj, LI_T_PORT)
-#define li_is_primitive(obj)    li_is_type(obj, LI_T_PRIMITIVE)
-#define li_is_procedure(obj)    (li_is_compound(obj) || li_is_primitive(obj))
-#define li_is_string(obj)       li_is_type(obj, LI_T_STRING)
-#define li_is_symbol(obj)       li_is_type(obj, LI_T_SYMBOL)
-#define li_is_syntax(obj)       li_is_type(obj, LI_T_SYNTAX)
-#define li_is_vector(obj)       li_is_type(obj, LI_T_VECTOR)
-
-/* Booleans */
-#define li_boolean(obj)         (obj ? li_symbol("true") : li_symbol("false"))
-#define li_not(obj)             li_is_eq(obj, li_boolean(li_false))
+#define li_is_false(obj)        li_is_eq(obj, li_boolean(li_false))
+#define li_is_true(obj)         !li_is_false(obj)
+#define li_not(obj)             li_is_false(obj)
 #define li_is_boolean(obj)      (li_is_eq(obj, li_boolean(li_true)) || \
-                                 li_is_eq(obj, li_boolean(li_false)))
-#define li_is_false(obj)        li_not(obj)
-#define li_is_true(obj)         !li_not(obj)
+                                 li_is_false(obj))
 
-#define li_lock(obj)            ((obj)->locked = li_true)
-#define li_unlock(obj)          ((obj)->locked = li_false)
-#define li_is_locked(obj)       (obj)->locked
+extern int li_is_equal(li_object *obj1, li_object *obj2);
+extern int li_is_eqv(li_object *obj1, li_object *obj2);
+extern int li_is_list(li_object *obj);
 
-#define li_to_character(obj)    (obj)->data.character
-#define li_to_compound(obj)     (obj)->data.compound
-#define li_to_integer(obj)      ((int)li_to_number(obj))
-#define li_to_macro(obj)        (obj)->data.macro
-#define li_to_number(obj)       (obj)->data.number
-#define li_to_pair(obj)         (obj)->data.pair
-#define li_to_port(obj)         (obj)->data.port
-#define li_to_primitive(obj)    (obj)->data.primitive
-#define li_to_syntax(obj)       (obj)->data.syntax
-#define li_to_string(obj)       (obj)->data.string
-#define li_to_symbol(obj)       (obj)->data.symbol.string
-#define li_to_vector(obj)       (obj)->data.vector
+/** List accessors. */
+extern int li_length(li_object *obj);
 
-#define li_is_string_eq(s1, s2) (strcmp(li_to_string(s1), li_to_string(s2)) == 0)
-
-#define li_vector_length(v)     li_to_vector(v).length
-#define li_vector_ref(v, k)     li_to_vector(v).data[k]
-#define li_vector_set(v, k, o)  (li_vector_ref(v, k) = o)
-
-#define li_cons(obj1, obj2)     li_pair(obj1, obj2)
-#define li_car(obj)             li_to_pair(obj).car
-#define li_cdr(obj)             li_to_pair(obj).cdr
-#define li_set_car(obj1, obj2)  (li_car(obj1) = obj2)
-#define li_set_cdr(obj1, obj2)  (li_cdr(obj1) = obj2)
-
-/* is this overkill? */
-#define li_caar(obj)            li_car(li_car(obj))
-#define li_cadr(obj)            li_car(li_cdr(obj))
-#define li_cdar(obj)            li_cdr(li_car(obj))
-#define li_cddr(obj)            li_cdr(li_cdr(obj))
-#define li_caaar(obj)           li_car(li_car(li_car(obj)))
-#define li_caadr(obj)           li_car(li_car(li_cdr(obj)))
-#define li_cadar(obj)           li_car(li_cdr(li_car(obj)))
-#define li_caddr(obj)           li_car(li_cdr(li_cdr(obj)))
-#define li_cdaar(obj)           li_cdr(li_car(li_car(obj)))
-#define li_cdadr(obj)           li_cdr(li_car(li_cdr(obj)))
-#define li_cddar(obj)           li_cdr(li_cdr(li_car(obj)))
-#define li_cdddr(obj)           li_cdr(li_cdr(li_cdr(obj)))
-#define li_caaaar(obj)          li_car(li_car(li_car(li_car(obj))))
-#define li_caaadr(obj)          li_car(li_car(li_car(li_cdr(obj))))
-#define li_caadar(obj)          li_car(li_car(li_cdr(li_car(obj))))
-#define li_caaddr(obj)          li_car(li_car(li_cdr(li_cdr(obj))))
-#define li_cadaar(obj)          li_car(li_cdr(li_car(li_car(obj))))
-#define li_cadadr(obj)          li_car(li_cdr(li_car(li_cdr(obj))))
-#define li_caddar(obj)          li_car(li_cdr(li_cdr(li_car(obj))))
-#define li_cadddr(obj)          li_car(li_cdr(li_cdr(li_cdr(obj))))
-#define li_cdaaar(obj)          li_cdr(li_car(li_car(li_car(obj))))
-#define li_cdaadr(obj)          li_cdr(li_car(li_car(li_cdr(obj))))
-#define li_cdadar(obj)          li_cdr(li_car(li_cdr(li_car(obj))))
-#define li_cdaddr(obj)          li_cdr(li_car(li_cdr(li_cdr(obj))))
-#define li_cddaar(obj)          li_cdr(li_cdr(li_car(li_car(obj))))
-#define li_cddadr(obj)          li_cdr(li_cdr(li_car(li_cdr(obj))))
-#define li_cdddar(obj)          li_cdr(li_cdr(li_cdr(li_car(obj))))
-#define li_cddddr(obj)          li_cdr(li_cdr(li_cdr(li_cdr(obj))))
+/** Environment accessors. */
+extern li_object *li_environment_assign(li_object *env, li_object *var,
+        li_object *val);
+extern li_object *li_environment_define(li_object *env, li_object *var,
+        li_object *val);
+extern li_object *li_environment_lookup(li_object *env, li_object *var);
+extern li_object *li_setup_environment(void);
 
 enum {
     LI_T_CHARACTER,
@@ -110,35 +86,6 @@ enum {
     LI_T_VECTOR,
     LI_NUM_TYPES
 };
-
-typedef struct li_object li_object;
-
-extern void *li_allocate(void *ptr, size_t count, size_t size);
-extern li_object *li_create(int type);
-
-extern void li_cleanup(li_object *env);
-extern void li_destroy(li_object *obj);
-
-extern li_object *li_character(int c);
-extern li_object *li_compound(li_object *name, li_object *vars, li_object *body, li_object *env);
-extern li_object *li_environment(li_object *base);
-extern li_object *li_macro(li_object *vars, li_object *body, li_object *env);
-extern li_object *li_number(double n);
-extern li_object *li_pair(li_object *car, li_object *cdr);
-extern li_object *li_port(const char *filename, const char *mode);
-extern li_object *li_primitive(li_object *(*proc)(li_object *));
-extern li_object *li_string(char *s);
-extern li_object *li_symbol(char *s);
-extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *));
-extern li_object *li_vector(li_object *lst);
-
-extern li_object *li_environment_assign(li_object *env, li_object *var, li_object *val);
-extern li_object *li_environment_define(li_object *env, li_object *var, li_object *val);
-extern li_object *li_environment_lookup(li_object *env, li_object *var);
-extern int li_is_equal(li_object *obj1, li_object *obj2);
-extern int li_is_eqv(li_object *obj1, li_object *obj2);
-extern int li_is_list(li_object *obj);
-extern int li_length(li_object *obj);
 
 struct li_object {
     union {
@@ -202,26 +149,104 @@ struct li_object {
     int locked;
 };
 
-/* error */
+/** Type casting. */
+#define li_to_character(obj)    (obj)->data.character
+#define li_to_compound(obj)     (obj)->data.compound
+#define li_to_integer(obj)      ((int)li_to_number(obj))
+#define li_to_macro(obj)        (obj)->data.macro
+#define li_to_number(obj)       (obj)->data.number
+#define li_to_pair(obj)         (obj)->data.pair
+#define li_to_port(obj)         (obj)->data.port
+#define li_to_primitive(obj)    (obj)->data.primitive
+#define li_to_syntax(obj)       (obj)->data.syntax
+#define li_to_string(obj)       (obj)->data.string
+#define li_to_symbol(obj)       (obj)->data.symbol.string
+#define li_to_vector(obj)       (obj)->data.vector
+
+/* Type checking. */
+#define li_is_type(obj, t)      ((obj) && (obj)->type == t)
+
+#define li_is_character(obj)    li_is_type(obj, LI_T_CHARACTER)
+#define li_is_compound(obj)     li_is_type(obj, LI_T_COMPOUND)
+#define li_is_environment(obj)  li_is_type(obj, LI_T_ENVIRONMENT)
+#define li_is_macro(obj)        li_is_type(obj, LI_T_MACRO)
+#define li_is_number(obj)       li_is_type(obj, LI_T_NUMBER)
+#define li_is_pair(obj)         li_is_type(obj, LI_T_PAIR)
+#define li_is_port(obj)         li_is_type(obj, LI_T_PORT)
+#define li_is_primitive(obj)    li_is_type(obj, LI_T_PRIMITIVE)
+#define li_is_string(obj)       li_is_type(obj, LI_T_STRING)
+#define li_is_symbol(obj)       li_is_type(obj, LI_T_SYMBOL)
+#define li_is_syntax(obj)       li_is_type(obj, LI_T_SYNTAX)
+#define li_is_vector(obj)       li_is_type(obj, LI_T_VECTOR)
+
+#define li_is_integer(obj) \
+    (li_is_number(obj) && li_to_number(obj) == li_to_integer(obj))
+#define li_is_procedure(obj)    (li_is_compound(obj) || li_is_primitive(obj))
+
+#define li_lock(obj)            ((obj)->locked = li_true)
+#define li_unlock(obj)          ((obj)->locked = li_false)
+#define li_is_locked(obj)       (obj)->locked
+
+/** Accessors for pairs. */
+#define li_car(obj)             li_to_pair(obj).car
+#define li_cdr(obj)             li_to_pair(obj).cdr
+#define li_caar(obj)            li_car(li_car(obj))
+#define li_cadr(obj)            li_car(li_cdr(obj))
+#define li_cdar(obj)            li_cdr(li_car(obj))
+#define li_cddr(obj)            li_cdr(li_cdr(obj))
+#define li_caaar(obj)           li_car(li_car(li_car(obj)))
+#define li_caadr(obj)           li_car(li_car(li_cdr(obj)))
+#define li_cadar(obj)           li_car(li_cdr(li_car(obj)))
+#define li_caddr(obj)           li_car(li_cdr(li_cdr(obj)))
+#define li_cdaar(obj)           li_cdr(li_car(li_car(obj)))
+#define li_cdadr(obj)           li_cdr(li_car(li_cdr(obj)))
+#define li_cddar(obj)           li_cdr(li_cdr(li_car(obj)))
+#define li_cdddr(obj)           li_cdr(li_cdr(li_cdr(obj)))
+#define li_caaaar(obj)          li_car(li_car(li_car(li_car(obj))))
+#define li_caaadr(obj)          li_car(li_car(li_car(li_cdr(obj))))
+#define li_caadar(obj)          li_car(li_car(li_cdr(li_car(obj))))
+#define li_caaddr(obj)          li_car(li_car(li_cdr(li_cdr(obj))))
+#define li_cadaar(obj)          li_car(li_cdr(li_car(li_car(obj))))
+#define li_cadadr(obj)          li_car(li_cdr(li_car(li_cdr(obj))))
+#define li_caddar(obj)          li_car(li_cdr(li_cdr(li_car(obj))))
+#define li_cadddr(obj)          li_car(li_cdr(li_cdr(li_cdr(obj))))
+#define li_cdaaar(obj)          li_cdr(li_car(li_car(li_car(obj))))
+#define li_cdaadr(obj)          li_cdr(li_car(li_car(li_cdr(obj))))
+#define li_cdadar(obj)          li_cdr(li_car(li_cdr(li_car(obj))))
+#define li_cdaddr(obj)          li_cdr(li_car(li_cdr(li_cdr(obj))))
+#define li_cddaar(obj)          li_cdr(li_cdr(li_car(li_car(obj))))
+#define li_cddadr(obj)          li_cdr(li_cdr(li_car(li_cdr(obj))))
+#define li_cdddar(obj)          li_cdr(li_cdr(li_cdr(li_car(obj))))
+#define li_cddddr(obj)          li_cdr(li_cdr(li_cdr(li_cdr(obj))))
+#define li_set_car(obj1, obj2)  (li_car(obj1) = obj2)
+#define li_set_cdr(obj1, obj2)  (li_cdr(obj1) = obj2)
+
+/** Vector accessors */
+#define li_vector_length(v)     li_to_vector(v).length
+#define li_vector_ref(v, k)     li_to_vector(v).data[k]
+#define li_vector_set(v, k, o)  (li_vector_ref(v, k) = o)
+
+/* error.c */
 extern void li_error(char *who, char *msg, li_object *args);
-extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg);
+extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *),
+        li_object *arg);
 
-/* eval */
+/* eval.c */
+extern li_object *li_append_variable(li_object *var, li_object *val,
+        li_object *env);
 extern li_object *li_apply(li_object *proc, li_object *args);
-extern li_object *li_append_variable(li_object *var, li_object *val, li_object *env);
 extern li_object *li_eval(li_object *exp, li_object *env);
-extern li_object *li_setup_environment(void);
 
-/* read */
+/* read.y */
 extern void li_load(char *filename, li_object *env);
 extern li_object *li_read(FILE *f);
 
-/* write */
+/* write.c */
+extern void li_print_object(li_object *obj);
+extern void li_write_object(li_object *obj, FILE *f, int h);
 #define li_print(obj)           li_print_object(obj)
 #define li_write(obj, f)        li_write_object(obj, f, 0)
 #define li_display(obj, f)      li_write_object(obj, f, 1)
 #define li_newline(f)           fprintf(f, "\n")
-extern void li_print_object(li_object *obj);
-extern void li_write_object(li_object *obj, FILE *f, int h);
 
 #endif
