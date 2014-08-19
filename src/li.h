@@ -113,34 +113,32 @@ enum {
 
 typedef struct li_object li_object;
 
-void *allocate(void *ptr, size_t count, size_t size);
-li_object *create(int type);
+extern void *allocate(void *ptr, size_t count, size_t size);
+extern li_object *create(int type);
 
-void cleanup(li_object *env);
-void destroy(li_object *obj);
+extern void cleanup(li_object *env);
+extern void destroy(li_object *obj);
 
-li_object *character(int c);
-li_object *compound(li_object *name, li_object *vars, li_object *body,
-        li_object *env);
-li_object *environment(li_object *base);
-li_object *macro(li_object *vars, li_object *body, li_object *env);
-li_object *number(double n);
-li_object *pair(li_object *car, li_object *cdr);
-li_object *port(const char *filename, const char *mode);
-li_object *primitive(li_object *(*proc)(li_object *));
-li_object *string(char *s);
-li_object *symbol(char *s);
-li_object *syntax(li_object *(*proc)(li_object *, li_object *));
-li_object *vector(li_object *lst);
+extern li_object *character(int c);
+extern li_object *compound(li_object *name, li_object *vars, li_object *body, li_object *env);
+extern li_object *environment(li_object *base);
+extern li_object *macro(li_object *vars, li_object *body, li_object *env);
+extern li_object *number(double n);
+extern li_object *pair(li_object *car, li_object *cdr);
+extern li_object *port(const char *filename, const char *mode);
+extern li_object *primitive(li_object *(*proc)(li_object *));
+extern li_object *string(char *s);
+extern li_object *symbol(char *s);
+extern li_object *syntax(li_object *(*proc)(li_object *, li_object *));
+extern li_object *vector(li_object *lst);
 
-
-li_object *environment_assign(li_object *env, li_object *var, li_object *val);
-li_object *environment_define(li_object *env, li_object *var, li_object *val);
-li_object *environment_lookup(li_object *env, li_object *var);
-int is_equal(li_object *obj1, li_object *obj2);
-int is_eqv(li_object *obj1, li_object *obj2);
-int is_list(li_object *obj);
-int length(li_object *obj);
+extern li_object *environment_assign(li_object *env, li_object *var, li_object *val);
+extern li_object *environment_define(li_object *env, li_object *var, li_object *val);
+extern li_object *environment_lookup(li_object *env, li_object *var);
+extern int is_equal(li_object *obj1, li_object *obj2);
+extern int is_eqv(li_object *obj1, li_object *obj2);
+extern int is_list(li_object *obj);
+extern int length(li_object *obj);
 
 struct li_object {
     union {
@@ -205,27 +203,27 @@ struct li_object {
 };
 
 /* error */
-void error(char *who, char *msg, li_object *args);
-int try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg);
+extern void error(char *who, char *msg, li_object *args);
+extern int try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg);
 
 /* eval */
-li_object *apply(li_object *proc, li_object *args);
-li_object *append_variable(li_object *var, li_object *val, li_object *env);
-li_object *eval(li_object *exp, li_object *env);
-li_object *setup_environment(void);
+extern li_object *apply(li_object *proc, li_object *args);
+extern li_object *append_variable(li_object *var, li_object *val, li_object *env);
+extern li_object *eval(li_object *exp, li_object *env);
+extern li_object *setup_environment(void);
 
 /* load */
-void load(char *filename, li_object *env);
+extern void load(char *filename, li_object *env);
 
 /* read */
-li_object *lread(FILE *f);
+extern li_object *lread(FILE *f);
 
 /* write */
 #define print(obj)              print_object(obj)
 #define lwrite(obj, f)          write_object(obj, f, 0)
 #define display(obj, f)         write_object(obj, f, 1)
 #define newline(f)              fprintf(f, "\n")
-void print_object(li_object *obj);
-void write_object(li_object *obj, FILE *f, int h);
+extern void print_object(li_object *obj);
+extern void write_object(li_object *obj, FILE *f, int h);
 
 #endif
