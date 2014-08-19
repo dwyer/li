@@ -66,7 +66,7 @@ li_object *append(li_object *lst, li_object *obj) {
     return lst;
 }
 
-void load(char *filename, li_object *env) {
+void li_load(char *filename, li_object *env) {
     FILE *f;
     li_object *exp;
     int pop;
@@ -78,7 +78,7 @@ void load(char *filename, li_object *env) {
     }
     if ((f = fopen(filename, "r")) == NULL)
         li_error("load", "unable to read file", li_string(filename));
-    while ((exp = lread(f)) != li_eof) {
+    while ((exp = li_read(f)) != li_eof) {
         exp = li_eval(exp, env);
         li_cleanup(env);
     }
@@ -86,7 +86,7 @@ void load(char *filename, li_object *env) {
     if (pop) pop_buffer();
 }
 
-li_object *lread(FILE *f) {
+li_object *li_read(FILE *f) {
     obj = li_null;
     yyin = f;
     if (yyparse()) return li_null;

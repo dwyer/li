@@ -239,7 +239,7 @@ li_object *m_letrec(li_object *args, li_object *env) {
 li_object *m_load(li_object *args, li_object *env) {
     assert_nargs("load", 1, args);
     assert_string("load", car(args));
-    load(li_to_string(car(args)), env);
+    li_load(li_to_string(car(args)), env);
     return li_null;
 }
 
@@ -1583,7 +1583,7 @@ li_object *p_read(li_object *args) {
         assert_port("read", car(args));
         f = li_to_port(car(args)).file;
     }
-    return lread(f);
+    return li_read(f);
 }
 
 li_object *p_read_char(li_object *args) {

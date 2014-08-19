@@ -7,7 +7,7 @@
 
 li_object *prompt(FILE *f) {
     printf("> ");
-    return lread(f);
+    return li_read(f);
 }
 
 void repl(li_object *env) {
@@ -31,7 +31,7 @@ void script(li_object *env) {
     li_object *args;
 
     args = li_environment_lookup(env, ARGV_SYMBOL);
-    load(li_to_string(car(args)), env);
+    li_load(li_to_string(car(args)), env);
 }
 
 int main(int argc, char *argv[]) {

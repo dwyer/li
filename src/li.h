@@ -212,11 +212,9 @@ extern li_object *li_append_variable(li_object *var, li_object *val, li_object *
 extern li_object *li_eval(li_object *exp, li_object *env);
 extern li_object *li_setup_environment(void);
 
-/* load */
-extern void load(char *filename, li_object *env);
-
 /* read */
-extern li_object *lread(FILE *f);
+extern void li_load(char *filename, li_object *env);
+extern li_object *li_read(FILE *f);
 
 /* write */
 #define print(obj)              print_object(obj)
