@@ -37,7 +37,7 @@ extern void pop_buffer(void);
 start   : datum { obj = $$ = $1; return 0; }
         ;
 
-datum   : EOF_OBJECT { $$ = eof; }
+datum   : EOF_OBJECT { $$ = li_eof; }
         | CHARACTER { $$ = $1; }
         | NUMBER { $$ = $1; }
         | STRING { $$ = $1; }
@@ -78,7 +78,7 @@ void load(char *filename, object *env) {
     }
     if ((f = fopen(filename, "r")) == NULL)
         error("load", "unable to read file", string(filename));
-    while ((exp = lread(f)) != eof) {
+    while ((exp = lread(f)) != li_eof) {
         exp = eval(exp, env);
         cleanup(env);
     }

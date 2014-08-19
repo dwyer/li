@@ -32,7 +32,7 @@ number                  ({num10}|{num16})
 %%
 
 [%()\[\].'`,@\\]        return *yytext;
-<<EOF>>                 yylval.obj = eof; return EOF_OBJECT;
+<<EOF>>                 yylval.obj = li_eof; return EOF_OBJECT;
 {character}             yylval.obj = character(yytext[3]); return CHARACTER;
 %\\newline              yylval.obj = character('\n'); return CHARACTER;
 %\\space                yylval.obj = character(' '); return CHARACTER;

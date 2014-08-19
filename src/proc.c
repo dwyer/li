@@ -1618,7 +1618,7 @@ object *p_peek_char(object *args) {
 
 object *p_is_eof_object(object *args) {
     assert_nargs("eof-object?", 1, args);
-    return boolean(car(args) == eof);
+    return boolean(car(args) == li_eof);
 }
 
 /**********

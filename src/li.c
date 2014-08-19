@@ -14,7 +14,7 @@ void repl(object *env) {
     object *exp;
 
     append_variable(symbol("_"), li_null, env);
-    while ((exp = prompt(stdin)) != eof) {
+    while ((exp = prompt(stdin)) != li_eof) {
         if (exp) {
             exp = eval(exp, env);
             environment_assign(env, symbol("_"), exp);
