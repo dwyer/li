@@ -15,7 +15,7 @@ static struct {
     li_object *syms[HASHSIZE];
     int size;
     int cap;
-} heap = { NULL };
+} heap = { NULL, { NULL }, 0, 0 };
 
 void add_to_heap(li_object *obj) {
     int i;

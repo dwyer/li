@@ -1214,7 +1214,7 @@ li_object *p_string_gt(li_object *args) {
 li_object *p_string_to_list(li_object *args) {
     li_object *head, *tail;
     char *str;
-    int i;
+    unsigned long i;
 
     assert_nargs("string->list", 1, args);
     assert_string("string->list", li_car(args));
@@ -1322,7 +1322,7 @@ li_object *p_make_vector(li_object *args) {
         fill = li_cadr(args);
     } else {
         assert_nargs("make-vector", 1, args);
-        fill = li_false;
+        fill = li_boolean(li_false);
     }
     vec = li_create(LI_T_VECTOR);
     vec->data.vector.data = li_allocate(li_null, k, sizeof(*vec->data.vector.data));
