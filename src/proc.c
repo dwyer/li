@@ -26,13 +26,13 @@
 #define assert_symbol(name, arg)    assert_type(name, symbol, arg)
 #define assert_vector(name, arg)    assert_type(name, vector, arg)
 #define append_primitive(name, proc, env) \
-    append_variable(li_symbol(name), li_primitive(proc), env)
+    li_append_variable(li_symbol(name), li_primitive(proc), env)
 #define append_syntax(name, proc, env) \
-    append_variable(li_symbol(name), li_syntax(proc), env);
+    li_append_variable(li_symbol(name), li_syntax(proc), env);
 
 li_object *m_and(li_object *seq, li_object *env) {
     for (; seq && cdr(seq); seq = cdr(seq))
-        if (li_is_false(eval(car(seq), env)))
+        if (li_is_false(li_eval(car(seq), env)))
             return li_boolean(li_false);
     if (!seq)
         return li_boolean(li_true);
@@ -41,14 +41,14 @@ li_object *m_and(li_object *seq, li_object *env) {
 
 li_object *m_assert(li_object *args, li_object *env) {
     assert_nargs("assert", 1, args);
-    if (li_is_false(eval(car(args), env)))
+    if (li_is_false(li_eval(car(args), env)))
         li_error("assert", "assertion violated", car(args));
     return li_null;
 }
 
 li_object *m_begin(li_object *seq, li_object *env) {
     for (; seq && cdr(seq); seq = cdr(seq))
-        eval(car(seq), env);
+        li_eval(car(seq), env);
     if (!seq)
         return li_null;
     return car(seq);
@@ -57,13 +57,13 @@ li_object *m_begin(li_object *seq, li_object *env) {
 li_object *m_case(li_object *exp, li_object *env) {
     li_object *seq, *val;
 
-    val = eval(car(exp), env);
+    val = li_eval(car(exp), env);
     seq = li_null;
     for (exp = cdr(exp); exp; exp = cdr(exp))
         for (seq = caar(exp); seq; seq = cdr(seq))
             if (li_is_eq(seq, li_symbol("else")) || li_is_eqv(car(seq), val)) {
                 for (seq = cdar(exp); cdr(seq); seq = cdr(seq))
-                    eval(car(seq), env);
+                    li_eval(car(seq), env);
                 break;
             }
     if (!seq)
@@ -74,9 +74,9 @@ li_object *m_case(li_object *exp, li_object *env) {
 li_object *m_cond(li_object *seq, li_object *env) {
     for (; seq; seq = cdr(seq))
         if (li_is_eq(caar(seq), li_symbol("else")) ||
-            li_is_true(eval(caar(seq), env))) {
+            li_is_true(li_eval(caar(seq), env))) {
             for (seq = cdar(seq); cdr(seq); seq = cdr(seq))
-                eval(car(seq), env);
+                li_eval(car(seq), env);
             break;
         }
     if (!seq)
@@ -99,7 +99,7 @@ li_object *m_define(li_object *args, li_object *env) {
     }
     assert_symbol("define", var);
     assert_nargs("define", 1, args);
-    return li_environment_define(env, var, eval(car(args), env));
+    return li_environment_define(env, var, li_eval(car(args), env));
 }
 
 /* (defmacro (name . args) . body) */
@@ -159,7 +159,7 @@ li_object *m_do(li_object *seq, li_object *env) {
 li_object *m_if(li_object *seq, li_object *env) {
     if (!seq || !cdr(seq))
         li_error("if", "invalid sequence", seq);
-    if (li_is_true(eval(car(seq), env)))
+    if (li_is_true(li_eval(car(seq), env)))
         return cadr(seq);
     else if (cddr(seq))
         return caddr(seq);
@@ -252,7 +252,7 @@ li_object *m_or(li_object *seq, li_object *env) {
     li_object *val;
 
     for (; seq && cdr(seq); seq = cdr(seq))
-        if (li_is_true(val = eval(car(seq), env)))
+        if (li_is_true(val = li_eval(car(seq), env)))
             return cons(li_symbol("quote"), cons(val, li_null));
     if (!seq)
         return li_boolean(li_false);
@@ -265,7 +265,7 @@ li_object *m_set(li_object *args, li_object *env) {
     assert_nargs("set!", 2, args);
     assert_symbol("set!", car(args));
     var = car(args);
-    val = eval(cadr(args), env);
+    val = li_eval(cadr(args), env);
     return(li_environment_assign(env, var, val));
 }
 
@@ -933,7 +933,7 @@ li_object *p_filter(li_object *args) {
             set_car(temp, car(iter));
         else
             temp = cons(car(iter), li_null);
-        if (li_is_true(apply(car(args), temp))) {
+        if (li_is_true(li_apply(car(args), temp))) {
             tail = head ? set_cdr(tail, temp) : (head = temp);
             temp = li_null;
         }
@@ -1464,7 +1464,7 @@ li_object *p_is_procedure(li_object *args) {
 li_object *p_apply(li_object *args) {
     assert_nargs("apply", 2, args);
     assert_procedure("apply", car(args));
-    return apply(car(args), cadr(args));
+    return li_apply(car(args), cadr(args));
 }
 
 li_object *p_map(li_object *args) {
@@ -1497,9 +1497,9 @@ li_object *p_map(li_object *args) {
         }
         if (loop) {
             if (list)
-                list_iter = set_cdr(list_iter, cons(apply(proc, cars), li_null));
+                list_iter = set_cdr(list_iter, cons(li_apply(proc, cars), li_null));
             else
-                list = list_iter = cons(apply(proc, cars), li_null);
+                list = list_iter = cons(li_apply(proc, cars), li_null);
         }
     }
     return list;
@@ -1513,7 +1513,7 @@ li_object *p_for_each(li_object *args) {
     proc = car(args);
     iter = cadr(args);
     while (iter) {
-        apply(proc, cons(car(iter), li_null));
+        li_apply(proc, cons(car(iter), li_null));
         iter = cdr(iter);
     }
     return li_null;
@@ -1522,12 +1522,12 @@ li_object *p_for_each(li_object *args) {
 li_object *p_force(li_object *args) {
     assert_nargs("force", 1, args);
     assert_procedure("force", car(args));
-    return apply(car(args), li_null);
+    return li_apply(car(args), li_null);
 }
 
 li_object *p_eval(li_object *args) {
     assert_nargs("eval", 2, args);
-    return eval(car(args), cadr(args));
+    return li_eval(car(args), cadr(args));
 }
 
 /*********

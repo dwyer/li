@@ -13,10 +13,10 @@ li_object *prompt(FILE *f) {
 void repl(li_object *env) {
     li_object *exp;
 
-    append_variable(li_symbol("_"), li_null, env);
+    li_append_variable(li_symbol("_"), li_null, env);
     while ((exp = prompt(stdin)) != li_eof) {
         if (exp) {
-            exp = eval(exp, env);
+            exp = li_eval(exp, env);
             li_environment_assign(env, li_symbol("_"), exp);
             if (exp) {
                 lwrite(exp, stdout);
@@ -40,10 +40,10 @@ int main(int argc, char *argv[]) {
 
     ret = 0;
     srand(time(NULL));
-    env = setup_environment();
+    env = li_setup_environment();
     for (args = li_null, i = argc - 1; i; i--)
         args = cons(li_string(argv[i]), args);
-    append_variable(ARGV_SYMBOL, args, env);
+    li_append_variable(ARGV_SYMBOL, args, env);
     ret = argc == 1 ? li_try(repl, li_cleanup, env) : li_try(script, NULL, env);
     li_cleanup(li_null);
     exit(ret);

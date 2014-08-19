@@ -207,10 +207,10 @@ extern void li_error(char *who, char *msg, li_object *args);
 extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg);
 
 /* eval */
-extern li_object *apply(li_object *proc, li_object *args);
-extern li_object *append_variable(li_object *var, li_object *val, li_object *env);
-extern li_object *eval(li_object *exp, li_object *env);
-extern li_object *setup_environment(void);
+extern li_object *li_apply(li_object *proc, li_object *args);
+extern li_object *li_append_variable(li_object *var, li_object *val, li_object *env);
+extern li_object *li_eval(li_object *exp, li_object *env);
+extern li_object *li_setup_environment(void);
 
 /* load */
 extern void load(char *filename, li_object *env);

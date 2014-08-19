@@ -30,7 +30,7 @@ void add_to_heap(li_object *obj) {
     heap.objs[heap.size++] = obj;
 }
 
-li_object *append_variable(li_object *var, li_object *val, li_object *env) {
+li_object *li_append_variable(li_object *var, li_object *val, li_object *env) {
     if (!li_is_symbol(var))
         li_error("eval", "not a variable", var);
     if (env->data.env.size == env->data.env.cap) {
@@ -119,7 +119,7 @@ li_object *li_environment_define(li_object *env, li_object *var, li_object *val)
             env->data.env.array[i].val = val;
             return var;
         }
-    return append_variable(var, val, env);
+    return li_append_variable(var, val, env);
 }
 
 li_object *li_environment_lookup(li_object *env, li_object *var) {
