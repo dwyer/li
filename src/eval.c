@@ -23,7 +23,7 @@ li_object *apply(li_object *proc, li_object *args) {
     li_object *head, *tail, *obj;
 
     if (li_is_primitive(proc))
-        return to_primitive(proc)(args);
+        return li_to_primitive(proc)(args);
     head = tail = li_null;
     while (args) {
         obj = cons(symbol("quasiquote"), cons(car(args), li_null));
@@ -34,7 +34,7 @@ li_object *apply(li_object *proc, li_object *args) {
         }
         args = cdr(args);
     }
-    return eval(cons(proc, head), to_compound(proc).env);
+    return eval(cons(proc, head), li_to_compound(proc).env);
 }
 
 li_object *eval(li_object *exp, li_object *env) {
@@ -55,18 +55,18 @@ li_object *eval(li_object *exp, li_object *env) {
             if (li_is_procedure(proc))
                 args = list_of_values(args, env);
             if (li_is_compound(proc)) {
-                env = extend_environment(to_compound(proc).vars, args,
-                                         to_compound(proc).env);
-                for (seq = to_compound(proc).body; seq && cdr(seq);
+                env = extend_environment(li_to_compound(proc).vars, args,
+                                         li_to_compound(proc).env);
+                for (seq = li_to_compound(proc).body; seq && cdr(seq);
                      seq = cdr(seq))
                     eval(car(seq), env);
                 exp = car(seq);
             } else if (li_is_macro(proc)) {
                 exp = expand_macro(proc, args);
             } else if (li_is_primitive(proc)) {
-                return to_primitive(proc)(args);
+                return li_to_primitive(proc)(args);
             } else if (li_is_syntax(proc)) {
-                exp = to_syntax(proc)(args, env);
+                exp = li_to_syntax(proc)(args, env);
             } else {
                 error("apply", "not applicable", proc);
             }
@@ -106,8 +106,8 @@ li_object *expand_macro(li_object *mac, li_object *args) {
     li_object *env, *ret, *seq;
 
     ret = li_null;
-    env = extend_environment(to_macro(mac).vars, args, to_macro(mac).env);
-    for (seq = to_macro(mac).body; seq; seq = cdr(seq))
+    env = extend_environment(li_to_macro(mac).vars, args, li_to_macro(mac).env);
+    for (seq = li_to_macro(mac).body; seq; seq = cdr(seq))
         ret = eval(car(seq), env);
     return ret;
 }

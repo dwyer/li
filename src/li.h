@@ -16,7 +16,7 @@
 #define li_is_character(obj)    li_is_type(obj, T_CHARACTER)
 #define li_is_compound(obj)     li_is_type(obj, T_COMPOUND)
 #define li_is_integer(obj)      (li_is_number(obj) && \
-                                 to_number(obj) == to_integer(obj))
+                                 li_to_number(obj) == li_to_integer(obj))
 #define li_is_macro(obj)        li_is_type(obj, T_MACRO)
 #define li_is_number(obj)       li_is_type(obj, T_NUMBER)
 #define li_is_pair(obj)         li_is_type(obj, T_PAIR)
@@ -40,28 +40,28 @@
 #define li_unlock(obj)          ((obj)->locked = li_false)
 #define li_is_locked(obj)       (obj)->locked
 
-#define to_character(obj)       (obj)->data.character
-#define to_compound(obj)        (obj)->data.compound
-#define to_integer(obj)         ((int)to_number(obj))
-#define to_macro(obj)           (obj)->data.macro
-#define to_number(obj)          (obj)->data.number
-#define to_pair(obj)            (obj)->data.pair
-#define to_port(obj)            (obj)->data.port
-#define to_primitive(obj)       (obj)->data.primitive
-#define to_syntax(obj)          (obj)->data.syntax
-#define to_string(obj)          (obj)->data.string
-#define to_symbol(obj)          (obj)->data.symbol.string
-#define to_vector(obj)          (obj)->data.vector
+#define li_to_character(obj)    (obj)->data.character
+#define li_to_compound(obj)     (obj)->data.compound
+#define li_to_integer(obj)      ((int)li_to_number(obj))
+#define li_to_macro(obj)        (obj)->data.macro
+#define li_to_number(obj)       (obj)->data.number
+#define li_to_pair(obj)         (obj)->data.pair
+#define li_to_port(obj)         (obj)->data.port
+#define li_to_primitive(obj)    (obj)->data.primitive
+#define li_to_syntax(obj)       (obj)->data.syntax
+#define li_to_string(obj)       (obj)->data.string
+#define li_to_symbol(obj)       (obj)->data.symbol.string
+#define li_to_vector(obj)       (obj)->data.vector
 
-#define li_is_string_eq(s1, s2) (strcmp(to_string(s1), to_string(s2)) == 0)
+#define li_is_string_eq(s1, s2) (strcmp(li_to_string(s1), li_to_string(s2)) == 0)
 
-#define vector_length(vec)      to_vector(vec).length
-#define vector_ref(vec, k)      to_vector(vec).data[k]
+#define vector_length(vec)      li_to_vector(vec).length
+#define vector_ref(vec, k)      li_to_vector(vec).data[k]
 #define vector_set(vec, k, obj) (vector_ref(vec, k) = obj)
 
 #define cons(obj1, obj2)        pair(obj1, obj2)
-#define car(obj)                to_pair(obj).car
-#define cdr(obj)                to_pair(obj).cdr
+#define car(obj)                li_to_pair(obj).car
+#define cdr(obj)                li_to_pair(obj).cdr
 #define set_car(obj1, obj2)     (car(obj1) = obj2)
 #define set_cdr(obj1, obj2)     (cdr(obj1) = obj2)
 

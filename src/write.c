@@ -17,28 +17,28 @@ void write_object(li_object *obj, FILE *f, int h) {
     else if (li_is_locked(obj))
         fprintf(f, "...");
     else if (li_is_character(obj) && h)
-        fprintf(f, "%c", to_character(obj));
+        fprintf(f, "%c", li_to_character(obj));
     else if (li_is_character(obj))
-        fprintf(f, "'%c'", to_character(obj));
+        fprintf(f, "'%c'", li_to_character(obj));
     else if (li_is_compound(obj))
         fprintf(f, "#[compound-procedure %s]",
-        to_compound(obj).name ? to_string(to_compound(obj).name) : "\b");
+        li_to_compound(obj).name ? li_to_string(li_to_compound(obj).name) : "\b");
     else if (li_is_environment(obj))
         fprintf(f, "#[environment]");
     else if (li_is_macro(obj))
         fprintf(f, "#[macro]");
     else if (li_is_number(obj))
-        fprintf(f, "%.512g", to_number(obj));
+        fprintf(f, "%.512g", li_to_number(obj));
     else if (li_is_pair(obj))
         write_pair(obj, f, h);
     else if (li_is_port(obj))
-        fprintf(f, "#[port \"%s\"]", to_port(obj).filename);
+        fprintf(f, "#[port \"%s\"]", li_to_port(obj).filename);
     else if (li_is_primitive(obj))
         fprintf(f, "#[primitive-procedure]");
     else if (li_is_string(obj))
         write_string(obj, f, h);
     else if (li_is_symbol(obj))
-        fprintf(f, "%s", to_symbol(obj));
+        fprintf(f, "%s", li_to_symbol(obj));
     else if (li_is_syntax(obj))
         fprintf(f, "#[syntax]");
     else if (li_is_vector(obj))
@@ -66,7 +66,7 @@ void write_pair(li_object *obj, FILE *f, int h) {
 }
 
 void write_string(li_object *obj, FILE *f, int h) {
-    fprintf(f, h ? "%s" : "\"%s\"", to_string(obj));
+    fprintf(f, h ? "%s" : "\"%s\"", li_to_string(obj));
 }
 
 void write_vector(li_object *obj, FILE *f, int h) {

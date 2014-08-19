@@ -206,7 +206,7 @@ li_object *symbol(char *s) {
     hash = hash % HASHSIZE;
     if (heap.syms[hash])
         for (obj = heap.syms[hash]; obj; obj = obj->data.symbol.next)
-            if (strcmp(to_symbol(obj), s) == 0)
+            if (strcmp(li_to_symbol(obj), s) == 0)
                 return obj;
     obj = create(T_SYMBOL);
     obj->data.symbol.string = strdup(s);
@@ -244,7 +244,7 @@ void destroy(li_object *obj) {
         free(obj->data.port.filename);
     }
     if (li_is_string(obj))
-        free(to_string(obj));
+        free(li_to_string(obj));
     if (li_is_symbol(obj)) {
         if (obj->data.symbol.next)
             obj->data.symbol.next->data.symbol.prev = obj->data.symbol.prev;
@@ -252,10 +252,10 @@ void destroy(li_object *obj) {
             obj->data.symbol.prev->data.symbol.next = obj->data.symbol.next;
         else
             heap.syms[obj->data.symbol.hash] = obj->data.symbol.next;
-        free(to_symbol(obj));
+        free(li_to_symbol(obj));
     }
     if (li_is_vector(obj))
-        free(to_vector(obj).data);
+        free(li_to_vector(obj).data);
     free(obj);
 }
 
@@ -279,14 +279,14 @@ void mark(li_object *obj) {
         for (k = 0; k < vector_length(obj); k++)
             mark(vector_ref(obj, k));
     } else if (li_is_compound(obj)) {
-        mark(to_compound(obj).name);
-        mark(to_compound(obj).vars);
-        mark(to_compound(obj).body);
-        mark(to_compound(obj).env);
+        mark(li_to_compound(obj).name);
+        mark(li_to_compound(obj).vars);
+        mark(li_to_compound(obj).body);
+        mark(li_to_compound(obj).env);
     } else if (li_is_macro(obj)) {
-        mark(to_macro(obj).vars);
-        mark(to_macro(obj).body);
-        mark(to_macro(obj).env);
+        mark(li_to_macro(obj).vars);
+        mark(li_to_macro(obj).body);
+        mark(li_to_macro(obj).env);
     }
 }
 
@@ -347,7 +347,7 @@ int li_is_eqv(li_object *obj1, li_object *obj2) {
     else if (obj1->type != obj2->type)
         return li_false;
     else if (li_is_number(obj1) && li_is_number(obj2))
-        return to_number(obj1) == to_number(obj2);
+        return li_to_number(obj1) == li_to_number(obj2);
     return li_false;
 }
 
