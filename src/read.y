@@ -60,7 +60,7 @@ data    : { $$ = li_null; }
 li_object *append(li_object *lst, li_object *obj) {
     li_object *tail;
         
-    for (tail = lst; tail && cdr(tail); tail = cdr(tail));
+    for (tail = lst; tail && li_cdr(tail); tail = li_cdr(tail));
     if (!tail) return obj;
     li_set_cdr(tail, obj);
     return lst;

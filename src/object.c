@@ -225,13 +225,13 @@ li_object *li_vector(li_object *lst) {
     li_object *iter;
     int k;
 
-    for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
+    for (k = 0, iter = lst; iter; k++, iter = li_cdr(iter))
         ;
     obj = li_create(T_VECTOR);
     obj->data.vector.data = li_allocate(li_null, k,
             sizeof(*obj->data.vector.data));
     obj->data.vector.length = k;
-    for (k = 0, iter = lst; iter; k++, iter = cdr(iter))
+    for (k = 0, iter = lst; iter; k++, iter = li_cdr(iter))
         li_vector_set(obj, k, li_car(iter));
     return obj;
 }
@@ -275,7 +275,7 @@ void mark(li_object *obj) {
             }
     } else if (li_is_pair(obj)) {
         mark(li_car(obj));
-        mark(cdr(obj));
+        mark(li_cdr(obj));
     } else if (li_is_vector(obj)) {
         int k;
         for (k = 0; k < li_vector_length(obj); k++)
@@ -333,7 +333,7 @@ int li_is_equal(li_object *obj1, li_object *obj2) {
         return li_true;
     else if (li_is_pair(obj1) && li_is_pair(obj2))
         return (li_is_equal(li_car(obj1), li_car(obj2)) &&
-                li_is_equal(cdr(obj2), cdr(obj2)));
+                li_is_equal(li_cdr(obj2), li_cdr(obj2)));
     else if (li_is_string(obj1) && li_is_string(obj2))
         return li_is_string_eq(obj1, obj2);
     else if (li_is_vector(obj1) && li_is_vector(obj2))
@@ -357,7 +357,7 @@ int li_is_list(li_object *obj) {
     while (obj) {
         if (!li_is_pair(obj))
             return 0;
-        obj = cdr(obj);
+        obj = li_cdr(obj);
     }
     return 1;
 }
@@ -367,7 +367,7 @@ int li_length(li_object *obj) {
 
     for (k = 0; obj; k++)
         if (li_is_pair(obj))
-            obj = cdr(obj);
+            obj = li_cdr(obj);
         else
             return -1;
     return k;

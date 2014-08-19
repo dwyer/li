@@ -32,7 +32,7 @@ li_object *li_apply(li_object *proc, li_object *args) {
         else {
             tail = li_set_cdr(tail, li_cons(obj, li_null));
         }
-        args = cdr(args);
+        args = li_cdr(args);
     }
     return li_eval(li_cons(proc, head), li_to_compound(proc).env);
 }
@@ -44,21 +44,21 @@ li_object *li_eval(li_object *exp, li_object *env) {
         if (li_is_symbol(exp)) {
             return li_environment_lookup(env, exp);
         } else if (li_is_quoted(exp)) {
-            check_syntax(cdr(exp) && !cddr(exp), exp);
+            check_syntax(li_cdr(exp) && !cddr(exp), exp);
             return cadr(exp);
         } else if (li_is_quasiquoted(exp)) {
-            check_syntax(cdr(exp) && !cddr(exp), exp);
+            check_syntax(li_cdr(exp) && !cddr(exp), exp);
             return eval_quasiquote(cadr(exp), env);
         } else if (li_is_application(exp)) {
             proc = li_eval(li_car(exp), env);
-            args = cdr(exp);
+            args = li_cdr(exp);
             if (li_is_procedure(proc))
                 args = list_of_values(args, env);
             if (li_is_compound(proc)) {
                 env = extend_environment(li_to_compound(proc).vars, args,
                                          li_to_compound(proc).env);
-                for (seq = li_to_compound(proc).body; seq && cdr(seq);
-                     seq = cdr(seq))
+                for (seq = li_to_compound(proc).body; seq && li_cdr(seq);
+                     seq = li_cdr(seq))
                     li_eval(li_car(seq), env);
                 exp = li_car(seq);
             } else if (li_is_macro(proc)) {
@@ -86,20 +86,20 @@ li_object *eval_quasiquote(li_object *exp, li_object *env) {
         return li_eval(cadr(exp), env);
     else if (li_is_unquoted_splicing(li_car(exp))) {
         head = tail = li_null;
-        for (iter = li_eval(cadar(exp), env); iter; iter = cdr(iter)) {
+        for (iter = li_eval(cadar(exp), env); iter; iter = li_cdr(iter)) {
             if (head)
                 tail = li_set_cdr(tail, li_cons(li_car(iter), li_null));
             else
                 head = tail = li_cons(li_car(iter), li_null);
         }
         if (tail) {
-            li_set_cdr(tail, eval_quasiquote(cdr(exp), env));
+            li_set_cdr(tail, eval_quasiquote(li_cdr(exp), env));
             return head;
         } else {
-            return eval_quasiquote(cdr(exp), env);
+            return eval_quasiquote(li_cdr(exp), env);
         }
     }
-    return li_cons(eval_quasiquote(li_car(exp), env), eval_quasiquote(cdr(exp), env));
+    return li_cons(eval_quasiquote(li_car(exp), env), eval_quasiquote(li_cdr(exp), env));
 }
 
 li_object *expand_macro(li_object *mac, li_object *args) {
@@ -107,14 +107,14 @@ li_object *expand_macro(li_object *mac, li_object *args) {
 
     ret = li_null;
     env = extend_environment(li_to_macro(mac).vars, args, li_to_macro(mac).env);
-    for (seq = li_to_macro(mac).body; seq; seq = cdr(seq))
+    for (seq = li_to_macro(mac).body; seq; seq = li_cdr(seq))
         ret = li_eval(li_car(seq), env);
     return ret;
 }
 
 li_object *extend_environment(li_object *vars, li_object *vals, li_object *env)
 {
-    for (env = li_environment(env); vars; vars = cdr(vars), vals = cdr(vals)) {
+    for (env = li_environment(env); vars; vars = li_cdr(vars), vals = li_cdr(vals)) {
         if (li_is_symbol(vars)) {
             li_append_variable(vars, vals, env);
             return env;
@@ -135,7 +135,7 @@ li_object *list_of_values(li_object *exps, li_object *env) {
     while (exps) {
         tail = li_cons(li_eval(li_car(exps), env), li_null);
         node = head ? li_set_cdr(node, tail) : (head = tail);
-        exps = cdr(exps);
+        exps = li_cdr(exps);
     }
     return head;
 }
