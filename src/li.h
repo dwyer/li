@@ -10,20 +10,66 @@
 typedef struct li_object li_object;
 
 typedef int li_character_t;
+
 typedef double li_number_t;
+
+/*
+ * A primitive procedure is represented by the following function type which
+ * accepts a list of arguments and returns an object.  It's up to you to assert
+ * that the proper number of arguments of the correct type were passed before
+ * operating on them.
+ *
+ * The object returned will not be further evaluated by the evaluator, so it is
+ * safe to return an unapplicable list.
+ */
 typedef li_object *(*li_primitive_procedure_t)(li_object *);
+
+/*
+ * Primitive syntax is like a primitive procedure, except for the following:
+ *
+ * 1. It accepts two arguments: a list of arguments and an environment.
+ *
+ * 2. The arguments are not evaluated prior to being passed, so it's up to
+ *    the author of a syntax function to evaluate them (or not evaluate them,
+ *    depending on what you're trying to do).  That what the environment is for.
+ *
+ * 3. In order to take advantage of tail call optimization, the object returned
+ *    by a syntax function is assumed to be an expression, therefore the calling
+ *    evaluator will evaluate before returning it.  For this reason, a syntax
+ *    function should not evaluate the final expression before returning it.
+ */
 typedef li_object *(*li_primitive_syntax_t)(li_object *, li_object *);
 
-/** The all important null object. */
+/* The all important null object. */
 #define li_null                 ((li_object *)NULL)
 
-/** Creating, destroying and garbage collecting objects. */
+/*
+ * Creating, destroying and garbage collecting objects.
+ */
+
+/*
+ * Equivalent to calloc when ptr is NULL, otherwise ptr is realloc'd.
+ */
 extern void *li_allocate(void *ptr, size_t count, size_t size);
+
+/*
+ * Allocates and returns an uninitialized object of the given type and throws it
+ * on the heap.
+ */
 extern li_object *li_create(int type);
+
+/*
+ * Frees the given object and any object it holds a strong reference to.
+ */
 extern void li_destroy(li_object *obj);
+
+/*
+ * Destroys all objects that cannot be reached from the given environment.
+ */
 extern void li_cleanup(li_object *env);
 
 /** Object constructors. */
+
 extern li_object *li_character(int c);
 extern li_object *li_compound(li_object *name, li_object *vars, li_object *body,
         li_object *env);
@@ -36,6 +82,10 @@ extern li_object *li_primitive(li_object *(*proc)(li_object *));
 extern li_object *li_string(char *s);
 extern li_object *li_symbol(char *s);
 extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *));
+
+/*
+ * Converts a list to a vector.
+ */
 extern li_object *li_vector(li_object *lst);
 
 /** EOF, true and false are just special symbols. */
@@ -221,27 +271,27 @@ struct li_object {
 #define li_set_car(obj1, obj2)  (li_car(obj1) = obj2)
 #define li_set_cdr(obj1, obj2)  (li_cdr(obj1) = obj2)
 
-/** Vector accessors */
+/** Vector accessors. */
 #define li_vector_length(v)     li_to_vector(v).length
 #define li_vector_ref(v, k)     li_to_vector(v).data[k]
 #define li_vector_set(v, k, o)  (li_vector_ref(v, k) = o)
 
-/* error.c */
+/* li_error.c */
 extern void li_error(char *who, char *msg, li_object *args);
 extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *),
         li_object *arg);
 
-/* eval.c */
+/* li_eval.c */
 extern li_object *li_append_variable(li_object *var, li_object *val,
         li_object *env);
 extern li_object *li_apply(li_object *proc, li_object *args);
 extern li_object *li_eval(li_object *exp, li_object *env);
 
-/* read.y */
+/* li_read.y */
 extern void li_load(char *filename, li_object *env);
 extern li_object *li_read(FILE *f);
 
-/* write.c */
+/* li_write.c */
 extern void li_print_object(li_object *obj);
 extern void li_write_object(li_object *obj, FILE *f, int h);
 #define li_print(obj)           li_print_object(obj)
