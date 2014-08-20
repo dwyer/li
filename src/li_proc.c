@@ -2094,7 +2094,7 @@ struct reg {
     { NULL, NULL }
 };
 
-void define_primitive_procedures(li_object *env) {
+extern void li_define_primitive_procedures(li_object *env) {
     struct reg *iter;
 
     append_syntax("and",            m_and,          env);

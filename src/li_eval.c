@@ -148,6 +148,6 @@ li_object *li_setup_environment(void) {
     li_append_variable(li_symbol("null"), li_null, env);
     li_append_variable(li_boolean(li_true), li_boolean(li_true), env);
     li_append_variable(li_boolean(li_false), li_boolean(li_false), env);
-    define_primitive_procedures(env);
+    li_define_primitive_procedures(env);
     return env;
 }
