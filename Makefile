@@ -63,3 +63,9 @@ uninstall:
 clean:
 	$(RM) $(LI_BIN) $(LI_LIB) $(ALL_OBJS) src/li_parse.c src/li_read.[ch]
 	$(RMDIR) $(OBJDIR)
+
+test: $(LI_BIN)
+	./$(LI_BIN) test/test.li
+
+tags: src/li.h
+	ctags -f $@ $<
