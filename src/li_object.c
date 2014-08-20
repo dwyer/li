@@ -5,10 +5,9 @@
 #include "li.h"
 
 #define HASHSIZE    1024
-#define strdup(s)   strcpy(li_allocate(li_null, strlen(s)+1, sizeof(char)), s)
+#define strdup(s)   strcpy(li_allocate(li_null, strlen(s) + 1, sizeof(char)), s)
 
-#define li_is_string_eq(s1, s2) \
-    (strcmp(li_to_string(s1), li_to_string(s2)) == 0)
+#define li_is_string_eq(s1, s2) (!strcmp(li_to_string(s1), li_to_string(s2)))
 
 static struct {
     li_object **objs;
@@ -17,7 +16,7 @@ static struct {
     int cap;
 } heap = { NULL, { NULL }, 0, 0 };
 
-void add_to_heap(li_object *obj) {
+static void add_to_heap(li_object *obj) {
     int i;
 
     if (!heap.objs) {
@@ -269,7 +268,7 @@ void li_destroy(li_object *obj) {
     free(obj);
 }
 
-void mark(li_object *obj) {
+static void mark(li_object *obj) {
     int i;
 
     if (!obj || li_is_locked(obj))

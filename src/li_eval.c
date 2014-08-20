@@ -11,7 +11,7 @@
 #define li_is_unquoted(exp)         li_is_tagged_list(exp, "unquote")
 #define li_is_unquoted_splicing(exp) li_is_tagged_list(exp, "unquote-splicing")
 
-#define check_syntax(pred, exp) if (!(pred)) li_error("eval", "bad syntax", exp);
+#define check_syntax(pred, exp) if (!(pred)) li_error("eval", "bad syntax", exp)
 
 static li_object *eval_quasiquote(li_object *exp, li_object *env);
 static li_object *expand_macro(li_object *mac, li_object *args);
@@ -56,9 +56,9 @@ li_object *li_eval(li_object *exp, li_object *env) {
                 args = list_of_values(args, env);
             if (li_is_compound(proc)) {
                 env = extend_environment(li_to_compound(proc).vars, args,
-                                         li_to_compound(proc).env);
+                        li_to_compound(proc).env);
                 for (seq = li_to_compound(proc).body; seq && li_cdr(seq);
-                     seq = li_cdr(seq))
+                        seq = li_cdr(seq))
                     li_eval(li_car(seq), env);
                 exp = li_car(seq);
             } else if (li_is_macro(proc)) {
