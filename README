@@ -2,17 +2,35 @@ li is a little lisp library and interpreter based on Scheme.
 
 li is the lisp interpreter. libli.a is the li library.
 
-Differences between li and Scheme
-=================================
-* Comments may start with a bash (#) or semicolon (;), as such...
-    * Booleans are `true` and `false` rather than #t and #f.
-    * Chars begin with `%\` rather than `#\`.
-    * Vectors are of the form [...] instead of #(...).
-* Numbers are just doubles, so no bignums or numberical tower.
-* No continuations (yet).
-* Unhygenic macros.
+The goal of this project is to provide a very tiny lisp library for embedded
+scripting in C applications.
+
+Syntax
+======
+If you've used a lisp before, the syntax here is nothing new.  If not, find a
+Scheme tutorial (or better yet, read SICP) as li is almost identical to Scheme
+except for the following differences:
+
+    * Comments start with a bash (#) (semicolon (;) is supported but
+      deprecated). Because bash is reserved for comments, Scheme primitives that
+      begin with bash have been changed:
+        * Booleans are `true` and `false` rather than #t and #f.
+        * Chars begin with `%\` rather than `#\`.
+        * Vectors are of the form [...] instead of #(...).
+    * Numbers are just doubles, so no bignums or numberical tower.
+    * No continuations (yet).
+    * Unhygenic macros.
+
+li Reference
+============
+A reference is coming soon, but in the meantime the supported primitive
+procedures are documented in src/li_proc.c.
+
+C API Reference
+===============
+A reference is coming soon, but in the meantime the API is documented in li.h.
 
 Bugs
 ====
-* Syntax checking is not complete.  Bad syntax will result in unknown behavior
-  which may include unexpected termination or even segfaults.
+    * Syntax checking is not complete.  Bad syntax will result in unknown
+      behavior which may include unexpected termination or even segfaults.
