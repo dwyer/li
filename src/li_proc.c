@@ -30,6 +30,13 @@
 #define append_syntax(name, proc, env) \
     li_append_variable(li_symbol(name), li_syntax(proc), env);
 
+#define make_define(p, b) \
+    li_cons(li_symbol("define"), li_cons(p, li_cons(b, li_null)))
+#define make_lambda(p, b) \
+    li_cons(li_symbol("lambda"), li_cons(p, b))
+#define make_named_lambda(p, b) \
+    li_cons(li_symbol("named-lambda"), li_cons(p, b))
+
 static li_object *m_and(li_object *seq, li_object *env) {
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
         if (li_is_false(li_eval(li_car(seq), env)))
@@ -84,14 +91,11 @@ static li_object *m_cond(li_object *seq, li_object *env) {
     return li_car(seq);
 }
 
-#define make_define(p, b)       li_cons(li_symbol("define"), li_cons(p, li_cons(b, li_null)))
-#define make_lambda(p, b)       li_cons(li_symbol("lambda"), li_cons(p, b))
-#define make_named_lambda(p, b) li_cons(li_symbol("named-lambda"), li_cons(p, b))
-
 static li_object *m_define(li_object *args, li_object *env) {
     li_object *var;
 
-    for (var = li_car(args), args = li_cdr(args); li_is_pair(var); var = li_car(var)) {
+    for (var = li_car(args), args = li_cdr(args); li_is_pair(var);
+            var = li_car(var)) {
         if (li_is_pair(li_car(var)))
             args = li_cons(make_lambda(li_cdr(var), args), li_null);
         else
@@ -221,7 +225,8 @@ static li_object *m_let_star(li_object *args, li_object *env) {
             result = li_cons(make_lambda(vars, body), vals);
         else
             li_set_cdr(li_cdar(result),
-                    li_cons(li_cons(make_lambda(vars, li_cddar(result)), vals), li_null));
+                    li_cons(li_cons(make_lambda(vars, li_cddar(result)),
+                            vals), li_null));
     }
     return result;
 }

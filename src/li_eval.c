@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include "li.h"
 
-#define li_is_tagged_list(exp, tag) (li_is_pair(exp) && li_car(exp) == li_symbol(tag))
+#define li_is_tagged_list(exp, tag) \
+    (li_is_pair(exp) && li_car(exp) == li_symbol(tag))
 
 #define li_is_application(exp)      li_is_list(exp)
 #define li_is_self_evaluating(exp)  !(li_is_pair(exp) || li_is_symbol(exp))
@@ -18,7 +19,7 @@ static li_object *extend_environment(li_object *vars, li_object *vals,
         li_object *base_env);
 static li_object *list_of_values(li_object *exps, li_object *env);
 
-li_object *li_apply(li_object *proc, li_object *args) {
+extern li_object *li_apply(li_object *proc, li_object *args) {
     li_object *head, *tail, *obj;
 
     if (li_is_primitive(proc))
@@ -36,7 +37,7 @@ li_object *li_apply(li_object *proc, li_object *args) {
     return li_eval(li_cons(proc, head), li_to_compound(proc).env);
 }
 
-li_object *li_eval(li_object *exp, li_object *env) {
+extern li_object *li_eval(li_object *exp, li_object *env) {
     li_object *seq, *proc, *args;
 
     while (!li_is_self_evaluating(exp)) {
@@ -76,7 +77,7 @@ li_object *li_eval(li_object *exp, li_object *env) {
     return exp;
 }
 
-li_object *eval_quasiquote(li_object *exp, li_object *env) {
+static li_object *eval_quasiquote(li_object *exp, li_object *env) {
     li_object *head, *iter, *tail;
 
     if (!li_is_pair(exp))
@@ -98,10 +99,11 @@ li_object *eval_quasiquote(li_object *exp, li_object *env) {
             return eval_quasiquote(li_cdr(exp), env);
         }
     }
-    return li_cons(eval_quasiquote(li_car(exp), env), eval_quasiquote(li_cdr(exp), env));
+    return li_cons(eval_quasiquote(li_car(exp), env),
+            eval_quasiquote(li_cdr(exp), env));
 }
 
-li_object *expand_macro(li_object *mac, li_object *args) {
+static li_object *expand_macro(li_object *mac, li_object *args) {
     li_object *env, *ret, *seq;
 
     ret = li_null;
@@ -111,9 +113,11 @@ li_object *expand_macro(li_object *mac, li_object *args) {
     return ret;
 }
 
-li_object *extend_environment(li_object *vars, li_object *vals, li_object *env)
+static li_object *extend_environment(li_object *vars, li_object *vals,
+        li_object *env)
 {
-    for (env = li_environment(env); vars; vars = li_cdr(vars), vals = li_cdr(vals)) {
+    for (env = li_environment(env); vars;
+            vars = li_cdr(vars), vals = li_cdr(vals)) {
         if (li_is_symbol(vars)) {
             li_append_variable(vars, vals, env);
             return env;
@@ -127,7 +131,7 @@ li_object *extend_environment(li_object *vars, li_object *vals, li_object *env)
     return env;
 }
 
-li_object *list_of_values(li_object *exps, li_object *env) {
+static li_object *list_of_values(li_object *exps, li_object *env) {
     li_object *head, *node, *tail;
 
     head = li_null;
