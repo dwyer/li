@@ -42,7 +42,8 @@ int main(int argc, char *argv[]) {
 
     ret = 0;
     srand(time(NULL));
-    env = li_setup_environment();
+    env = li_environment(li_null);
+    li_setup_environment(env);
     for (args = li_null, i = argc - 1; i; i--)
         args = li_cons(li_string(argv[i]), args);
     li_append_variable(ARGV_SYMBOL, args, env);

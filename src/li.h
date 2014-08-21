@@ -126,7 +126,7 @@ extern li_object *li_environment_assign(li_object *env, li_object *var,
 extern li_object *li_environment_define(li_object *env, li_object *var,
         li_object *val);
 extern li_object *li_environment_lookup(li_object *env, li_object *var);
-extern li_object *li_setup_environment(void);
+extern void li_setup_environment(li_object *env);
 
 enum {
     LI_T_CHARACTER,

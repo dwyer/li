@@ -2127,14 +2127,10 @@ static void li_define_primitive_procedures(li_object *env) {
         append_primitive(iter->var, iter->val, env);
 }
 
-extern li_object *li_setup_environment(void) {
-    li_object *env;
-
-    env = li_environment(li_null);
+extern void li_setup_environment(li_object *env) {
     li_append_variable(li_symbol("user-initial-environment"), env, env);
     li_append_variable(li_symbol("null"), li_null, env);
     li_append_variable(li_boolean(li_true), li_boolean(li_true), env);
     li_append_variable(li_boolean(li_false), li_boolean(li_false), env);
     li_define_primitive_procedures(env);
-    return env;
 }
