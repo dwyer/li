@@ -5,11 +5,10 @@
 #include <time.h>
 #include "li.h"
 
-#define has_0args(args)             (!args)
-#define has_1args(args)             (args && !li_cdr(args))
-#define has_2args(args)             (args && li_cdr(args) && !li_cddr(args))
-#define has_3args(args) \
-    (args && li_cdr(args) && li_cddr(args) && !li_cdddr(args))
+#define has_0args(args)             !(args)
+#define has_1args(args)             ((args) && has_0args(li_cdr(args)))
+#define has_2args(args)             ((args) && has_1args(li_cdr(args)))
+#define has_3args(args)             ((args) && has_2args(li_cdr(args)))
 #define assert_nargs(name, n, as) \
     if (!has_##n##args(as)) li_error(name, "wrong number of args", args)
 #define assert_type(name, type, arg) \
