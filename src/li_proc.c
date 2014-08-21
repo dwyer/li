@@ -271,7 +271,9 @@ static li_object *m_set(li_object *args, li_object *env) {
     assert_symbol("set!", li_car(args));
     var = li_car(args);
     val = li_eval(li_cadr(args), env);
-    return li_environment_assign(env, var, val);
+    if (!li_environment_assign(env, var, val))
+        li_error("set!", "unbound variable", var);
+    return val;
 }
 
 /*

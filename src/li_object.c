@@ -111,15 +111,13 @@ extern li_object *li_environment_assign(li_object *env, li_object *var,
     int i;
     
     while (env) {
-        for (i = 0; i < env->data.env.size; i++) {
+        for (i = 0; i < env->data.env.size; i++)
             if (env->data.env.array[i].var == var) {
                 env->data.env.array[i].val = val;
-                return li_cons(li_symbol("quote"), li_cons(val, li_null));
+                return val;
             }
-        }
         env = env->data.env.base;
     }
-    li_error("set!", "unbound variable", var);
     return li_null;
 }
 
