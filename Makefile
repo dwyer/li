@@ -1,6 +1,7 @@
 AR=ar rcu
 CC=cc
 CP=cp -r
+INSTALL=install
 LEX=lex
 MKDIR=mkdir -p
 MV=mv
@@ -13,6 +14,8 @@ LDFLAGS=-lm
 
 PREFIX=/usr/local
 TO_BIN=$(PREFIX)/bin
+TO_LIB=$(PREFIX)/lib
+TO_INCLUDE=$(PREFIX)/include
 
 OBJDIR=obj
 SRCDIR=src
@@ -20,7 +23,6 @@ LI_BIN=li
 LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
-# LI_LIB_OBJS_=li_read.o li_parse.o li_write.o li_object.o li_eval.o li_proc.o li_error.o
 LI_LIB_OBJS_=li_object.o li_eval.o li_write.o li_error.o li_read.o li_parse.o \
 	     li_proc.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
@@ -53,7 +55,9 @@ profile: CFLAGS+=-pg
 profile: all
 
 install: all
-	$(CP) $(LI_BIN) $(TO_BIN)
+	$(INSTALL) $(LI_BIN) $(TO_BIN)
+	$(INSTALL) $(LI_LIB) $(TO_LIB)
+	$(INSTALL) src/li.h $(TO_INCLUDE)
 
 uninstall:
 	cd $(TO_BIN) && $(RM) $(LI_BIN)
