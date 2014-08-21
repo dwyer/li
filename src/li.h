@@ -4,6 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if defined(__GNUC__)
+#define LI_DEPRECATED           __attribute__((deprecated))
+#else
+#define LI_DEPRECATED
+#endif
+
 /* C types. */
 #define li_false                ((int)0)
 #define li_true                 !li_false
