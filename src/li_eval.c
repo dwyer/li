@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "li.h"
-#include "li_proc.h"
 
 #define li_is_tagged_list(exp, tag) (li_is_pair(exp) && li_car(exp) == li_symbol(tag))
 
@@ -138,16 +137,4 @@ li_object *list_of_values(li_object *exps, li_object *env) {
         exps = li_cdr(exps);
     }
     return head;
-}
-
-li_object *li_setup_environment(void) {
-    li_object *env;
-
-    env = li_environment(li_null);
-    li_append_variable(li_symbol("user-initial-environment"), env, env);
-    li_append_variable(li_symbol("null"), li_null, env);
-    li_append_variable(li_boolean(li_true), li_boolean(li_true), env);
-    li_append_variable(li_boolean(li_false), li_boolean(li_false), env);
-    li_define_primitive_procedures(env);
-    return env;
 }

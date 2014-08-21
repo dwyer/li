@@ -1916,7 +1916,7 @@ static li_object *p_cddddr(li_object *args) {
     return li_cddddr(li_car(args));
 }
 
-struct reg {
+static struct reg {
     char *var;
     li_object *(*val)(li_object *);
 } regs[] = {
@@ -2094,7 +2094,7 @@ struct reg {
     { NULL, NULL }
 };
 
-extern void li_define_primitive_procedures(li_object *env) {
+static void li_define_primitive_procedures(li_object *env) {
     struct reg *iter;
 
     append_syntax("and",            m_and,          env);
@@ -2118,4 +2118,16 @@ extern void li_define_primitive_procedures(li_object *env) {
     append_syntax("set!",           m_set,          env);
     for (iter = regs; iter->var; iter++)
         append_primitive(iter->var, iter->val, env);
+}
+
+extern li_object *li_setup_environment(void) {
+    li_object *env;
+
+    env = li_environment(li_null);
+    li_append_variable(li_symbol("user-initial-environment"), env, env);
+    li_append_variable(li_symbol("null"), li_null, env);
+    li_append_variable(li_boolean(li_true), li_boolean(li_true), env);
+    li_append_variable(li_boolean(li_false), li_boolean(li_false), env);
+    li_define_primitive_procedures(env);
+    return env;
 }
