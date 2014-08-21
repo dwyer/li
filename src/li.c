@@ -3,23 +3,25 @@
 
 #define ARGV_SYMBOL li_symbol("args")
 
-static li_object *li_prompt(FILE *f);
-static void li_repl(li_object *env);
-static void li_script(li_object *env);
+li_object *li_prompt(FILE *fin, FILE *fout, const char *s);
+void li_repl(li_object *env);
+void li_script(li_object *env);
 
-li_object *li_prompt(FILE *f) {
-    printf("> ");
-    return li_read(f);
+li_object *li_prompt(FILE *fin, FILE *fout, const char *s) {
+    fputs(s, fout);
+    return li_read(fin);
 }
 
 void li_repl(li_object *env) {
     li_object *exp;
+    li_object *var;
 
-    li_append_variable(li_symbol("_"), li_null, env);
-    while ((exp = li_prompt(stdin)) != li_eof) {
+    var = li_symbol("_");
+    li_append_variable(var, li_null, env);
+    while ((exp = li_prompt(stdin, stdout, "> ")) != li_eof) {
         if (exp) {
             exp = li_eval(exp, env);
-            li_environment_assign(env, li_symbol("_"), exp);
+            li_environment_assign(env, var, exp);
             if (exp) {
                 li_write(exp, stdout);
                 li_newline(stdout);
@@ -47,7 +49,8 @@ int main(int argc, char *argv[]) {
     for (args = li_null, i = argc - 1; i; i--)
         args = li_cons(li_string(argv[i]), args);
     li_append_variable(ARGV_SYMBOL, args, env);
-    ret = argc == 1 ?  li_try(li_repl, li_cleanup, env) :
+    ret = argc == 1 ?
+        li_try(li_repl, li_cleanup, env) :
         li_try(li_script, NULL, env);
     li_cleanup(li_null);
     exit(ret);
