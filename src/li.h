@@ -1,6 +1,9 @@
 #ifndef _li_h
 #define _li_h
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /* C types. */
 #define li_false                ((int)0)
 #define li_true                 !li_false
