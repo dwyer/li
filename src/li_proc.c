@@ -118,7 +118,7 @@ static li_object *m_defmacro(li_object *seq, li_object *env) {
 }
 
 static li_object *m_delay(li_object *seq, li_object *env) {
-    return li_compound(li_null, li_null, seq, env);
+    return li_lambda(li_null, li_null, seq, env);
 }
 
 static li_object *m_do(li_object *seq, li_object *env) {
@@ -172,7 +172,7 @@ static li_object *m_if(li_object *seq, li_object *env) {
 }
 
 static li_object *m_lambda(li_object *seq, li_object *env) {
-    return li_compound(li_null, li_car(seq), li_cdr(seq), env);
+    return li_lambda(li_null, li_car(seq), li_cdr(seq), env);
 }
 
 static li_object *m_named_lambda(li_object *seq, li_object *env) {
@@ -180,7 +180,7 @@ static li_object *m_named_lambda(li_object *seq, li_object *env) {
 
     formals = li_car(seq);
     assert_pair("named-lambda", formals);
-    return li_compound(li_car(formals), li_cdr(formals), li_cdr(seq), env);
+    return li_lambda(li_car(formals), li_cdr(formals), li_cdr(seq), env);
 }
 
 static li_object *m_let(li_object *args, li_object *env) {

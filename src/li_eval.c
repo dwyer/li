@@ -34,7 +34,7 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
         }
         args = li_cdr(args);
     }
-    return li_eval(li_cons(proc, head), li_to_compound(proc).env);
+    return li_eval(li_cons(proc, head), li_to_lambda(proc).env);
 }
 
 extern li_object *li_eval(li_object *exp, li_object *env) {
@@ -54,10 +54,10 @@ extern li_object *li_eval(li_object *exp, li_object *env) {
             args = li_cdr(exp);
             if (li_is_procedure(proc))
                 args = list_of_values(args, env);
-            if (li_is_compound(proc)) {
-                env = extend_environment(li_to_compound(proc).vars, args,
-                        li_to_compound(proc).env);
-                for (seq = li_to_compound(proc).body; seq && li_cdr(seq);
+            if (li_is_lambda(proc)) {
+                env = extend_environment(li_to_lambda(proc).vars, args,
+                        li_to_lambda(proc).env);
+                for (seq = li_to_lambda(proc).body; seq && li_cdr(seq);
                         seq = li_cdr(seq))
                     li_eval(li_car(seq), env);
                 exp = li_car(seq);

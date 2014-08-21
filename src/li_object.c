@@ -81,18 +81,6 @@ extern li_object *li_character(int c) {
     return obj;
 }
 
-extern li_object *li_compound(li_object *name, li_object *vars, li_object *body,
-        li_object *env) {
-    li_object *obj;
-
-    obj = li_create(LI_T_COMPOUND);
-    obj->data.compound.name = name;
-    obj->data.compound.vars = vars;
-    obj->data.compound.body = body;
-    obj->data.compound.env = env;
-    return obj;
-}
-
 extern li_object *li_environment(li_object *base) {
     li_object *obj;
 
@@ -145,6 +133,18 @@ extern li_object *li_environment_lookup(li_object *env, li_object *var) {
     }
     li_error("eval", "unbound variable", var);
     return li_null;
+}
+
+extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
+        li_object *env) {
+    li_object *obj;
+
+    obj = li_create(LI_T_LAMBDA);
+    obj->data.lambda.name = name;
+    obj->data.lambda.vars = vars;
+    obj->data.lambda.body = body;
+    obj->data.lambda.env = env;
+    return obj;
 }
 
 extern li_object *li_macro(li_object *vars, li_object *body, li_object *env) {
@@ -291,11 +291,11 @@ static void li_mark(li_object *obj) {
         int k;
         for (k = 0; k < li_vector_length(obj); k++)
             li_mark(li_vector_ref(obj, k));
-    } else if (li_is_compound(obj)) {
-        li_mark(li_to_compound(obj).name);
-        li_mark(li_to_compound(obj).vars);
-        li_mark(li_to_compound(obj).body);
-        li_mark(li_to_compound(obj).env);
+    } else if (li_is_lambda(obj)) {
+        li_mark(li_to_lambda(obj).name);
+        li_mark(li_to_lambda(obj).vars);
+        li_mark(li_to_lambda(obj).body);
+        li_mark(li_to_lambda(obj).env);
     } else if (li_is_macro(obj)) {
         li_mark(li_to_macro(obj).vars);
         li_mark(li_to_macro(obj).body);

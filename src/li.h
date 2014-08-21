@@ -80,9 +80,9 @@ extern void li_cleanup(li_object *env);
 /** Object constructors. */
 
 extern li_object *li_character(int c);
-extern li_object *li_compound(li_object *name, li_object *vars, li_object *body,
-        li_object *env);
 extern li_object *li_environment(li_object *base);
+extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
+        li_object *env);
 extern li_object *li_macro(li_object *vars, li_object *body, li_object *env);
 extern li_object *li_number(double n);
 extern li_object *li_pair(li_object *car, li_object *cdr);
@@ -130,8 +130,8 @@ extern void li_setup_environment(li_object *env);
 
 enum {
     LI_T_CHARACTER,
-    LI_T_COMPOUND,
     LI_T_ENVIRONMENT,
+    LI_T_LAMBDA,
     LI_T_MACRO,
     LI_T_NUMBER,
     LI_T_PAIR,
@@ -158,13 +158,13 @@ struct li_object {
             int cap;
             li_object *base;
         } env;
-        /* compound */
+        /* lambda */
         struct {
             li_object *name;
             li_object *vars;
             li_object *body;
             li_object *env;
-        } compound;
+        } lambda;
         /* macro */
         struct {
             li_object *vars;
@@ -208,9 +208,9 @@ struct li_object {
 
 /** Type casting. */
 #define li_to_character(obj)    (obj)->data.character
-#define li_to_compound(obj)     (obj)->data.compound
 #define li_to_integer(obj)      ((int)li_to_number(obj))
 #define li_to_macro(obj)        (obj)->data.macro
+#define li_to_lambda(obj)       (obj)->data.lambda
 #define li_to_number(obj)       (obj)->data.number
 #define li_to_pair(obj)         (obj)->data.pair
 #define li_to_port(obj)         (obj)->data.port
@@ -224,8 +224,8 @@ struct li_object {
 #define li_is_type(obj, t)      ((obj) && (obj)->type == t)
 
 #define li_is_character(obj)    li_is_type(obj, LI_T_CHARACTER)
-#define li_is_compound(obj)     li_is_type(obj, LI_T_COMPOUND)
 #define li_is_environment(obj)  li_is_type(obj, LI_T_ENVIRONMENT)
+#define li_is_lambda(obj)       li_is_type(obj, LI_T_LAMBDA)
 #define li_is_macro(obj)        li_is_type(obj, LI_T_MACRO)
 #define li_is_number(obj)       li_is_type(obj, LI_T_NUMBER)
 #define li_is_pair(obj)         li_is_type(obj, LI_T_PAIR)
@@ -238,7 +238,7 @@ struct li_object {
 
 #define li_is_integer(obj) \
     (li_is_number(obj) && li_to_number(obj) == li_to_integer(obj))
-#define li_is_procedure(obj)    (li_is_compound(obj) || li_is_primitive(obj))
+#define li_is_procedure(obj)    (li_is_lambda(obj) || li_is_primitive(obj))
 
 #define li_lock(obj)            ((obj)->locked = li_true)
 #define li_unlock(obj)          ((obj)->locked = li_false)

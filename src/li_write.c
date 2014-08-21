@@ -12,37 +12,41 @@ void li_print_object(li_object *obj) {
 }
 
 void li_write_object(li_object *obj, FILE *f, int h) {
-    if (li_is_null(obj))
+    if (li_is_null(obj)) {
         fprintf(f, "()");
-    else if (li_is_locked(obj))
+    } else if (li_is_locked(obj)) {
         fprintf(f, "...");
-    else if (li_is_character(obj) && h)
+    } else if (li_is_character(obj) && h) {
         fprintf(f, "%c", li_to_character(obj));
-    else if (li_is_character(obj))
+    } else if (li_is_character(obj)) {
         fprintf(f, "'%c'", li_to_character(obj));
-    else if (li_is_compound(obj))
-        fprintf(f, "#[compound-procedure %s]",
-        li_to_compound(obj).name ? li_to_string(li_to_compound(obj).name) : "\b");
-    else if (li_is_environment(obj))
+    } else if (li_is_lambda(obj)) {
+        fprintf(f, "#[lambda %s ",
+                li_to_lambda(obj).name ?
+                li_to_string(li_to_lambda(obj).name) : "\b");
+        li_write_object(li_to_lambda(obj).vars, f, h);
+        fprintf(f, "]");
+    } else if (li_is_environment(obj)) {
         fprintf(f, "#[environment]");
-    else if (li_is_macro(obj))
+    } else if (li_is_macro(obj)) {
         fprintf(f, "#[macro]");
-    else if (li_is_number(obj))
+    } else if (li_is_number(obj)) {
         fprintf(f, "%.512g", li_to_number(obj));
-    else if (li_is_pair(obj))
+    } else if (li_is_pair(obj)) {
         write_pair(obj, f, h);
-    else if (li_is_port(obj))
+    } else if (li_is_port(obj)) {
         fprintf(f, "#[port \"%s\"]", li_to_port(obj).filename);
-    else if (li_is_primitive(obj))
+    } else if (li_is_primitive(obj)) {
         fprintf(f, "#[primitive-procedure]");
-    else if (li_is_string(obj))
+    } else if (li_is_string(obj)) {
         write_string(obj, f, h);
-    else if (li_is_symbol(obj))
+    } else if (li_is_symbol(obj)) {
         fprintf(f, "%s", li_to_symbol(obj));
-    else if (li_is_syntax(obj))
+    } else if (li_is_syntax(obj)) {
         fprintf(f, "#[syntax]");
-    else if (li_is_vector(obj))
+    } else if (li_is_vector(obj)) {
         write_vector(obj, f, h);
+    }
 }
 
 void write_pair(li_object *obj, FILE *f, int h) {
