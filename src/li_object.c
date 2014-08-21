@@ -249,17 +249,16 @@ extern li_object *li_vector(li_object *lst) {
 }
 
 extern void li_destroy(li_object *obj) {
-    if (!obj || li_is_locked(obj))
+    if (!obj || li_is_locked(obj)) {
         return;
-    if (li_is_environment(obj))
+    } else if (li_is_environment(obj)) {
         free(obj->data.env.array);
-    if (li_is_port(obj)) {
+    } else if (li_is_port(obj)) {
         fclose(obj->data.port.file);
         free(obj->data.port.filename);
-    }
-    if (li_is_string(obj))
+    } else if (li_is_string(obj)) {
         free(li_to_string(obj));
-    if (li_is_symbol(obj)) {
+    } else if (li_is_symbol(obj)) {
         if (obj->data.symbol.next)
             obj->data.symbol.next->data.symbol.prev = obj->data.symbol.prev;
         if (obj->data.symbol.prev)
@@ -267,9 +266,9 @@ extern void li_destroy(li_object *obj) {
         else
             _syms[obj->data.symbol.hash] = obj->data.symbol.next;
         free(li_to_symbol(obj));
-    }
-    if (li_is_vector(obj))
+    } else if (li_is_vector(obj)) {
         free(li_to_vector(obj).data);
+    }
     free(obj);
 }
 
