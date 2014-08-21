@@ -11,10 +11,11 @@
 
 static struct {
     li_object **objs;
-    li_object *syms[HASHSIZE];
     int size;
     int cap;
-} heap = { NULL, { NULL }, 0, 0 };
+} _heap = { NULL, 0, 0 };
+
+static li_object *_syms[HASHSIZE] = { li_null };
 
 static void li_add_to_heap(li_object *obj);
 static void li_mark(li_object *obj);
@@ -22,18 +23,18 @@ static void li_mark(li_object *obj);
 static void li_add_to_heap(li_object *obj) {
     int i;
 
-    if (!heap.objs) {
-        heap.cap = 1024;
-        heap.size = 0;
-        heap.objs = li_allocate(li_null, heap.cap, sizeof(*heap.objs));
+    if (!_heap.objs) {
+        _heap.cap = 1024;
+        _heap.size = 0;
+        _heap.objs = li_allocate(li_null, _heap.cap, sizeof(*_heap.objs));
         /* TODO: test if this is necessary. */
         for (i = 0; i < HASHSIZE; i++)
-            heap.syms[i] = li_null;
-    } else if (heap.size == heap.cap) {
-        heap.cap *= 2;
-        heap.objs = li_allocate(heap.objs, heap.cap, sizeof(*heap.objs));
+            _syms[i] = li_null;
+    } else if (_heap.size == _heap.cap) {
+        _heap.cap *= 2;
+        _heap.objs = li_allocate(_heap.objs, _heap.cap, sizeof(*_heap.objs));
     }
-    heap.objs[heap.size++] = obj;
+    _heap.objs[_heap.size++] = obj;
 }
 
 extern li_object *li_append_variable(li_object *var, li_object *val,
@@ -218,18 +219,18 @@ extern li_object *li_symbol(char *s) {
     for (i = hash = 0; s[i]; i++)
         hash = hash * 31 + s[i];
     hash = hash % HASHSIZE;
-    if (heap.syms[hash])
-        for (obj = heap.syms[hash]; obj; obj = obj->data.symbol.next)
+    if (_syms[hash])
+        for (obj = _syms[hash]; obj; obj = obj->data.symbol.next)
             if (strcmp(li_to_symbol(obj), s) == 0)
                 return obj;
     obj = li_create(LI_T_SYMBOL);
     obj->data.symbol.string = strdup(s);
     obj->data.symbol.prev = li_null;
-    obj->data.symbol.next = heap.syms[hash];
+    obj->data.symbol.next = _syms[hash];
     if (obj->data.symbol.next)
         obj->data.symbol.next->data.symbol.prev = obj;
     obj->data.symbol.hash = hash;
-    heap.syms[hash] = obj;
+    _syms[hash] = obj;
     return obj;
 }
 
@@ -266,7 +267,7 @@ extern void li_destroy(li_object *obj) {
         if (obj->data.symbol.prev)
             obj->data.symbol.prev->data.symbol.next = obj->data.symbol.next;
         else
-            heap.syms[obj->data.symbol.hash] = obj->data.symbol.next;
+            _syms[obj->data.symbol.hash] = obj->data.symbol.next;
         free(li_to_symbol(obj));
     }
     if (li_is_vector(obj))
@@ -312,21 +313,21 @@ extern void li_cleanup(li_object *env) {
     int i, j, k;
 
     li_mark(env);
-    k = heap.size;
+    k = _heap.size;
     for (i = j = 0; i < k; i++) {
-        if (li_is_locked(heap.objs[i])) {
-            li_unlock(heap.objs[i]);
-            heap.objs[j++] = heap.objs[i];
+        if (li_is_locked(_heap.objs[i])) {
+            li_unlock(_heap.objs[i]);
+            _heap.objs[j++] = _heap.objs[i];
         } else {
-            li_destroy(heap.objs[i]);
-            heap.size--;
+            li_destroy(_heap.objs[i]);
+            _heap.size--;
         }
     }
     if (!env) {
-        free(heap.objs);
-        heap.objs = NULL;
-        heap.size = 0;
-        heap.cap = 0;
+        free(_heap.objs);
+        _heap.objs = NULL;
+        _heap.size = 0;
+        _heap.cap = 0;
     }
 }
 
