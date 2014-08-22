@@ -223,7 +223,8 @@ struct li_object {
 #define li_to_vector(obj)       (obj)->data.vector
 
 /* Type checking. */
-#define li_is_type(obj, t)      ((obj) && (obj)->type == t)
+#define li_type(obj)            (obj)->type
+#define li_is_type(obj, t)      ((obj) && li_type(obj) == t)
 
 #define li_is_character(obj)    li_is_type(obj, LI_T_CHARACTER)
 #define li_is_environment(obj)  li_is_type(obj, LI_T_ENVIRONMENT)
