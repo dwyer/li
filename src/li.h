@@ -106,7 +106,7 @@ extern li_object *li_vector(li_object *lst);
 #define li_boolean(p)           (p ? li_true_obj : li_false_obj)
 
 /** Let cons be an alias for pair. */
-#define li_cons li_pair
+#define li_cons(car, cdr)       li_pair(car, cdr)
 
 /** Predicates */
 #define li_is_eq(obj1, obj2)    ((obj1) == (obj2))
