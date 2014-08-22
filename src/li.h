@@ -10,6 +10,8 @@
 #define LI_DEPRECATED
 #endif
 
+#define LI_UNUSED_VARIABLE(var) (void)var
+
 /* C types. */
 #define li_false                ((int)0)
 #define li_true                 !li_false

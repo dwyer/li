@@ -29,13 +29,6 @@
 #define append_syntax(name, proc, env) \
     li_append_variable(li_symbol(name), li_syntax(proc), env);
 
-#define make_define(p, b) \
-    li_cons(li_symbol("define"), li_cons(p, li_cons(b, li_null)))
-#define make_lambda(p, b) \
-    li_cons(li_symbol("lambda"), li_cons(p, b))
-#define make_named_lambda(p, b) \
-    li_cons(li_symbol("named-lambda"), li_cons(p, b))
-
 static li_object *m_and(li_object *seq, li_object *env) {
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
         if (li_is_false(li_eval(li_car(seq), env)))
@@ -91,18 +84,20 @@ static li_object *m_cond(li_object *seq, li_object *env) {
 }
 
 static li_object *m_define(li_object *args, li_object *env) {
+    /* TODO: handle higher order defines. */
     li_object *var;
+    li_object *val;
 
-    for (var = li_car(args), args = li_cdr(args); li_is_pair(var);
-            var = li_car(var)) {
-        if (li_is_pair(li_car(var)))
-            args = li_cons(make_lambda(li_cdr(var), args), li_null);
-        else
-            args = li_cons(make_named_lambda(var, args), li_null);
+    var = li_car(args);
+    if (li_is_pair(var)) {
+        val = li_lambda(li_car(var), li_cdr(var), li_cdr(args), env);
+        var = li_car(var);
+    } else {
+        assert_nargs("define", 2, args);
+        val = li_eval(li_cadr(args), env);
     }
     assert_symbol("define", var);
-    assert_nargs("define", 1, args);
-    return li_environment_define(env, var, li_eval(li_car(args), env));
+    return li_environment_define(env, var, val);
 }
 
 /* (defmacro (name . args) . body) */
@@ -128,6 +123,7 @@ static li_object *m_do(li_object *seq, li_object *env) {
     li_object *let_bindings;
     li_object *tail;
 
+    LI_UNUSED_VARIABLE(env);
     assert_pair("do", seq);
     assert_pair("do", li_cdr(seq));
     head = tail = li_cons(li_symbol("let"), li_null);
@@ -189,6 +185,7 @@ static li_object *m_let(li_object *args, li_object *env) {
     if (li_is_symbol(li_car(args))) {
         name = li_car(args);
         args = li_cdr(args);
+        env = li_environment(env);
     }
     assert_list("let", li_car(args));
     body = li_cdr(args);
@@ -205,34 +202,30 @@ static li_object *m_let(li_object *args, li_object *env) {
             vals_tail = li_set_cdr(vals_tail, li_cons(li_cadr(args), li_null));
         }
     }
-    body = make_lambda(vars, body);
+    body = li_lambda(name, vars, body, env);
     if (name)
-        body = make_define(name, body);
+        li_environment_define(env, name, body);
     return li_cons(body, vals);
 }
 
 static li_object *m_let_star(li_object *args, li_object *env) {
-    li_object *binding, *bindings, *body, *result, *vals, *vars;
+    li_object *binding;
+    li_object *bindings;
 
-    body = li_cdr(args);
-    result = vals = vars = li_null;
+    env = li_environment(env);
+    bindings = li_car(args);
     for (bindings = li_car(args); bindings; bindings = li_cdr(bindings)) {
         binding = li_car(bindings);
-        vars = li_cons(li_car(binding), li_null);
-        vals = li_cons(li_cadr(binding), li_null);
-        if (result == li_null)
-            result = li_cons(make_lambda(vars, body), vals);
-        else
-            li_set_cdr(li_cdar(result),
-                    li_cons(li_cons(make_lambda(vars, li_cddar(result)),
-                            vals), li_null));
+        li_environment_define(env, li_car(binding),
+                li_eval(li_cadr(binding), env));
     }
-    return result;
+    return li_cons(li_lambda(li_null, li_null, li_cdr(args), env), li_null);
 }
 
 static li_object *m_letrec(li_object *args, li_object *env) {
     li_object *head, *iter, *tail;
 
+    LI_UNUSED_VARIABLE(env);
     head = tail = li_cons(li_symbol("begin"), li_null);
     for (iter = li_car(args); iter; iter = li_cdr(iter))
         tail = li_set_cdr(tail, li_cons(li_cons(li_symbol("define"), li_car(iter)), li_null));
