@@ -9,7 +9,7 @@ RANLIB=ranlib
 RM=rm -f
 YACC=yacc -d
 
-CFLAGS=-O2 -Wall -ansi -pedantic
+CFLAGS=-O2 -Wall -Wextra -ansi -pedantic
 LDFLAGS=-lm
 
 PREFIX=/usr/local
