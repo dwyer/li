@@ -167,6 +167,19 @@ static li_object *m_if(li_object *seq, li_object *env) {
         return li_boolean(li_false);
 }
 
+static li_object *m_import(li_object *seq, li_object *env) {
+    char *buf;
+    size_t len;
+
+    assert_nargs("import", 1, seq);
+    len = strlen(li_to_symbol(li_car(seq))) + 4;
+    buf = malloc(len * sizeof(*buf));
+    snprintf(buf, len, "%s.li", li_to_symbol(li_car(seq)));
+    li_load(buf, env);
+    free(buf);
+    return li_null;
+}
+
 static li_object *m_lambda(li_object *seq, li_object *env) {
     return li_lambda(li_null, li_car(seq), li_cdr(seq), env);
 }
@@ -2107,6 +2120,7 @@ static void li_define_primitive_procedures(li_object *env) {
     append_syntax("delay",          m_delay,        env);
     append_syntax("do",             m_do,           env);
     append_syntax("if",             m_if,           env);
+    append_syntax("import",         m_import,       env);
     append_syntax("lambda",         m_lambda,       env);
     append_syntax("let",            m_let,          env);
     append_syntax("let*",           m_let_star,     env);
