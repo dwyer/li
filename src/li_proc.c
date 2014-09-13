@@ -9,8 +9,9 @@
 #define has_1args(args)             ((args) && has_0args(li_cdr(args)))
 #define has_2args(args)             ((args) && has_1args(li_cdr(args)))
 #define has_3args(args)             ((args) && has_2args(li_cdr(args)))
-#define assert_nargs(name, n, as) \
-    if (!has_##n##args(as)) li_error(name, "wrong number of args", args)
+#define assert_nargs(name, n, args_) \
+    if (!has_##n##args(args_))       \
+        li_error(name, "wrong number of args", args_)
 #define assert_type(name, type, arg) \
     if (!li_is_##type(arg)) li_error(name, "not a " #type, arg)
 #define assert_integer(name, arg) \
