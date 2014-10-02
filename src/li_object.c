@@ -37,7 +37,7 @@ static void li_add_to_heap(li_object *obj) {
     _heap.objs[_heap.size++] = obj;
 }
 
-extern li_object *li_append_variable(li_object *var, li_object *val,
+extern void li_append_variable(li_object *var, li_object *val,
         li_object *env) {
     if (!li_is_symbol(var))
         li_error("eval", "not a variable", var);
@@ -49,7 +49,6 @@ extern li_object *li_append_variable(li_object *var, li_object *val,
     env->data.env.array[env->data.env.size].var = var;
     env->data.env.array[env->data.env.size].val = val;
     env->data.env.size++;
-    return var;
 }
 
 /* TODO: move this to li_alloc.c */
@@ -93,7 +92,7 @@ extern li_object *li_environment(li_object *base) {
     return obj;
 }
 
-extern li_object *li_environment_assign(li_object *env, li_object *var,
+extern int li_environment_assign(li_object *env, li_object *var,
         li_object *val)
 {
     int i;
@@ -102,24 +101,24 @@ extern li_object *li_environment_assign(li_object *env, li_object *var,
         for (i = 0; i < env->data.env.size; i++)
             if (env->data.env.array[i].var == var) {
                 env->data.env.array[i].val = val;
-                return val;
+                return 1;
             }
         env = env->data.env.base;
     }
-    return li_null;
+    return 0;
 }
 
-extern li_object *li_environment_define(li_object *env, li_object *var,
+extern void li_environment_define(li_object *env, li_object *var,
         li_object *val) {
     int i;
 
     for (i = 0; i < env->data.env.size; i++) {
         if (env->data.env.array[i].var == var) {
             env->data.env.array[i].val = val;
-            return var;
+            return;
         }
     }
-    return li_append_variable(var, val, env);
+    li_append_variable(var, val, env);
 }
 
 extern li_object *li_environment_lookup(li_object *env, li_object *var) {

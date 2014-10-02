@@ -123,9 +123,9 @@ extern int li_is_list(li_object *obj);
 extern int li_length(li_object *obj);
 
 /** Environment accessors. */
-extern li_object *li_environment_assign(li_object *env, li_object *var,
+extern int li_environment_assign(li_object *env, li_object *var,
         li_object *val);
-extern li_object *li_environment_define(li_object *env, li_object *var,
+extern void li_environment_define(li_object *env, li_object *var,
         li_object *val);
 extern li_object *li_environment_lookup(li_object *env, li_object *var);
 extern void li_setup_environment(li_object *env);
@@ -292,8 +292,7 @@ extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *),
         li_object *arg);
 
 /* li_eval.c */
-extern li_object *li_append_variable(li_object *var, li_object *val,
-        li_object *env);
+extern void li_append_variable(li_object *var, li_object *val, li_object *env);
 extern li_object *li_apply(li_object *proc, li_object *args);
 extern li_object *li_eval(li_object *exp, li_object *env);
 

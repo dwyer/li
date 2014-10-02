@@ -98,7 +98,8 @@ static li_object *m_define(li_object *args, li_object *env) {
         val = li_eval(li_cadr(args), env);
     }
     assert_symbol("define", var);
-    return li_environment_define(env, var, val);
+    li_environment_define(env, var, val);
+    return li_null;
 }
 
 /* (defmacro (name . args) . body) */
@@ -109,7 +110,8 @@ static li_object *m_defmacro(li_object *seq, li_object *env) {
     name = li_caar(seq);
     vars = li_cdar(seq);
     body = li_cdr(seq);
-    return li_environment_define(env, name, li_macro(vars, body, env));
+    li_environment_define(env, name, li_macro(vars, body, env));
+    return li_null;
 }
 
 static li_object *m_delay(li_object *seq, li_object *env) {
@@ -279,7 +281,7 @@ static li_object *m_set(li_object *args, li_object *env) {
     val = li_eval(li_cadr(args), env);
     if (!li_environment_assign(env, var, val))
         li_error("set!", "unbound variable", var);
-    return val;
+    return li_null;
 }
 
 /*
