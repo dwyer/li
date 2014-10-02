@@ -39,7 +39,7 @@ number                  ({num10}|{num16})
 
 [%()\[\].'`,@\\]        return *yytext;
 <<EOF>>                 yylval.obj = li_eof; return EOF_OBJECT;
-{character}             yylval.obj = li_character(yytext[3]); return CHARACTER;
+{character}             yylval.obj = li_character(yytext[2]); return CHARACTER;
 %\\newline              yylval.obj = li_character('\n'); return CHARACTER;
 %\\space                yylval.obj = li_character(' '); return CHARACTER;
 %\\tab                  yylval.obj = li_character('\t'); return CHARACTER;

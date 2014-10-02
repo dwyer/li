@@ -16,10 +16,8 @@ void li_write_object(li_object *obj, FILE *f, int h) {
         fprintf(f, "()");
     } else if (li_is_locked(obj)) {
         fprintf(f, "...");
-    } else if (li_is_character(obj) && h) {
-        fprintf(f, "%c", li_to_character(obj));
     } else if (li_is_character(obj)) {
-        fprintf(f, "'%c'", li_to_character(obj));
+        fprintf(f, h ? "%c" : "%%\\%c", li_to_character(obj));
     } else if (li_is_lambda(obj)) {
         fprintf(f, "#[lambda %s ",
                 li_to_lambda(obj).name ?
