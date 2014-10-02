@@ -4,6 +4,12 @@
 #include "li.h"
 #include "li_read.h"
 
+static char *buf = NULL;
+static size_t n = 0;
+static size_t p = 256;
+
+static void bufappend(const char *s);
+
 %}
 
 %option noinput nounput yylineno
@@ -40,13 +46,37 @@ number                  ({num10}|{num16})
 {number}                yylval.obj = li_number(atof(yytext)); return NUMBER;
 {symbol}                yylval.obj = li_symbol(yytext); return SYMBOL;
 \"\"                    yylval.obj = li_string(""); return STRING;
-<INITIAL>\"             BEGIN(XSTRING);
-<XSTRING>\"             BEGIN(INITIAL);
-<XSTRING>[^"]*          yylval.obj = li_string(yytext); return STRING;
+<INITIAL>\"             BEGIN(XSTRING); n = 0;
+<XSTRING>[^\\"]*        bufappend(yytext);
+<XSTRING>\\[\\"]        bufappend(yytext+1);
+<XSTRING>\\n            bufappend("\n");
+<XSTRING>\\r            bufappend("\r");
+<XSTRING>\\t            bufappend("\t");
+<XSTRING>\"             {
+                            BEGIN(INITIAL);
+                            yylval.obj = li_string(buf);
+                            free(buf);
+                            buf = NULL;
+                            n = 0;
+                            return STRING;
+                        }
 {whitespace}            ; /* ignore whitespace */
 {comment}               ; /* ignore comments */
 
 %%
+
+static void bufappend(const char *s)
+{
+    if (!buf)
+        buf = malloc(sizeof(*buf) * p);
+    while (*s) {
+        buf[n++] = *s;
+        s++;
+        if (n == p)
+            buf = realloc(buf, sizeof(*buf) * (p *= 1.5));
+    }
+    buf[n] = '\0';
+}
 
 int yywrap(void) {
     return 1;
