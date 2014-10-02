@@ -85,14 +85,20 @@ static li_object *m_cond(li_object *seq, li_object *env) {
 }
 
 static li_object *m_define(li_object *args, li_object *env) {
-    /* TODO: handle higher order defines. */
     li_object *var;
     li_object *val;
 
     var = li_car(args);
     if (li_is_pair(var)) {
-        val = li_lambda(li_car(var), li_cdr(var), li_cdr(args), env);
-        var = li_car(var);
+        val = li_cdr(args);
+        while (li_is_pair(var)) {
+            if (li_is_symbol(li_car(var)))
+                val = li_lambda(li_car(var), li_cdr(var), val, env);
+            else
+                val = li_cons(li_cons(li_symbol("lambda"), li_cons(li_cdr(var),
+                                val)), li_null);
+            var = li_car(var);
+        }
     } else {
         assert_nargs("define", 2, args);
         val = li_eval(li_cadr(args), env);
