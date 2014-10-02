@@ -1529,15 +1529,15 @@ static li_object *p_map(li_object *args) {
 }
 
 static li_object *p_for_each(li_object *args) {
-    li_object *proc, *iter;
+    li_object *proc;
 
-    assert_nargs("map", 2, args);
-    assert_procedure("map", li_car(args));
+    assert_nargs("for-each", 2, args);
+    assert_procedure("for-each", li_car(args));
     proc = li_car(args);
-    iter = li_cadr(args);
-    while (iter) {
-        li_apply(proc, li_cons(li_car(iter), li_null));
-        iter = li_cdr(iter);
+    args = li_cadr(args);
+    while (args) {
+        li_apply(proc, li_cons(li_car(args), li_null));
+        args = li_cdr(args);
     }
     return li_null;
 }
