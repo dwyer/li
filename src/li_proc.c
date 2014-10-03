@@ -182,7 +182,7 @@ static li_object *m_import(li_object *seq, li_object *env) {
     assert_nargs("import", 1, seq);
     len = strlen(li_to_symbol(li_car(seq))) + 4;
     buf = malloc(len * sizeof(*buf));
-    snprintf(buf, len, "%s.li", li_to_symbol(li_car(seq)));
+    sprintf(buf, "%s.li", li_to_symbol(li_car(seq)));
     li_load(buf, env);
     free(buf);
     return li_null;

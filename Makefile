@@ -30,8 +30,8 @@ ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
 
 all: $(LI_BIN)
 
-$(LI_BIN): $(LI_LIB) $(LI_OBJS)
-	$(CC) $(LDFLAGS) -o $@ $+
+$(LI_BIN): $(LI_OBJS) $(LI_LIB)
+	$(CC) -o $@ $+ $(LDFLAGS)
 
 $(LI_LIB): $(LI_LIB_OBJS)
 	$(AR) $@ $(LI_LIB_OBJS)

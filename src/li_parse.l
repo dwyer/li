@@ -10,6 +10,8 @@ static size_t p = 256;
 
 static void bufappend(const char *s);
 
+extern int fileno(FILE *);
+
 %}
 
 %option noinput nounput yylineno

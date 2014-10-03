@@ -139,9 +139,9 @@ enum {
     LI_T_PAIR,
     LI_T_PORT,
     LI_T_PRIMITIVE,
-    LI_T_SYNTAX,
     LI_T_STRING,
     LI_T_SYMBOL,
+    LI_T_SYNTAX,
     LI_T_VECTOR,
     LI_NUM_TYPES
 };
