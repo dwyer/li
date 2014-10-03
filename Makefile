@@ -23,8 +23,8 @@ LI_BIN=li
 LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
-LI_LIB_OBJS_=li_object.o li_eval.o li_write.o li_error.o li_read.o li_parse.o \
-	     li_proc.o
+LI_LIB_OBJS_=li_read.o li_parse.o li_error.o li_eval.o li_object.o li_proc.o \
+	    li_write.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
 
@@ -37,11 +37,9 @@ $(LI_LIB): $(LI_LIB_OBJS)
 	$(AR) $@ $(LI_LIB_OBJS)
 	$(RANLIB) $@
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c $(OBJDIR)
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@$(MKDIR) $(OBJDIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
-
-$(OBJDIR):
-	$(MKDIR) $(OBJDIR)
 
 $(SRCDIR)/li_read.c: $(SRCDIR)/li_read.y
 	yacc -d $(SRCDIR)/li_read.y
