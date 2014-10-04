@@ -343,7 +343,7 @@ extern int li_is_equal(li_object *obj1, li_object *obj2) {
         return li_true;
     else if (li_is_pair(obj1) && li_is_pair(obj2))
         return (li_is_equal(li_car(obj1), li_car(obj2)) &&
-                li_is_equal(li_cdr(obj2), li_cdr(obj2)));
+                li_is_equal(li_cdr(obj1), li_cdr(obj2)));
     else if (li_is_string(obj1) && li_is_string(obj2))
         return li_is_string_eq(obj1, obj2);
     else if (li_is_vector(obj1) && li_is_vector(obj2))
