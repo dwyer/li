@@ -287,7 +287,7 @@ struct li_object {
 #define li_vector_set(v, k, o)  (li_vector_ref(v, k) = o)
 
 /* li_error.c */
-extern void li_error(char *who, char *msg, li_object *args);
+extern void li_error(const char *who, const char *msg, li_object *args);
 extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *),
         li_object *arg);
 

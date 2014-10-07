@@ -4,9 +4,17 @@
 
 static jmp_buf buf;
 
-void li_error(char *who, char *msg, li_object *args) {
-    fprintf(stderr, "# error: %s: %s: ", who, msg);
-    li_write(args, stderr);
+void li_error(const char *who, const char *msg, li_object *args) {
+    fprintf(stderr, "# error: ");
+    if (who)
+        fprintf(stderr, "%s: ", who);
+    if (msg)
+        fprintf(stderr, "%s: ", msg);
+    while (args) {
+        li_write(li_car(args), stderr);
+        fprintf(stderr, " ");
+        args = li_cdr(args);
+    }
     li_newline(stderr);
     longjmp(buf, 1);
 }

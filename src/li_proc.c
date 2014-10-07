@@ -306,11 +306,21 @@ static li_object *m_set(li_object *args, li_object *env) {
  * printed.
  */
 static li_object *p_error(li_object *args) {
+    const char *who;
+    const char *msg;
+
+    msg = who = NULL;
     if (!args || !li_cdr(args))
         li_error("error", "wrong number of args", args);
-    assert_symbol("error", li_car(args));
-    assert_string("error", li_cadr(args));
-    li_error(li_to_symbol(li_car(args)), li_to_string(li_cadr(args)), li_cddr(args));
+    if (li_is_symbol(li_car(args))) {
+        who = li_to_symbol(li_car(args));
+        args = li_cdr(args);
+    }
+    if (li_is_string(li_car(args))) {
+        msg = li_to_string(li_car(args));
+        args = li_cdr(args);
+    }
+    li_error(who, msg, args);
     return li_null;
 }
 
