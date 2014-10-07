@@ -55,20 +55,28 @@ static li_object *m_begin(li_object *seq, li_object *env) {
 }
 
 static li_object *m_case(li_object *exp, li_object *env) {
-    li_object *seq, *val;
+    li_object *clause;
+    li_object *clauses;
+    li_object *data;
+    li_object *datum;
+    li_object *exprs;
+    li_object *key;
 
-    val = li_eval(li_car(exp), env);
-    seq = li_null;
-    for (exp = li_cdr(exp); exp; exp = li_cdr(exp))
-        for (seq = li_caar(exp); seq; seq = li_cdr(seq))
-            if (li_is_eq(seq, li_symbol("else")) || li_is_eqv(li_car(seq), val)) {
-                for (seq = li_cdar(exp); li_cdr(seq); seq = li_cdr(seq))
-                    li_eval(li_car(seq), env);
-                break;
-            }
-    if (!seq)
+    exprs = li_null;
+    key = li_eval(li_car(exp), env);
+    for (clauses = li_cdr(exp); clauses && !exprs; clauses = li_cdr(clauses)) {
+        clause = li_car(clauses);
+        for (data = li_car(clause); data && !exprs; data = li_cdr(data)) {
+            datum = li_car(data);
+            if (li_is_eq(data, li_symbol("else")) || li_is_eqv(datum, key))
+                exprs = li_cdr(clause);
+        }
+    }
+    if (!exprs)
         return li_boolean(li_false);
-    return li_car(seq);
+    for (; li_cdr(exprs); exprs = li_cdr(exprs))
+        li_eval(li_car(exprs), env);
+    return li_car(exprs);
 }
 
 static li_object *m_cond(li_object *seq, li_object *env) {
