@@ -1,5 +1,7 @@
 (import for)
 
+(display 'test-syntax...)
+
 (let ((xs '(1 2 3 4 5))
       (ys null))
   (for x in xs (set! ys (cons (* x x) ys)))

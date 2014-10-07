@@ -1,5 +1,7 @@
 (import match)
 
+(display 'test-bind...)
+
 (define (test patt expr rest)
   (let ((binds (*bind* expr patt)))
     (assert (equal? rest binds))))

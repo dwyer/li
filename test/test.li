@@ -1,4 +1,4 @@
-(import test/lib)
+(import lib)
 
 (define x 28)
 (assert (equal? x 28))
@@ -530,4 +530,8 @@
 #(assert (equal? (let ((f (eval '(lambda (f x) (f x x))
 #                               (null-environment 5))))
 #                  (f + 10)) 20))
+
+(import test-bind)
+(import test-match)
+(import test-syntax)
 (print "all tests passed!")

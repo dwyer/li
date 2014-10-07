@@ -1,5 +1,7 @@
 (import match)
 
+(display 'test-match...)
+
 (assert (= (match (cons 1 2)
                   ((cons a b)
                    (+ a b)))

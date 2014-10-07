@@ -1,7 +1,9 @@
 %{
 
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "li.h"
 
 #define make_tagged_list(str, obj) li_cons(li_symbol(str), li_cons(obj, li_null))
@@ -70,12 +72,20 @@ void li_load(char *filename, li_object *env) {
     FILE *f;
     li_object *exp;
     int pop;
+    char *dir;
+    char *filepath;
 
     pop = 0;
     if (yyin) {
         push_buffer();
         pop = 1;
     }
+    filepath = realpath(filename, NULL);
+    dir = dirname(filepath);
+    free(filepath);
+    if (chdir(dir))
+        li_error("load", "could read from directory", li_string(dir));
+    filename = basename(filename);
     if ((f = fopen(filename, "r")) == NULL)
         li_error("load", "unable to read file", li_string(filename));
     while ((exp = li_read(f)) != li_eof) {
