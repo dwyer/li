@@ -531,6 +531,7 @@
 #                               (null-environment 5))))
 #                  (f + 10)) 20))
 
+(import test-stack)
 (import test-bind)
 (import test-match)
 (import test-syntax)

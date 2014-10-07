@@ -1,0 +1,13 @@
+(define (*range* from to inc)
+  (if ((if (positive? inc) >= <=) from to)
+    null
+    (cons from (*range* (+ from inc) to inc))))
+
+(define (range . args)
+  (let ((n (length args)))
+    (cond ((= n 1) (*range* 0 (car args) 1))
+          ((= n 2) (*range* (car args)
+                            (cadr args)
+                            (if (< (car args) (cadr args)) 1 -1)))
+          ((= n 3) (*range* (car args) (cadr args) (caddr args)))
+          (else (error 'range "wrong number of args" args)))))

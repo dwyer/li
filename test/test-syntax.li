@@ -2,7 +2,7 @@
 
 (display 'test-syntax...)
 
-(let ((xs '(1 2 3 4 5))
+(let ((xs (range 100))
       (ys null))
   (for x in xs (set! ys (cons (* x x) ys)))
   (assert (equal? (reverse xs) (gen (sqrt y) for y in ys))))

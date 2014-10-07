@@ -1,0 +1,14 @@
+(import range)
+(import stack)
+
+(display 'test-stack...)
+
+(let ((s (make-stack))
+      (xs (range 100)))
+  (for-each (lambda (x) (stack-push! s x)) xs)
+  (assert (equal? (reverse xs) (stack->list s)))
+  (for-each (lambda (x)
+              (assert (= x (stack-pop! s))))
+            (reverse xs)))
+
+(print "passed")
