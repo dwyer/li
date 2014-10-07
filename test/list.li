@@ -1,0 +1,33 @@
+(define (any pred lst)
+  (if (null? lst)
+    false
+    (or (pred (car lst)) (any pred (cdr lst)))))
+
+(define (every pred lst)
+  (if (null? lst)
+    true
+    (and (pred (car lst)) (every pred (cdr lst)))))
+
+(define (take lst i)
+  (cond ((zero? i) null)
+        ((null? lst) false)
+        (else (let ((rest (take (cdr lst) (- i 1))))
+                (if rest
+                  (cons (car lst) rest)
+                  false)))))
+
+(define (fold f id lst)
+  (if (null? lst)
+    id
+    (fold f (f (car lst) id) (cdr lst))))
+
+(define (fold-right f id lst)
+  (if (null? lst)
+    id
+    (f (car lst)
+       (fold-right f id (cdr lst)))))
+
+(define (reduce f id lst)
+  (if (null? lst)
+    id
+    (fold f (car lst) (cdr lst))))

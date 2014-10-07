@@ -1,0 +1,5 @@
+(import match)
+
+(defmacro (define-syntax name rules)
+  `(defmacro (,name . expr)
+     (*match* (cons ',name expr) ',(cddr rules))))

@@ -1,0 +1,20 @@
+(import match)
+
+(assert (= (match (cons 1 2)
+                  ((cons a b)
+                   (+ a b)))
+           3))
+
+(let ((xs '(1 2 3 4 5))
+      (ys null))
+  (match (for x in xs (set! ys (cons (* x x) ys)))
+         ((for obj in lst expr ...)
+          (for-each (lambda (obj) expr ...) lst)))
+  (assert (equal? (reverse xs)
+                  (match (gen (sqrt y) for y in ys)
+                         ((gen expr for obj in lst)
+                          (map (lambda (obj)
+                                 expr)
+                               lst))))))
+
+(print 'passed)
