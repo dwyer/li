@@ -8,6 +8,18 @@
     true
     (and (pred (car lst)) (every pred (cdr lst)))))
 
+(define iota
+  (let ()
+    (define (*iota* count start step)
+      (if (zero? count)
+        null
+        (cons start (*iota* (- count 1) (+ start step) step))))
+    (lambda args
+      (case (length args)
+        ((1) (*iota* (car args) 0 1))
+        ((3) (*iota* (car args) (cadr args) (caddr args)))
+        (else (error 'range "wrong number of args" args))))))
+
 (define (take lst i)
   (cond ((zero? i) null)
         ((null? lst) false)
