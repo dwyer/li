@@ -24,14 +24,15 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
 
     if (li_is_primitive(proc))
         return li_to_primitive(proc)(args);
-    head = tail = li_null;
+    head = li_null;
     while (args) {
-        obj = li_cons(li_symbol("quasiquote"), li_cons(li_car(args), li_null));
-        if (!tail)
-            head = tail = li_cons(obj, li_null);
-        else {
+        obj = li_car(args);
+        if (!li_is_self_evaluating(obj))
+            obj = li_cons(li_symbol("quote"), li_cons(obj, li_null));
+        if (head)
             tail = li_set_cdr(tail, li_cons(obj, li_null));
-        }
+        else
+            head = tail = li_cons(obj, li_null);
         args = li_cdr(args);
     }
     return li_eval(li_cons(proc, head), li_to_lambda(proc).env);
