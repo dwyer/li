@@ -359,6 +359,26 @@ static li_object *p_rename(li_object *args) {
     return li_number(rename(li_to_string(li_car(args)), li_to_string(li_cadr(args))));
 }
 
+static li_object *p_environ(li_object *args) {
+    const char *const *sp;
+    li_object *head;
+    li_object *tail;
+
+    extern const char *const *environ;
+    assert_nargs("environ", 0, args);
+    sp = environ;
+    head = li_null;
+    while (*sp) {
+        if (head)
+            tail = li_set_cdr(tail, li_cons(li_string(*sp), li_null));
+        else
+            head = tail = li_cons(li_string(*sp), li_null);
+        sp++;
+    }
+    return head;
+}
+
+
 static li_object *p_getenv(li_object *args) {
     char *env;
 
@@ -1964,6 +1984,7 @@ static struct reg {
     { "clock", p_clock },
     { "error", p_error },
     { "exit", p_exit },
+    { "environ", p_environ },
     { "getenv", p_getenv },
     { "rand", p_rand },
     { "remove", p_remove },
