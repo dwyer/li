@@ -90,8 +90,8 @@ extern li_object *li_number(double n);
 extern li_object *li_pair(li_object *car, li_object *cdr);
 extern li_object *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive(li_object *(*proc)(li_object *));
-extern li_object *li_string(char *s);
-extern li_object *li_symbol(char *s);
+extern li_object *li_string(const char *s);
+extern li_object *li_symbol(const char *s);
 extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *));
 
 /*

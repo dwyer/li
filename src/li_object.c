@@ -201,7 +201,7 @@ extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *)) {
     return obj;
 }
 
-extern li_object *li_string(char *s) {
+extern li_object *li_string(const char *s) {
     li_object *obj;
 
     obj = li_create(LI_T_STRING);
@@ -209,7 +209,7 @@ extern li_object *li_string(char *s) {
     return obj;
 }
 
-extern li_object *li_symbol(char *s) {
+extern li_object *li_symbol(const char *s) {
     li_object *obj;
     unsigned int i, hash;
 
