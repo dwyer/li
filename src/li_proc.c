@@ -390,6 +390,14 @@ static li_object *p_getenv(li_object *args) {
         return li_boolean(li_false);
 }
 
+static li_object *p_setenv(li_object *args) {
+    assert_nargs("setenv", 2, args);
+    assert_string("setenv", li_car(args));
+    assert_string("setenv", li_cadr(args));
+    setenv(li_to_string(li_car(args)), li_to_string(li_cadr(args)), 1);
+    return li_null;
+}
+
 static li_object *p_system(li_object *args) {
     int ret;
 
@@ -1986,6 +1994,7 @@ static struct reg {
     { "exit", p_exit },
     { "environ", p_environ },
     { "getenv", p_getenv },
+    { "setenv", p_setenv },
     { "rand", p_rand },
     { "remove", p_remove },
     { "rename", p_rename },
