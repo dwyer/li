@@ -360,6 +360,8 @@ extern int li_is_eqv(li_object *obj1, li_object *obj2) {
         return li_false;
     else if (li_is_number(obj1) && li_is_number(obj2))
         return li_to_number(obj1) == li_to_number(obj2);
+    else if (li_is_character(obj1) && li_is_character(obj2))
+        return li_to_character(obj1) == li_to_character(obj2);
     return li_false;
 }
 
