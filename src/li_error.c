@@ -10,11 +10,13 @@ void li_error(const char *who, const char *msg, li_object *args) {
         fprintf(stderr, "%s: ", who);
     if (msg)
         fprintf(stderr, "%s: ", msg);
-    while (args) {
+    while (li_is_pair(args)) {
         li_write(li_car(args), stderr);
         fprintf(stderr, " ");
         args = li_cdr(args);
     }
+    if (args)
+        li_write(args, stderr);
     li_newline(stderr);
     longjmp(buf, 1);
 }

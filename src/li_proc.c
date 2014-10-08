@@ -310,8 +310,6 @@ static li_object *p_error(li_object *args) {
     const char *msg;
 
     msg = who = NULL;
-    if (!args || !li_cdr(args))
-        li_error("error", "wrong number of args", args);
     if (li_is_symbol(li_car(args))) {
         who = li_to_symbol(li_car(args));
         args = li_cdr(args);
@@ -1640,6 +1638,8 @@ static li_object *p_read_char(li_object *args) {
     }
     if ((c = getc(f)) == '\n')
         c = getc(f);
+    if (c == EOF)
+        return li_eof;
     return li_character(c);
 }
 
