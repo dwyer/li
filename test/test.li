@@ -393,12 +393,12 @@
 (assert (equal? (symbol? '()) false))
 #(assert (equal? (symbol? false) false))
 (assert (equal? (symbol->string 'flying-fish) "flying-fish"))
-#(assert (equal? (symbol->string 'Martin) "martin"))
+(assert (not (equal? (symbol->string 'Martin) "martin")))
 (assert (equal? (symbol->string
                   (string->symbol "Malvina")) "Malvina"))
-#(assert (equal? (eq? 'mISSISSIppi 'mississippi) true))
+(assert (equal? (eq? 'mISSISSIppi 'mississippi) false))
 (assert (equal? (string->symbol "mISSISSIppi") 'mISSISSIppi))
-#(assert (equal? (eq? 'bitBlt (string->symbol "bitBlt")) false))
+(assert (equal? (eq? 'bitBlt (string->symbol "bitBlt")) true))
 (assert (equal? (eq? 'JollyWog
                      (string->symbol
                        (symbol->string 'JollyWog))) true))
