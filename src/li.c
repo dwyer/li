@@ -1,7 +1,7 @@
 #include <time.h>
 #include "li.h"
 
-#define ARGV_SYMBOL li_symbol("args")
+#define ARGV_SYMBOL li_symbol("*args*")
 
 li_object *li_prompt(FILE *fin, FILE *fout, const char *s);
 void li_repl(li_object *env);
@@ -42,7 +42,9 @@ int main(int argc, char *argv[]) {
     li_object *env, *args;
     int i, ret;
 
+#ifdef LI_OPTIONAL
     extern void li_load_bytevector(li_object *);
+#endif
     ret = 0;
     srand(time(NULL));
     env = li_environment(li_null);
@@ -50,7 +52,9 @@ int main(int argc, char *argv[]) {
     for (args = li_null, i = argc - 1; i; i--)
         args = li_cons(li_string(argv[i]), args);
     li_append_variable(ARGV_SYMBOL, args, env);
+#ifdef LI_OPTIONAL
     li_load_bytevector(env);
+#endif
     ret = argc == 1 ?
         li_try(li_repl, li_cleanup, env) :
         li_try(li_script, NULL, env);

@@ -24,8 +24,10 @@ LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
 LI_LIB_OBJS_=li_read.o li_parse.o li_error.o li_eval.o li_object.o li_proc.o \
-	    li_write.o lib_bytevector.o
+	    li_write.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
+LI_OPT_OBJS_=lib_bytevector.o
+LI_OPT_OBJS=$(addprefix $(OBJDIR)/, $(LI_OPT_OBJS_))
 ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
 
 all: $(LI_BIN)
@@ -45,6 +47,11 @@ $(SRCDIR)/li_read.c: $(SRCDIR)/li_read.y
 	yacc -d $(SRCDIR)/li_read.y
 	mv y.tab.c $(SRCDIR)/li_read.c
 	mv y.tab.h $(SRCDIR)/li_read.h
+
+opt: $(LI_OPT_OBJS)
+opt: LI_LIB_OBJS+=$(LI_OPT_OBJS)
+opt: CFLAGS+=-DLI_OPTIONAL
+opt: all
 
 debug: CFLAGS+=-g -DDEBUG
 debug: all

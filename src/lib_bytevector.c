@@ -42,18 +42,16 @@ typedef struct {
     int length;
 } bytevector_t;
 
-static void free_bytevector(void *v)
+static void free_bytevector(bytevector_t *v)
 {
-    free(((bytevector_t *)v)->bytes);
+    free(v->bytes);
     free(v);
 }
 
-static void write_bytevector(void *p, FILE *fp)
+static void write_bytevector(bytevector_t *v, FILE *fp)
 {
-    bytevector_t *v;
     int i;
 
-    v = p;
     fprintf(fp, "#u8(");
     for (i = 0; i < v->length; i++) {
         if (i)
@@ -72,7 +70,8 @@ static li_object *make_bytevector(unsigned int k, unsigned char fill)
     v->bytes = li_allocate(NULL, k, sizeof(*v->bytes));
     v->length = k;
     memset(v->bytes, fill, k);
-    obj = li_userdata(v, free_bytevector, write_bytevector);
+    obj = li_userdata(v, (void (*)(void *))free_bytevector,
+            (void (*)(void *, FILE *))write_bytevector);
     return obj;
 }
 
@@ -133,7 +132,7 @@ static struct li_primitive_procedure_binding bindings[] = {
     { "bytevector-length", p_bytevector_length },
     { "bytevector-ref", p_bytevector_ref },
     { "make-bytevector", p_make_bytevector },
-    { NULL },
+    { NULL, NULL },
 };
 
 extern void li_load_bytevector(li_object *env)
