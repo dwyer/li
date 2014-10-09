@@ -303,6 +303,8 @@ struct li_object {
 extern void li_error(const char *who, const char *msg, li_object *args);
 extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *),
         li_object *arg);
+extern void li_stack_trace_push(li_object *expr);
+extern void li_stack_trace_pop(void);
 
 /* li_eval.c */
 extern void li_append_variable(li_object *var, li_object *val, li_object *env);
