@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
     li_object *env, *args;
     int i, ret;
 
+    extern void li_load_bytevector(li_object *);
     ret = 0;
     srand(time(NULL));
     env = li_environment(li_null);
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
     for (args = li_null, i = argc - 1; i; i--)
         args = li_cons(li_string(argv[i]), args);
     li_append_variable(ARGV_SYMBOL, args, env);
+    li_load_bytevector(env);
     ret = argc == 1 ?
         li_try(li_repl, li_cleanup, env) :
         li_try(li_script, NULL, env);

@@ -24,7 +24,7 @@ LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
 LI_LIB_OBJS_=li_read.o li_parse.o li_error.o li_eval.o li_object.o li_proc.o \
-	    li_write.o
+	    li_write.o lib_bytevector.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
 
