@@ -44,6 +44,8 @@ void li_write_object(li_object *obj, FILE *f, int h) {
         fprintf(f, "#[syntax]");
     } else if (li_is_vector(obj)) {
         write_vector(obj, f, h);
+    } else if (li_is_userdata(obj) && li_userdata_write(obj)) {
+        li_userdata_write(obj)(li_to_userdata(obj), f);
     } else {
         fprintf(f, "#[unknown-type]");
     }

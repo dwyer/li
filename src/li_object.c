@@ -231,6 +231,18 @@ extern li_object *li_symbol(const char *s) {
     return obj;
 }
 
+extern li_object *li_userdata(void *v, void (*free)(void *),
+        void (*write)(void *, FILE *))
+{
+    li_object *obj;
+
+    obj = li_create(LI_T_USERDATA);
+    obj->data.userdata.v = v;
+    obj->data.userdata.free = free;
+    obj->data.userdata.write = write;
+    return obj;
+}
+
 extern li_object *li_vector(li_object *lst) {
     li_object *obj;
     li_object *iter;
@@ -267,6 +279,11 @@ extern void li_destroy(li_object *obj) {
         free(li_to_symbol(obj));
     } else if (li_is_vector(obj)) {
         free(li_to_vector(obj).data);
+    } else if (li_is_userdata(obj)) {
+        if (li_userdata_free(obj))
+            li_userdata_free(obj)(li_to_userdata(obj));
+        else
+            free(li_to_userdata(obj));
     }
     free(obj);
 }

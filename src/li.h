@@ -93,6 +93,8 @@ extern li_object *li_primitive(li_object *(*proc)(li_object *));
 extern li_object *li_string(const char *s);
 extern li_object *li_symbol(const char *s);
 extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *));
+extern li_object *li_userdata(void *v, void (*free)(void *),
+        void (*write)(void *, FILE *));
 
 /*
  * Converts a list to a vector.
@@ -142,6 +144,7 @@ enum {
     LI_T_STRING,
     LI_T_SYMBOL,
     LI_T_SYNTAX,
+    LI_T_USERDATA,
     LI_T_VECTOR,
     LI_NUM_TYPES
 };
@@ -198,6 +201,11 @@ struct li_object {
         } symbol;
         /* syntax */
         li_object *(*syntax)(li_object *, li_object *);
+        struct {
+            void *v;
+            void (*free)(void *);
+            void (*write)(void *, FILE *fp);
+        } userdata;
         /* vector */
         struct {
             li_object **data;
@@ -220,7 +228,11 @@ struct li_object {
 #define li_to_syntax(obj)       (obj)->data.syntax
 #define li_to_string(obj)       (obj)->data.string
 #define li_to_symbol(obj)       (obj)->data.symbol.string
+#define li_to_userdata(obj)     (obj)->data.userdata.v
 #define li_to_vector(obj)       (obj)->data.vector
+
+#define li_userdata_free(obj)   (obj)->data.userdata.free
+#define li_userdata_write(obj)  (obj)->data.userdata.write
 
 /* Type checking. */
 #define li_type(obj)            (obj)->type
@@ -237,6 +249,7 @@ struct li_object {
 #define li_is_string(obj)       li_is_type(obj, LI_T_STRING)
 #define li_is_symbol(obj)       li_is_type(obj, LI_T_SYMBOL)
 #define li_is_syntax(obj)       li_is_type(obj, LI_T_SYNTAX)
+#define li_is_userdata(obj)     li_is_type(obj, LI_T_USERDATA)
 #define li_is_vector(obj)       li_is_type(obj, LI_T_VECTOR)
 
 #define li_is_integer(obj) \
