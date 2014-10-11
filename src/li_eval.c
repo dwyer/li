@@ -40,20 +40,22 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
 
 extern li_object *li_eval(li_object *exp, li_object *env) {
     li_object *seq, *proc, *args;
+    int done;
 
-    while (!li_is_self_evaluating(exp)) {
+    done = 0;
+    while (!li_is_self_evaluating(exp) && !done) {
         li_stack_trace_push(exp);
         if (li_is_symbol(exp)) {
-            li_stack_trace_pop();
-            return li_environment_lookup(env, exp);
+            exp = li_environment_lookup(env, exp);
+            done = 1;
         } else if (li_is_quoted(exp)) {
             check_syntax(li_cdr(exp) && !li_cddr(exp), exp);
-            li_stack_trace_pop();
-            return li_cadr(exp);
+            exp = li_cadr(exp);
+            done = 1;
         } else if (li_is_quasiquoted(exp)) {
             check_syntax(li_cdr(exp) && !li_cddr(exp), exp);
-            li_stack_trace_pop();
-            return eval_quasiquote(li_cadr(exp), env);
+            exp = eval_quasiquote(li_cadr(exp), env);
+            done = 1;
         } else if (li_is_application(exp)) {
             proc = li_eval(li_car(exp), env);
             args = li_cdr(exp);
@@ -69,8 +71,8 @@ extern li_object *li_eval(li_object *exp, li_object *env) {
             } else if (li_is_macro(proc)) {
                 exp = expand_macro(proc, args);
             } else if (li_is_primitive(proc)) {
-                li_stack_trace_pop();
-                return li_to_primitive(proc)(args);
+                exp = li_to_primitive(proc)(args);
+                done = 1;
             } else if (li_is_syntax(proc)) {
                 exp = li_to_syntax(proc)(args, env);
             } else {
