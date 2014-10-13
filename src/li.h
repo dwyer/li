@@ -12,10 +12,6 @@
 
 #define LI_UNUSED_VARIABLE(var) (void)var
 
-/* C types. */
-#define li_false                ((int)0)
-#define li_true                 !li_false
-
 /* object.c */
 
 typedef struct li_object li_object;
@@ -105,9 +101,9 @@ extern li_object *li_vector(li_object *lst);
 
 /** EOF, true and false are just special symbols. */
 #define li_eof                          li_symbol("#<eof>")
-#define li_false_obj                    li_symbol("false")
-#define li_true_obj                     li_symbol("true")
-#define li_boolean(p)                   (p ? li_true_obj : li_false_obj)
+#define li_false                        li_symbol("false")
+#define li_true                         li_symbol("true")
+#define li_boolean(p)                   (p ? li_true : li_false)
 
 /** Let cons be an alias for pair. */
 #define li_cons(car, cdr)               li_pair(car, cdr)
@@ -115,9 +111,9 @@ extern li_object *li_vector(li_object *lst);
 /** Predicates */
 #define li_is_eq(obj1, obj2)            ((obj1) == (obj2))
 #define li_is_null(obj)                 li_is_eq(obj, li_null)
-#define li_not(obj)                     li_is_eq(obj, li_false_obj)
+#define li_not(obj)                     li_is_eq(obj, li_false)
 #define li_is_boolean(obj)              \
-    (li_not(obj) || li_is_eq(obj, li_false_obj))
+    (li_not(obj) || li_is_eq(obj, li_false))
 extern int li_is_equal(li_object *obj1, li_object *obj2);
 extern int li_is_eqv(li_object *obj1, li_object *obj2);
 extern int li_is_list(li_object *obj);
@@ -258,8 +254,8 @@ struct li_object {
 #define li_is_procedure(obj)            \
     (li_is_lambda(obj) || li_is_primitive_procedure(obj))
 
-#define li_lock(obj)                    ((obj)->locked = li_true)
-#define li_unlock(obj)                  ((obj)->locked = li_false)
+#define li_lock(obj)                    ((obj)->locked = 1)
+#define li_unlock(obj)                  ((obj)->locked = 0)
 #define li_is_locked(obj)               (obj)->locked
 
 /** Accessors for pairs. */

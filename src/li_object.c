@@ -178,7 +178,7 @@ extern li_object *li_port(const char *filename, const char *mode) {
     FILE *f;
 
     if (!(f = fopen(filename, mode)))
-        return li_boolean(li_false);
+        return li_false;
     obj = li_create(LI_T_PORT);
     obj->data.port.file = f;
     obj->data.port.filename = strdup(filename);
@@ -349,16 +349,16 @@ extern int li_is_equal_vectors(li_object *obj1, li_object *obj2) {
     int k;
 
     if (li_vector_length(obj1) != li_vector_length(obj2))
-        return li_false;
+        return 0;
     for (k = 0; k < li_vector_length(obj1); k++)
         if (!li_is_equal(li_vector_ref(obj1, k), li_vector_ref(obj2, k)))
-            return li_false;
-    return li_true;
+            return 0;
+    return 1;
 }
 
 extern int li_is_equal(li_object *obj1, li_object *obj2) {
     if (li_is_eqv(obj1, obj2))
-        return li_true;
+        return 1;
     else if (li_is_pair(obj1) && li_is_pair(obj2))
         return (li_is_equal(li_car(obj1), li_car(obj2)) &&
                 li_is_equal(li_cdr(obj1), li_cdr(obj2)));
@@ -366,21 +366,21 @@ extern int li_is_equal(li_object *obj1, li_object *obj2) {
         return li_is_string_eq(obj1, obj2);
     else if (li_is_vector(obj1) && li_is_vector(obj2))
         return li_is_equal_vectors(obj1, obj2);
-    return li_false;
+    return 0;
 }
 
 extern int li_is_eqv(li_object *obj1, li_object *obj2) {
     if (li_is_eq(obj1, obj2))
-        return li_true;
+        return 1;
     else if (!obj1 || !obj2)
-        return li_false;
+        return 0;
     else if (obj1->type != obj2->type)
-        return li_false;
+        return 0;
     else if (li_is_number(obj1) && li_is_number(obj2))
         return li_to_number(obj1) == li_to_number(obj2);
     else if (li_is_character(obj1) && li_is_character(obj2))
         return li_to_character(obj1) == li_to_character(obj2);
-    return li_false;
+    return 0;
 }
 
 extern int li_is_list(li_object *obj) {

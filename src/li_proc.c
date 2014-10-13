@@ -33,9 +33,9 @@
 static li_object *m_and(li_object *seq, li_object *env) {
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
         if (li_not(li_eval(li_car(seq), env)))
-            return li_boolean(li_false);
+            return li_false;
     if (!seq)
-        return li_boolean(li_true);
+        return li_true;
     return li_car(seq);
 }
 
@@ -73,7 +73,7 @@ static li_object *m_case(li_object *exp, li_object *env) {
         }
     }
     if (!exprs)
-        return li_boolean(li_false);
+        return li_false;
     for (; li_cdr(exprs); exprs = li_cdr(exprs))
         li_eval(li_car(exprs), env);
     return li_car(exprs);
@@ -88,7 +88,7 @@ static li_object *m_cond(li_object *seq, li_object *env) {
             break;
         }
     if (!seq)
-        return li_boolean(li_false);
+        return li_false;
     return li_car(seq);
 }
 
@@ -180,7 +180,7 @@ static li_object *m_if(li_object *seq, li_object *env) {
     else if (li_cddr(seq))
         return li_caddr(seq);
     else
-        return li_boolean(li_false);
+        return li_false;
 }
 
 static li_object *m_import(li_object *seq, li_object *env) {
@@ -282,7 +282,7 @@ static li_object *m_or(li_object *seq, li_object *env) {
         if (!li_not(val = li_eval(li_car(seq), env)))
             return li_cons(li_symbol("quote"), li_cons(val, li_null));
     if (!seq)
-        return li_boolean(li_false);
+        return li_false;
     return li_car(seq);
 }
 
@@ -387,7 +387,7 @@ static li_object *p_getenv(li_object *args) {
     if ((env = getenv(li_to_string(li_car(args)))))
         return li_string(env);
     else
-        return li_boolean(li_false);
+        return li_false;
 }
 
 static li_object *p_setenv(li_object *args) {
@@ -524,39 +524,39 @@ static li_object *p_eq(li_object *args) {
     while (args) {
         assert_number("=", li_car(args));
         if (!li_cdr(args))
-            return li_boolean(li_true);
+            return li_true;
         assert_number("=", li_cadr(args));
         if (!(li_to_number(li_car(args)) == li_to_number(li_cadr(args))))
-            return li_boolean(li_false);
+            return li_false;
         args = li_cdr(args);
     }
-    return li_boolean(li_true);
+    return li_true;
 }
 
 static li_object *p_lt(li_object *args) {
     while (args) {
         assert_number("<", li_car(args));
         if (!li_cdr(args))
-            return li_boolean(li_true);
+            return li_true;
         assert_number("<", li_cadr(args));
         if (!(li_to_number(li_car(args)) < li_to_number(li_cadr(args))))
-            return li_boolean(li_false);
+            return li_false;
         args = li_cdr(args);
     }
-    return li_boolean(li_true);
+    return li_true;
 }
 
 static li_object *p_gt(li_object *args) {
     while (args) {
         assert_number(">", li_car(args));
         if (!li_cdr(args))
-            return li_boolean(li_true);
+            return li_true;
         assert_number(">", li_cadr(args));
         if (!(li_to_number(li_car(args)) > li_to_number(li_cadr(args))))
-            return li_boolean(li_false);
+            return li_false;
         args = li_cdr(args);
     }
-    return li_boolean(li_true);
+    return li_true;
 }
 
 static li_object *p_le(li_object *args) {
@@ -872,8 +872,8 @@ static li_object *p_is_list(li_object *args) {
     assert_nargs("list?", 1, args);
     for (args = li_car(args); args; args = li_cdr(args))
         if (args && !li_is_pair(args))
-            return li_boolean(li_false);
-    return li_boolean(li_true);
+            return li_false;
+    return li_true;
 }
 
 static li_object *p_make_list(li_object *args) {
@@ -1028,7 +1028,7 @@ static li_object *p_assq(li_object *args) {
         if (li_is_eq(li_car(args), li_caar(lst)))
             return li_car(lst);
     }
-    return li_boolean(li_false);
+    return li_false;
 }
 
 static li_object *p_assv(li_object *args) {
@@ -1041,7 +1041,7 @@ static li_object *p_assv(li_object *args) {
         if (li_is_eqv(li_car(args), li_caar(lst)))
             return li_car(lst);
     }
-    return li_boolean(li_false);
+    return li_false;
 }
 
 static li_object *p_assoc(li_object *args) {
@@ -1054,7 +1054,7 @@ static li_object *p_assoc(li_object *args) {
         if (li_is_equal(li_car(args), li_caar(lst)))
             return li_car(lst);
     }
-    return li_boolean(li_false);
+    return li_false;
 }
 
 static li_object *p_memq(li_object *args) {
@@ -1066,7 +1066,7 @@ static li_object *p_memq(li_object *args) {
         if (li_is_eq(li_car(args), li_car(lst)))
             return lst;
     }
-    return li_boolean(li_false);
+    return li_false;
 }
 
 static li_object *p_memv(li_object *args) {
@@ -1078,7 +1078,7 @@ static li_object *p_memv(li_object *args) {
         if (li_is_eqv(li_car(args), li_car(lst)))
             return lst;
     }
-    return li_boolean(li_false);
+    return li_false;
 }
 
 static li_object *p_member(li_object *args) {
@@ -1090,7 +1090,7 @@ static li_object *p_member(li_object *args) {
         if (li_is_equal(li_car(args), li_car(lst)))
             return lst;
     }
-    return li_boolean(li_false);
+    return li_false;
 }
 
 /***********
@@ -1387,7 +1387,7 @@ static li_object *p_make_vector(li_object *args) {
         fill = li_cadr(args);
     } else {
         assert_nargs("make-vector", 1, args);
-        fill = li_boolean(li_false);
+        fill = li_false;
     }
     vec = li_create(LI_T_VECTOR);
     vec->data.vector.data = li_allocate(li_null, k, sizeof(*vec->data.vector.data));
@@ -2194,7 +2194,7 @@ static void li_define_primitive_procedures(li_object *env) {
 extern void li_setup_environment(li_object *env) {
     li_append_variable(li_symbol("user-initial-environment"), env, env);
     li_append_variable(li_symbol("null"), li_null, env);
-    li_append_variable(li_boolean(li_true), li_boolean(li_true), env);
-    li_append_variable(li_boolean(li_false), li_boolean(li_false), env);
+    li_append_variable(li_true, li_true, env);
+    li_append_variable(li_false, li_false, env);
     li_define_primitive_procedures(env);
 }
