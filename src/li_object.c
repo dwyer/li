@@ -193,11 +193,12 @@ extern li_object *li_primitive(li_object *(*proc)(li_object *)) {
     return obj;
 }
 
-extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *)) {
+extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *))
+{
     li_object *obj;
 
-    obj = li_create(LI_T_SYNTAX);
-    obj->data.syntax = proc;
+    obj = li_create(LI_T_SPECIAL_FORM);
+    obj->data.special_form = proc;
     return obj;
 }
 

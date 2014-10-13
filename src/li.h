@@ -36,20 +36,22 @@ typedef double li_number_t;
 typedef li_object *(*li_primitive_procedure_t)(li_object *);
 
 /*
- * Primitive syntax is like a primitive procedure, except for the following:
+ * A special form is like a primitive procedure, except for the following:
  *
  * 1. It accepts two arguments: a list of arguments and an environment.
  *
  * 2. The arguments are not evaluated prior to being passed, so it's up to
- *    the author of a syntax function to evaluate them (or not evaluate them,
- *    depending on what you're trying to do).  That what the environment is for.
+ *    the author of a special form function to evaluate them (or not evaluate
+ *    them, depending on what you're trying to do).  That what the environment
+ *    is for.
  *
  * 3. In order to take advantage of tail call optimization, the object returned
- *    by a syntax function is assumed to be an expression, therefore the calling
- *    evaluator will evaluate before returning it.  For this reason, a syntax
- *    function should not evaluate the final expression before returning it.
+ *    by a special form function is assumed to be an expression, therefore the
+ *    calling evaluator will evaluate before returning it.  For this reason, a
+ *    special form function should not evaluate the final expression before
+ *    returning it.
  */
-typedef li_object *(*li_primitive_syntax_t)(li_object *, li_object *);
+typedef li_object *(*li_special_form_t)(li_object *, li_object *);
 
 /* The all important null object. */
 #define li_null                 ((li_object *)NULL)
@@ -90,9 +92,9 @@ extern li_object *li_number(double n);
 extern li_object *li_pair(li_object *car, li_object *cdr);
 extern li_object *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive(li_object *(*proc)(li_object *));
+extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *));
 extern li_object *li_string(const char *s);
 extern li_object *li_symbol(const char *s);
-extern li_object *li_syntax(li_object *(*proc)(li_object *, li_object *));
 extern li_object *li_userdata(void *v, void (*free)(void *),
         void (*write)(void *, FILE *));
 
@@ -141,9 +143,9 @@ enum {
     LI_T_PAIR,
     LI_T_PORT,
     LI_T_PRIMITIVE,
+    LI_T_SPECIAL_FORM,
     LI_T_STRING,
     LI_T_SYMBOL,
-    LI_T_SYNTAX,
     LI_T_USERDATA,
     LI_T_VECTOR,
     LI_NUM_TYPES
@@ -190,6 +192,8 @@ struct li_object {
         } port;
         /* primitive */
         li_object *(*primitive)(li_object *);
+        /* special form */
+        li_object *(*special_form)(li_object *, li_object *);
         /* string */
         char *string;
         /* symbol */
@@ -199,8 +203,6 @@ struct li_object {
             li_object *prev;
             unsigned int hash;
         } symbol;
-        /* syntax */
-        li_object *(*syntax)(li_object *, li_object *);
         struct {
             void *v;
             void (*free)(void *);
@@ -225,7 +227,7 @@ struct li_object {
 #define li_to_pair(obj)         (obj)->data.pair
 #define li_to_port(obj)         (obj)->data.port
 #define li_to_primitive(obj)    (obj)->data.primitive
-#define li_to_syntax(obj)       (obj)->data.syntax
+#define li_to_special_form(obj) (obj)->data.special_form
 #define li_to_string(obj)       (obj)->data.string
 #define li_to_symbol(obj)       (obj)->data.symbol.string
 #define li_to_userdata(obj)     (obj)->data.userdata.v
@@ -246,9 +248,9 @@ struct li_object {
 #define li_is_pair(obj)         li_is_type(obj, LI_T_PAIR)
 #define li_is_port(obj)         li_is_type(obj, LI_T_PORT)
 #define li_is_primitive(obj)    li_is_type(obj, LI_T_PRIMITIVE)
+#define li_is_special_form(obj) li_is_type(obj, LI_T_SPECIAL_FORM)
 #define li_is_string(obj)       li_is_type(obj, LI_T_STRING)
 #define li_is_symbol(obj)       li_is_type(obj, LI_T_SYMBOL)
-#define li_is_syntax(obj)       li_is_type(obj, LI_T_SYNTAX)
 #define li_is_userdata(obj)     li_is_type(obj, LI_T_USERDATA)
 #define li_is_vector(obj)       li_is_type(obj, LI_T_VECTOR)
 

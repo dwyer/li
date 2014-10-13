@@ -11,7 +11,8 @@
 #define li_is_unquoted(exp)         li_is_tagged_list(exp, "unquote")
 #define li_is_unquoted_splicing(exp) li_is_tagged_list(exp, "unquote-splicing")
 
-#define check_syntax(pred, exp) if (!(pred)) li_error("eval", "bad syntax", exp)
+#define check_special_form(pred, exp) \
+    if (!(pred)) li_error("eval", "bad special form", exp)
 
 static li_object *eval_quasiquote(li_object *exp, li_object *env);
 static li_object *expand_macro(li_object *mac, li_object *args);
@@ -49,11 +50,11 @@ extern li_object *li_eval(li_object *exp, li_object *env) {
             exp = li_environment_lookup(env, exp);
             done = 1;
         } else if (li_is_quoted(exp)) {
-            check_syntax(li_cdr(exp) && !li_cddr(exp), exp);
+            check_special_form(li_cdr(exp) && !li_cddr(exp), exp);
             exp = li_cadr(exp);
             done = 1;
         } else if (li_is_quasiquoted(exp)) {
-            check_syntax(li_cdr(exp) && !li_cddr(exp), exp);
+            check_special_form(li_cdr(exp) && !li_cddr(exp), exp);
             exp = eval_quasiquote(li_cadr(exp), env);
             done = 1;
         } else if (li_is_application(exp)) {
@@ -73,8 +74,8 @@ extern li_object *li_eval(li_object *exp, li_object *env) {
             } else if (li_is_primitive(proc)) {
                 exp = li_to_primitive(proc)(args);
                 done = 1;
-            } else if (li_is_syntax(proc)) {
-                exp = li_to_syntax(proc)(args, env);
+            } else if (li_is_special_form(proc)) {
+                exp = li_to_special_form(proc)(args, env);
             } else {
                 li_error("apply", "not applicable", proc);
             }

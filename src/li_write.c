@@ -36,12 +36,12 @@ void li_write_object(li_object *obj, FILE *f, int h) {
         fprintf(f, "#[port \"%s\"]", li_to_port(obj).filename);
     } else if (li_is_primitive(obj)) {
         fprintf(f, "#[primitive-procedure]");
+    } else if (li_is_special_form(obj)) {
+        fprintf(f, "#[special-form]");
     } else if (li_is_string(obj)) {
         write_string(obj, f, h);
     } else if (li_is_symbol(obj)) {
         fprintf(f, "%s", li_to_symbol(obj));
-    } else if (li_is_syntax(obj)) {
-        fprintf(f, "#[syntax]");
     } else if (li_is_vector(obj)) {
         write_vector(obj, f, h);
     } else if (li_is_userdata(obj) && li_userdata_write(obj)) {
