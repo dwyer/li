@@ -5,28 +5,28 @@
 #include <time.h>
 #include "li.h"
 
-#define has_0args(args)             !(args)
-#define has_1args(args)             ((args) && has_0args(li_cdr(args)))
-#define has_2args(args)             ((args) && has_1args(li_cdr(args)))
-#define has_3args(args)             ((args) && has_2args(li_cdr(args)))
-#define assert_nargs(name, n, args_) \
-    if (!has_##n##args(args_))       \
+#define has_0args(args)                 !(args)
+#define has_1args(args)                 ((args) && has_0args(li_cdr(args)))
+#define has_2args(args)                 ((args) && has_1args(li_cdr(args)))
+#define has_3args(args)                 ((args) && has_2args(li_cdr(args)))
+#define assert_nargs(name, n, args_)    \
+    if (!has_##n##args(args_))          \
         li_error(name, "wrong number of args", args_)
-#define assert_type(name, type, arg) \
+#define assert_type(name, type, arg)    \
     if (!li_is_##type(arg)) li_error(name, "not a " #type, arg)
-#define assert_integer(name, arg) \
+#define assert_integer(name, arg)       \
     if (!li_is_integer(arg)) li_error(name, "not an integer", arg)
-#define assert_character(name, arg) assert_type(name, character, arg)
-#define assert_list(name, arg)      assert_type(name, list, arg)
-#define assert_number(name, arg)    assert_type(name, number, arg)
-#define assert_pair(name, arg)      assert_type(name, pair, arg)
-#define assert_port(name, arg)      assert_type(name, port, arg)
-#define assert_procedure(name, arg) assert_type(name, procedure, arg)
-#define assert_string(name, arg)    assert_type(name, string, arg)
-#define assert_symbol(name, arg)    assert_type(name, symbol, arg)
-#define assert_vector(name, arg)    assert_type(name, vector, arg)
-#define append_primitive(name, proc, env) \
-    li_append_variable(li_symbol(name), li_primitive(proc), env)
+#define assert_character(name, arg)     assert_type(name, character, arg)
+#define assert_list(name, arg)          assert_type(name, list, arg)
+#define assert_number(name, arg)        assert_type(name, number, arg)
+#define assert_pair(name, arg)          assert_type(name, pair, arg)
+#define assert_port(name, arg)          assert_type(name, port, arg)
+#define assert_procedure(name, arg)     assert_type(name, procedure, arg)
+#define assert_string(name, arg)        assert_type(name, string, arg)
+#define assert_symbol(name, arg)        assert_type(name, symbol, arg)
+#define assert_vector(name, arg)        assert_type(name, vector, arg)
+#define append_primitive_procedure(name, proc, env) \
+    li_append_variable(li_symbol(name), li_primitive_procedure(proc), env)
 #define append_special_form(name, proc, env) \
     li_append_variable(li_symbol(name), li_special_form(proc), env);
 
@@ -2188,7 +2188,7 @@ static void li_define_primitive_procedures(li_object *env) {
     append_special_form("or",           m_or,           env);
     append_special_form("set!",         m_set,          env);
     for (iter = regs; iter->var; iter++)
-        append_primitive(iter->var, iter->val, env);
+        append_primitive_procedure(iter->var, iter->val, env);
 }
 
 extern void li_setup_environment(li_object *env) {

@@ -185,11 +185,11 @@ extern li_object *li_port(const char *filename, const char *mode) {
     return obj;
 }
 
-extern li_object *li_primitive(li_object *(*proc)(li_object *)) {
+extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *)) {
     li_object *obj;
 
-    obj = li_create(LI_T_PRIMITIVE);
-    obj->data.primitive = proc;
+    obj = li_create(LI_T_PRIMITIVE_PROCEDURE);
+    obj->data.primitive_procedure = proc;
     return obj;
 }
 

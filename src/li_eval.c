@@ -23,8 +23,8 @@ static li_object *list_of_values(li_object *exps, li_object *env);
 extern li_object *li_apply(li_object *proc, li_object *args) {
     li_object *head, *tail, *obj;
 
-    if (li_is_primitive(proc))
-        return li_to_primitive(proc)(args);
+    if (li_is_primitive_procedure(proc))
+        return li_to_primitive_procedure(proc)(args);
     head = li_null;
     while (args) {
         obj = li_car(args);
@@ -71,8 +71,8 @@ extern li_object *li_eval(li_object *exp, li_object *env) {
                 exp = li_car(seq);
             } else if (li_is_macro(proc)) {
                 exp = expand_macro(proc, args);
-            } else if (li_is_primitive(proc)) {
-                exp = li_to_primitive(proc)(args);
+            } else if (li_is_primitive_procedure(proc)) {
+                exp = li_to_primitive_procedure(proc)(args);
                 done = 1;
             } else if (li_is_special_form(proc)) {
                 exp = li_to_special_form(proc)(args, env);

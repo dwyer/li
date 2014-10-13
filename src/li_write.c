@@ -34,7 +34,7 @@ void li_write_object(li_object *obj, FILE *f, int h) {
         write_pair(obj, f, h);
     } else if (li_is_port(obj)) {
         fprintf(f, "#[port \"%s\"]", li_to_port(obj).filename);
-    } else if (li_is_primitive(obj)) {
+    } else if (li_is_primitive_procedure(obj)) {
         fprintf(f, "#[primitive-procedure]");
     } else if (li_is_special_form(obj)) {
         fprintf(f, "#[special-form]");
