@@ -116,8 +116,6 @@ extern li_object *li_vector(li_object *lst);
 #define li_is_eq(obj1, obj2)            ((obj1) == (obj2))
 #define li_is_null(obj)                 li_is_eq(obj, li_null)
 #define li_not(obj)                     li_is_eq(obj, li_false_obj)
-#define li_is_false(obj)                li_not(obj)
-#define li_is_true(obj)                 !li_not(obj)
 #define li_is_boolean(obj)              \
     (li_not(obj) || li_is_eq(obj, li_false_obj))
 extern int li_is_equal(li_object *obj1, li_object *obj2);

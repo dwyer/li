@@ -32,7 +32,7 @@
 
 static li_object *m_and(li_object *seq, li_object *env) {
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
-        if (li_is_false(li_eval(li_car(seq), env)))
+        if (li_not(li_eval(li_car(seq), env)))
             return li_boolean(li_false);
     if (!seq)
         return li_boolean(li_true);
@@ -41,7 +41,7 @@ static li_object *m_and(li_object *seq, li_object *env) {
 
 static li_object *m_assert(li_object *args, li_object *env) {
     assert_nargs("assert", 1, args);
-    if (li_is_false(li_eval(li_car(args), env)))
+    if (li_not(li_eval(li_car(args), env)))
         li_error("assert", "assertion violated", li_car(args));
     return li_null;
 }
@@ -82,7 +82,7 @@ static li_object *m_case(li_object *exp, li_object *env) {
 static li_object *m_cond(li_object *seq, li_object *env) {
     for (; seq; seq = li_cdr(seq))
         if (li_is_eq(li_caar(seq), li_symbol("else")) ||
-            li_is_true(li_eval(li_caar(seq), env))) {
+            !li_not(li_eval(li_caar(seq), env))) {
             for (seq = li_cdar(seq); li_cdr(seq); seq = li_cdr(seq))
                 li_eval(li_car(seq), env);
             break;
@@ -175,7 +175,7 @@ static li_object *m_do(li_object *seq, li_object *env) {
 static li_object *m_if(li_object *seq, li_object *env) {
     if (!seq || !li_cdr(seq))
         li_error("if", "invalid sequence", seq);
-    if (li_is_true(li_eval(li_car(seq), env)))
+    if (!li_not(li_eval(li_car(seq), env)))
         return li_cadr(seq);
     else if (li_cddr(seq))
         return li_caddr(seq);
@@ -279,7 +279,7 @@ static li_object *m_or(li_object *seq, li_object *env) {
     li_object *val;
 
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
-        if (li_is_true(val = li_eval(li_car(seq), env)))
+        if (!li_not(val = li_eval(li_car(seq), env)))
             return li_cons(li_symbol("quote"), li_cons(val, li_null));
     if (!seq)
         return li_boolean(li_false);
@@ -998,7 +998,7 @@ static li_object *p_filter(li_object *args) {
             li_set_car(temp, li_car(iter));
         else
             temp = li_cons(li_car(iter), li_null);
-        if (li_is_true(li_apply(li_car(args), temp))) {
+        if (!li_not(li_apply(li_car(args), temp))) {
             tail = head ? li_set_cdr(tail, temp) : (head = temp);
             temp = li_null;
         }
