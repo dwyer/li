@@ -24,16 +24,14 @@ void li_stack_trace_push(li_object *expr)
 void li_stack_trace_pop(void)
 {
     if (st.siz == 0)
-        li_error("eval", "attempting to pop from empty stack", li_null);
+        li_error("attempting to pop from empty stack", li_null);
     st.siz--;
 }
 
-void li_error(const char *who, const char *msg, li_object *args) {
+void li_error(const char *msg, li_object *args) {
     int i;
 
     fprintf(stderr, "# error: ");
-    if (who)
-        fprintf(stderr, "%s: ", who);
     if (msg)
         fprintf(stderr, "%s: ", msg);
     if (args)

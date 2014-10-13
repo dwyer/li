@@ -40,7 +40,7 @@ static void li_add_to_heap(li_object *obj) {
 extern void li_append_variable(li_object *var, li_object *val,
         li_object *env) {
     if (!li_is_symbol(var))
-        li_error("eval", "not a variable", var);
+        li_error("not a variable", var);
     if (env->data.env.size == env->data.env.cap) {
         env->data.env.cap *= 2;
         env->data.env.array = li_allocate(env->data.env.array,
@@ -58,7 +58,7 @@ extern void *li_allocate(void *ptr, size_t count, size_t size) {
     else
         ptr = calloc(count, size);
     if (!ptr)
-        li_error("*li_allocate*", "out of memory", li_null);
+        li_error("out of memory", li_null);
     return ptr;
 }
 
@@ -130,7 +130,7 @@ extern li_object *li_environment_lookup(li_object *env, li_object *var) {
                 return env->data.env.array[i].val;
         env = env->data.env.base;
     }
-    li_error("eval", "unbound variable", var);
+    li_error("unbound variable", var);
     return li_null;
 }
 

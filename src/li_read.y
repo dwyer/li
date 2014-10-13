@@ -84,10 +84,10 @@ void li_load(char *filename, li_object *env) {
     dir = dirname(filepath);
     free(filepath);
     if (chdir(dir))
-        li_error("load", "could read from directory", li_string(dir));
+        li_error("could read from directory", li_string(dir));
     filename = basename(filename);
     if ((f = fopen(filename, "r")) == NULL)
-        li_error("load", "unable to read file", li_string(filename));
+        li_error("unable to read file", li_string(filename));
     while ((exp = li_read(f)) != li_eof) {
         exp = li_eval(exp, env);
         li_cleanup(env);
@@ -104,5 +104,5 @@ li_object *li_read(FILE *f) {
 }
 
 void yyerror(char *s) {
-    li_error("read", s, li_number(yylineno));
+    li_error(s, li_number(yylineno));
 }

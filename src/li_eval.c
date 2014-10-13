@@ -12,7 +12,7 @@
 #define li_is_unquoted_splicing(exp) li_is_tagged_list(exp, "unquote-splicing")
 
 #define check_special_form(pred, exp) \
-    if (!(pred)) li_error("eval", "bad special form", exp)
+    if (!(pred)) li_error("bad special form", exp)
 
 static li_object *eval_quasiquote(li_object *exp, li_object *env);
 static li_object *expand_macro(li_object *mac, li_object *args);
@@ -77,10 +77,10 @@ extern li_object *li_eval(li_object *exp, li_object *env) {
             } else if (li_is_special_form(proc)) {
                 exp = li_to_special_form(proc)(args, env);
             } else {
-                li_error("apply", "not applicable", proc);
+                li_error("not applicable", proc);
             }
         } else {
-            li_error("eval", "unknown expression type", exp);
+            li_error("unknown expression type", exp);
         }
         li_stack_trace_pop();
     }
@@ -137,7 +137,7 @@ static li_object *extend_environment(li_object *vars, li_object *vals,
         li_append_variable(li_car(vars), li_car(vals), env);
     }
     if (vars || vals)
-        li_error("#[anonymous-procedure]", "wrong number of args", vars);
+        li_error("wrong number of args", vars);
     return env;
 }
 
