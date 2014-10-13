@@ -135,7 +135,7 @@ extern void li_environment_define(li_object *env, li_object *var,
 extern li_object *li_environment_lookup(li_object *env, li_object *var);
 extern void li_setup_environment(li_object *env);
 
-enum {
+enum li_types {
     LI_T_CHARACTER,
     LI_T_ENVIRONMENT,
     LI_T_LAMBDA,
@@ -215,7 +215,7 @@ struct li_object {
             int length;
         } vector;
     } data;
-    int type;
+    enum li_types type;
     int locked;
 };
 
