@@ -20,6 +20,17 @@
         ((3) (*iota* (car args) (cadr args) (caddr args)))
         (else (error 'range "wrong number of args" args))))))
 
+(define (last lst)
+  (if (or (null? lst) (null? (cdr lst)))
+    lst
+    (last (cdr lst))))
+
+(define (some pred lst)
+  (if (null? lst)
+    false
+    (or (pred (car lst))
+        (some pred (cdr lst)))))
+
 (define (take lst i)
   (cond ((zero? i) null)
         ((null? lst) false)
