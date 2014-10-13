@@ -9,14 +9,17 @@
 #define has_1_args(args)                ((args) && has_0_args(li_cdr(args)))
 #define has_2_args(args)                ((args) && has_1_args(li_cdr(args)))
 #define has_3_args(args)                ((args) && has_2_args(li_cdr(args)))
+
 #define assert_nargs(n, args)           \
     if (!has_##n##_args(args))          \
         li_error("wrong number of args", args)
+
 #define assert_type(type, arg)          \
-    if (!li_is_##type(arg)) li_error("not a " #type, arg)
-#define assert_integer(arg)             \
-    if (!li_is_integer(arg)) li_error("not an integer", arg)
+    if (!li_is_##type(arg))             \
+        li_error("not a " #type, arg)
+
 #define assert_character(arg)           assert_type(character, arg)
+#define assert_integer(arg)             assert_type(integer, arg)
 #define assert_list(arg)                assert_type(list, arg)
 #define assert_number(arg)              assert_type(number, arg)
 #define assert_pair(arg)                assert_type(pair, arg)
@@ -25,8 +28,10 @@
 #define assert_string(arg)              assert_type(string, arg)
 #define assert_symbol(arg)              assert_type(symbol, arg)
 #define assert_vector(arg)              assert_type(vector, arg)
+
 #define append_primitive_procedure(name, proc, env) \
     li_append_variable(li_symbol(name), li_primitive_procedure(proc), env)
+
 #define append_special_form(name, proc, env) \
     li_append_variable(li_symbol(name), li_special_form(proc), env);
 
