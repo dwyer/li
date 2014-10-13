@@ -5,13 +5,13 @@
 #include <time.h>
 #include "li.h"
 
-#define has_0args(args)                 !(args)
-#define has_1args(args)                 ((args) && has_0args(li_cdr(args)))
-#define has_2args(args)                 ((args) && has_1args(li_cdr(args)))
-#define has_3args(args)                 ((args) && has_2args(li_cdr(args)))
-#define assert_nargs(n, args_)          \
-    if (!has_##n##args(args_))          \
-        li_error("wrong number of args", args_)
+#define has_0_args(args)                !(args)
+#define has_1_args(args)                ((args) && has_0_args(li_cdr(args)))
+#define has_2_args(args)                ((args) && has_1_args(li_cdr(args)))
+#define has_3_args(args)                ((args) && has_2_args(li_cdr(args)))
+#define assert_nargs(n, args)           \
+    if (!has_##n##_args(args))          \
+        li_error("wrong number of args", args)
 #define assert_type(type, arg)          \
     if (!li_is_##type(arg)) li_error("not a " #type, arg)
 #define assert_integer(arg)             \
@@ -1607,7 +1607,7 @@ static li_object *p_open(li_object *args) {
     li_object *p;
     char *mode;
 
-    if (has_2args(args)) {
+    if (has_2_args(args)) {
         assert_nargs(2, args);
         assert_string(li_cadr(args));
         mode = li_to_string(li_cadr(args));
@@ -1692,7 +1692,7 @@ static li_object *p_write(li_object *args) {
     FILE *f;
 
     f = stdout;
-    if (has_2args(args)) {
+    if (has_2_args(args)) {
         assert_nargs(2, args);
         assert_port(li_cadr(args));
         f = li_to_port(li_cadr(args)).file;
@@ -1711,7 +1711,7 @@ static li_object *p_display(li_object *args) {
     FILE *f;
 
     f = stdout;
-    if (has_2args(args)) {
+    if (has_2_args(args)) {
         assert_nargs(2, args);
         assert_port(li_cadr(args));
         f = li_to_port(li_cadr(args)).file;
