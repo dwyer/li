@@ -533,6 +533,7 @@
 
 (import test-stack)
 (import test-bind)
+(import test-sort)
 (import test-match)
 (import test-syntax)
 (print "all tests passed!")

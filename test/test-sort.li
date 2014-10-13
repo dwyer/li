@@ -1,0 +1,6 @@
+(import range)
+(import sort)
+
+(display "testing sort...")
+(assert (sorted?  (mergesort (map (lambda _ (rand)) (range 1000)))))
+(print 'ok)
