@@ -1,24 +1,18 @@
 %{
 
-#include <libgen.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include "li.h"
 
 #define make_tagged_list(str, obj) \
     li_cons(li_symbol(str), li_cons(obj, li_null))
 
-void yyerror(char *);
 extern int yylex(void);
 extern int yylineno;
-extern char *yytext;
-extern FILE *yyin;
 
 static li_object *obj = li_null;
 li_object *append(li_object *lst, li_object *obj);
 extern int push_buffer(FILE *fp);
-extern void pop_buffer(void);
+extern void yypop_buffer_state(void);
+void yyerror(char *s);
 
 %}
 
@@ -71,42 +65,15 @@ li_object *append(li_object *lst, li_object *obj)
     return lst;
 }
 
-void li_load(char *filename, li_object *env)
-{
-    char *dir;
-    li_object *exp;
-    char *filepath;
-    FILE *fp;
-    int pop;
-
-    filepath = realpath(filename, NULL);
-    dir = dirname(filepath);
-    free(filepath);
-    if (chdir(dir))
-        li_error("could not read from directory", li_string(dir));
-    filename = basename(filename);
-    if ((fp = fopen(filename, "r")) == NULL)
-        li_error("unable to read file", li_string(filename));
-    pop = push_buffer(fp);
-    while ((exp = li_read(fp)) != li_eof) {
-        exp = li_eval(exp, env);
-        li_cleanup(env);
-    }
-    if (pop)
-        pop_buffer();
-    fclose(fp);
-}
-
 li_object *li_read(FILE *fp)
 {
     int pop;
 
-    obj = li_null;
     pop = push_buffer(fp);
     if (yyparse())
         return li_null;
     if (pop)
-        pop_buffer();
+        yypop_buffer_state();
     return obj;
 }
 

@@ -1,6 +1,6 @@
 %{
 
-#include <stdio.h>
+#include <libgen.h>
 #include "li.h"
 #include "li_read.h"
 
@@ -94,7 +94,28 @@ int push_buffer(FILE *fp)
     return ret;
 }
 
-void pop_buffer(void)
+void li_load(char *filename, li_object *env)
 {
-    yypop_buffer_state();
+    char *dir;
+    li_object *exp;
+    char *filepath;
+    FILE *fp;
+    int pop;
+
+    filepath = realpath(filename, NULL);
+    dir = dirname(filepath);
+    free(filepath);
+    if (chdir(dir))
+        li_error("could not read from directory", li_string(dir));
+    filename = basename(filename);
+    if ((fp = fopen(filename, "r")) == NULL)
+        li_error("unable to read file", li_string(filename));
+    pop = push_buffer(fp);
+    while ((exp = li_read(fp)) != li_eof) {
+        exp = li_eval(exp, env);
+        li_cleanup(env);
+    }
+    if (pop)
+        yypop_buffer_state();
+    fclose(fp);
 }
