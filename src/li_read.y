@@ -6,18 +6,18 @@
 #include <unistd.h>
 #include "li.h"
 
-#define make_tagged_list(str, obj) li_cons(li_symbol(str), li_cons(obj, li_null))
+#define make_tagged_list(str, obj) \
+    li_cons(li_symbol(str), li_cons(obj, li_null))
 
 void yyerror(char *);
 extern int yylex(void);
 extern int yylineno;
 extern char *yytext;
 extern FILE *yyin;
-extern int YY_BUF_SIZE;
 
 static li_object *obj = li_null;
 li_object *append(li_object *lst, li_object *obj);
-extern void push_buffer(void);
+extern int push_buffer(FILE *fp);
 extern void pop_buffer(void);
 
 %}
@@ -59,50 +59,58 @@ data    : { $$ = li_null; }
 
 %%
 
-li_object *append(li_object *lst, li_object *obj) {
+li_object *append(li_object *lst, li_object *obj)
+{
     li_object *tail;
         
-    for (tail = lst; tail && li_cdr(tail); tail = li_cdr(tail));
-    if (!tail) return obj;
+    for (tail = lst; tail && li_cdr(tail); tail = li_cdr(tail))
+        ;
+    if (!tail)
+        return obj;
     li_set_cdr(tail, obj);
     return lst;
 }
 
-void li_load(char *filename, li_object *env) {
-    FILE *f;
-    li_object *exp;
-    int pop;
+void li_load(char *filename, li_object *env)
+{
     char *dir;
+    li_object *exp;
     char *filepath;
+    FILE *fp;
+    int pop;
 
-    pop = 0;
-    if (yyin) {
-        push_buffer();
-        pop = 1;
-    }
     filepath = realpath(filename, NULL);
     dir = dirname(filepath);
     free(filepath);
     if (chdir(dir))
-        li_error("could read from directory", li_string(dir));
+        li_error("could not read from directory", li_string(dir));
     filename = basename(filename);
-    if ((f = fopen(filename, "r")) == NULL)
+    if ((fp = fopen(filename, "r")) == NULL)
         li_error("unable to read file", li_string(filename));
-    while ((exp = li_read(f)) != li_eof) {
+    pop = push_buffer(fp);
+    while ((exp = li_read(fp)) != li_eof) {
         exp = li_eval(exp, env);
         li_cleanup(env);
     }
-    fclose(f);
-    if (pop) pop_buffer();
+    if (pop)
+        pop_buffer();
+    fclose(fp);
 }
 
-li_object *li_read(FILE *f) {
+li_object *li_read(FILE *fp)
+{
+    int pop;
+
     obj = li_null;
-    yyin = f;
-    if (yyparse()) return li_null;
+    pop = push_buffer(fp);
+    if (yyparse())
+        return li_null;
+    if (pop)
+        pop_buffer();
     return obj;
 }
 
-void yyerror(char *s) {
+void yyerror(char *s)
+{
     li_error(s, li_number(yylineno));
 }

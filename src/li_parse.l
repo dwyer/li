@@ -80,16 +80,21 @@ static void bufappend(const char *s)
     buf[n] = '\0';
 }
 
-int yywrap(void) {
+int yywrap(void)
+{
     return 1;
 }
 
-void push_buffer(void) {
-    if (!yyin)
-        li_error("null buffer", li_null);
-    yypush_buffer_state(yy_create_buffer(yyin, YY_BUF_SIZE));
+int push_buffer(FILE *fp)
+{
+    int ret;
+
+    if ((ret = (fp != yyin)))
+        yypush_buffer_state(yy_create_buffer(fp, YY_BUF_SIZE));
+    return ret;
 }
 
-void pop_buffer(void) {
+void pop_buffer(void)
+{
     yypop_buffer_state();
 }
