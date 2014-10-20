@@ -89,6 +89,8 @@ int push_buffer(FILE *fp)
 {
     int ret;
 
+    if (!yyin)
+        yyin = fp;
     if ((ret = (fp != yyin)))
         yypush_buffer_state(yy_create_buffer(fp, YY_BUF_SIZE));
     return ret;
