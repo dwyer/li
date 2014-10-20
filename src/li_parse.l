@@ -96,20 +96,20 @@ int push_buffer(FILE *fp)
 
 void li_load(char *filename, li_object *env)
 {
-    char *dir;
+    char *cwd;
     li_object *exp;
     char *filepath;
     FILE *fp;
     int pop;
 
-    filepath = realpath(filename, NULL);
-    dir = dirname(filepath);
+    if (!(filepath = realpath(filename, NULL)))
+        li_error("could not find file", li_string(filename));
+    cwd = getcwd(NULL, 0);
+    if (chdir(dirname(filepath)))
+        li_error("could not read from directory", li_string(dirname(filepath)));
+    if ((fp = fopen(basename(filename), "r")) == NULL)
+        li_error("could not read file", li_string(filepath));
     free(filepath);
-    if (chdir(dir))
-        li_error("could not read from directory", li_string(dir));
-    filename = basename(filename);
-    if ((fp = fopen(filename, "r")) == NULL)
-        li_error("unable to read file", li_string(filename));
     pop = push_buffer(fp);
     while ((exp = li_read(fp)) != li_eof) {
         exp = li_eval(exp, env);
@@ -118,4 +118,7 @@ void li_load(char *filename, li_object *env)
     if (pop)
         yypop_buffer_state();
     fclose(fp);
+    if (chdir(cwd))
+        li_error("could not read from directory", li_string(cwd));
+    free(cwd);
 }
