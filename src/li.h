@@ -14,11 +14,61 @@
 
 /* object.c */
 
+enum li_types {
+    LI_T_CHARACTER,
+    LI_T_ENVIRONMENT,
+    LI_T_LAMBDA,
+    LI_T_MACRO,
+    LI_T_NUMBER,
+    LI_T_PAIR,
+    LI_T_PORT,
+    LI_T_PRIMITIVE_PROCEDURE,
+    LI_T_SPECIAL_FORM,
+    LI_T_STRING,
+    LI_T_SYMBOL,
+    LI_T_USERDATA,
+    LI_T_VECTOR,
+    LI_NUM_TYPES
+};
+
 typedef struct li_object li_object;
 
 typedef int li_character_t;
 
 typedef double li_number_t;
+
+typedef struct {
+    struct {
+        li_object *var;
+        li_object *val;
+    } *array;
+    int size; /* TODO: change to size_t */
+    int cap; /* TODO: change to size_t */
+    li_object *base;
+} li_environment_t;
+
+typedef struct {
+    li_object *name;
+    li_object *vars;
+    li_object *body;
+    li_object *env;
+} li_lambda_t;
+
+typedef struct {
+    li_object *vars;
+    li_object *body;
+    li_object *env;
+} li_macro_t;
+
+typedef struct {
+    li_object *car;
+    li_object *cdr;
+} li_pair_t;
+
+typedef struct {
+    FILE *file;
+    char *filename;
+} li_port_t;
 
 /*
  * A primitive procedure is represented by the following function type which
@@ -48,6 +98,51 @@ typedef li_object *(*li_primitive_procedure_t)(li_object *);
  *    returning it.
  */
 typedef li_object *(*li_special_form_t)(li_object *, li_object *);
+
+/*
+ * TODO: use this
+ */
+typedef struct {
+    char *string;
+} li_string_t;
+
+typedef struct {
+    char *string;
+    li_object *next;
+    li_object *prev;
+    unsigned int hash;
+} li_symbol_t;
+
+typedef struct {
+    void *v;
+    void (*free)(void *);
+    void (*write)(void *, FILE *fp);
+} li_userdata_t;
+
+typedef struct {
+    li_object **data;
+    int length;
+} li_vector_t;
+
+struct li_object {
+    union {
+        li_character_t character;
+        li_environment_t env;
+        li_lambda_t lambda;
+        li_macro_t macro;
+        li_number_t number;
+        li_pair_t pair;
+        li_port_t port;
+        li_object *(*primitive_procedure)(li_object *);
+        li_object *(*special_form)(li_object *, li_object *);
+        char *string;
+        li_symbol_t symbol;
+        li_userdata_t userdata;
+        li_vector_t vector;
+    } data;
+    enum li_types type;
+    int locked;
+};
 
 /* The all important null object. */
 #define li_null                 ((li_object *)NULL)
@@ -128,90 +223,6 @@ extern void li_environment_define(li_object *env, li_object *var,
         li_object *val);
 extern li_object *li_environment_lookup(li_object *env, li_object *var);
 extern void li_setup_environment(li_object *env);
-
-enum li_types {
-    LI_T_CHARACTER,
-    LI_T_ENVIRONMENT,
-    LI_T_LAMBDA,
-    LI_T_MACRO,
-    LI_T_NUMBER,
-    LI_T_PAIR,
-    LI_T_PORT,
-    LI_T_PRIMITIVE_PROCEDURE,
-    LI_T_SPECIAL_FORM,
-    LI_T_STRING,
-    LI_T_SYMBOL,
-    LI_T_USERDATA,
-    LI_T_VECTOR,
-    LI_NUM_TYPES
-};
-
-struct li_object {
-    union {
-        /* character */
-        int character;
-        /* environment */
-        struct {
-            struct {
-                li_object *var;
-                li_object *val;
-            } *array;
-            int size;
-            int cap;
-            li_object *base;
-        } env;
-        /* lambda */
-        struct {
-            li_object *name;
-            li_object *vars;
-            li_object *body;
-            li_object *env;
-        } lambda;
-        /* macro */
-        struct {
-            li_object *vars;
-            li_object *body;
-            li_object *env;
-        } macro;
-        /* number */
-        double number;
-        /* pair */
-        struct {
-            li_object *car;
-            li_object *cdr;
-        } pair;
-        /* port */
-        struct {
-            FILE *file;
-            char *filename;
-        } port;
-        /* primitive procedure */
-        li_object *(*primitive_procedure)(li_object *);
-        /* special form */
-        li_object *(*special_form)(li_object *, li_object *);
-        /* string */
-        char *string;
-        /* symbol */
-        struct {
-            char *string;
-            li_object *next;
-            li_object *prev;
-            unsigned int hash;
-        } symbol;
-        struct {
-            void *v;
-            void (*free)(void *);
-            void (*write)(void *, FILE *fp);
-        } userdata;
-        /* vector */
-        struct {
-            li_object **data;
-            int length;
-        } vector;
-    } data;
-    enum li_types type;
-    int locked;
-};
 
 /** Type casting. */
 #define li_to_character(obj)            (obj)->data.character
