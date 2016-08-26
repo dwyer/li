@@ -99,9 +99,6 @@ typedef li_object *(*li_primitive_procedure_t)(li_object *);
  */
 typedef li_object *(*li_special_form_t)(li_object *, li_object *);
 
-/*
- * TODO: use this
- */
 typedef struct {
     char *string;
 } li_string_t;
@@ -133,9 +130,9 @@ struct li_object {
         li_number_t number;
         li_pair_t pair;
         li_port_t port;
-        li_object *(*primitive_procedure)(li_object *);
-        li_object *(*special_form)(li_object *, li_object *);
-        char *string;
+        li_primitive_procedure_t primitive_procedure;
+        li_special_form_t special_form;
+        li_string_t string;
         li_symbol_t symbol;
         li_userdata_t userdata;
         li_vector_t vector;
@@ -234,7 +231,7 @@ extern void li_setup_environment(li_object *env);
 #define li_to_port(obj)                 (obj)->data.port
 #define li_to_primitive_procedure(obj)  (obj)->data.primitive_procedure
 #define li_to_special_form(obj)         (obj)->data.special_form
-#define li_to_string(obj)               (obj)->data.string
+#define li_to_string(obj)               (obj)->data.string.string
 #define li_to_symbol(obj)               (obj)->data.symbol.string
 #define li_to_userdata(obj)             (obj)->data.userdata.v
 #define li_to_vector(obj)               (obj)->data.vector

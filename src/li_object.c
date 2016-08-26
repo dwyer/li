@@ -206,7 +206,7 @@ extern li_object *li_string(const char *s) {
     li_object *obj;
 
     obj = li_create(LI_T_STRING);
-    obj->data.string = strdup(s);
+    obj->data.string.string = strdup(s);
     return obj;
 }
 
