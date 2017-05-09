@@ -56,7 +56,7 @@ data    : { $$ = li_null; }
 li_object *append(li_object *lst, li_object *obj)
 {
     li_object *tail;
-        
+
     for (tail = lst; tail && li_cdr(tail); tail = li_cdr(tail))
         ;
     if (!tail)
@@ -79,5 +79,5 @@ li_object *li_read(FILE *fp)
 
 void yyerror(char *s)
 {
-    li_error(s, li_number(yylineno));
+    li_error(s, li_number(li_num_with_int(yylineno)));
 }

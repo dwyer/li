@@ -156,7 +156,7 @@ extern li_object *li_macro(li_object *vars, li_object *body, li_object *env) {
     return obj;
 }
 
-extern li_object *li_number(double n) {
+extern li_object *li_number(li_num_t n) {
     li_object *obj;
 
     obj = li_create(LI_T_NUMBER);
@@ -167,7 +167,7 @@ extern li_object *li_number(double n) {
 extern li_object *li_pair(li_object *car, li_object *cdr) {
     li_object *obj;
 
-    obj = li_create(LI_T_PAIR); 
+    obj = li_create(LI_T_PAIR);
     obj->data.pair.car = car;
     obj->data.pair.cdr = cdr;
     return obj;
@@ -345,7 +345,7 @@ extern void li_cleanup(li_object *env) {
     }
 }
 
-extern int li_is_equal_vectors(li_object *obj1, li_object *obj2) {
+static li_bool_t li_is_equal_vectors(li_object *obj1, li_object *obj2) {
     int k;
 
     if (li_vector_length(obj1) != li_vector_length(obj2))
@@ -356,7 +356,7 @@ extern int li_is_equal_vectors(li_object *obj1, li_object *obj2) {
     return 1;
 }
 
-extern int li_is_equal(li_object *obj1, li_object *obj2) {
+extern li_bool_t li_is_equal(li_object *obj1, li_object *obj2) {
     if (li_is_eqv(obj1, obj2))
         return 1;
     else if (li_is_pair(obj1) && li_is_pair(obj2))
@@ -369,7 +369,7 @@ extern int li_is_equal(li_object *obj1, li_object *obj2) {
     return 0;
 }
 
-extern int li_is_eqv(li_object *obj1, li_object *obj2) {
+extern li_bool_t li_is_eqv(li_object *obj1, li_object *obj2) {
     if (li_is_eq(obj1, obj2))
         return 1;
     else if (!obj1 || !obj2)
@@ -377,13 +377,13 @@ extern int li_is_eqv(li_object *obj1, li_object *obj2) {
     else if (obj1->type != obj2->type)
         return 0;
     else if (li_is_number(obj1) && li_is_number(obj2))
-        return li_to_number(obj1) == li_to_number(obj2);
+        return li_num_eq(li_to_number(obj1), li_to_number(obj2));
     else if (li_is_character(obj1) && li_is_character(obj2))
         return li_to_character(obj1) == li_to_character(obj2);
     return 0;
 }
 
-extern int li_is_list(li_object *obj) {
+extern li_bool_t li_is_list(li_object *obj) {
     while (obj) {
         if (!li_is_pair(obj))
             return 0;

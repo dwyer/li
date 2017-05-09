@@ -29,7 +29,15 @@ void li_write_object(li_object *obj, FILE *f, int h) {
     } else if (li_is_macro(obj)) {
         fprintf(f, "#[macro]");
     } else if (li_is_number(obj)) {
-        fprintf(f, "%.512g", li_to_number(obj));
+        if (!li_num_is_exact(li_to_number(obj)))
+            fprintf(f, "%f", li_num_to_dec(li_to_number(obj)));
+        else if (li_num_is_integer(li_to_number(obj)))
+            fprintf(f, "%ld", li_num_to_int(li_to_number(obj)));
+        else
+            fprintf(f, "%s%ld/%ld",
+                    li_rat_is_negative(li_to_number(obj).real.exact) ? "-" : "",
+                    li_rat_num(li_to_number(obj).real.exact),
+                    li_rat_den(li_to_number(obj).real.exact));
     } else if (li_is_pair(obj)) {
         write_pair(obj, f, h);
     } else if (li_is_port(obj)) {

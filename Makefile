@@ -9,7 +9,7 @@ RANLIB=ranlib
 RM=rm -f
 YACC=yacc -d
 
-CFLAGS=-O2 -Wall -Wextra -ansi -pedantic
+CFLAGS=-Wall -Wextra -ansi -pedantic
 LDFLAGS=-lm
 
 PREFIX=/usr/local
@@ -23,12 +23,14 @@ LI_BIN=li
 LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
-LI_LIB_OBJS_=li_read.o li_parse.o li_error.o li_eval.o li_object.o li_proc.o \
-	    li_write.o
+LI_LIB_OBJS_=li_read.o li_parse.o li_error.o li_eval.o li_nat.o li_num.o \
+	     li_object.o li_proc.o li_rat.o li_write.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 LI_OPT_OBJS_=lib_bytevector.o
 LI_OPT_OBJS=$(addprefix $(OBJDIR)/, $(LI_OPT_OBJS_))
 ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
+
+.PHONY: all opt debug profile install uninstall clean test tags
 
 all: $(LI_BIN)
 

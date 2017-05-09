@@ -3,24 +3,25 @@
 #include <string.h>
 
 #define li_environment_define_primitive_procedure(ENV, NAME, PROC) \
-    li_environment_define(ENV, li_symbol(NAME), li_primitive(PROC))
+    li_environment_define((ENV), li_symbol((NAME)), \
+            li_primitive_procedure((PROC)))
 
-#define li_pop(TYPE, TO, ARGS) { \
-    if (!(ARGS))\
-        li_error(NULL, "not enough arguments", li_null);\
-    if (!li_is_##TYPE(li_car(ARGS)))\
-        li_error(NULL, "not a " #TYPE, li_car(ARGS));\
-    (TO) = li_to_##TYPE(li_car(ARGS)); \
-    (ARGS) = li_cdr(ARGS); \
-}
+#define li_pop(TYPE, TO, ARGS) do { \
+    if (!(ARGS)) \
+        li_error("not enough arguments", li_null); \
+    if (!li_is_##TYPE(li_car((ARGS)))) \
+        li_error("not a " #TYPE, li_car(ARGS)); \
+    (TO) = li_to_##TYPE(li_car((ARGS))); \
+    (ARGS) = li_cdr((ARGS)); \
+} while (0)
 
-#define li_pop_integer(TO, ARGS) li_pop(integer, TO, ARGS)
-#define li_pop_userdata(TO, ARGS) li_pop(userdata, TO, ARGS)
+#define li_pop_integer(TO, ARGS) li_pop(integer, (TO), (ARGS))
+#define li_pop_userdata(TO, ARGS) li_pop(userdata, (TO), (ARGS))
 
-#define li_assert_empty(ARGS) {\
-    if (ARGS)\
-        li_error(NULL, "too many arguments", ARGS);\
-}
+#define li_assert_empty(ARGS) do { \
+    if ((ARGS)) \
+        li_error("too many arguments", (ARGS)); \
+} while (0)
 
 struct li_primitive_procedure_binding {
     const char *name;
@@ -70,8 +71,8 @@ static li_object *make_bytevector(unsigned int k, unsigned char fill)
     v->bytes = li_allocate(NULL, k, sizeof(*v->bytes));
     v->length = k;
     memset(v->bytes, fill, k);
-    obj = li_userdata(v, (void (*)(void *))free_bytevector,
-            (void (*)(void *, FILE *))write_bytevector);
+    obj = li_userdata(v, (free_func_t *)free_bytevector,
+            (write_func_t *)write_bytevector);
     return obj;
 }
 
@@ -96,7 +97,7 @@ static li_object *p_bytevector_length(li_object *args)
 
     li_pop_userdata(v, args);
     li_assert_empty(args);
-    return li_number(v->length);
+    return li_number(li_num_with_int(v->length));
 }
 
 static li_object *p_bytevector_ref(li_object *args)
@@ -108,7 +109,7 @@ static li_object *p_bytevector_ref(li_object *args)
     li_pop_integer(k, args);
     li_assert_empty(args);
     if (0 <= k && k < v->length)
-        return li_number(v->bytes[k]);
+        return li_number(li_num_with_int(v->bytes[k]));
     return li_boolean(li_false);
 }
 
