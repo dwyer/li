@@ -37,8 +37,7 @@ integer                 {sign}{uinteger}
 suffix                  (e{sign}{uinteger_10})
 udecimal                ({uinteger_10}{suffix}|{uinteger_10}\.{uinteger_10}{suffix}?)
 decimal                 {sign}{udecimal}
-
-rational                {integer}\/{uinteger}
+rational                {integer}(\/{uinteger})?
 
 /* complex patterns, order does matter */
 initial                 ({letter}|{special_initial})
@@ -56,9 +55,14 @@ symbol                  ({identifier}|\|[^|]*\|)
 %\\newline              yylval.obj = li_character('\n'); return CHARACTER;
 %\\space                yylval.obj = li_character(' '); return CHARACTER;
 %\\tab                  yylval.obj = li_character('\t'); return CHARACTER;
-{decimal}               yylval.obj = li_number(li_num_with_dec(li_dec_parse(yytext))); return NUMBER;
-{integer}               yylval.obj = li_number(li_num_with_int(li_int_parse(yytext))); return NUMBER;
-{rational}              yylval.obj = li_number(li_num_with_rat(li_rat_parse(yytext))); return NUMBER;
+{decimal}               {
+    yylval.obj = li_number(li_num_with_dec(li_dec_parse(yytext)));
+    return NUMBER;
+}
+{rational}              {
+    yylval.obj = li_number(li_num_with_rat(li_rat_parse(yytext)));
+    return NUMBER;
+}
 {symbol}                yylval.obj = li_symbol(yytext); return SYMBOL;
 \"\"                    yylval.obj = li_string(""); return STRING;
 <INITIAL>\"             BEGIN(XSTRING); n = 0;

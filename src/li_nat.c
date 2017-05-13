@@ -1,5 +1,23 @@
 #include <assert.h>
+#include <ctype.h>
 #include "li.h"
+
+extern size_t li_nat_read(li_nat_t *dst, const char *s)
+{
+    size_t n;
+    for (n = 0; s[n] && isdigit(s[n]); ++n)
+        ;
+    if (n)
+        *dst = atol(s);
+    return n;
+}
+
+extern li_nat_t li_nat_parse(const char *s)
+{
+    li_nat_t x;
+    assert(li_nat_read(&x, s));
+    return x;
+}
 
 extern li_bool_t li_nat_is_zero(li_nat_t x)
 {

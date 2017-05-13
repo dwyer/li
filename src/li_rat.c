@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "li.h"
 
 static li_rat_t li_rat_norm(li_rat_t x);
@@ -8,7 +9,7 @@ static li_rat_t li_rat_norm(li_rat_t x)
 
     if (li_rat_is_zero(x)) {
         x.neg = LI_FALSE;
-        x.den = 1;
+        x.den = li_nat_with_int(1);
         return x;
     }
     r = li_nat_gcd(li_rat_num(x), li_rat_den(x));
@@ -31,18 +32,27 @@ extern li_rat_t li_rat_make(li_bool_t neg, li_nat_t num, li_nat_t den)
 extern li_rat_t li_rat_parse(const char *s)
 {
     li_rat_t x;
-    x.neg = LI_FALSE;
-    if (*s == '-') {
-        x.neg = LI_TRUE;
-        s++;
-    } else if (*s == '+') {
-        s++;
+    assert(li_rat_read(&x, s));
+    return x;
+}
+
+extern size_t li_rat_read(li_rat_t *dst, const char *s)
+{
+    size_t n = 0;
+    li_rat_t x;
+    x.neg = (s[n] == '-');
+    if (x.neg || s[n] == '+')
+        n++;
+    n += li_nat_read(&x.num, s+n);
+    if (s[n] == '/') {
+        n++;
+        n += li_nat_read(&x.den, s+n);
+    } else {
+        x.den = li_nat_with_int(1);
     }
-    x.num = atol(s);
-    while (*s++ != '/')
-        ;
-    x.den = atol(s);
-    return li_rat_norm(x);
+    if (n)
+        *dst = li_rat_norm(x);
+    return n;
 }
 
 extern li_bool_t li_rat_is_integer(li_rat_t x)

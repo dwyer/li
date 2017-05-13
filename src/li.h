@@ -32,7 +32,9 @@ typedef enum {
 
 typedef unsigned long li_nat_t;
 
-#define li_nat_with_int(x) (labs(x))
+extern size_t li_nat_read(li_nat_t *dst, const char *s);
+extern li_nat_t li_nat_parse(const char *s);
+#define li_nat_with_int(x) labs(x)
 #define li_nat_to_dec(x) ((li_dec_t)(x))
 #define li_nat_to_int(x) ((li_int_t)(x))
 extern li_bool_t li_nat_is_zero(li_nat_t x);
@@ -53,12 +55,14 @@ typedef struct {
     li_nat_t den;
 } li_rat_t;
 
-extern li_rat_t li_rat_parse(const char *s);
 extern li_rat_t li_rat_make(li_bool_t neg, li_nat_t num, li_nat_t den);
+extern li_bool_t li_rat_is_negative(li_rat_t x);
 extern li_nat_t li_rat_num(li_rat_t x);
 extern li_nat_t li_rat_den(li_rat_t x);
 
-extern li_bool_t li_rat_is_negative(li_rat_t x);
+extern li_rat_t li_rat_parse(const char *s);
+extern size_t li_rat_read(li_rat_t *dst, const char *s);
+
 extern li_bool_t li_rat_is_zero(li_rat_t x);
 extern li_bool_t li_rat_is_integer(li_rat_t x);
 extern li_cmp_t li_rat_cmp(li_rat_t x, li_rat_t y);
