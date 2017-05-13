@@ -1,4 +1,5 @@
 #include <time.h>
+#include <unistd.h>
 #include "li.h"
 
 #define ARGV_SYMBOL li_symbol("*args*")
@@ -8,7 +9,8 @@ void li_repl(li_object *env);
 void li_script(li_object *env);
 
 li_object *li_prompt(FILE *fin, FILE *fout, const char *s) {
-    fputs(s, fout);
+    if (isatty(0))
+        fputs(s, fout);
     return li_read(fin);
 }
 
