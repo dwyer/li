@@ -306,7 +306,7 @@ extern void li_cleanup(li_object *env);
 typedef void free_func_t(void *);
 typedef void write_func_t(void *, FILE *);
 
-extern li_object *li_character(int c);
+extern li_object *li_character(li_character_t c);
 extern li_object *li_environment(li_object *base);
 extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
         li_object *env);
@@ -375,7 +375,7 @@ extern void li_setup_environment(li_object *env);
 
 /* Type checking. */
 #define li_type(obj)                    (obj)->type
-#define li_is_type(obj, t)              ((obj) && li_type(obj) == t)
+#define li_is_type(obj, t)              ((obj) && li_type(obj) == (t))
 
 #define li_is_character(obj)            li_is_type(obj, LI_T_CHARACTER)
 #define li_is_environment(obj)          li_is_type(obj, LI_T_ENVIRONMENT)
@@ -431,13 +431,13 @@ extern void li_setup_environment(li_object *env);
 #define li_cddadr(obj)                  li_cdr(li_cdr(li_car(li_cdr(obj))))
 #define li_cdddar(obj)                  li_cdr(li_cdr(li_cdr(li_car(obj))))
 #define li_cddddr(obj)                  li_cdr(li_cdr(li_cdr(li_cdr(obj))))
-#define li_set_car(obj1, obj2)          (li_car(obj1) = obj2)
-#define li_set_cdr(obj1, obj2)          (li_cdr(obj1) = obj2)
+#define li_set_car(obj1, obj2)          (li_car(obj1) = (obj2))
+#define li_set_cdr(obj1, obj2)          (li_cdr(obj1) = (obj2))
 
 /** Vector accessors. */
 #define li_vector_length(v)             li_to_vector(v).length
-#define li_vector_ref(v, k)             li_to_vector(v).data[k]
-#define li_vector_set(v, k, o)          (li_vector_ref(v, k) = o)
+#define li_vector_ref(v, k)             li_to_vector(v).data[(k)]
+#define li_vector_set(v, k, o)          (li_vector_ref(v, k) = (o))
 
 /* li_error.c */
 extern void li_error(const char *msg, li_object *args);

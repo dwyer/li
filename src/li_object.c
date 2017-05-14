@@ -72,7 +72,7 @@ extern li_object *li_create(int type) {
     return obj;
 }
 
-extern li_object *li_character(int c) {
+extern li_object *li_character(li_character_t c) {
     li_object *obj;
 
     obj = li_create(LI_T_CHARACTER);
