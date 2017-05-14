@@ -22,24 +22,23 @@ comment                 [#;].*$
 digit                   [0-9]
 letter                  [A-Za-z]
 peculiar_identifier     ([+-]|\.\.\.)
+sign                    [+-]?
 special_initial         [!$%&*/:<=>?^_~]
 special_subsequent      [+-.@]
 whitespace              [ \n\t]*
 
-sign                    [+-]?
+/* complex patterns, order does matter */
 digit_10                {digit}
-digit_16                [A-Fa-f0-9]
+digit_16                {digit_10}[A-Fa-f]
 uinteger_10             {digit_10}+
 uinteger_16             0[Xx]{digit_16}+
-uinteger                ({uinteger_16}|{uinteger_10})
-integer                 {sign}{uinteger}
+uinteger                ({uinteger_10}|{uinteger_16})
+rational                {sign}{uinteger}(\/{uinteger})?
 
 suffix                  (e{sign}{uinteger_10})
 udecimal                ({uinteger_10}{suffix}|{uinteger_10}\.{uinteger_10}{suffix}?)
 decimal                 {sign}{udecimal}
-rational                {integer}(\/{uinteger})?
 
-/* complex patterns, order does matter */
 initial                 ({letter}|{special_initial})
 subsequent              ({initial}|{digit}|{special_subsequent})
 identifier              ({initial}{subsequent}*|{peculiar_identifier})
@@ -58,11 +57,11 @@ symbol                  ({identifier}|\|[^|]*\|)
 {decimal}               {
     yylval.obj = li_number(li_num_with_dec(li_dec_parse(yytext)));
     return NUMBER;
-}
+                        }
 {rational}              {
     yylval.obj = li_number(li_num_with_rat(li_rat_parse(yytext)));
     return NUMBER;
-}
+                        }
 {symbol}                yylval.obj = li_symbol(yytext); return SYMBOL;
 \"\"                    yylval.obj = li_string(""); return STRING;
 <INITIAL>\"             BEGIN(XSTRING); n = 0;
