@@ -23,8 +23,8 @@ LI_BIN=li
 LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
-LI_LIB_OBJS_=li_read.o li_parse.o li_error.o li_eval.o li_nat.o li_num.o \
-	     li_object.o li_proc.o li_rat.o li_write.o
+LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_eval.o li_nat.o \
+	     li_num.o li_object.o li_proc.o li_rat.o li_str.o li_write.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 LI_OPT_OBJS_=lib_bytevector.o
 LI_OPT_OBJS=$(addprefix $(OBJDIR)/, $(LI_OPT_OBJS_))
@@ -78,3 +78,18 @@ test: $(LI_BIN)
 
 tags: src/li.h
 	ctags -f $@ $<
+
+# automatically made with 'gcc -MM src/li_*.c'
+$(OBJDIR)/li.o: src/li.c src/li.h
+$(OBJDIR)/li_chr.o: src/li_chr.c src/li.h
+$(OBJDIR)/li_error.o: src/li_error.c src/li.h
+$(OBJDIR)/li_eval.o: src/li_eval.c src/li.h
+$(OBJDIR)/li_nat.o: src/li_nat.c src/li.h
+$(OBJDIR)/li_num.o: src/li_num.c src/li.h
+$(OBJDIR)/li_object.o: src/li_object.c src/li.h
+$(OBJDIR)/li_proc.o: src/li_proc.c src/li.h
+$(OBJDIR)/li_rat.o: src/li_rat.c src/li.h
+$(OBJDIR)/li_read.o: src/li_read.c src/li.h
+$(OBJDIR)/li_str.o: src/li_str.c src/li.h
+$(OBJDIR)/li_write.o: src/li_write.c src/li.h
+$(OBJDIR)/lib_bytevector.o: src/lib_bytevector.c src/li.h

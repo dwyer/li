@@ -37,7 +37,7 @@ void li_script(li_object *env) {
     li_object *args;
 
     args = li_environment_lookup(env, ARGV_SYMBOL);
-    li_load(li_to_string(li_car(args)), env);
+    li_load(li_string_bytes(li_to_string(li_car(args))), env);
 }
 
 int main(int argc, char *argv[]) {
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     env = li_environment(li_null);
     li_setup_environment(env);
     for (args = li_null, i = argc - 1; i; i--)
-        args = li_cons(li_string(argv[i]), args);
+        args = li_cons(li_string(li_string_make(argv[i])), args);
     li_append_variable(ARGV_SYMBOL, args, env);
 #ifdef LI_OPTIONAL
     li_load_bytevector(env);

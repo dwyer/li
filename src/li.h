@@ -167,7 +167,11 @@ enum li_types {
 
 typedef struct li_object li_object;
 
-typedef int li_character_t;
+typedef unsigned int li_character_t;
+
+extern size_t li_chr_decode(li_character_t *chr, const char *s);
+extern size_t li_chr_encode(li_character_t chr, char *s, size_t n);
+extern size_t li_chr_count(const char *s);
 
 typedef struct {
     struct {
@@ -232,8 +236,18 @@ typedef li_object *(*li_primitive_procedure_t)(li_object *);
 typedef li_object *(*li_special_form_t)(li_object *, li_object *);
 
 typedef struct {
-    char *string;
+    char *bytes;
 } li_string_t;
+
+extern li_string_t li_string_make(const char *s);
+extern li_string_t li_string_copy(li_string_t str);
+extern void li_string_free(li_string_t str);
+extern char *li_string_bytes(li_string_t str);
+extern li_character_t li_string_ref(li_string_t str, int k);
+extern void li_string_set(li_string_t str, int idx, li_character_t chr);
+extern size_t li_string_length(li_string_t str);
+extern li_cmp_t li_string_cmp(li_string_t st1, li_string_t st2);
+extern li_string_t li_string_append(li_string_t str1, li_string_t str2);
 
 typedef struct {
     char *string;
@@ -316,7 +330,7 @@ extern li_object *li_pair(li_object *car, li_object *cdr);
 extern li_object *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
 extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *));
-extern li_object *li_string(const char *s);
+extern li_object *li_string(li_string_t str);
 extern li_object *li_symbol(const char *s);
 extern li_object *li_userdata(void *v, free_func_t *free, write_func_t *write);
 
@@ -365,7 +379,7 @@ extern void li_setup_environment(li_object *env);
 #define li_to_port(obj)                 (obj)->data.port
 #define li_to_primitive_procedure(obj)  (obj)->data.primitive_procedure
 #define li_to_special_form(obj)         (obj)->data.special_form
-#define li_to_string(obj)               (obj)->data.string.string
+#define li_to_string(obj)               (obj)->data.string
 #define li_to_symbol(obj)               (obj)->data.symbol.string
 #define li_to_userdata(obj)             (obj)->data.userdata.v
 #define li_to_vector(obj)               (obj)->data.vector

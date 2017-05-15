@@ -271,7 +271,7 @@ static li_object *m_letrec(li_object *args, li_object *env) {
 static li_object *m_load(li_object *args, li_object *env) {
     assert_nargs(1, args);
     assert_string(li_car(args));
-    li_load(li_to_string(li_car(args)), env);
+    li_load(li_string_bytes(li_to_string(li_car(args))), env);
     return li_null;
 }
 
@@ -312,7 +312,7 @@ static li_object *m_set(li_object *args, li_object *env) {
 static li_object *p_error(li_object *args) {
     /* TODO: assert at least one arg */
     assert_string(li_car(args));
-    li_error(li_to_string(li_car(args)), li_cdr(args));
+    li_error(li_string_bytes(li_to_string(li_car(args))), li_cdr(args));
     return li_null;
 }
 
@@ -343,15 +343,17 @@ static li_object *p_rand(li_object *args) {
 static li_object *p_remove(li_object *args) {
     assert_nargs(1, args);
     assert_string(li_car(args));
-    return li_number(li_num_with_int(remove(li_to_string(li_car(args)))));
+    return li_number(li_num_with_int(
+                remove(li_string_bytes(li_to_string(li_car(args))))));
 }
 
 static li_object *p_rename(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
     assert_string(li_cadr(args));
-    return li_number(li_num_with_int(rename(li_to_string(li_car(args)),
-                    li_to_string(li_cadr(args)))));
+    return li_number(li_num_with_int(rename(
+                    li_string_bytes(li_to_string(li_car(args))),
+                    li_string_bytes(li_to_string(li_cadr(args))))));
 }
 
 static li_object *p_environ(li_object *args) {
@@ -365,9 +367,9 @@ static li_object *p_environ(li_object *args) {
     head = li_null;
     while (*sp) {
         if (head)
-            tail = li_set_cdr(tail, li_cons(li_string(*sp), li_null));
+            tail = li_set_cdr(tail, li_cons(li_string(li_string_make(*sp)), li_null));
         else
-            head = tail = li_cons(li_string(*sp), li_null);
+            head = tail = li_cons(li_string(li_string_make(*sp)), li_null);
         sp++;
     }
     return head;
@@ -379,8 +381,8 @@ static li_object *p_getenv(li_object *args) {
 
     assert_nargs(1, args);
     assert_string(li_car(args));
-    if ((env = getenv(li_to_string(li_car(args)))))
-        return li_string(env);
+    if ((env = getenv(li_string_bytes(li_to_string(li_car(args))))))
+        return li_string(li_string_make(env));
     else
         return li_false;
 }
@@ -389,7 +391,8 @@ static li_object *p_setenv(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
     assert_string(li_cadr(args));
-    setenv(li_to_string(li_car(args)), li_to_string(li_cadr(args)), 1);
+    setenv(li_string_bytes(li_to_string(li_car(args))), 
+            li_string_bytes(li_to_string(li_cadr(args))), 1);
     return li_null;
 }
 
@@ -398,7 +401,7 @@ static li_object *p_system(li_object *args) {
 
     assert_nargs(1, args);
     assert_string(li_car(args));
-    if ((ret = system(li_to_string(li_car(args)))))
+    if ((ret = system(li_string_bytes(li_to_string(li_car(args))))))
         return li_number(li_num_with_int(ret));
     return li_null;
 }
@@ -1148,13 +1151,13 @@ static li_object *p_is_symbol(li_object *args) {
 static li_object *p_symbol_to_string(li_object *args) {
     assert_nargs(1, args);
     assert_symbol(li_car(args));
-    return li_string(li_to_symbol(li_car(args)));
+    return li_string(li_string_make(li_to_symbol(li_car(args))));
 }
 
 static li_object *p_string_to_symbol(li_object *args) {
     assert_nargs(1, args);
     assert_string(li_car(args));
-    return li_symbol(li_to_string(li_car(args)));
+    return li_symbol(li_string_bytes(li_to_string(li_car(args))));
 }
 
 /**************
@@ -1239,7 +1242,7 @@ static li_object *p_string(li_object *args) {
         str[i] = li_to_character(li_car(args));
     }
     str[i] = '\0';
-    return li_string(str);
+    return li_string(li_string_make(str));
 }
 
 static li_object *p_make_string(li_object *args) {
@@ -1253,7 +1256,7 @@ static li_object *p_make_string(li_object *args) {
     s = li_allocate(li_null, k, sizeof(*s));
     while (k >= 0)
         s[k--] = '\0';
-    obj = li_string(s);
+    obj = li_string(li_string_make(s));
     free(s);
     return obj;
 }
@@ -1261,14 +1264,17 @@ static li_object *p_make_string(li_object *args) {
 static li_object *p_string_length(li_object *args) {
     assert_nargs(1, args);
     assert_string(li_car(args));
-    return li_number(li_num_with_int(strlen(li_to_string(li_car(args)))));
+    return li_number(li_num_with_int(
+                li_string_length(li_to_string(li_car(args)))));
 }
 
 static li_object *p_string_ref(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
     assert_integer(li_cadr(args));
-    return li_character(li_to_string(li_car(args))[li_to_integer(li_cadr(args))]);
+    return li_character(li_string_ref(
+                li_to_string(li_car(args)),
+                li_to_integer(li_cadr(args))));
 }
 
 static li_object *p_string_set(li_object *args) {
@@ -1276,59 +1282,76 @@ static li_object *p_string_set(li_object *args) {
     assert_string(li_car(args));
     assert_integer(li_cadr(args));
     assert_character(li_caddr(args));
-    return li_character(li_to_string(li_car(args))[li_to_integer(li_cadr(args))] =
-                     li_to_character(li_caddr(args)));
+    li_string_set(li_to_string(li_car(args)), li_to_integer(li_cadr(args)),
+            li_to_character(li_caddr(args)));
+    return li_null;
 }
 
 static li_object *p_string_eq(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
     assert_string(li_cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) == 0);
+    return li_boolean(li_string_cmp(
+                li_to_string(li_car(args)),
+                li_to_string(li_cadr(args)))
+            == LI_CMP_EQ);
 }
 
 static li_object *p_string_le(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
     assert_string(li_cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) <= 0);
+    return li_boolean(li_string_cmp(
+                li_to_string(li_car(args)),
+                li_to_string(li_cadr(args)))
+            != LI_CMP_GT);
 }
 
 static li_object *p_string_lt(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
     assert_string(li_cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) < 0);
+    return li_boolean(li_string_cmp(
+                li_to_string(li_car(args)),
+                li_to_string(li_cadr(args)))
+            == LI_CMP_LT);
 }
 
 static li_object *p_string_ge(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
     assert_string(li_cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) >= 0);
+    return li_boolean(li_string_cmp(
+                li_to_string(li_car(args)),
+                li_to_string(li_cadr(args)))
+            != LI_CMP_LT);
 }
 
 static li_object *p_string_gt(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
     assert_string(li_cadr(args));
-    return li_boolean(strcmp(li_to_string(li_car(args)), li_to_string(li_cadr(args))) > 0);
+    return li_boolean(li_string_cmp(
+                li_to_string(li_car(args)),
+                li_to_string(li_cadr(args)))
+            == LI_CMP_GT);
 }
 
 static li_object *p_string_to_list(li_object *args) {
     li_object *head, *tail;
-    char *str;
+    li_string_t str;
     unsigned long i;
 
     assert_nargs(1, args);
     assert_string(li_car(args));
     str = li_to_string(li_car(args));
     head = tail = li_null;
-    for (i = 0; i < strlen(str); ++i) {
+    for (i = 0; i < li_string_length(str); ++i) {
         if (head)
-            tail = li_set_cdr(tail, li_cons(li_character(str[i]), li_null));
+            tail = li_set_cdr(tail, li_cons(li_character(li_string_ref(str, i)),
+                        li_null));
         else
-            head = tail = li_cons(li_character(str[i]), li_null);
+            head = tail = li_cons(li_character(li_string_ref(str, i)), li_null);
     }
     return head;
 }
@@ -1336,24 +1359,25 @@ static li_object *p_string_to_list(li_object *args) {
 static li_object *p_string_to_number(li_object *args) {
     assert_nargs(1, args);
     assert_string(li_car(args));
-    return li_number(li_num_with_chars(li_to_string(li_car(args))));
+    return li_number(li_num_with_chars(li_string_bytes(li_to_string(
+                        li_car(args)))));
 }
 
 static li_object *p_string_to_vector(li_object *args) {
     li_object *head, *tail;
-    int i, n;
-    char *s;
+    li_string_t str;
+    size_t i;
 
     assert_nargs(1, args);
     assert_string(li_car(args));
-    s = li_to_string(li_car(args));
-    n = strlen(s);
+    str = li_to_string(li_car(args));
     head = tail = li_null;
-    for (i = 0; i < n; ++i) {
+    for (i = 0; i < li_string_length(str); ++i) {
         if (head)
-            tail = li_set_cdr(tail, li_cons(li_character(s[i]), li_null));
+            tail = li_set_cdr(tail, li_cons(li_character(li_string_ref(str, i)),
+                        li_null));
         else
-            head = tail = li_cons(li_character(s[i]), li_null);
+            head = tail = li_cons(li_character(li_string_ref(str, i)), li_null);
     }
     return li_vector(head);
 }
@@ -1364,30 +1388,23 @@ static li_object *p_number_to_string(li_object *args) {
     assert_nargs(1, args);
     assert_number(li_car(args));
     s = li_num_to_chars(li_to_number(li_car(args)));
-    return li_string(s);
+    return li_string(li_string_make(s));
 }
 
 static li_object *p_string_append(li_object *args) {
-    li_object *str;
-    char *s, *ss;
-    int size, i;
+    li_string_t str, tmp;
 
-    size = 1;
-    s = li_allocate(li_null, size, sizeof(char));
-    for (i = 0; args; args = li_cdr(args)) {
+    if (!args)
+        li_error("wrong number of args", args);
+    assert_string(li_car(args));
+    str = li_string_copy(li_to_string(li_car(args)));
+    for (args = li_cdr(args); args; args = li_cdr(args)) {
         assert_string(li_car(args));
-        for (ss = li_to_string(li_car(args)); *ss; ss++) {
-            s[i] = *ss;
-            if (++i >= size) {
-                size *= 2;
-                s = li_allocate(s, size, sizeof(char));
-            }
-        }
+        tmp = str;
+        str = li_string_append(str, li_to_string(li_car(args)));
+        li_string_free(tmp);
     }
-    s[i] = '\0';
-    str = li_string(s);
-    free(s);
-    return str;
+    return li_string(str);
 }
 
 /***********
@@ -1403,7 +1420,7 @@ static li_object *p_is_vector(li_object *args) {
     return li_boolean(li_is_vector(li_car(args)));
 }
 
-/* 
+/*
  * (vector . args)
  * Returns a vector containing the given args.
  */
@@ -1514,7 +1531,7 @@ static li_object *p_vector_to_string(li_object *args) {
         assert_character(li_vector_ref(vec, k));
         s[k] = li_to_character(li_vector_ref(vec, k));
     }
-    str = li_string(s);
+    str = li_string(li_string_make(s));
     free(s);
     return str;
 }
@@ -1535,7 +1552,7 @@ static li_object *p_list_to_string(li_object *args) {
         lst = li_cdr(lst);
     }
     s[i] = '\0';
-    str = li_string(s);
+    str = li_string(li_string_make(s));
     free(s);
     return str;
 }
@@ -1659,13 +1676,13 @@ static li_object *p_open(li_object *args) {
     if (has_2_args(args)) {
         assert_nargs(2, args);
         assert_string(li_cadr(args));
-        mode = li_to_string(li_cadr(args));
+        mode = li_string_bytes(li_to_string(li_cadr(args)));
     } else {
         assert_nargs(1, args);
         mode = "r";
     }
     assert_string(li_car(args));
-    if (!(p = li_port(li_to_string(li_car(args)), mode)))
+    if (!(p = li_port(li_string_bytes(li_to_string(li_car(args))), mode)))
         li_error("cannot open file", li_car(args));
     return p;
 }

@@ -63,7 +63,7 @@ symbol                  ({identifier}|\|[^|]*\|)
     return NUMBER;
                         }
 {symbol}                yylval.obj = li_symbol(yytext); return SYMBOL;
-\"\"                    yylval.obj = li_string(""); return STRING;
+\"\"                    yylval.obj = li_string(li_string_make("")); return STRING;
 <INITIAL>\"             BEGIN(XSTRING); n = 0;
 <XSTRING>[^\\"]*        bufappend(yytext);
 <XSTRING>\\[\\"]        bufappend(yytext+1);
@@ -72,7 +72,7 @@ symbol                  ({identifier}|\|[^|]*\|)
 <XSTRING>\\t            bufappend("\t");
 <XSTRING>\"             {
                             BEGIN(INITIAL);
-                            yylval.obj = li_string(buf);
+                            yylval.obj = li_string(li_string_make(buf));
                             free(buf);
                             buf = NULL;
                             n = 0;
@@ -121,12 +121,13 @@ void li_load(char *filename, li_object *env)
     int pop;
 
     if (!(filepath = realpath(filename, NULL)))
-        li_error("could not find file", li_string(filename));
+        li_error("could not find file", li_string(li_string_make(filename)));
     cwd = getcwd(NULL, 0);
     if (chdir(dirname(filepath)))
-        li_error("could not read from directory", li_string(dirname(filepath)));
+        li_error("could not read from directory", li_string(
+                    li_string_make(dirname(filepath))));
     if ((fp = fopen(basename(filename), "r")) == NULL)
-        li_error("could not read file", li_string(filepath));
+        li_error("could not read file", li_string(li_string_make(filepath)));
     free(filepath);
     pop = push_buffer(fp);
     while ((exp = li_read(fp)) != li_eof) {
@@ -137,6 +138,7 @@ void li_load(char *filename, li_object *env)
         yypop_buffer_state();
     fclose(fp);
     if (chdir(cwd))
-        li_error("could not read from directory", li_string(cwd));
+        li_error("could not read from directory",
+                li_string(li_string_make(cwd)));
     free(cwd);
 }

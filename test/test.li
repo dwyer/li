@@ -541,4 +541,5 @@
 (import test-sort)
 (import test-match)
 (import test-syntax)
+(import test-string)
 (print "all tests passed!")

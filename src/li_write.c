@@ -17,11 +17,13 @@ void li_write_object(li_object *obj, FILE *f, int h) {
     } else if (li_is_locked(obj)) {
         fprintf(f, "...");
     } else if (li_is_character(obj)) {
-        fprintf(f, h ? "%c" : "%%\\%c", li_to_character(obj));
+        char buf[5] = {'\0'};
+        li_chr_encode(li_to_character(obj), buf, 4);
+        fprintf(f, h ? "%s" : "%%\\%s", buf);
     } else if (li_is_lambda(obj)) {
         fprintf(f, "#[lambda %s ",
                 li_to_lambda(obj).name ?
-                li_to_string(li_to_lambda(obj).name) : "\b");
+                li_string_bytes(li_to_string(li_to_lambda(obj).name)) : "\b");
         li_write_object(li_to_lambda(obj).vars, f, h);
         fprintf(f, "]");
     } else if (li_is_environment(obj)) {
@@ -80,7 +82,7 @@ void write_pair(li_object *obj, FILE *f, int h) {
 }
 
 void write_string(li_object *obj, FILE *f, int h) {
-    fprintf(f, h ? "%s" : "\"%s\"", li_to_string(obj));
+    fprintf(f, h ? "%s" : "\"%s\"", li_string_bytes(li_to_string(obj)));
 }
 
 void write_vector(li_object *obj, FILE *f, int h) {

@@ -7,8 +7,6 @@
 #define HASHSIZE    1024
 #define strdup(s)   strcpy(li_allocate(li_null, strlen(s) + 1, sizeof(char)), s)
 
-#define li_is_string_eq(s1, s2) (!strcmp(li_to_string(s1), li_to_string(s2)))
-
 static struct {
     li_object **objs;
     int size;
@@ -202,11 +200,11 @@ extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *))
     return obj;
 }
 
-extern li_object *li_string(const char *s) {
+extern li_object *li_string(li_string_t str) {
     li_object *obj;
 
     obj = li_create(LI_T_STRING);
-    obj->data.string.string = strdup(s);
+    obj->data.string = str;
     return obj;
 }
 
@@ -269,7 +267,7 @@ extern void li_destroy(li_object *obj) {
         fclose(obj->data.port.file);
         free(obj->data.port.filename);
     } else if (li_is_string(obj)) {
-        free(li_to_string(obj));
+        li_string_free(li_to_string(obj));
     } else if (li_is_symbol(obj)) {
         if (obj->data.symbol.next)
             obj->data.symbol.next->data.symbol.prev = obj->data.symbol.prev;
@@ -363,7 +361,7 @@ extern li_bool_t li_is_equal(li_object *obj1, li_object *obj2) {
         return (li_is_equal(li_car(obj1), li_car(obj2)) &&
                 li_is_equal(li_cdr(obj1), li_cdr(obj2)));
     else if (li_is_string(obj1) && li_is_string(obj2))
-        return li_is_string_eq(obj1, obj2);
+        return li_string_cmp(li_to_string(obj1), li_to_string(obj2)) == LI_CMP_EQ;
     else if (li_is_vector(obj1) && li_is_vector(obj2))
         return li_is_equal_vectors(obj1, obj2);
     return 0;
