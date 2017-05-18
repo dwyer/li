@@ -470,10 +470,10 @@ extern li_object *li_read(FILE *f);
 
 /* li_write.c */
 extern void li_print_object(li_object *obj);
-extern void li_write_object(li_object *obj, FILE *f, int h);
+extern void li_write_object(li_object *obj, FILE *f, li_bool_t repr);
 #define li_print(obj)                   li_print_object(obj)
-#define li_write(obj, f)                li_write_object(obj, f, 0)
-#define li_display(obj, f)              li_write_object(obj, f, 1)
+#define li_write(obj, f)                li_write_object(obj, f, LI_TRUE)
+#define li_display(obj, f)              li_write_object(obj, f, LI_FALSE)
 #define li_newline(f)                   fprintf(f, "\n")
 
 #endif

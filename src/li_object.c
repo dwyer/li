@@ -9,8 +9,8 @@
 
 static struct {
     li_object **objs;
-    int size;
-    int cap;
+    size_t size;
+    size_t cap;
 } _heap = { NULL, 0, 0 };
 
 static li_object *_syms[HASHSIZE] = { li_null };
@@ -18,9 +18,9 @@ static li_object *_syms[HASHSIZE] = { li_null };
 static void li_add_to_heap(li_object *obj);
 static void li_mark(li_object *obj);
 
-static void li_add_to_heap(li_object *obj) {
+static void li_add_to_heap(li_object *obj)
+{
     int i;
-
     if (!_heap.objs) {
         _heap.cap = 1024;
         _heap.size = 0;
@@ -35,8 +35,8 @@ static void li_add_to_heap(li_object *obj) {
     _heap.objs[_heap.size++] = obj;
 }
 
-extern void li_append_variable(li_object *var, li_object *val,
-        li_object *env) {
+extern void li_append_variable(li_object *var, li_object *val, li_object *env)
+{
     if (!li_is_symbol(var))
         li_error("not a variable", var);
     if (env->data.env.size == env->data.env.cap) {
@@ -50,7 +50,8 @@ extern void li_append_variable(li_object *var, li_object *val,
 }
 
 /* TODO: move this to li_alloc.c */
-extern void *li_allocate(void *ptr, size_t count, size_t size) {
+extern void *li_allocate(void *ptr, size_t count, size_t size)
+{
     if (ptr)
         ptr = realloc(ptr, count*size);
     else
@@ -60,28 +61,25 @@ extern void *li_allocate(void *ptr, size_t count, size_t size) {
     return ptr;
 }
 
-extern li_object *li_create(int type) {
-    li_object *obj;
-
-    obj = li_allocate(li_null, 1, sizeof(*obj));
+extern li_object *li_create(int type)
+{
+    li_object *obj = li_allocate(li_null, 1, sizeof(*obj));
     obj->type = type;
     obj->locked = 0;
     li_add_to_heap(obj);
     return obj;
 }
 
-extern li_object *li_character(li_character_t c) {
-    li_object *obj;
-
-    obj = li_create(LI_T_CHARACTER);
+extern li_object *li_character(li_character_t c)
+{
+    li_object *obj = li_create(LI_T_CHARACTER);
     obj->data.character = c;
     return obj;
 }
 
-extern li_object *li_environment(li_object *base) {
-    li_object *obj;
-
-    obj = li_create(LI_T_ENVIRONMENT);
+extern li_object *li_environment(li_object *base)
+{
+    li_object *obj = li_create(LI_T_ENVIRONMENT);
     obj->data.env.cap = 4;
     obj->data.env.size = 0;
     obj->data.env.array = li_allocate(li_null, obj->data.env.cap,
@@ -90,11 +88,9 @@ extern li_object *li_environment(li_object *base) {
     return obj;
 }
 
-extern int li_environment_assign(li_object *env, li_object *var,
-        li_object *val)
+extern int li_environment_assign(li_object *env, li_object *var, li_object *val)
 {
     int i;
-    
     while (env) {
         for (i = 0; i < env->data.env.size; i++)
             if (env->data.env.array[i].var == var) {
@@ -107,9 +103,9 @@ extern int li_environment_assign(li_object *env, li_object *var,
 }
 
 extern void li_environment_define(li_object *env, li_object *var,
-        li_object *val) {
+        li_object *val)
+{
     int i;
-
     for (i = 0; i < env->data.env.size; i++) {
         if (env->data.env.array[i].var == var) {
             env->data.env.array[i].val = val;
@@ -119,9 +115,9 @@ extern void li_environment_define(li_object *env, li_object *var,
     li_append_variable(var, val, env);
 }
 
-extern li_object *li_environment_lookup(li_object *env, li_object *var) {
+extern li_object *li_environment_lookup(li_object *env, li_object *var)
+{
     int i;
-
     while (env) {
         for (i = 0; i < env->data.env.size; i++)
             if (env->data.env.array[i].var == var)
@@ -133,10 +129,9 @@ extern li_object *li_environment_lookup(li_object *env, li_object *var) {
 }
 
 extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
-        li_object *env) {
-    li_object *obj;
-
-    obj = li_create(LI_T_LAMBDA);
+        li_object *env)
+{
+    li_object *obj = li_create(LI_T_LAMBDA);
     obj->data.lambda.name = name;
     obj->data.lambda.vars = vars;
     obj->data.lambda.body = body;
@@ -144,37 +139,34 @@ extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
     return obj;
 }
 
-extern li_object *li_macro(li_object *vars, li_object *body, li_object *env) {
-    li_object *obj;
-
-    obj = li_create(LI_T_MACRO);
+extern li_object *li_macro(li_object *vars, li_object *body, li_object *env)
+{
+    li_object *obj = li_create(LI_T_MACRO);
     obj->data.macro.vars = vars;
     obj->data.macro.body = body;
     obj->data.macro.env = env;
     return obj;
 }
 
-extern li_object *li_number(li_num_t n) {
-    li_object *obj;
-
-    obj = li_create(LI_T_NUMBER);
+extern li_object *li_number(li_num_t n)
+{
+    li_object *obj = li_create(LI_T_NUMBER);
     obj->data.number = n;
     return obj;
 }
 
-extern li_object *li_pair(li_object *car, li_object *cdr) {
-    li_object *obj;
-
-    obj = li_create(LI_T_PAIR);
+extern li_object *li_pair(li_object *car, li_object *cdr)
+{
+    li_object *obj = li_create(LI_T_PAIR);
     obj->data.pair.car = car;
     obj->data.pair.cdr = cdr;
     return obj;
 }
 
-extern li_object *li_port(const char *filename, const char *mode) {
+extern li_object *li_port(const char *filename, const char *mode)
+{
     li_object *obj;
     FILE *f;
-
     if (!(f = fopen(filename, mode)))
         return li_false;
     obj = li_create(LI_T_PORT);
@@ -183,35 +175,31 @@ extern li_object *li_port(const char *filename, const char *mode) {
     return obj;
 }
 
-extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *)) {
-    li_object *obj;
-
-    obj = li_create(LI_T_PRIMITIVE_PROCEDURE);
+extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *))
+{
+    li_object *obj = li_create(LI_T_PRIMITIVE_PROCEDURE);
     obj->data.primitive_procedure = proc;
     return obj;
 }
 
 extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *))
 {
-    li_object *obj;
-
-    obj = li_create(LI_T_SPECIAL_FORM);
+    li_object *obj = li_create(LI_T_SPECIAL_FORM);
     obj->data.special_form = proc;
     return obj;
 }
 
-extern li_object *li_string(li_string_t str) {
-    li_object *obj;
-
-    obj = li_create(LI_T_STRING);
+extern li_object *li_string(li_string_t str)
+{
+    li_object *obj = li_create(LI_T_STRING);
     obj->data.string = str;
     return obj;
 }
 
-extern li_object *li_symbol(const char *s) {
+extern li_object *li_symbol(const char *s)
+{
     li_object *obj;
     unsigned int i, hash;
-
     for (i = hash = 0; s[i]; i++)
         hash = hash * 31 + s[i];
     hash = hash % HASHSIZE;
@@ -233,20 +221,18 @@ extern li_object *li_symbol(const char *s) {
 extern li_object *li_userdata(void *v, void (*free)(void *),
         void (*write)(void *, FILE *))
 {
-    li_object *obj;
-
-    obj = li_create(LI_T_USERDATA);
+    li_object *obj = li_create(LI_T_USERDATA);
     obj->data.userdata.v = v;
     obj->data.userdata.free = free;
     obj->data.userdata.write = write;
     return obj;
 }
 
-extern li_object *li_vector(li_object *lst) {
+extern li_object *li_vector(li_object *lst)
+{
     li_object *obj;
     li_object *iter;
     int k;
-
     for (k = 0, iter = lst; iter; k++, iter = li_cdr(iter))
         ;
     obj = li_create(LI_T_VECTOR);
@@ -258,7 +244,8 @@ extern li_object *li_vector(li_object *lst) {
     return obj;
 }
 
-extern void li_destroy(li_object *obj) {
+extern void li_destroy(li_object *obj)
+{
     if (!obj || li_is_locked(obj)) {
         return;
     } else if (li_is_environment(obj)) {
@@ -287,9 +274,9 @@ extern void li_destroy(li_object *obj) {
     free(obj);
 }
 
-static void li_mark(li_object *obj) {
+static void li_mark(li_object *obj)
+{
     int i;
-
     if (!obj || li_is_locked(obj))
         return;
     li_lock(obj);
@@ -318,14 +305,13 @@ static void li_mark(li_object *obj) {
     }
 }
 
-/* 
- * Garbage collector. 
+/*
+ * Garbage collector.
  */
-extern void li_cleanup(li_object *env) {
-    int i, j, k;
-
+extern void li_cleanup(li_object *env)
+{
+    int i, j, k = _heap.size;
     li_mark(env);
-    k = _heap.size;
     for (i = j = 0; i < k; i++) {
         if (li_is_locked(_heap.objs[i])) {
             li_unlock(_heap.objs[i]);
@@ -343,9 +329,9 @@ extern void li_cleanup(li_object *env) {
     }
 }
 
-static li_bool_t li_is_equal_vectors(li_object *obj1, li_object *obj2) {
+static li_bool_t li_is_equal_vectors(li_object *obj1, li_object *obj2)
+{
     int k;
-
     if (li_vector_length(obj1) != li_vector_length(obj2))
         return 0;
     for (k = 0; k < li_vector_length(obj1); k++)
@@ -354,7 +340,8 @@ static li_bool_t li_is_equal_vectors(li_object *obj1, li_object *obj2) {
     return 1;
 }
 
-extern li_bool_t li_is_equal(li_object *obj1, li_object *obj2) {
+extern li_bool_t li_is_equal(li_object *obj1, li_object *obj2)
+{
     if (li_is_eqv(obj1, obj2))
         return 1;
     else if (li_is_pair(obj1) && li_is_pair(obj2))
@@ -367,7 +354,8 @@ extern li_bool_t li_is_equal(li_object *obj1, li_object *obj2) {
     return 0;
 }
 
-extern li_bool_t li_is_eqv(li_object *obj1, li_object *obj2) {
+extern li_bool_t li_is_eqv(li_object *obj1, li_object *obj2)
+{
     if (li_is_eq(obj1, obj2))
         return 1;
     else if (!obj1 || !obj2)
@@ -381,7 +369,8 @@ extern li_bool_t li_is_eqv(li_object *obj1, li_object *obj2) {
     return 0;
 }
 
-extern li_bool_t li_is_list(li_object *obj) {
+extern li_bool_t li_is_list(li_object *obj)
+{
     while (obj) {
         if (!li_is_pair(obj))
             return 0;
@@ -390,9 +379,9 @@ extern li_bool_t li_is_list(li_object *obj) {
     return 1;
 }
 
-extern int li_length(li_object *obj) {
+extern int li_length(li_object *obj)
+{
     int k;
-
     for (k = 0; obj; k++)
         if (li_is_pair(obj))
             obj = li_cdr(obj);
