@@ -34,11 +34,6 @@ extern li_character_t li_string_ref(li_string_t str, int idx)
     return c;
 }
 
-extern void li_string_set(li_string_t str, int idx, li_character_t chr)
-{
-    str.bytes[idx] = chr;
-}
-
 extern size_t li_string_length(li_string_t str)
 {
     return li_chr_count(str.bytes);

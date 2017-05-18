@@ -1277,16 +1277,6 @@ static li_object *p_string_ref(li_object *args) {
                 li_to_integer(li_cadr(args))));
 }
 
-static li_object *p_string_set(li_object *args) {
-    assert_nargs(3, args);
-    assert_string(li_car(args));
-    assert_integer(li_cadr(args));
-    assert_character(li_caddr(args));
-    li_string_set(li_to_string(li_car(args)), li_to_integer(li_cadr(args)),
-            li_to_character(li_caddr(args)));
-    return li_null;
-}
-
 static li_object *p_string_eq(li_object *args) {
     assert_nargs(2, args);
     assert_string(li_car(args));
@@ -2178,7 +2168,6 @@ static struct reg {
     { "string?", p_is_string },
     { "string-length", p_string_length },
     { "string-ref", p_string_ref },
-    { "string-set!", p_string_set },
     { "string=?", p_string_eq },
     { "string>=?", p_string_ge },
     { "string>?", p_string_gt },
