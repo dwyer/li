@@ -72,7 +72,7 @@ extern li_nat_t li_rat_num(li_rat_t x)
 
 extern li_nat_t li_rat_den(li_rat_t x)
 {
-    return x.den ? x.den : li_nat_with_int(1);
+    return li_nat_is_zero(x.den) ? li_nat_with_int(1) : x.den;
 }
 
 extern li_bool_t li_rat_is_zero(li_rat_t x)
@@ -135,7 +135,7 @@ extern li_rat_t li_rat_sub(li_rat_t x, li_rat_t y)
         return li_rat_neg(li_rat_add(li_rat_neg(x), y));
     z0 = li_nat_mul(li_rat_num(x), li_rat_den(y));
     z1 = li_nat_mul(li_rat_num(y), li_rat_den(x));
-    if (z0 < z1) {
+    if (li_nat_cmp(z0, z1) == LI_CMP_LT) {
         x.neg = !li_rat_is_negative(x);
         x.num = li_nat_sub(z1, z0);
     } else {
@@ -175,8 +175,10 @@ extern li_dec_t li_rat_to_dec(li_rat_t x)
 extern li_int_t li_rat_to_int(li_rat_t x)
 {
     li_nat_t y;
+    li_int_t z;
     y = li_rat_num(x);
     if (!li_rat_is_integer(x))
         y = li_nat_div(y, li_rat_den(x));
-    return li_rat_is_negative(x) ? -y : y;
+    z = li_nat_to_int(y);
+    return li_rat_is_negative(x) ? -z : z;
 }

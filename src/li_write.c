@@ -38,8 +38,8 @@ void li_write_object(li_object *obj, FILE *f, li_bool_t repr) {
         else
             fprintf(f, "%s%ld/%ld",
                     li_rat_is_negative(li_to_number(obj).real.exact) ? "-" : "",
-                    li_rat_num(li_to_number(obj).real.exact),
-                    li_rat_den(li_to_number(obj).real.exact));
+                    li_nat_to_int(li_rat_num(li_to_number(obj).real.exact)),
+                    li_nat_to_int(li_rat_den(li_to_number(obj).real.exact)));
     } else if (li_is_pair(obj)) {
         write_pair(obj, f, repr);
     } else if (li_is_port(obj)) {
