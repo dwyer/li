@@ -663,6 +663,15 @@ static li_object *p_div(li_object *args) {
     return li_number(result);
 }
 
+static li_object *p_floor_div(li_object *args) {
+    assert_nargs(2, args);
+    assert_number(li_car(args));
+    assert_number(li_cadr(args));
+    return li_number(li_num_floor(li_num_div(
+                    li_to_number(li_car(args)),
+                    li_to_number(li_cadr(args)))));
+}
+
 static li_object *p_abs(li_object *args) {
     assert_nargs(1, args);
     assert_number(li_car(args));
@@ -2073,6 +2082,7 @@ static struct reg {
     { "*", p_mul },
     { "-", p_sub },
     { "/", p_div },
+    { "//", p_floor_div },
     { "abs", p_abs },
     { "quotient", p_quotient },
     { "remainder", p_remainder },
