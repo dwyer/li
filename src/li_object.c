@@ -311,6 +311,7 @@ static void li_mark(li_object *obj)
 extern void li_cleanup(li_object *env)
 {
     int i, j, k = _heap.size;
+    return;
     li_mark(env);
     for (i = j = 0; i < k; i++) {
         if (li_is_locked(_heap.objs[i])) {

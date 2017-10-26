@@ -56,12 +56,17 @@ extern li_num_t li_num_with_dec(li_dec_t x)
     return n;
 }
 
-extern char *li_num_to_chars(li_num_t x)
+extern size_t li_num_to_chars(li_num_t x, char *s, size_t n)
 {
-    char *s; /* TODO: make this a buffer? */
-    s = li_allocate(li_null, 30, sizeof(char));
-    sprintf(s, "%.15g", x.real.inexact);
-    return s;
+    if (!li_num_is_exact(x))
+        return snprintf(s, n, "%f", li_num_to_dec(x));
+    else if (li_num_is_integer(x))
+        return snprintf(s, n, "%ld", li_num_to_int(x));
+    else
+        return snprintf(s, n, "%s%ld/%ld",
+                li_rat_is_negative(x.real.exact) ? "-" : "",
+                li_nat_to_int(li_rat_num(x.real.exact)),
+                li_nat_to_int(li_rat_den(x.real.exact)));
 }
 
 extern li_num_t li_num_with_int(li_int_t x)

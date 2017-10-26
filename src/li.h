@@ -142,7 +142,7 @@ extern li_num_t li_num_with_dec(li_dec_t x);
 extern li_num_t li_num_with_int(li_int_t x);
 extern li_num_t li_num_with_rat(li_rat_t x);
 
-extern char *li_num_to_chars(li_num_t x);
+extern size_t li_num_to_chars(li_num_t x, char *s, size_t n);
 
 extern li_dec_t li_num_to_dec(li_num_t x);
 extern li_int_t li_num_to_int(li_num_t x);

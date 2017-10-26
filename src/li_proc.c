@@ -322,9 +322,13 @@ static li_object *p_clock(li_object *args) {
 }
 
 static li_object *p_exit(li_object *args) {
-    assert_nargs(1, args);
-    assert_integer(li_car(args));
-    exit(li_to_integer(li_car(args)));
+    if (!args) {
+        exit(0);
+    } else {
+        assert_nargs(1, args);
+        assert_integer(li_car(args));
+        exit(li_to_integer(li_car(args)));
+    }
     return li_null;
 }
 
@@ -1382,12 +1386,11 @@ static li_object *p_string_to_vector(li_object *args) {
 }
 
 static li_object *p_number_to_string(li_object *args) {
-    char *s; /* TODO: make this a buffer? */
-
+    static char buf[BUFSIZ];
     assert_nargs(1, args);
     assert_number(li_car(args));
-    s = li_num_to_chars(li_to_number(li_car(args)));
-    return li_string(li_string_make(s));
+    li_num_to_chars(li_to_number(li_car(args)), buf, sizeof(buf));
+    return li_string(li_string_make(buf));
 }
 
 static li_object *p_string_append(li_object *args) {
