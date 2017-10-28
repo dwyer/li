@@ -1,5 +1,10 @@
 #include "li.h"
 
+static void _free(li_object *obj)
+{
+    li_string_free(li_to_string(obj));
+}
+
 static li_cmp_t compare(li_object *o1, li_object *o2)
 {
     return li_string_cmp(li_to_string(o1), li_to_string(o2));
@@ -21,10 +26,18 @@ static void write(li_object *obj, FILE *fp, li_bool_t repr)
     fprintf(fp, repr ? "\"%s\"" : "%s", li_string_bytes(li_to_string(obj)));
 }
 
-li_type_t li_type_string = {
+const li_type_t li_type_string = {
     .name = "string",
+    .free = _free,
     .write = write,
     .compare = compare,
     .length = length,
     .ref = ref,
 };
+
+extern li_object *li_string(li_string_t str)
+{
+    li_object *obj = li_create(&li_type_string);
+    obj->data.string = str;
+    return obj;
+}

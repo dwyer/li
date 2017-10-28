@@ -156,6 +156,7 @@ extern void li_mark(li_object *obj);
 typedef struct {
     const char *name;
     void (*mark)(li_object *);
+    void (*free)(li_object *);
     void (*write)(li_object *, FILE *, li_bool_t);
     void (*display)(li_object *, FILE *);
     li_cmp_t (*compare)(li_object *, li_object *);
@@ -164,19 +165,20 @@ typedef struct {
     li_object *(*set)(li_object *, int, li_object *);
 } li_type_t;
 
-extern li_type_t li_type_character;
-extern li_type_t li_type_environment;
-extern li_type_t li_type_lambda;
-extern li_type_t li_type_macro;
-extern li_type_t li_type_number;
-extern li_type_t li_type_pair;
-extern li_type_t li_type_port;
-extern li_type_t li_type_primitive_procedure;
-extern li_type_t li_type_special_form;
-extern li_type_t li_type_string;
-extern li_type_t li_type_symbol;
-extern li_type_t li_type_userdata;
-extern li_type_t li_type_vector;
+extern const li_type_t li_type_character;
+extern const li_type_t li_type_environment;
+extern const li_type_t li_type_lambda;
+extern const li_type_t li_type_macro;
+extern const li_type_t li_type_number;
+extern const li_type_t li_type_pair;
+extern const li_type_t li_type_port;
+extern const li_type_t li_type_primitive_procedure;
+extern const li_type_t li_type_special_form;
+extern const li_type_t li_type_string;
+extern const li_type_t li_type_symbol;
+extern const li_type_t li_type_type;
+extern const li_type_t li_type_userdata;
+extern const li_type_t li_type_vector;
 
 typedef unsigned int li_character_t;
 
@@ -278,7 +280,7 @@ typedef struct {
 } li_vector_t;
 
 struct li_object {
-    li_type_t *type;
+    const li_type_t *type;
     li_bool_t locked;
     union {
         li_character_t character;
@@ -292,6 +294,7 @@ struct li_object {
         li_special_form_t special_form;
         li_string_t string;
         li_symbol_t symbol;
+        const li_type_t *type;
         li_userdata_t userdata;
         li_vector_t vector;
     } data;
@@ -313,7 +316,7 @@ extern void *li_allocate(void *ptr, size_t count, size_t size);
  * Allocates and returns an uninitialized object of the given type and throws it
  * on the heap.
  */
-extern li_object *li_create(li_type_t *type);
+extern li_object *li_create(const li_type_t *type);
 
 /*
  * Frees the given object and any object it holds a strong reference to.
@@ -342,6 +345,7 @@ extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
 extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *));
 extern li_object *li_string(li_string_t str);
 extern li_object *li_symbol(const char *s);
+extern li_object *li_type_obj(const li_type_t *type);
 extern li_object *li_userdata(void *v, free_func_t *free, write_func_t *write);
 
 /*

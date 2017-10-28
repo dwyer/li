@@ -2173,5 +2173,33 @@ extern void li_setup_environment(li_object *env) {
     li_append_variable(li_symbol("null"), li_null, env);
     li_append_variable(li_true, li_true, env);
     li_append_variable(li_false, li_false, env);
+    li_append_variable(li_symbol("type-character"),
+            li_type_obj(&li_type_character), env);
+    li_append_variable(li_symbol("type-environment"),
+            li_type_obj(&li_type_environment), env);
+    li_append_variable(li_symbol("type-compound-procedure"),
+            li_type_obj(&li_type_lambda), env);
+    li_append_variable(li_symbol("type-macro"),
+            li_type_obj(&li_type_macro), env);
+    li_append_variable(li_symbol("type-number"),
+            li_type_obj(&li_type_number), env);
+    li_append_variable(li_symbol("type-pair"),
+            li_type_obj(&li_type_pair), env);
+    li_append_variable(li_symbol("type-port"),
+            li_type_obj(&li_type_port), env);
+    li_append_variable(li_symbol("type-primitive-producer"),
+            li_type_obj(&li_type_primitive_procedure), env);
+    li_append_variable(li_symbol("type-special-form"),
+            li_type_obj(&li_type_special_form), env);
+    li_append_variable(li_symbol("type-string"),
+            li_type_obj(&li_type_string), env);
+    li_append_variable(li_symbol("type-symbol"),
+            li_type_obj(&li_type_symbol), env);
+    li_append_variable(li_symbol("type-type"),
+            li_type_obj(&li_type_type), env);
+    li_append_variable(li_symbol("type-userdata"),
+            li_type_obj(&li_type_userdata), env);
+    li_append_variable(li_symbol("type-vector"),
+            li_type_obj(&li_type_vector), env);
     li_define_primitive_procedures(env);
 }

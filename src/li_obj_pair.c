@@ -46,7 +46,7 @@ static li_object *set(li_object *lst, int k, li_object *obj)
     return li_set_car(lst, obj);
 }
 
-li_type_t li_type_pair = {
+const li_type_t li_type_pair = {
     .name = "pair",
     .mark = mark,
     .write = write,
@@ -54,3 +54,32 @@ li_type_t li_type_pair = {
     .ref = ref,
     .set = set,
 };
+
+extern li_object *li_pair(li_object *car, li_object *cdr)
+{
+    li_object *obj = li_create(&li_type_pair);
+    obj->data.pair.car = car;
+    obj->data.pair.cdr = cdr;
+    return obj;
+}
+
+extern int li_length(li_object *obj)
+{
+    int k;
+    for (k = 0; obj; k++)
+        if (li_is_pair(obj))
+            obj = li_cdr(obj);
+        else
+            return -1;
+    return k;
+}
+
+extern li_bool_t li_is_list(li_object *obj)
+{
+    while (obj) {
+        if (!li_is_pair(obj))
+            return 0;
+        obj = li_cdr(obj);
+    }
+    return 1;
+}

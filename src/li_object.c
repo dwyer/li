@@ -60,7 +60,7 @@ extern void *li_allocate(void *ptr, size_t count, size_t size)
     return ptr;
 }
 
-extern li_object *li_create(li_type_t *type)
+extern li_object *li_create(const li_type_t *type)
 {
     li_object *obj = li_allocate(li_null, 1, sizeof(*obj));
     obj->type = type;
@@ -154,14 +154,6 @@ extern li_object *li_number(li_num_t n)
     return obj;
 }
 
-extern li_object *li_pair(li_object *car, li_object *cdr)
-{
-    li_object *obj = li_create(&li_type_pair);
-    obj->data.pair.car = car;
-    obj->data.pair.cdr = cdr;
-    return obj;
-}
-
 extern li_object *li_port(const char *filename, const char *mode)
 {
     li_object *obj;
@@ -188,13 +180,6 @@ extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *))
     return obj;
 }
 
-extern li_object *li_string(li_string_t str)
-{
-    li_object *obj = li_create(&li_type_string);
-    obj->data.string = str;
-    return obj;
-}
-
 extern li_object *li_symbol(const char *s)
 {
     li_object *obj;
@@ -217,6 +202,14 @@ extern li_object *li_symbol(const char *s)
     return obj;
 }
 
+extern li_object *li_type_obj(const li_type_t *type)
+{
+    li_object *obj;
+    obj = li_create(&li_type_type);
+    obj->data.type = type;
+    return obj;
+}
+
 extern li_object *li_userdata(void *v, void (*free)(void *),
         void (*write)(void *, FILE *))
 {
@@ -227,56 +220,12 @@ extern li_object *li_userdata(void *v, void (*free)(void *),
     return obj;
 }
 
-extern li_object *li_vector(li_object *lst)
-{
-    li_object *obj;
-    li_object *iter;
-    int k;
-    for (k = 0, iter = lst; iter; k++, iter = li_cdr(iter))
-        ;
-    obj = li_create(&li_type_vector);
-    obj->data.vector.data = li_allocate(li_null, k,
-            sizeof(*obj->data.vector.data));
-    obj->data.vector.length = k;
-    for (k = 0, iter = lst; iter; k++, iter = li_cdr(iter))
-        li_vector_set(li_to_vector(obj), k, li_car(iter));
-    return obj;
-}
-
-extern li_object *li_vector_with_vec(li_vector_t vec)
-{
-    li_object *obj;
-    obj = li_create(&li_type_vector);
-    obj->data.vector = vec;
-    return obj;
-}
-
 extern void li_destroy(li_object *obj)
 {
     if (!obj || li_is_locked(obj)) {
         return;
-    } else if (li_is_environment(obj)) {
-        free(obj->data.env.array);
-    } else if (li_is_port(obj)) {
-        fclose(obj->data.port.file);
-        free(obj->data.port.filename);
-    } else if (li_is_string(obj)) {
-        li_string_free(li_to_string(obj));
-    } else if (li_is_symbol(obj)) {
-        if (obj->data.symbol.next)
-            obj->data.symbol.next->data.symbol.prev = obj->data.symbol.prev;
-        if (obj->data.symbol.prev)
-            obj->data.symbol.prev->data.symbol.next = obj->data.symbol.next;
-        else
-            _syms[obj->data.symbol.hash] = obj->data.symbol.next;
-        free(li_to_symbol(obj));
-    } else if (li_is_vector(obj)) {
-        free(li_to_vector(obj).data);
-    } else if (li_is_userdata(obj)) {
-        if (li_userdata_free(obj))
-            li_userdata_free(obj)(li_to_userdata(obj));
-        else
-            free(li_to_userdata(obj));
+    } else if (li_type(obj)->free) {
+        li_type(obj)->free(obj);
     }
     free(obj);
 }
@@ -351,27 +300,6 @@ extern li_bool_t li_is_eqv(li_object *obj1, li_object *obj2)
     return 0;
 }
 
-extern li_bool_t li_is_list(li_object *obj)
-{
-    while (obj) {
-        if (!li_is_pair(obj))
-            return 0;
-        obj = li_cdr(obj);
-    }
-    return 1;
-}
-
-extern int li_length(li_object *obj)
-{
-    int k;
-    for (k = 0; obj; k++)
-        if (li_is_pair(obj))
-            obj = li_cdr(obj);
-        else
-            return -1;
-    return k;
-}
-
 static void _char_write(li_object *obj, FILE *f, li_bool_t repr)
 {
     char buf[5] = {'\0'};
@@ -399,6 +327,11 @@ static void _env_mark(li_object *obj)
             li_mark(obj->data.env.array[i].var);
             li_mark(obj->data.env.array[i].val);
         }
+}
+
+static void _env_free(li_object *obj)
+{
+    free(obj->data.env.array);
 }
 
 static void _lambda_mark(li_object *obj)
@@ -444,10 +377,27 @@ static void _num_write(li_object *obj, FILE *f, li_bool_t repr)
                 li_nat_to_int(li_rat_den(li_to_number(obj).real.exact)));
 }
 
+static void _port_free(li_object *obj)
+{
+    fclose(obj->data.port.file);
+    free(obj->data.port.filename);
+}
+
 static void _port_write(li_object *obj, FILE *f, li_bool_t repr)
 {
     (void)repr;
     fprintf(f, "#[port \"%s\"]", li_to_port(obj).filename);
+}
+
+static void _sym_free(li_object *obj)
+{
+    if (obj->data.symbol.next)
+        obj->data.symbol.next->data.symbol.prev = obj->data.symbol.prev;
+    if (obj->data.symbol.prev)
+        obj->data.symbol.prev->data.symbol.next = obj->data.symbol.next;
+    else
+        _syms[obj->data.symbol.hash] = obj->data.symbol.next;
+    free(li_to_symbol(obj));
 }
 
 static void _sym_write(li_object *obj, FILE *f, li_bool_t repr)
@@ -456,52 +406,68 @@ static void _sym_write(li_object *obj, FILE *f, li_bool_t repr)
     fprintf(f, "%s", li_to_symbol(obj));
 }
 
-li_type_t li_type_character = {
+static void _userdata_free(li_object *obj)
+{
+    if (li_userdata_free(obj))
+        li_userdata_free(obj)(li_to_userdata(obj));
+    else
+        free(li_to_userdata(obj));
+}
+
+const li_type_t li_type_character = {
     .name = "character",
     .write = _char_write,
     .compare = _char_cmp,
 };
 
-li_type_t li_type_environment = {
+const li_type_t li_type_environment = {
     .name = "environment",
     .mark = _env_mark,
+    .free = _env_free,
 };
 
-li_type_t li_type_lambda = {
+const li_type_t li_type_lambda = {
     .name = "lambda",
     .write = _lambda_write,
     .mark = _lambda_mark,
 };
 
-li_type_t li_type_macro = {
+const li_type_t li_type_macro = {
     .name = "macro",
     .mark = _macro_mark,
 };
 
-li_type_t li_type_number = {
+const li_type_t li_type_number = {
     .name = "number",
     .write = _num_write,
     .compare = _num_cmp,
 };
 
-li_type_t li_type_port = {
+const li_type_t li_type_port = {
     .name = "port",
+    .free = _port_free,
     .write = _port_write,
 };
 
-li_type_t li_type_primitive_procedure = {
+const li_type_t li_type_primitive_procedure = {
     .name = "primitive-procedure",
 };
 
-li_type_t li_type_special_form = {
+const li_type_t li_type_special_form = {
     .name = "special-form",
 };
 
-li_type_t li_type_symbol = {
+const li_type_t li_type_symbol = {
     .name = "symbol",
+    .free = _sym_free,
     .write = _sym_write,
 };
 
-li_type_t li_type_userdata = {
+const li_type_t li_type_type = {
+    .name = "type",
+};
+
+const li_type_t li_type_userdata = {
     .name = "userdata",
+    .free = _userdata_free,
 };
