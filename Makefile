@@ -10,6 +10,7 @@ RM=rm -f
 YACC=yacc -d
 
 CFLAGS=-Wall -Wextra -ansi -pedantic
+CFLAGS+=-Wno-c99-extensions # TODO: remove this
 LDFLAGS=-lm
 
 PREFIX=/usr/local
@@ -24,7 +25,8 @@ LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
 LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_eval.o li_nat.o \
-	     li_num.o li_object.o li_proc.o li_rat.o li_str.o li_write.o
+	     li_num.o li_object.o li_obj_pair.o li_obj_str.o li_obj_vec.o \
+	     li_proc.o li_rat.o li_str.o li_write.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 LI_OPT_OBJS_=lib_bytevector.o
 LI_OPT_OBJS=$(addprefix $(OBJDIR)/, $(LI_OPT_OBJS_))

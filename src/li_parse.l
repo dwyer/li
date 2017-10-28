@@ -17,7 +17,7 @@ extern int fileno(FILE *);
 %option noinput nounput yylineno
 
 /* simple patterns, order doesn't matter */
-character               %\\.
+character               %\\[!-~]
 comment                 [#;].*$
 digit                   [0-9]
 letter                  [A-Za-z]

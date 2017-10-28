@@ -1,4 +1,5 @@
 #include <setjmp.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include "li.h"
 
@@ -43,6 +44,34 @@ void li_error(const char *msg, li_object *args) {
         li_newline(stderr);
     }
     st.siz = 0;
+    longjmp(buf, 1);
+}
+
+void li_error_f(const char *msg, ...) {
+    va_list ap;
+    int ch;
+
+    va_start(ap, msg);
+    while ((ch = *msg++)) {
+        switch (ch) {
+        case '~':
+            switch (*msg) {
+            case 'a':
+                li_display(va_arg(ap, li_object *), stderr);
+                ++msg;
+                break;
+            case 's':
+                li_write(va_arg(ap, li_object *), stderr);
+                ++msg;
+                break;
+            default:
+                break;
+            }
+        default:
+            fputc(ch, stderr);
+        }
+    }
+    va_end(ap);
     longjmp(buf, 1);
 }
 
