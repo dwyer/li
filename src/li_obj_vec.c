@@ -1,6 +1,6 @@
 #include "li.h"
 
-static void _free(li_object *obj)
+static void deinit(li_object *obj)
 {
     free(li_to_vector(obj).data);
 }
@@ -46,7 +46,7 @@ static li_object *set(li_object *vec, int k, li_object *obj)
 const li_type_t li_type_vector = {
     .name = "vector",
     .mark = mark,
-    .free = _free,
+    .deinit = deinit,
     .write = write,
     .length = length,
     .ref = ref,

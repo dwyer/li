@@ -127,17 +127,6 @@ extern li_object *li_environment_lookup(li_object *env, li_object *var)
     return li_null;
 }
 
-extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
-        li_object *env)
-{
-    li_object *obj = li_create(&li_type_lambda);
-    obj->data.lambda.name = name;
-    obj->data.lambda.vars = vars;
-    obj->data.lambda.body = body;
-    obj->data.lambda.env = env;
-    return obj;
-}
-
 extern li_object *li_macro(li_object *vars, li_object *body, li_object *env)
 {
     li_object *obj = li_create(&li_type_macro);
@@ -163,13 +152,6 @@ extern li_object *li_port(const char *filename, const char *mode)
     obj = li_create(&li_type_port);
     obj->data.port.file = f;
     obj->data.port.filename = strdup(filename);
-    return obj;
-}
-
-extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *))
-{
-    li_object *obj = li_create(&li_type_primitive_procedure);
-    obj->data.primitive_procedure = proc;
     return obj;
 }
 
@@ -224,8 +206,8 @@ extern void li_destroy(li_object *obj)
 {
     if (!obj || li_is_locked(obj)) {
         return;
-    } else if (li_type(obj)->free) {
-        li_type(obj)->free(obj);
+    } else if (li_type(obj)->deinit) {
+        li_type(obj)->deinit(obj);
     }
     free(obj);
 }
@@ -329,26 +311,9 @@ static void _env_mark(li_object *obj)
         }
 }
 
-static void _env_free(li_object *obj)
+static void _env_deinit(li_object *obj)
 {
     free(obj->data.env.array);
-}
-
-static void _lambda_mark(li_object *obj)
-{
-    li_mark(li_to_lambda(obj).name);
-    li_mark(li_to_lambda(obj).vars);
-    li_mark(li_to_lambda(obj).body);
-    li_mark(li_to_lambda(obj).env);
-}
-
-static void _lambda_write(li_object *obj, FILE *f, li_bool_t repr)
-{
-    fprintf(f, "#[lambda %s ", li_to_lambda(obj).name
-            ? li_string_bytes(li_to_string(li_to_lambda(obj).name))
-            : "\b");
-    li_write_object(li_to_lambda(obj).vars, f, repr);
-    fprintf(f, "]");
 }
 
 static void _macro_mark(li_object *obj)
@@ -377,7 +342,7 @@ static void _num_write(li_object *obj, FILE *f, li_bool_t repr)
                 li_nat_to_int(li_rat_den(li_to_number(obj).real.exact)));
 }
 
-static void _port_free(li_object *obj)
+static void _port_deinit(li_object *obj)
 {
     fclose(obj->data.port.file);
     free(obj->data.port.filename);
@@ -389,7 +354,7 @@ static void _port_write(li_object *obj, FILE *f, li_bool_t repr)
     fprintf(f, "#[port \"%s\"]", li_to_port(obj).filename);
 }
 
-static void _sym_free(li_object *obj)
+static void _sym_deinit(li_object *obj)
 {
     if (obj->data.symbol.next)
         obj->data.symbol.next->data.symbol.prev = obj->data.symbol.prev;
@@ -406,7 +371,7 @@ static void _sym_write(li_object *obj, FILE *f, li_bool_t repr)
     fprintf(f, "%s", li_to_symbol(obj));
 }
 
-static void _userdata_free(li_object *obj)
+static void _userdata_deinit(li_object *obj)
 {
     if (li_userdata_free(obj))
         li_userdata_free(obj)(li_to_userdata(obj));
@@ -423,13 +388,7 @@ const li_type_t li_type_character = {
 const li_type_t li_type_environment = {
     .name = "environment",
     .mark = _env_mark,
-    .free = _env_free,
-};
-
-const li_type_t li_type_lambda = {
-    .name = "lambda",
-    .write = _lambda_write,
-    .mark = _lambda_mark,
+    .deinit = _env_deinit,
 };
 
 const li_type_t li_type_macro = {
@@ -445,12 +404,8 @@ const li_type_t li_type_number = {
 
 const li_type_t li_type_port = {
     .name = "port",
-    .free = _port_free,
+    .deinit = _port_deinit,
     .write = _port_write,
-};
-
-const li_type_t li_type_primitive_procedure = {
-    .name = "primitive-procedure",
 };
 
 const li_type_t li_type_special_form = {
@@ -459,7 +414,7 @@ const li_type_t li_type_special_form = {
 
 const li_type_t li_type_symbol = {
     .name = "symbol",
-    .free = _sym_free,
+    .deinit = _sym_deinit,
     .write = _sym_write,
 };
 
@@ -469,5 +424,5 @@ const li_type_t li_type_type = {
 
 const li_type_t li_type_userdata = {
     .name = "userdata",
-    .free = _userdata_free,
+    .deinit = _userdata_deinit,
 };

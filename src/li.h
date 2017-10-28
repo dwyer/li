@@ -156,7 +156,7 @@ extern void li_mark(li_object *obj);
 typedef struct {
     const char *name;
     void (*mark)(li_object *);
-    void (*free)(li_object *);
+    void (*deinit)(li_object *);
     void (*write)(li_object *, FILE *, li_bool_t);
     void (*display)(li_object *, FILE *);
     li_cmp_t (*compare)(li_object *, li_object *);
@@ -167,12 +167,11 @@ typedef struct {
 
 extern const li_type_t li_type_character;
 extern const li_type_t li_type_environment;
-extern const li_type_t li_type_lambda;
 extern const li_type_t li_type_macro;
 extern const li_type_t li_type_number;
 extern const li_type_t li_type_pair;
 extern const li_type_t li_type_port;
-extern const li_type_t li_type_primitive_procedure;
+extern const li_type_t li_type_procedure;
 extern const li_type_t li_type_special_form;
 extern const li_type_t li_type_string;
 extern const li_type_t li_type_symbol;
@@ -230,6 +229,11 @@ typedef struct {
  */
 typedef li_object *(*li_primitive_procedure_t)(li_object *);
 
+typedef struct {
+    li_lambda_t compound;
+    li_primitive_procedure_t primitive;
+} li_procedure_t;
+
 /*
  * A special form is like a primitive procedure, except for the following:
  *
@@ -285,12 +289,11 @@ struct li_object {
     union {
         li_character_t character;
         li_environment_t env;
-        li_lambda_t lambda;
         li_macro_t macro;
         li_num_t number;
         li_pair_t pair;
         li_port_t port;
-        li_primitive_procedure_t primitive_procedure;
+        li_procedure_t procedure;
         li_special_form_t special_form;
         li_string_t string;
         li_symbol_t symbol;
@@ -388,11 +391,12 @@ extern void li_setup_environment(li_object *env);
 #define li_to_character(obj)            (obj)->data.character
 #define li_to_integer(obj)              (li_num_to_int(li_to_number((obj))))
 #define li_to_macro(obj)                (obj)->data.macro
-#define li_to_lambda(obj)               (obj)->data.lambda
+#define li_to_lambda(obj)               (obj)->data.procedure.compound
 #define li_to_number(obj)               (obj)->data.number
 #define li_to_pair(obj)                 (obj)->data.pair
 #define li_to_port(obj)                 (obj)->data.port
-#define li_to_primitive_procedure(obj)  (obj)->data.primitive_procedure
+#define li_to_procedure(obj)            (obj)->data.procedure
+#define li_to_primitive_procedure(obj)  (obj)->data.procedure.primitive
 #define li_to_special_form(obj)         (obj)->data.special_form
 #define li_to_string(obj)               (obj)->data.string
 #define li_to_symbol(obj)               (obj)->data.symbol.string
@@ -408,12 +412,16 @@ extern void li_setup_environment(li_object *env);
 
 #define li_is_character(obj)            li_is_type(obj, &li_type_character)
 #define li_is_environment(obj)          li_is_type(obj, &li_type_environment)
-#define li_is_lambda(obj)               li_is_type(obj, &li_type_lambda)
+#define li_is_lambda(obj)               \
+    (li_is_procedure(obj) && li_to_primitive_procedure(obj) == NULL)
 #define li_is_macro(obj)                li_is_type(obj, &li_type_macro)
 #define li_is_number(obj)               li_is_type(obj, &li_type_number)
 #define li_is_pair(obj)                 li_is_type(obj, &li_type_pair)
 #define li_is_port(obj)                 li_is_type(obj, &li_type_port)
-#define li_is_primitive_procedure(obj)  li_is_type(obj, &li_type_primitive_procedure)
+#define li_is_procedure(obj)            li_is_type(obj, &li_type_procedure)
+#define li_is_primitive_procedure(obj)  \
+    (li_is_procedure(obj) && li_to_primitive_procedure(obj) != NULL)
+
 #define li_is_special_form(obj)         li_is_type(obj, &li_type_special_form)
 #define li_is_string(obj)               li_is_type(obj, &li_type_string)
 #define li_is_symbol(obj)               li_is_type(obj, &li_type_symbol)
@@ -422,8 +430,6 @@ extern void li_setup_environment(li_object *env);
 
 #define li_is_integer(obj)              \
     (li_is_number(obj) && li_num_is_integer(li_to_number(obj)))
-#define li_is_procedure(obj)            \
-    (li_is_lambda(obj) || li_is_primitive_procedure(obj))
 
 #define li_lock(obj)                    ((obj)->locked = LI_TRUE)
 #define li_unlock(obj)                  ((obj)->locked = LI_FALSE)

@@ -1,6 +1,6 @@
 #include "li.h"
 
-static void _free(li_object *obj)
+static void deinit(li_object *obj)
 {
     li_string_free(li_to_string(obj));
 }
@@ -28,7 +28,7 @@ static void write(li_object *obj, FILE *fp, li_bool_t repr)
 
 const li_type_t li_type_string = {
     .name = "string",
-    .free = _free,
+    .deinit = deinit,
     .write = write,
     .compare = compare,
     .length = length,
