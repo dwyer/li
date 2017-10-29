@@ -50,3 +50,25 @@ extern li_object *li_symbol(const char *s)
     _syms[hash] = obj;
     return (li_object *)obj;
 }
+
+/*
+ * (symbol? obj)
+ * Returns #t if the object is a symbol, #f otherwise.
+ */
+static li_object *p_is_symbol(li_object *args) {
+    li_object *obj;
+    li_parse_args(args, "o", &obj);
+    return li_boolean(li_is_symbol(obj));
+}
+
+static li_object *p_symbol_to_string(li_object *args) {
+    li_symbol_t *sym;
+    li_parse_args(args, "y", &sym);
+    return li_string(li_string_make(li_to_symbol(sym)));
+}
+
+extern void li_define_symbol_functions(li_environment_t *env)
+{
+    li_define_primitive_procedure(env, "symbol?", p_is_symbol);
+    li_define_primitive_procedure(env, "symbol->string", p_symbol_to_string);
+}

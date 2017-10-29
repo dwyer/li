@@ -40,3 +40,28 @@ extern li_object *li_character(li_character_t c)
     obj->character = c;
     return (li_object *)obj;
 }
+
+static li_object *p_is_char(li_object *args) {
+    li_object *obj;
+    li_parse_args(args, "o", &obj);
+    return li_boolean(li_is_character(obj));
+}
+
+static li_object *p_char_to_integer(li_object *args) {
+    li_character_t *ch;
+    li_parse_args(args, "c", &ch);
+    return li_number(li_num_with_int((int)ch));
+}
+
+static li_object *p_integer_to_char(li_object *args) {
+    int i;
+    li_parse_args(args, "i", &i);
+    return li_character(i);
+}
+
+extern void li_define_char_functions(li_environment_t *env)
+{
+    li_define_primitive_procedure(env, "char?", p_is_char);
+    li_define_primitive_procedure(env, "char->integer", p_char_to_integer);
+    li_define_primitive_procedure(env, "integer->char", p_integer_to_char);
+}

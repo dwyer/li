@@ -510,11 +510,45 @@ extern void li_load(char *filename, li_environment_t *env);
 extern li_object *li_read(FILE *f);
 
 /* li_write.c */
-extern void li_print_object(li_object *obj);
-extern void li_write_object(li_object *obj, FILE *f, li_bool_t repr);
-#define li_print(obj)                   li_print_object(obj)
-#define li_write(obj, f)                li_write_object(obj, f, LI_TRUE)
-#define li_display(obj, f)              li_write_object(obj, f, LI_FALSE)
-#define li_newline(f)                   fprintf(f, "\n")
+extern void li_write(li_object *obj, FILE *fp);
+extern void li_display(li_object *obj, FILE *fp);
+#define li_newline(fp)                  fprintf(fp, "\n")
+#define li_print(obj, fp)               \
+    do { li_display(obj, fp); li_newline(fp); } while (0)
+
+/* TODO: standardize this */
+
+#define li_assert_nargs(n, args)           \
+    if (li_length(args) != n)          \
+        li_error("wrong number of args", args)
+
+#define li_assert_type(type, arg)       \
+    if (!li_is_##type(arg))             \
+        li_error("not a " #type, arg)
+
+#define li_assert_character(arg)        li_assert_type(character, arg)
+#define li_assert_integer(arg)          li_assert_type(integer, arg)
+#define li_assert_list(arg)             li_assert_type(list, arg)
+#define li_assert_number(arg)           li_assert_type(number, arg)
+#define li_assert_pair(arg)             li_assert_type(pair, arg)
+#define li_assert_port(arg)             li_assert_type(port, arg)
+#define li_assert_procedure(arg)        li_assert_type(procedure, arg)
+#define li_assert_string(arg)           li_assert_type(string, arg)
+#define li_assert_symbol(arg)           li_assert_type(symbol, arg)
+
+#define li_define_primitive_procedure(env, name, proc) \
+    li_append_variable(li_symbol(name), li_primitive_procedure(proc), env)
+
+extern void li_parse_args(li_object *args, const char *fmt, ...);
+
+extern void li_define_char_functions(li_environment_t *env);
+extern void li_define_number_functions(li_environment_t *env);
+extern void li_define_pair_functions(li_environment_t *env);
+extern void li_define_port_functions(li_environment_t *env);
+extern void li_define_procedure_functions(li_environment_t *env);
+extern void li_define_primitive_macros(li_environment_t *env);
+extern void li_define_string_functions(li_environment_t *env);
+extern void li_define_symbol_functions(li_environment_t *env);
+extern void li_define_vector_functions(li_environment_t *env);
 
 #endif

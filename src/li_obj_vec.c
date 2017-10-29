@@ -21,7 +21,7 @@ static void write(li_object *obj, FILE *fp)
     vec = li_to_vector(obj);
     fprintf(fp, "[");
     for (k = 0; k < li_vector_length(vec); k++) {
-        li_write_object(li_vector_ref(vec, k), fp, LI_TRUE);
+        li_write(li_vector_ref(vec, k), fp);
         if (k < li_vector_length(vec) - 1)
             fprintf(fp, " ");
     }
@@ -78,4 +78,85 @@ extern li_object *li_make_vector(int k, li_object *fill)
     while (--k >= 0)
         li_vector_set(vec, k, fill);
     return (li_object *)vec;
+}
+
+/*
+ * (vector? obj)
+ * Returns #t if the object is a vector, #f otherwise.
+ */
+static li_object *p_is_vector(li_object *args) {
+    li_object *obj;
+    li_parse_args(args, "o", &obj);
+    return li_boolean(li_is_vector(obj));
+}
+
+/*
+ * (vector . args)
+ * Returns a vector containing the given args.
+ */
+static li_object *p_vector(li_object *args) {
+    return li_vector(args);
+}
+
+static li_object *p_make_vector(li_object *args) {
+    int k;
+    li_object *fill;
+    if (args && li_cdr(args)) {
+        li_parse_args(args, "io", &k, &fill);
+    } else {
+        li_parse_args(args, "i", &k);
+        fill = li_false;
+    }
+    return li_make_vector(k, fill);
+}
+
+static li_object *p_vector_fill(li_object *args) {
+    li_vector_t *vec;
+    int k;
+    li_object *obj;
+    li_parse_args(args, "vo", &vec, &obj);
+    for (k = li_vector_length(vec); k--; )
+        li_vector_set(vec, k, obj);
+    return (li_object *)vec;
+}
+
+static li_object *p_vector_to_list(li_object *args) {
+    li_vector_t *vec;
+    li_object *list, *tail;
+    int i, k;
+
+    li_parse_args(args, "v", &vec);
+    k = li_vector_length(vec);
+    list = tail = k ? li_cons(li_vector_ref(vec, 0), li_null) : li_null;
+    for (i = 1; i < k; ++i)
+        tail = li_set_cdr(tail, li_cons(li_vector_ref(vec, i), li_null));
+    return list;
+}
+
+static li_object *p_vector_to_string(li_object *args) {
+    li_vector_t *vec;
+    li_object *str;
+    int k;
+    char *s;
+
+    li_parse_args(args, "v", &vec);
+    k = li_vector_length(vec);
+    s = li_allocate(li_null, k, sizeof(*s));
+    while (k--) {
+        li_assert_character(li_vector_ref(vec, k));
+        s[k] = li_to_character(li_vector_ref(vec, k));
+    }
+    str = li_string(li_string_make(s));
+    free(s);
+    return str;
+}
+
+extern void li_define_vector_functions(li_environment_t *env)
+{
+    li_define_primitive_procedure(env, "make-vector", p_make_vector);
+    li_define_primitive_procedure(env, "vector", p_vector);
+    li_define_primitive_procedure(env, "vector?", p_is_vector);
+    li_define_primitive_procedure(env, "vector-fill!", p_vector_fill);
+    li_define_primitive_procedure(env, "vector->list", p_vector_to_list);
+    li_define_primitive_procedure(env, "vector->string", p_vector_to_string);
 }
