@@ -12,8 +12,14 @@ void li_write_object(li_object *obj, FILE *f, li_bool_t repr) {
         fprintf(f, "()");
     } else if (li_is_locked(obj)) {
         fprintf(f, "...");
-    } else if (obj->type->write) {
-        obj->type->write(obj, f, repr);
+    } else if (repr && li_type(obj)->write) {
+        li_type(obj)->write(obj, f);
+    } else if (!repr && li_type(obj)->display) {
+        li_type(obj)->display(obj, f);
+    } else if (li_type(obj)->write) {
+        li_type(obj)->write(obj, f);
+    } else if (li_type(obj)->display) {
+        li_type(obj)->display(obj, f);
     } else if (obj->type->name) {
         fprintf(f, "#[%s]", obj->type->name);
     } else {

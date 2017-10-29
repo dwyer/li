@@ -5,9 +5,8 @@ static li_cmp_t compare(li_object *obj1, li_object *obj2)
     return li_num_cmp(li_to_number(obj1), li_to_number(obj2));
 }
 
-static void write(li_object *obj, FILE *f, li_bool_t repr)
+static void write(li_object *obj, FILE *f)
 {
-    (void)repr;
     if (!li_num_is_exact(li_to_number(obj)))
         fprintf(f, "%f", li_num_to_dec(li_to_number(obj)));
     else if (li_num_is_integer(li_to_number(obj)))

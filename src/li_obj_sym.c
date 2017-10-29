@@ -6,7 +6,7 @@
 
 static li_symbol_t *_syms[HASHSIZE] = { NULL };
 
-static void _sym_deinit(li_symbol_t *obj)
+static void deinit(li_symbol_t *obj)
 {
     if (obj->next)
         obj->next->prev = obj->prev;
@@ -17,16 +17,15 @@ static void _sym_deinit(li_symbol_t *obj)
     free(li_to_symbol(obj));
 }
 
-static void _sym_write(li_symbol_t *obj, FILE *f, li_bool_t repr)
+static void write(li_symbol_t *obj, FILE *f)
 {
-    (void)repr;
     fprintf(f, "%s", obj->string);
 }
 
 const li_type_t li_type_symbol = {
     .name = "symbol",
-    .deinit = (void (*)(li_object *))_sym_deinit,
-    .write = (void (*)(li_object *, FILE *, int))_sym_write,
+    .deinit = (void (*)(li_object *))deinit,
+    .write = (void (*)(li_object *, FILE *))write,
 };
 
 extern li_object *li_symbol(const char *s)

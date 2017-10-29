@@ -8,9 +8,8 @@ static void deinit(li_object *obj)
     free(li_to_port(obj)->filename);
 }
 
-static void write(li_object *obj, FILE *f, li_bool_t repr)
+static void write(li_object *obj, FILE *f)
 {
-    (void)repr;
     fprintf(f, "#[port \"%s\"]", li_to_port(obj)->filename);
 }
 

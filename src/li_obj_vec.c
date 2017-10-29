@@ -14,10 +14,10 @@ static void mark(li_object *obj)
         li_mark(li_vector_ref(vec, k));
 }
 
-static void write(li_object *obj, FILE *fp, li_bool_t repr) {
+static void write(li_object *obj, FILE *fp)
+{
     li_vector_t *vec;
     int k;
-    (void)repr;
     vec = li_to_vector(obj);
     fprintf(fp, "[");
     for (k = 0; k < li_vector_length(vec); k++) {

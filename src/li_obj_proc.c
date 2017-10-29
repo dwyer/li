@@ -1,6 +1,6 @@
 #include "li.h"
 
-static void _proc_mark(li_object *obj)
+static void mark(li_object *obj)
 {
     if (li_to_primitive_procedure(obj) == NULL) {
         li_mark(li_to_lambda(obj).name);
@@ -10,7 +10,7 @@ static void _proc_mark(li_object *obj)
     }
 }
 
-static void _proc_write(li_object *obj, FILE *f, li_bool_t repr)
+static void write(li_object *obj, FILE *f)
 {
     if (li_to_primitive_procedure(obj)) {
         fprintf(f, "#[procedure <primitive>]");
@@ -18,15 +18,15 @@ static void _proc_write(li_object *obj, FILE *f, li_bool_t repr)
         fprintf(f, "#[lambda %s ", li_to_lambda(obj).name
                 ? li_string_bytes(li_to_string(li_to_lambda(obj).name))
                 : "\b");
-        li_write_object(li_to_lambda(obj).vars, f, repr);
+        li_write_object(li_to_lambda(obj).vars, f, 1);
         fprintf(f, "]");
     }
 }
 
 const li_type_t li_type_procedure = {
     .name = "procedure",
-    .mark = _proc_mark,
-    .write = _proc_write,
+    .mark = mark,
+    .write = write,
 };
 
 extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,

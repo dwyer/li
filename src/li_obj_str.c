@@ -20,16 +20,21 @@ static li_object *ref(li_object *str, int k)
     return li_character(li_string_ref(li_to_string(str), k));
 }
 
-static void write(li_object *obj, FILE *fp, li_bool_t repr)
+static void display(li_object *obj, FILE *fp)
 {
-    (void)repr;
-    fprintf(fp, repr ? "\"%s\"" : "%s", li_string_bytes(li_to_string(obj)));
+    fprintf(fp, "%s", li_string_bytes(li_to_string(obj)));
+}
+
+static void write(li_object *obj, FILE *fp)
+{
+    fprintf(fp, "\"%s\"", li_string_bytes(li_to_string(obj)));
 }
 
 const li_type_t li_type_string = {
     .name = "string",
     .deinit = deinit,
     .write = write,
+    .display = display,
     .compare = compare,
     .length = length,
     .ref = ref,

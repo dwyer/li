@@ -160,7 +160,7 @@ typedef struct {
     const char *name;
     void (*mark)(li_object *);
     void (*deinit)(li_object *);
-    void (*write)(li_object *, FILE *, li_bool_t);
+    void (*write)(li_object *, FILE *);
     void (*display)(li_object *, FILE *);
     li_cmp_t (*compare)(li_object *, li_object *);
     int (*length)(li_object *);

@@ -6,10 +6,9 @@ static void mark(li_object *obj)
     li_mark(li_cdr(obj));
 }
 
-static void write(li_object *obj, FILE *f, li_bool_t repr)
+static void write(li_object *obj, FILE *f)
 {
     li_object *iter;
-    (void)repr;
     li_lock(obj);
     iter = obj;
     fprintf(f, "(");
