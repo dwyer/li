@@ -57,10 +57,11 @@ const li_type_t li_type_pair = {
 
 extern li_object *li_pair(li_object *car, li_object *cdr)
 {
-    li_object *obj = li_create(&li_type_pair);
-    obj->data.pair.car = car;
-    obj->data.pair.cdr = cdr;
-    return obj;
+    li_pair_t *obj = li_allocate(li_null, 1, sizeof(*obj));
+    li_object_init((li_object *)obj, &li_type_pair);
+    obj->car = car;
+    obj->cdr = cdr;
+    return (li_object *)obj;
 }
 
 extern int li_length(li_object *obj)

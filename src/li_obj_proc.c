@@ -32,18 +32,20 @@ const li_type_t li_type_procedure = {
 extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
         li_object *env)
 {
-    li_object *obj = li_create(&li_type_procedure);
-    obj->data.procedure.compound.name = name;
-    obj->data.procedure.compound.vars = vars;
-    obj->data.procedure.compound.body = body;
-    obj->data.procedure.compound.env = env;
-    obj->data.procedure.primitive = NULL;
-    return obj;
+    li_proc_obj_t *obj = li_allocate(li_null, 1, sizeof(*obj));
+    li_object_init((li_object *)obj, &li_type_procedure);
+    obj->compound.name = name;
+    obj->compound.vars = vars;
+    obj->compound.body = body;
+    obj->compound.env = env;
+    obj->primitive = NULL;
+    return (li_object *)obj;
 }
 
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *))
 {
-    li_object *obj = li_create(&li_type_procedure);
-    obj->data.procedure.primitive = proc;
-    return obj;
+    li_proc_obj_t *obj = li_allocate(li_null, 1, sizeof(*obj));
+    li_object_init((li_object *)obj, &li_type_procedure);
+    obj->primitive = proc;
+    return (li_object *)obj;
 }

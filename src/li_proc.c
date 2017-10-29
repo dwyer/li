@@ -75,7 +75,7 @@ static void read_args(li_object *args, const char *fmt, ...) {
             break;
         case 'v':
             assert_type(vector, obj);
-            *va_arg(ap, li_vector_t *) = li_to_vector(obj);
+            *va_arg(ap, li_vector_t **) = li_to_vector(obj);
             break;
         case '.':
             *va_arg(ap, li_object **) = args;
@@ -1364,8 +1364,9 @@ static li_object *p_string_append(li_object *args) {
  * Returns #t if the object is a vector, #f otherwise.
  */
 static li_object *p_is_vector(li_object *args) {
-    assert_nargs(1, args);
-    return li_boolean(li_is_vector(li_car(args)));
+    li_object *obj;
+    read_args(args, "o", &obj);
+    return li_boolean(li_is_vector(obj));
 }
 
 /*
@@ -1378,40 +1379,28 @@ static li_object *p_vector(li_object *args) {
 
 static li_object *p_make_vector(li_object *args) {
     int k;
-    li_object *fill, *vec;
-
-    k = 0;
-    if (args) {
-        assert_integer(li_car(args));
-        k = li_to_integer(li_car(args));
-    }
+    li_object *fill;
     if (args && li_cdr(args)) {
-        assert_nargs(2, args);
-        fill = li_cadr(args);
+        read_args(args, "io", &k, &fill);
     } else {
-        assert_nargs(1, args);
+        read_args(args, "i", &k);
         fill = li_false;
     }
-    vec = li_create(&li_type_vector);
-    vec->data.vector.data = li_allocate(li_null, k, sizeof(*vec->data.vector.data));
-    vec->data.vector.length = k;
-    while (k--)
-        vec->data.vector.data[k] = fill;
-    return vec;
+    return li_make_vector(k, fill);
 }
 
 static li_object *p_vector_fill(li_object *args) {
-    li_vector_t vec;
+    li_vector_t *vec;
     int k;
     li_object *obj;
     read_args(args, "vo", &vec, &obj);
     for (k = li_vector_length(vec); k--; )
         li_vector_set(vec, k, obj);
-    return li_vector_with_vec(vec);
+    return (li_object *)vec;
 }
 
 static li_object *p_vector_to_list(li_object *args) {
-    li_vector_t vec;
+    li_vector_t *vec;
     li_object *list, *tail;
     int i, k;
 
@@ -1424,7 +1413,7 @@ static li_object *p_vector_to_list(li_object *args) {
 }
 
 static li_object *p_vector_to_string(li_object *args) {
-    li_vector_t vec;
+    li_vector_t *vec;
     li_object *str;
     int k;
     char *s;
@@ -1593,7 +1582,7 @@ static li_object *p_open(li_object *args) {
 static li_object *p_close(li_object *args) {
     assert_nargs(1, args);
     assert_port(li_car(args));
-    return li_number(li_num_with_int(fclose(li_to_port(li_car(args)).file)));
+    return li_number(li_num_with_int(fclose(li_to_port(li_car(args))->file)));
 }
 
 /*
@@ -1607,7 +1596,7 @@ static li_object *p_read(li_object *args) {
     if (args) {
         assert_nargs(1, args);
         assert_port(li_car(args));
-        f = li_to_port(li_car(args)).file;
+        f = li_to_port(li_car(args))->file;
     }
     return li_read(f);
 }
@@ -1620,7 +1609,7 @@ static li_object *p_read_char(li_object *args) {
     if (args) {
         assert_nargs(1, args);
         assert_port(li_car(args));
-        f = li_to_port(li_car(args)).file;
+        f = li_to_port(li_car(args))->file;
     }
     if ((c = getc(f)) == '\n')
         c = getc(f);
@@ -1637,7 +1626,7 @@ static li_object *p_peek_char(li_object *args) {
     if (args) {
         assert_nargs(1, args);
         assert_port(li_car(args));
-        f = li_to_port(li_car(args)).file;
+        f = li_to_port(li_car(args))->file;
     }
     c = getc(f);
     ungetc(c, f);
@@ -1665,7 +1654,7 @@ static li_object *p_write(li_object *args) {
     if (li_length(args) == 2) {
         assert_nargs(2, args);
         assert_port(li_cadr(args));
-        f = li_to_port(li_cadr(args)).file;
+        f = li_to_port(li_cadr(args))->file;
     } else {
         assert_nargs(1, args);
     }
@@ -1684,7 +1673,7 @@ static li_object *p_display(li_object *args) {
     if (li_length(args) == 2) {
         assert_nargs(2, args);
         assert_port(li_cadr(args));
-        f = li_to_port(li_cadr(args)).file;
+        f = li_to_port(li_cadr(args))->file;
     } else {
         assert_nargs(1, args);
     }
@@ -1703,7 +1692,7 @@ static li_object *p_newline(li_object *args) {
     if (args) {
         assert_nargs(1, args);
         assert_port(li_car(args));
-        f = li_to_port(li_car(args)).file;
+        f = li_to_port(li_car(args))->file;
     }
     li_newline(f);
     return li_null;
@@ -2189,7 +2178,6 @@ extern void li_setup_environment(li_object *env) {
     append_variable("type-string", li_type_obj(&li_type_string), env);
     append_variable("type-symbol", li_type_obj(&li_type_symbol), env);
     append_variable("type-type", li_type_obj(&li_type_type), env);
-    append_variable("type-userdata", li_type_obj(&li_type_userdata), env);
     append_variable("type-vector", li_type_obj(&li_type_vector), env);
     li_define_primitive_procedures(env);
 }

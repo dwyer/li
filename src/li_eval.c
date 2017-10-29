@@ -117,8 +117,9 @@ static li_object *expand_macro(li_object *mac, li_object *args) {
     li_object *env, *ret, *seq;
 
     ret = li_null;
-    env = extend_environment(li_to_macro(mac).vars, args, li_to_macro(mac).env);
-    for (seq = li_to_macro(mac).body; seq; seq = li_cdr(seq))
+    env = extend_environment(li_to_macro(mac)->vars, args,
+            li_to_macro(mac)->env);
+    for (seq = li_to_macro(mac)->body; seq; seq = li_cdr(seq))
         ret = li_eval(li_car(seq), env);
     return ret;
 }

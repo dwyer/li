@@ -37,7 +37,8 @@ const li_type_t li_type_string = {
 
 extern li_object *li_string(li_string_t str)
 {
-    li_object *obj = li_create(&li_type_string);
-    obj->data.string = str;
-    return obj;
+    li_string_obj_t *obj = li_allocate(NULL, 1, sizeof(*obj));
+    li_object_init((li_object *)obj, &li_type_string);
+    obj->string = str;
+    return (li_object *)obj;
 }

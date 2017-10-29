@@ -12,6 +12,9 @@
 
 #define LI_UNUSED_VARIABLE(var) (void)var
 
+#define li_strdup(s)            \
+    strcpy(li_allocate(NULL, strlen(s) + 1, sizeof(char)), s)
+
 typedef int li_bool_t;
 typedef double li_dec_t;
 typedef long li_int_t;
@@ -165,6 +168,10 @@ typedef struct {
     li_object *(*set)(li_object *, int, li_object *);
 } li_type_t;
 
+#define LI_OBJ_HEAD \
+    const li_type_t *type; \
+    li_bool_t locked
+
 extern const li_type_t li_type_character;
 extern const li_type_t li_type_environment;
 extern const li_type_t li_type_macro;
@@ -176,7 +183,6 @@ extern const li_type_t li_type_special_form;
 extern const li_type_t li_type_string;
 extern const li_type_t li_type_symbol;
 extern const li_type_t li_type_type;
-extern const li_type_t li_type_userdata;
 extern const li_type_t li_type_vector;
 
 typedef unsigned int li_character_t;
@@ -186,6 +192,12 @@ extern size_t li_chr_encode(li_character_t chr, char *s, size_t n);
 extern size_t li_chr_count(const char *s);
 
 typedef struct {
+    LI_OBJ_HEAD;
+    li_character_t character;
+} li_character_obj_t;
+
+typedef struct {
+    LI_OBJ_HEAD;
     struct {
         li_object *var;
         li_object *val;
@@ -203,17 +215,25 @@ typedef struct {
 } li_lambda_t;
 
 typedef struct {
+    LI_OBJ_HEAD;
     li_object *vars;
     li_object *body;
     li_object *env;
 } li_macro_t;
 
 typedef struct {
+    LI_OBJ_HEAD;
+    li_num_t number;
+} li_num_obj_t;
+
+typedef struct {
+    LI_OBJ_HEAD;
     li_object *car;
     li_object *cdr;
 } li_pair_t;
 
 typedef struct {
+    LI_OBJ_HEAD;
     FILE *file;
     char *filename;
 } li_port_t;
@@ -230,9 +250,10 @@ typedef struct {
 typedef li_object *(*li_primitive_procedure_t)(li_object *);
 
 typedef struct {
+    LI_OBJ_HEAD;
     li_lambda_t compound;
     li_primitive_procedure_t primitive;
-} li_procedure_t;
+} li_proc_obj_t;
 
 /*
  * A special form is like a primitive procedure, except for the following:
@@ -253,6 +274,11 @@ typedef struct {
 typedef li_object *(*li_special_form_t)(li_object *, li_object *);
 
 typedef struct {
+    LI_OBJ_HEAD;
+    li_special_form_t special_form;
+} li_special_form_obj_t;
+
+typedef struct {
     char *bytes;
 } li_string_t;
 
@@ -266,41 +292,33 @@ extern li_cmp_t li_string_cmp(li_string_t st1, li_string_t st2);
 extern li_string_t li_string_append(li_string_t str1, li_string_t str2);
 
 typedef struct {
+    LI_OBJ_HEAD;
+    li_string_t string;
+} li_string_obj_t;
+
+typedef struct li_symbol li_symbol_t;
+
+struct li_symbol {
+    LI_OBJ_HEAD;
     char *string;
-    li_object *next;
-    li_object *prev;
+    li_symbol_t *next;
+    li_symbol_t *prev;
     unsigned int hash;
-} li_symbol_t;
+};
 
 typedef struct {
-    void *v;
-    void (*free)(void *);
-    void (*write)(void *, FILE *fp);
-} li_userdata_t;
+    LI_OBJ_HEAD;
+    const li_type_t *val;
+} li_type_obj_t;
 
 typedef struct {
+    LI_OBJ_HEAD;
     li_object **data;
     int length;
 } li_vector_t;
 
 struct li_object {
-    const li_type_t *type;
-    li_bool_t locked;
-    union {
-        li_character_t character;
-        li_environment_t env;
-        li_macro_t macro;
-        li_num_t number;
-        li_pair_t pair;
-        li_port_t port;
-        li_procedure_t procedure;
-        li_special_form_t special_form;
-        li_string_t string;
-        li_symbol_t symbol;
-        const li_type_t *type;
-        li_userdata_t userdata;
-        li_vector_t vector;
-    } data;
+    LI_OBJ_HEAD;
 };
 
 /* The all important null object. */
@@ -319,7 +337,8 @@ extern void *li_allocate(void *ptr, size_t count, size_t size);
  * Allocates and returns an uninitialized object of the given type and throws it
  * on the heap.
  */
-extern li_object *li_create(const li_type_t *type);
+extern li_object *li_create(const li_type_t *type) LI_DEPRECATED;
+extern void li_object_init(li_object *obj, const li_type_t *type);
 
 /*
  * Frees the given object and any object it holds a strong reference to.
@@ -349,13 +368,11 @@ extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *));
 extern li_object *li_string(li_string_t str);
 extern li_object *li_symbol(const char *s);
 extern li_object *li_type_obj(const li_type_t *type);
-extern li_object *li_userdata(void *v, free_func_t *free, write_func_t *write);
 
 /*
  * Converts a list to a vector.
  */
 extern li_object *li_vector(li_object *lst);
-extern li_object *li_vector_with_vec(li_vector_t vec);
 
 /** EOF, true and false are just special symbols. */
 #define li_eof                          li_symbol("#<eof>")
@@ -388,23 +405,21 @@ extern li_object *li_environment_lookup(li_object *env, li_object *var);
 extern void li_setup_environment(li_object *env);
 
 /** Type casting. */
-#define li_to_character(obj)            (obj)->data.character
+#define li_to_character(obj)            ((li_character_obj_t *)(obj))->character
+#define li_to_environment(obj)          ((li_environment_t *)(obj))
 #define li_to_integer(obj)              (li_num_to_int(li_to_number((obj))))
-#define li_to_macro(obj)                (obj)->data.macro
-#define li_to_lambda(obj)               (obj)->data.procedure.compound
-#define li_to_number(obj)               (obj)->data.number
-#define li_to_pair(obj)                 (obj)->data.pair
-#define li_to_port(obj)                 (obj)->data.port
-#define li_to_procedure(obj)            (obj)->data.procedure
-#define li_to_primitive_procedure(obj)  (obj)->data.procedure.primitive
-#define li_to_special_form(obj)         (obj)->data.special_form
-#define li_to_string(obj)               (obj)->data.string
-#define li_to_symbol(obj)               (obj)->data.symbol.string
+#define li_to_macro(obj)                ((li_macro_t *)(obj))
+#define li_to_lambda(obj)               li_to_procedure(obj).compound
+#define li_to_number(obj)               ((li_num_obj_t *)(obj))->number
+#define li_to_pair(obj)                 ((li_pair_t *)(obj))
+#define li_to_port(obj)                 ((li_port_t *)(obj))
+#define li_to_procedure(obj)            (*(li_proc_obj_t *)(obj))
+#define li_to_primitive_procedure(obj)  li_to_procedure(obj).primitive
+#define li_to_special_form(obj)         ((li_special_form_obj_t *)(obj))->special_form
+#define li_to_string(obj)               ((li_string_obj_t *)(obj))->string
+#define li_to_symbol(obj)               ((li_symbol_t *)(obj))->string
 #define li_to_userdata(obj)             (obj)->data.userdata.v
-#define li_to_vector(obj)               (obj)->data.vector
-
-#define li_userdata_free(obj)           (obj)->data.userdata.free
-#define li_userdata_write(obj)          (obj)->data.userdata.write
+#define li_to_vector(obj)               ((li_vector_t *)(obj))
 
 /* Type checking. */
 #define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
@@ -425,7 +440,6 @@ extern void li_setup_environment(li_object *env);
 #define li_is_special_form(obj)         li_is_type(obj, &li_type_special_form)
 #define li_is_string(obj)               li_is_type(obj, &li_type_string)
 #define li_is_symbol(obj)               li_is_type(obj, &li_type_symbol)
-#define li_is_userdata(obj)             li_is_type(obj, &li_type_userdata)
 #define li_is_vector(obj)               li_is_type(obj, &li_type_vector)
 
 #define li_is_integer(obj)              \
@@ -436,8 +450,8 @@ extern void li_setup_environment(li_object *env);
 #define li_is_locked(obj)               (obj)->locked
 
 /** Accessors for pairs. */
-#define li_car(obj)                     li_to_pair(obj).car
-#define li_cdr(obj)                     li_to_pair(obj).cdr
+#define li_car(obj)                     li_to_pair(obj)->car
+#define li_cdr(obj)                     li_to_pair(obj)->cdr
 #define li_caar(obj)                    li_car(li_car(obj))
 #define li_cadr(obj)                    li_car(li_cdr(obj))
 #define li_cdar(obj)                    li_cdr(li_car(obj))
@@ -470,9 +484,10 @@ extern void li_setup_environment(li_object *env);
 #define li_set_cdr(obj1, obj2)          (li_cdr(obj1) = (obj2))
 
 /** Vector accessors. */
-#define li_vector_length(v)             (v).length
-#define li_vector_ref(v, k)             (v).data[(k)]
-#define li_vector_set(v, k, o)          (li_vector_ref(v, k) = (o))
+extern li_object *li_make_vector(int k, li_object *fill);
+#define li_vector_length(v)             (v)->length
+#define li_vector_ref(v, k)             (v)->data[(k)]
+#define li_vector_set(v, k, o)          ((v)->data[(k)] = (o))
 
 /* li_error.c */
 extern void li_error(const char *msg, li_object *args);
