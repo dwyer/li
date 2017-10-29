@@ -6,7 +6,7 @@ static void mark(li_object *obj)
     int i;
     for (; env; env = li_to_environment(env->base)) {
         for (i = 0; i < env->size; i++) {
-            li_mark(env->array[i].var);
+            li_mark((li_object *)env->array[i].var);
             li_mark(env->array[i].val);
         }
     }
@@ -34,7 +34,7 @@ extern li_environment_t *li_environment(li_environment_t *base)
     return obj;
 }
 
-extern int li_environment_assign(li_environment_t *env, li_object *var,
+extern int li_environment_assign(li_environment_t *env, li_symbol_t *var,
         li_object *val)
 {
     int i;
@@ -49,7 +49,7 @@ extern int li_environment_assign(li_environment_t *env, li_object *var,
     return 0;
 }
 
-extern void li_environment_define(li_environment_t *env, li_object *var,
+extern void li_environment_define(li_environment_t *env, li_symbol_t *var,
         li_object *val)
 {
     int i;
@@ -62,7 +62,7 @@ extern void li_environment_define(li_environment_t *env, li_object *var,
     li_append_variable(var, val, env);
 }
 
-extern li_object *li_environment_lookup(li_environment_t *env, li_object *var)
+extern li_object *li_environment_lookup(li_environment_t *env, li_symbol_t *var)
 {
     int i;
     while (env) {
@@ -71,14 +71,14 @@ extern li_object *li_environment_lookup(li_environment_t *env, li_object *var)
                 return env->array[i].val;
         env = li_to_environment(env->base);
     }
-    li_error("unbound variable", var);
+    li_error("unbound variable", (li_object *)var);
     return li_null;
 }
 
-extern void li_append_variable(li_object *var, li_object *val, li_environment_t *env)
+extern void li_append_variable(li_symbol_t *var, li_object *val, li_environment_t *env)
 {
     if (!li_is_symbol(var))
-        li_error("not a variable", var);
+        li_error("not a variable", (li_object *)var);
     if (env->size == env->cap) {
         env->cap *= 2;
         env->array = li_allocate(env->array, env->cap, sizeof(*env->array));

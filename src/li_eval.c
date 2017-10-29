@@ -2,7 +2,7 @@
 #include "li.h"
 
 #define li_is_tagged_list(exp, tag) \
-    (li_is_pair(exp) && li_car(exp) == li_symbol(tag))
+    (li_is_pair(exp) && li_car(exp) == (li_object *)li_symbol(tag))
 
 #define li_is_application(exp)      li_is_list(exp)
 #define li_is_self_evaluating(exp)  !(li_is_pair(exp) || li_is_symbol(exp))
@@ -29,7 +29,7 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
     while (args) {
         obj = li_car(args);
         if (!li_is_self_evaluating(obj))
-            obj = li_cons(li_symbol("quote"), li_cons(obj, li_null));
+            obj = li_cons((li_object *)li_symbol("quote"), li_cons(obj, li_null));
         if (head)
             tail = li_set_cdr(tail, li_cons(obj, li_null));
         else
@@ -47,7 +47,7 @@ extern li_object *li_eval(li_object *exp, li_environment_t *env) {
     while (!li_is_self_evaluating(exp) && !done) {
         li_stack_trace_push(exp);
         if (li_is_symbol(exp)) {
-            exp = li_environment_lookup(env, exp);
+            exp = li_environment_lookup(env, (li_symbol_t *)exp);
             done = 1;
         } else if (li_is_quoted(exp)) {
             check_special_form(li_cdr(exp) && !li_cddr(exp), exp);
@@ -135,12 +135,12 @@ static li_environment_t *extend_environment(li_object *vars, li_object *vals,
     for (env = li_environment(env); vars;
             vars = li_cdr(vars), vals = li_cdr(vals)) {
         if (li_is_symbol(vars)) {
-            li_append_variable(vars, vals, env);
+            li_append_variable((li_symbol_t *)vars, vals, env);
             return env;
         }
         if (!vals)
             break;
-        li_append_variable(li_car(vars), li_car(vals), env);
+        li_append_variable((li_symbol_t *)li_car(vars), li_car(vals), env);
     }
     if (vars || vals)
         li_error("wrong number of args", vars);

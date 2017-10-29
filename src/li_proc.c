@@ -346,14 +346,14 @@ static li_object *p_isa(li_object *args)
 }
 
 #define define_var(env, name, obj) \
-    li_append_variable(li_symbol(name), obj, env);
+    li_append_variable((li_symbol_t *)li_symbol(name), obj, env);
 
 #define define_type(env, name, type) \
     define_var(env, name, li_type_obj(type));
 
 extern void li_setup_environment(li_environment_t *env) {
-    li_append_variable(li_true, li_true, env);
-    li_append_variable(li_false, li_false, env);
+    define_var(env, "true", li_true);
+    define_var(env, "false", li_false);
     define_var(env, "null", li_null);
     define_var(env, "user-initial-environment", (li_object *)env);
     define_type(env, "character", &li_type_character);

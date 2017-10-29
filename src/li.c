@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include "li.h"
 
-#define ARGV_SYMBOL li_symbol("*args*")
+#define ARGV_SYMBOL ((li_symbol_t *)li_symbol("*args*"))
 
 li_object *li_prompt(FILE *fin, FILE *fout, const char *s);
 void li_repl(li_environment_t *env);
@@ -15,8 +15,8 @@ li_object *li_prompt(FILE *fin, FILE *fout, const char *s) {
 }
 
 void li_repl(li_environment_t *env) {
-    li_object *exp, *var;
-    var = li_symbol("_");
+    li_object *exp;
+    li_symbol_t *var = (li_symbol_t *)li_symbol("_");
     li_append_variable(var, li_null, env);
     while ((exp = li_prompt(stdin, stdout, "> ")) != li_eof) {
         if (exp) {

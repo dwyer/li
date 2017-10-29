@@ -198,11 +198,12 @@ typedef struct {
 } li_character_obj_t;
 
 typedef struct li_environment li_environment_t;
+typedef struct li_symbol li_symbol_t;
 
 struct li_environment {
     LI_OBJ_HEAD;
     struct {
-        li_object *var;
+        li_symbol_t *var;
         li_object *val;
     } *array;
     int size; /* TODO: change to size_t */
@@ -211,7 +212,7 @@ struct li_environment {
 };
 
 typedef struct {
-    li_object *name;
+    li_symbol_t *name;
     li_object *vars;
     li_object *body;
     li_environment_t *env;
@@ -299,8 +300,6 @@ typedef struct {
     li_string_t string;
 } li_string_obj_t;
 
-typedef struct li_symbol li_symbol_t;
-
 struct li_symbol {
     LI_OBJ_HEAD;
     char *string;
@@ -360,7 +359,7 @@ typedef void write_func_t(void *, FILE *);
 
 extern li_object *li_character(li_character_t c);
 extern li_environment_t *li_environment(li_environment_t *base);
-extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
+extern li_object *li_lambda(li_symbol_t *name, li_object *vars, li_object *body,
         li_environment_t *env);
 extern li_object *li_macro(li_object *vars, li_object *body,
         li_environment_t *env);
@@ -379,16 +378,16 @@ extern li_object *li_type_obj(const li_type_t *type);
 extern li_object *li_vector(li_object *lst);
 
 /** EOF, true and false are just special symbols. */
-#define li_eof                          li_symbol("#<eof>")
-#define li_false                        li_symbol("false")
-#define li_true                         li_symbol("true")
+#define li_eof                          ((li_object *)li_symbol("#<eof>"))
+#define li_false                        ((li_object *)li_symbol("false"))
+#define li_true                         ((li_object *)li_symbol("true"))
 #define li_boolean(p)                   ((p) ? li_true : li_false)
 
 /** Let cons be an alias for pair. */
 #define li_cons(car, cdr)               li_pair((car), (cdr))
 
 /** Predicates */
-#define li_is_eq(obj1, obj2)            ((obj1) == (obj2))
+#define li_is_eq(obj1, obj2)            ((void *)(obj1) == (void *)(obj2))
 #define li_is_null(obj)                 li_is_eq((obj), li_null)
 #define li_not(obj)                     li_is_eq((obj), li_false)
 #define li_is_boolean(obj)              \
@@ -401,11 +400,12 @@ extern li_bool_t li_is_list(li_object *obj);
 extern int li_length(li_object *obj);
 
 /** Environment accessors. */
-extern int li_environment_assign(li_environment_t *env, li_object *var,
+extern int li_environment_assign(li_environment_t *env, li_symbol_t *var,
         li_object *val);
-extern void li_environment_define(li_environment_t *env, li_object *var,
+extern void li_environment_define(li_environment_t *env, li_symbol_t *var,
         li_object *val);
-extern li_object *li_environment_lookup(li_environment_t *env, li_object *var);
+extern li_object *li_environment_lookup(li_environment_t *env,
+        li_symbol_t *var);
 extern void li_setup_environment(li_environment_t *env);
 
 /** Type casting. */
@@ -504,7 +504,7 @@ extern void li_stack_trace_push(li_object *expr);
 extern void li_stack_trace_pop(void);
 
 /* li_eval.c */
-extern void li_append_variable(li_object *var, li_object *val, li_environment_t *env);
+extern void li_append_variable(li_symbol_t *var, li_object *val, li_environment_t *env);
 extern li_object *li_apply(li_object *proc, li_object *args);
 extern li_object *li_eval(li_object *exp, li_environment_t *env);
 
@@ -540,7 +540,8 @@ extern void li_display(li_object *obj, FILE *fp);
 #define li_assert_symbol(arg)           li_assert_type(symbol, arg)
 
 #define li_define_primitive_procedure(env, name, proc) \
-    li_append_variable(li_symbol(name), li_primitive_procedure(proc), env)
+    li_append_variable((li_symbol_t *)li_symbol(name), \
+            li_primitive_procedure(proc), env)
 
 extern void li_parse_args(li_object *args, const char *fmt, ...);
 

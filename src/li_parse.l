@@ -62,7 +62,7 @@ symbol                  ({identifier}|\|[^|]*\|)
     yylval.obj = li_number(li_num_with_rat(li_rat_parse(yytext)));
     return NUMBER;
                         }
-{symbol}                yylval.obj = li_symbol(yytext); return SYMBOL;
+{symbol}                yylval.obj = (li_object *)li_symbol(yytext); return SYMBOL;
 \"\"                    yylval.obj = li_string(li_string_make("")); return STRING;
 <INITIAL>\"             BEGIN(XSTRING); n = 0;
 <XSTRING>[^\\"]*        bufappend(yytext);

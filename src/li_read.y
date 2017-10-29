@@ -3,7 +3,7 @@
 #include "li.h"
 
 #define make_tagged_list(str, obj) \
-    li_cons(li_symbol(str), li_cons(obj, li_null))
+    li_cons((li_object *)li_symbol(str), li_cons(obj, li_null))
 
 extern int yylex(void);
 extern int yylineno;
