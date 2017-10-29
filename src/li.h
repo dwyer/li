@@ -166,6 +166,7 @@ typedef struct {
     int (*length)(li_object *);
     li_object *(*ref)(li_object *, int);
     li_object *(*set)(li_object *, int, li_object *);
+    li_object *(*proc)(li_object *);
 } li_type_t;
 
 #define LI_OBJ_HEAD \
@@ -423,10 +424,11 @@ extern void li_setup_environment(li_environment_t *env);
 #define li_to_symbol(obj)               ((li_symbol_t *)(obj))->string
 #define li_to_userdata(obj)             (obj)->data.userdata.v
 #define li_to_vector(obj)               ((li_vector_t *)(obj))
+#define li_to_type(obj)                 ((li_type_obj_t *)(obj))->val
 
 /* Type checking. */
 #define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
-#define li_is_type(obj, t)              ((obj) && li_type(obj) == (t))
+#define li_is_type(obj, type)           ((obj) && li_type(obj) == (type))
 
 #define li_is_character(obj)            li_is_type(obj, &li_type_character)
 #define li_is_environment(obj)          li_is_type(obj, &li_type_environment)
@@ -441,6 +443,7 @@ extern void li_setup_environment(li_environment_t *env);
     (li_is_procedure(obj) && li_to_primitive_procedure(obj) != NULL)
 
 #define li_is_special_form(obj)         li_is_type(obj, &li_type_special_form)
+#define li_is_type_obj(obj)             li_is_type(obj, &li_type_type)
 #define li_is_string(obj)               li_is_type(obj, &li_type_string)
 #define li_is_symbol(obj)               li_is_type(obj, &li_type_symbol)
 #define li_is_vector(obj)               li_is_type(obj, &li_type_vector)

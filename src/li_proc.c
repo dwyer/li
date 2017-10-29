@@ -13,6 +13,7 @@
  *     o = li_object
  *     p = li_object (pair)
  *     s = li_string_t
+ *     t = li_type_obj_t
  *     v = li_object (vector)
  */
 extern void li_parse_args(li_object *args, const char *fmt, ...)
@@ -50,6 +51,11 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
         case 's':
             li_assert_string(obj);
             *va_arg(ap, li_string_t *) = li_to_string(obj);
+            break;
+        case 't':
+            if (li_type(obj) != &li_type_type)
+                li_error("not a type", obj);
+            *va_arg(ap, const li_type_t **) = li_to_type(obj);
             break;
         case 'v':
             li_assert_type(vector, obj);
@@ -172,7 +178,7 @@ static li_object *p_setenv(li_object *args) {
     li_assert_nargs(2, args);
     li_assert_string(li_car(args));
     li_assert_string(li_cadr(args));
-    setenv(li_string_bytes(li_to_string(li_car(args))), 
+    setenv(li_string_bytes(li_to_string(li_car(args))),
             li_string_bytes(li_to_string(li_cadr(args))), 1);
     return li_null;
 }
@@ -204,7 +210,6 @@ static li_object *p_time(li_object *args) {
  */
 static li_object *p_is_eq(li_object *args) {
     li_object *obj1, *obj2;
-
     li_parse_args(args, "oo", &obj1, &obj2);
     return li_boolean(li_is_eq(obj1, obj2));
 }
@@ -215,7 +220,6 @@ static li_object *p_is_eq(li_object *args) {
  */
 static li_object *p_is_eqv(li_object *args) {
     li_object *obj1, *obj2;
-
     li_parse_args(args, "oo", &obj1, &obj2);
     return li_boolean(li_is_eqv(obj1, obj2));
 }
@@ -226,7 +230,6 @@ static li_object *p_is_eqv(li_object *args) {
  */
 static li_object *p_is_equal(li_object *args) {
     li_object *obj1, *obj2;
-
     li_parse_args(args, "oo", &obj1, &obj2);
     return li_boolean(li_is_equal(obj1, obj2));
 }
@@ -334,36 +337,39 @@ static li_object *p_set(li_object *args) {
     return li_type(lst)->set(lst, k, obj);
 }
 
+static li_object *p_isa(li_object *args)
+{
+    li_object *obj;
+    li_type_t *type;
+    li_parse_args(args, "ot", &obj, &type);
+    return li_boolean(li_is_type(obj, type));
+}
+
 #define define_var(env, name, obj) \
     li_append_variable(li_symbol(name), obj, env);
+
+#define define_type(env, name, type) \
+    define_var(env, name, li_type_obj(type));
 
 extern void li_setup_environment(li_environment_t *env) {
     li_append_variable(li_true, li_true, env);
     li_append_variable(li_false, li_false, env);
     define_var(env, "null", li_null);
     define_var(env, "user-initial-environment", (li_object *)env);
-    define_var(env, "type-character", li_type_obj(&li_type_character));
-    define_var(env, "type-environment", li_type_obj(&li_type_environment));
-    define_var(env, "type-macro", li_type_obj(&li_type_macro));
-    define_var(env, "type-number", li_type_obj(&li_type_number));
-    define_var(env, "type-pair", li_type_obj(&li_type_pair));
-    define_var(env, "type-port", li_type_obj(&li_type_port));
-    define_var(env, "type-procedure", li_type_obj(&li_type_procedure));
-    define_var(env, "type-special-form", li_type_obj(&li_type_special_form));
-    define_var(env, "type-string", li_type_obj(&li_type_string));
-    define_var(env, "type-symbol", li_type_obj(&li_type_symbol));
-    define_var(env, "type-type", li_type_obj(&li_type_type));
-    define_var(env, "type-vector", li_type_obj(&li_type_vector));
-    li_define_char_functions(env);
-    li_define_number_functions(env);
-    li_define_pair_functions(env);
-    li_define_port_functions(env);
-    li_define_primitive_macros(env);
-    li_define_string_functions(env);
-    li_define_symbol_functions(env);
-    li_define_vector_functions(env);
-    li_define_procedure_functions(env);
+    define_type(env, "character", &li_type_character);
+    define_type(env, "environment", &li_type_environment);
+    define_type(env, "macro", &li_type_macro);
+    define_type(env, "number", &li_type_number);
+    define_type(env, "pair", &li_type_pair);
+    define_type(env, "port", &li_type_port);
+    define_type(env, "procedure", &li_type_procedure);
+    define_type(env, "special-form", &li_type_special_form);
+    define_type(env, "string", &li_type_string);
+    define_type(env, "symbol", &li_type_symbol);
+    define_type(env, "type", &li_type_type);
+    define_type(env, "vector", &li_type_vector);
     /* Equivalence predicates */
+    li_define_primitive_procedure(env, "isa?", p_isa);
     li_define_primitive_procedure(env, "eq?", p_is_eq);
     li_define_primitive_procedure(env, "eqv?", p_is_eqv);
     li_define_primitive_procedure(env, "equal?", p_is_equal);
@@ -380,6 +386,16 @@ extern void li_setup_environment(li_environment_t *env) {
     li_define_primitive_procedure(env, "ref", p_ref);
     li_define_primitive_procedure(env, "set", p_set);
     li_define_primitive_procedure(env, "length", p_length);
+    /* builtins */
+    li_define_char_functions(env);
+    li_define_number_functions(env);
+    li_define_pair_functions(env);
+    li_define_port_functions(env);
+    li_define_primitive_macros(env);
+    li_define_string_functions(env);
+    li_define_symbol_functions(env);
+    li_define_vector_functions(env);
+    li_define_procedure_functions(env);
     /* Non-standard */
     li_define_primitive_procedure(env, "clock", p_clock);
     li_define_primitive_procedure(env, "error", p_error);

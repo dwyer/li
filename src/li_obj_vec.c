@@ -1,5 +1,13 @@
 #include "li.h"
 
+/*
+ * (vector . args)
+ * Returns a vector containing the given args.
+ */
+static li_object *proc(li_object *args) {
+    return li_vector(args);
+}
+
 static void deinit(li_object *obj)
 {
     free(li_to_vector(obj)->data);
@@ -46,6 +54,7 @@ static li_object *set(li_object *vec, int k, li_object *obj)
 const li_type_t li_type_vector = {
     .name = "vector",
     .mark = mark,
+    .proc = proc,
     .deinit = deinit,
     .write = write,
     .length = length,
@@ -88,14 +97,6 @@ static li_object *p_is_vector(li_object *args) {
     li_object *obj;
     li_parse_args(args, "o", &obj);
     return li_boolean(li_is_vector(obj));
-}
-
-/*
- * (vector . args)
- * Returns a vector containing the given args.
- */
-static li_object *p_vector(li_object *args) {
-    return li_vector(args);
 }
 
 static li_object *p_make_vector(li_object *args) {
@@ -154,7 +155,6 @@ static li_object *p_vector_to_string(li_object *args) {
 extern void li_define_vector_functions(li_environment_t *env)
 {
     li_define_primitive_procedure(env, "make-vector", p_make_vector);
-    li_define_primitive_procedure(env, "vector", p_vector);
     li_define_primitive_procedure(env, "vector?", p_is_vector);
     li_define_primitive_procedure(env, "vector-fill!", p_vector_fill);
     li_define_primitive_procedure(env, "vector->list", p_vector_to_list);

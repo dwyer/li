@@ -60,9 +60,8 @@ extern li_object *li_eval(li_object *exp, li_environment_t *env) {
         } else if (li_is_application(exp)) {
             proc = li_eval(li_car(exp), env);
             args = li_cdr(exp);
-            if (li_is_procedure(proc))
-                args = list_of_values(args, env);
             if (li_is_lambda(proc)) {
+                args = list_of_values(args, env);
                 env = extend_environment(li_to_lambda(proc).vars, args,
                         li_to_lambda(proc).env);
                 for (seq = li_to_lambda(proc).body; seq && li_cdr(seq);
@@ -72,7 +71,12 @@ extern li_object *li_eval(li_object *exp, li_environment_t *env) {
             } else if (li_is_macro(proc)) {
                 exp = expand_macro(proc, args);
             } else if (li_is_primitive_procedure(proc)) {
+                args = list_of_values(args, env);
                 exp = li_to_primitive_procedure(proc)(args);
+                done = 1;
+            } else if (li_is_type_obj(proc) && li_to_type(proc)->proc) {
+                args = list_of_values(args, env);
+                exp = li_to_type(proc)->proc(args);
                 done = 1;
             } else if (li_is_special_form(proc)) {
                 exp = li_to_special_form(proc)(args, env);
