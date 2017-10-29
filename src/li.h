@@ -140,7 +140,7 @@ extern li_num_t li_num_neg(li_num_t x);
 #define li_num_expt(x, y) \
     (li_num_with_dec(pow(li_num_to_dec(x), li_num_to_dec(y))))
 
-extern li_num_t li_num_with_chars(const char *s);
+extern li_num_t li_num_with_chars(const char *s, int radix);
 extern li_num_t li_num_with_dec(li_dec_t x);
 extern li_num_t li_num_with_int(li_int_t x);
 extern li_num_t li_num_with_rat(li_rat_t x);

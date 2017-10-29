@@ -105,83 +105,84 @@ static li_object *p_is_negative(li_object *args) {
 
 static li_object *p_is_odd(li_object *args) {
     li_int_t x;
-    li_parse_args(args, "i", &x);
+    li_parse_args(args, "I", &x);
     return li_boolean(x % 2 != 0);
 }
 
 static li_object *p_is_even(li_object *args) {
     li_int_t x;
-    li_parse_args(args, "i", &x);
+    li_parse_args(args, "I", &x);
     return li_boolean(x % 2 == 0);
 }
 
 static li_object *p_max(li_object *args) {
-    li_num_t max;
-    if (!args)
-        li_error("wrong number of args", args);
-    max = li_to_number(li_car(args));
-    while ((args = li_cdr(args)))
-        max = li_num_max(max, li_to_number(li_car(args)));
-    return li_number(max);
+    li_num_t x, y;
+    li_parse_args(args, "nn.", &x, &y, &args);
+    x = li_num_max(x, y);
+    while (args) {
+        li_parse_args(args, "n.", &y, &args);
+        x = li_num_max(x, y);
+    }
+    return li_number(x);
 }
 
 static li_object *p_min(li_object *args) {
-    li_num_t min;
-    if (!args)
-        li_error("wrong number of args", args);
-    min = li_to_number(li_car(args));
-    while ((args = li_cdr(args)))
-        min = li_num_min(min, li_to_number(li_car(args)));
-    return li_number(min);
+    li_num_t x, y;
+    li_parse_args(args, "nn.", &x, &y, &args);
+    x = li_num_min(x, y);
+    while (args) {
+        li_parse_args(args, "n.", &y, &args);
+        x = li_num_min(x, y);
+    }
+    return li_number(x);
 }
 
 static li_object *p_add(li_object *args) {
-    li_num_t result;
+    li_num_t x, y;
     if (!args)
         return li_number(li_num_with_int(0));
-    li_assert_number(li_car(args));
-    result = li_to_number(li_car(args));
-    args = li_cdr(args);
+    li_parse_args(args, "n.", &x, &args);
     while (args) {
-        li_assert_number(li_car(args));
-        result = li_num_add(result, li_to_number(li_car(args)));
-        args = li_cdr(args);
+        li_parse_args(args, "n.", &y, &args);
+        x = li_num_add(x, y);
     }
-    return li_number(result);
+    return li_number(x);
 }
 
 static li_object *p_sub(li_object *args) {
-    li_num_t result;
+    li_num_t x, y;
+    li_parse_args(args, "n.", &x, &args);
     if (!args)
-        li_error("wrong number of args", args);
-    li_assert_number(li_car(args));
-    result = li_to_number(li_car(args));
-    args = li_cdr(args);
-    if (!args)
-        result = li_num_neg(result);
+        return li_number(li_num_neg(x));
     while (args) {
-        li_assert_number(li_car(args));
-        result = li_num_sub(result, li_to_number(li_car(args)));
-        args = li_cdr(args);
+        li_parse_args(args, "n.", &y, &args);
+        x = li_num_sub(x, y);
     }
-    return li_number(result);
+    return li_number(x);
+}
+
+static li_object *p_mul(li_object *args) {
+    li_num_t x, y;
+    if (!args)
+        return li_number(li_num_with_int(1));
+    li_parse_args(args, "n.", &x, &args);
+    while (args) {
+        li_parse_args(args, "n.", &y, &args);
+        x = li_num_mul(x, y);
+    }
+    return li_number(x);
 }
 
 static li_object *p_div(li_object *args) {
-    li_num_t result;
+    li_num_t x, y;
+    li_parse_args(args, "n.", &x, &args);
     if (!args)
-        li_error("wrong number of args", args);
-    li_assert_number(li_car(args));
-    result = li_to_number(li_car(args));
-    args = li_cdr(args);
-    if (!args)
-        result = li_num_div(li_num_with_int(1), result);
+        x = li_num_div(li_num_with_int(1), x);
     while (args) {
-        li_assert_number(li_car(args));
-        result = li_num_div(result, li_to_number(li_car(args)));
-        args = li_cdr(args);
+        li_parse_args(args, "n.", &y, &args);
+        x = li_num_div(x, y);
     }
-    return li_number(result);
+    return li_number(x);
 }
 
 static li_object *p_floor_div(li_object *args) {
@@ -198,30 +199,15 @@ static li_object *p_abs(li_object *args) {
 
 static li_object *p_quotient(li_object *args) {
     li_int_t x, y;
-    li_parse_args(args, "ii", &x, &y);
+    li_parse_args(args, "II", &x, &y);
     if (y == 0)
         li_error_f("arg2 must be non-zero");
     return li_number(li_num_with_int(x / y));
 }
 
-static li_object *p_mul(li_object *args) {
-    li_num_t result;
-    if (!args)
-        return li_number(li_num_with_int(1));
-    li_assert_number(li_car(args));
-    result = li_to_number(li_car(args));
-    args = li_cdr(args);
-    while (args) {
-        li_assert_number(li_car(args));
-        result = li_num_mul(result, li_to_number(li_car(args)));
-        args = li_cdr(args);
-    }
-    return li_number(result);
-}
-
 static li_object *p_remainder(li_object *args) {
     li_int_t x, y;
-    li_parse_args(args, "ii", &x, &y);
+    li_parse_args(args, "II", &x, &y);
     if (y == 0)
         li_error_f("arg2 must be non-zero");
     return li_number(li_num_with_int(x % y));
@@ -229,7 +215,7 @@ static li_object *p_remainder(li_object *args) {
 
 static li_object *p_modulo(li_object *args) {
     li_int_t x, y, z;
-    li_parse_args(args, "ii", &x, &y);
+    li_parse_args(args, "II", &x, &y);
     if (y == 0)
         li_error_f("arg2 must be non-zero");
     z = x % y;
@@ -238,22 +224,65 @@ static li_object *p_modulo(li_object *args) {
     return li_number(li_num_with_int(z));
 }
 
+/* TODO: extern this */
+static li_int_t li_int_gcd(li_int_t x, li_int_t y)
+{
+    while (y) {
+        li_int_t z = y;
+        y = x % y;
+        x = z;
+    }
+    return labs(x);
+}
+
+/* TODO: extern this */
+static li_int_t li_int_lcm(li_int_t a, li_int_t b)
+{
+    return labs(a * b) / li_int_gcd(a, b);
+}
+
 static li_object *p_gcd(li_object *args) {
-    int a, b, c;
+    li_int_t a, b; /* TODO: support li_num_t */
     if (!args)
         return li_number(li_num_with_int(0));
-    li_assert_integer(li_car(args));
-    a = labs(li_to_integer(li_car(args)));
-    while ((args = li_cdr(args))) {
-        li_assert_integer(li_car(args));
-        b = labs(li_to_integer(li_car(args)));
-        while (b) {
-            c = b;
-            b = a % b;
-            a = c;
-        }
+    li_parse_args(args, "I.", &a, &args);
+    while (args) {
+        li_parse_args(args, "I.", &b, &args);
+        a = li_int_gcd(a, b);
     }
     return li_number(li_num_with_int(a));
+}
+
+static li_object *p_lcm(li_object *args) {
+    li_int_t a, b; /* TODO: support li_num_t */
+    if (!args)
+        return li_number(li_num_with_int(1));
+    li_parse_args(args, "I.", &a, &args);
+    while (args) {
+        li_parse_args(args, "I.", &b, &args);
+        a = li_int_lcm(a, b);
+    }
+    return li_number(li_num_with_int(a));
+}
+
+static li_object *p_numerator(li_object *args) {
+    li_num_t q;
+    li_parse_args(args, "n", &q);
+    if (!q.exact)
+        li_error("not exact", args); /* TODO: support inexact numbers */
+    q.real.exact.den = li_nat_with_int(1);
+    return li_number(q);
+}
+
+static li_object *p_denominator(li_object *args) {
+    li_num_t q;
+    li_parse_args(args, "n", &q);
+    if (!q.exact)
+        li_error("not exact", args); /* TODO: support inexact numbers */
+    q.real.exact.neg = LI_FALSE;
+    q.real.exact.num = q.real.exact.den;
+    q.real.exact.den = li_nat_with_int(1);
+    return li_number(q);
 }
 
 static li_object *p_floor(li_object *args) {
@@ -333,6 +362,13 @@ static li_object *p_atan(li_object *args) {
     }
 }
 
+static li_object *p_square(li_object *args)
+{
+    li_num_t z;
+    li_parse_args(args, "n", &z);
+    return li_number(li_num_mul(z, z));
+}
+
 static li_object *p_sqrt(li_object *args) {
     li_num_t x;
     li_parse_args(args, "n", &x);
@@ -345,12 +381,32 @@ static li_object *p_expt(li_object *args) {
     return li_number(li_num_expt(x, y));
 }
 
+static li_object *p_inexact(li_object *args) {
+    li_num_t z;
+    li_parse_args(args, "n", &z);
+    if (!z.exact)
+        return li_car(args);
+    z.real.inexact = li_rat_to_dec(z.real.exact);
+    z.exact = LI_FALSE;
+    return li_number(z);
+}
+
 static li_object *p_number_to_string(li_object *args) {
     static char buf[BUFSIZ];
-    li_assert_nargs(1, args);
-    li_assert_number(li_car(args));
-    li_num_to_chars(li_to_number(li_car(args)), buf, sizeof(buf));
+    li_num_t z;
+    li_parse_args(args, "n", &z);
+    li_num_to_chars(z, buf, sizeof(buf));
     return li_string(li_string_make(buf));
+}
+
+static li_object *p_string_to_number(li_object *args) {
+    li_string_t str;
+    int radix = 10;
+    if (li_length(args) == 1)
+        li_parse_args(args, "s", &str);
+    else
+        li_parse_args(args, "si", &str, &radix);
+    return li_number(li_num_with_chars(li_string_bytes(str), radix));
 }
 
 extern void li_define_number_functions(li_environment_t *env)
@@ -363,6 +419,9 @@ extern void li_define_number_functions(li_environment_t *env)
     li_define_primitive_procedure(env, "integer?", p_is_integer);
     li_define_primitive_procedure(env, "exact?", p_is_exact);
     li_define_primitive_procedure(env, "inexact?", p_is_inexact);
+    /* li_define_primitive_procedure(env, "finite?", p_is_finite); */
+    /* li_define_primitive_procedure(env, "infinite?", p_is_infinite); */
+    /* li_define_primitive_procedure(env, "nan?", p_is_nan); */
     li_define_primitive_procedure(env, "zero?", p_is_zero);
     li_define_primitive_procedure(env, "positive?", p_is_positive);
     li_define_primitive_procedure(env, "negative?", p_is_negative);
@@ -380,6 +439,9 @@ extern void li_define_number_functions(li_environment_t *env)
     li_define_primitive_procedure(env, "remainder", p_remainder);
     li_define_primitive_procedure(env, "modulo", p_modulo);
     li_define_primitive_procedure(env, "gcd", p_gcd);
+    li_define_primitive_procedure(env, "lcm", p_lcm);
+    li_define_primitive_procedure(env, "numerator", p_numerator);
+    li_define_primitive_procedure(env, "denominator", p_denominator);
     li_define_primitive_procedure(env, "floor", p_floor);
     li_define_primitive_procedure(env, "ceiling", p_ceiling);
     li_define_primitive_procedure(env, "truncate", p_truncate);
@@ -392,7 +454,11 @@ extern void li_define_number_functions(li_environment_t *env)
     li_define_primitive_procedure(env, "asin", p_asin);
     li_define_primitive_procedure(env, "acos", p_acos);
     li_define_primitive_procedure(env, "atan", p_atan);
+    li_define_primitive_procedure(env, "square", p_square);
     li_define_primitive_procedure(env, "sqrt", p_sqrt);
     li_define_primitive_procedure(env, "expt", p_expt);
+    /* li_define_primitive_procedure(env, "exact", p_exact); */
+    li_define_primitive_procedure(env, "inexact", p_inexact);
     li_define_primitive_procedure(env, "number->string", p_number_to_string);
+    li_define_primitive_procedure(env, "string->number", p_string_to_number);
 }

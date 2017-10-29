@@ -174,16 +174,21 @@ static li_object *p_is_list(li_object *args) {
 
 static li_object *p_make_list(li_object *args) {
     int k;
-    li_object *fill, *head, *tail;
-    li_parse_args(args, "io", &k, &fill);
-    head = tail = li_null;
+    li_object *fill, *lst, *tail;
+    if (li_length(args) == 2) {
+        li_parse_args(args, "io", &k, &fill);
+    } else {
+        li_parse_args(args, "i", &k);
+        fill = li_false;
+    }
+    lst = tail = li_null;
     while (k--) {
-        if (head)
+        if (lst)
             tail = li_set_cdr(tail, li_cons(fill, li_null));
         else
-            head = tail = li_cons(fill, li_null);
+            lst = tail = li_cons(fill, li_null);
     }
-    return head;
+    return lst;
 }
 
 static li_object *p_list(li_object *args) {

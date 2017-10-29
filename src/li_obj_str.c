@@ -120,13 +120,6 @@ static li_object *p_string_to_list(li_object *args) {
     return head;
 }
 
-static li_object *p_string_to_number(li_object *args) {
-    li_assert_nargs(1, args);
-    li_assert_string(li_car(args));
-    return li_number(li_num_with_chars(li_string_bytes(li_to_string(
-                        li_car(args)))));
-}
-
 static li_object *p_string_to_vector(li_object *args) {
     li_object *head, *tail;
     li_string_t str;
@@ -158,7 +151,6 @@ extern void li_define_string_functions(li_environment_t *env)
     li_define_primitive_procedure(env, "string?", p_is_string);
     li_define_primitive_procedure(env, "string-append", p_string_append);
     li_define_primitive_procedure(env, "string->list", p_string_to_list);
-    li_define_primitive_procedure(env, "string->number", p_string_to_number);
     li_define_primitive_procedure(env, "string->symbol", p_string_to_symbol);
     li_define_primitive_procedure(env, "string->vector", p_string_to_vector);
 }

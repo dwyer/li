@@ -86,9 +86,11 @@ extern li_num_t li_num_with_rat(li_rat_t x)
     return n;
 }
 
-extern li_num_t li_num_with_chars(const char *s)
+extern li_num_t li_num_with_chars(const char *s, int radix)
 {
     li_dec_t x;
+    if (radix != 10)
+        li_error("only radix of 10 is supported", NULL);
     x = li_dec_parse(s);
     return x == floor(x) ? li_num_with_int(x) : li_num_with_dec(x);
 }

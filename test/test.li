@@ -1,3 +1,4 @@
+(define start (current-jiffy))
 (import lib)
 
 (define x 28)
@@ -282,10 +283,10 @@
 (assert (equal? (lcm 32 -36) 288))
 (assert (equal? (lcm 32.0 -36) 288.0)) # inexact
 (assert (equal? (lcm) 1))
-#(assert (equal? (numerator (/ 6 4)) 3))
-#(assert (equal? (denominator (/ 6 4)) 2))
+(assert (equal? (numerator (/ 6 4)) 3))
+(assert (equal? (denominator (/ 6 4)) 2))
 #(assert (equal? (denominator
-#                  (exact->inexact (/ 6 4))) 2.0))
+#                  (inexact (/ 6 4))) 2.0))
 (assert (equal? (floor -4.3) -5.0))
 (assert (equal? (ceiling -4.3) -4.0))
 (assert (equal? (truncate -4.3) -4.0))
@@ -294,11 +295,13 @@
 (assert (equal? (ceiling 3.5) 4.0))
 (assert (equal? (truncate 3.5) 3.0))
 (assert (equal? (round 3.5) 4.0)) # inexact
-#(assert (equal? (round 7/2) 4)) # exact
+(assert (equal? (round 7/2) 4)) # exact
 (assert (equal? (round 7) 7))
 #(assert (equal? (rationalize
-#                  (inexact->exact .3) 1/10) 1/3)) # exact
+#                  (exact .3) 1/10) 1/3)) # exact
 #(assert (equal? (rationalize .3 1/10) %i1/3)) # inexact
+(assert (= (square 42) 1764))
+(assert (= (square 2.0) 4.0))
 #(assert (equal? (make-rectangular x1 x2) z))
 #(assert (equal? (make-polar x3 x4) z))
 #(assert (equal? (real-part z) x1))
@@ -307,7 +310,7 @@
 #(assert (equal? (angle z) xangle))
 (assert (equal? (string->number "100") 100))
 #(assert (equal? (string->number "100" 16) 256))
-#(assert (equal? (string->number "1e2") 100.0))
+(assert (equal? (string->number "1e2") 100.0))
 #(assert (equal? (string->number "15##") 1500.0))
 (assert (equal? true true))
 (assert (equal? false false))
@@ -373,7 +376,7 @@
 (assert (equal? (reverse '(a (b c) d (e (f)))) '((e (f)) d (b c) a)))
 (assert (equal? (ref '(a b c d) 2) 'c))
 #(assert (equal? (ref '(a b c d)
-#                          (inexact->exact (round 1.8))) 'c))
+#                          (exact (round 1.8))) 'c))
 (assert (equal? (memq 'a '(a b c)) '(a b c)))
 (assert (equal? (memq 'b '(a b c)) '(b c)))
 (assert (equal? (memq 'a '(b c d)) false))
@@ -431,7 +434,7 @@
 #(assert (equal? (ref '[1 1 2 3 5 8 13 21]
 #                            (let ((i (round (* 2 (acos -1)))))
 #                              (if (inexact? i)
-#                                (inexact->exact i)
+#                                (exact i)
 #                                i))) 13))
 (assert (equal? (let ((vec (vector 0 '(2 2 2 2) "Anna")))
                   (set vec 1 '("Sue" "Sue"))
@@ -543,3 +546,7 @@
 (import test-syntax)
 (import test-string)
 (print "all tests passed!")
+(print (inexact (/ (- (current-jiffy)
+                      start)
+                   (jiffies-per-second)))
+       "seconds")

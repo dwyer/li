@@ -86,9 +86,9 @@ extern li_cmp_t li_nat_cmp(li_nat_t x, li_nat_t y)
 extern li_nat_t li_nat_gcd(li_nat_t x, li_nat_t y)
 {
     while (!li_nat_is_zero(y)) {
-        li_nat_t tmp = y;
+        li_nat_t z = y;
         y = li_nat_mod(x, y);
-        x = tmp;
+        x = z;
     }
     return x;
 }

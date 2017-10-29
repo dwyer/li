@@ -7,7 +7,8 @@
 /**
  * fmt options:
  *     e = li_environment_t
- *     i = li_int_t
+ *     I = li_int_t
+ *     i = int
  *     l = li_object (list)
  *     n = li_num_t
  *     o = li_object
@@ -19,19 +20,24 @@
 extern void li_parse_args(li_object *args, const char *fmt, ...)
 {
     va_list ap;
-    li_object *obj;
+    li_object *obj, *seq;
     const char *s;
     va_start(ap, fmt);
     s = fmt;
+    seq = args;
     while (*s && args) {
         obj = li_car(args);
         switch (*s) {
         case 'e':
             li_assert_type(environment, obj);
             *va_arg(ap, li_environment_t **) = li_to_environment(obj);
-        case 'i':
+        case 'I':
             li_assert_integer(obj);
             *va_arg(ap, li_int_t *) = li_to_integer(obj);
+            break;
+        case 'i':
+            li_assert_integer(obj);
+            *va_arg(ap, int *) = (int)li_to_integer(obj);
             break;
         case 'l':
             li_assert_list(obj);
@@ -68,19 +74,24 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
         case '.':
             *va_arg(ap, li_object **) = args;
             args = NULL;
-            break;
+            goto out;
         default:
             goto out;
-            break;
         }
         if (args)
             args = li_cdr(args);
         s++;
     }
+    if (*s == '.' && !args) {
+        *va_arg(ap, li_object **) = NULL;
+        s++;
+    }
 out:
     va_end(ap);
-    if (*s || args) {
-        li_error("bad function signature", li_string(li_string_make(fmt)));
+    if (*s && *s != '.') {
+        li_error("too many args", seq);
+    } else if (args) {
+        li_error("too few args", seq);
     }
 }
 
@@ -96,22 +107,6 @@ static li_object *p_error(li_object *args) {
 
     li_parse_args(args, "s.", &msg, &irritants);
     li_error(li_string_bytes(msg), irritants);
-    return li_null;
-}
-
-static li_object *p_clock(li_object *args) {
-    li_assert_nargs(0, args);
-    return li_number(li_num_with_int(clock()));
-}
-
-static li_object *p_exit(li_object *args) {
-    if (!args) {
-        exit(0);
-    } else {
-        li_assert_nargs(1, args);
-        li_assert_integer(li_car(args));
-        exit(li_to_integer(li_car(args)));
-    }
     return li_null;
 }
 
@@ -143,36 +138,6 @@ static li_object *p_rename(li_object *args) {
                     li_string_bytes(li_to_string(li_cadr(args))))));
 }
 
-static li_object *p_environ(li_object *args) {
-    const char *const *sp;
-    li_object *head;
-    li_object *tail;
-
-    extern const char *const *environ;
-    li_assert_nargs(0, args);
-    sp = environ;
-    head = li_null;
-    while (*sp) {
-        if (head)
-            tail = li_set_cdr(tail, li_cons(li_string(li_string_make(*sp)), li_null));
-        else
-            head = tail = li_cons(li_string(li_string_make(*sp)), li_null);
-        sp++;
-    }
-    return head;
-}
-
-
-static li_object *p_getenv(li_object *args) {
-    char *env;
-
-    li_assert_nargs(1, args);
-    li_assert_string(li_car(args));
-    if ((env = getenv(li_string_bytes(li_to_string(li_car(args))))))
-        return li_string(li_string_make(env));
-    else
-        return li_false;
-}
 
 static li_object *p_setenv(li_object *args) {
     li_assert_nargs(2, args);
@@ -191,11 +156,6 @@ static li_object *p_system(li_object *args) {
     if ((ret = system(li_string_bytes(li_to_string(li_car(args))))))
         return li_number(li_num_with_int(ret));
     return li_null;
-}
-
-static li_object *p_time(li_object *args) {
-    li_assert_nargs(0, args);
-    return li_number(li_num_with_int(time(NULL)));
 }
 
 /**************************
@@ -319,7 +279,7 @@ static li_object *p_length(li_object *args) {
 
 static li_object *p_ref(li_object *args) {
     li_object *lst;
-    li_int_t k;
+    int k;
     li_parse_args(args, "oi", &lst, &k);
     if (!li_type(lst)->ref)
         li_error("set: no ref", lst);
@@ -328,13 +288,69 @@ static li_object *p_ref(li_object *args) {
 
 static li_object *p_set(li_object *args) {
     li_object *lst, *obj;
-    li_int_t k;
+    int k;
     li_parse_args(args, "oio", &lst, &k, &obj);
     if (!lst || !li_type(lst)->set)
         li_error("set: bad type:", lst);
     if (k < 0 || (li_type(lst)->length(lst) && k >= li_type(lst)->length(lst)))
         li_error("out of range", args);
     return li_type(lst)->set(lst, k, obj);
+}
+
+static li_object *p_exit(li_object *args)
+{
+    if (!args) {
+        exit(0);
+    } else {
+        li_assert_nargs(1, args);
+        li_assert_integer(li_car(args));
+        exit(li_to_integer(li_car(args)));
+    }
+    return li_null;
+}
+
+static li_object *p_get_environment_variable(li_object *args) {
+    li_string_t str;
+    char *val;
+    li_parse_args(args, "s", &str);
+    if ((val = getenv(li_string_bytes(str))))
+        return li_string(li_string_make(val));
+    else
+        return li_false;
+}
+
+static li_object *p_get_environment_variables(li_object *args) {
+    const char *const *sp;
+    li_object *head;
+    li_object *tail;
+    extern const char *const *environ;
+    li_assert_nargs(0, args);
+    sp = environ;
+    head = li_null;
+    while (*sp) {
+        if (head)
+            tail = li_set_cdr(tail, li_cons(li_string(li_string_make(*sp)), li_null));
+        else
+            head = tail = li_cons(li_string(li_string_make(*sp)), li_null);
+        sp++;
+    }
+    return head;
+}
+
+static li_object *p_current_second(li_object *args) {
+    li_parse_args(args, "");
+    return li_number(li_num_with_int(time(NULL)));
+}
+
+static li_object *p_current_jiffy(li_object *args) {
+    li_parse_args(args, "");
+    return li_number(li_num_with_int(clock()));
+}
+
+static li_object *p_jiffies_per_second(li_object *args)
+{
+    li_parse_args(args, "");
+    return li_number(li_num_with_int(CLOCKS_PER_SEC));
 }
 
 static li_object *p_isa(li_object *args)
@@ -355,7 +371,7 @@ extern void li_setup_environment(li_environment_t *env) {
     define_var(env, "true", li_true);
     define_var(env, "false", li_false);
     define_var(env, "null", li_null);
-    define_var(env, "user-initial-environment", (li_object *)env);
+
     define_type(env, "character", &li_type_character);
     define_type(env, "environment", &li_type_environment);
     define_type(env, "macro", &li_type_macro);
@@ -368,24 +384,29 @@ extern void li_setup_environment(li_environment_t *env) {
     define_type(env, "symbol", &li_type_symbol);
     define_type(env, "type", &li_type_type);
     define_type(env, "vector", &li_type_vector);
+
     /* Equivalence predicates */
     li_define_primitive_procedure(env, "isa?", p_isa);
     li_define_primitive_procedure(env, "eq?", p_is_eq);
     li_define_primitive_procedure(env, "eqv?", p_is_eqv);
     li_define_primitive_procedure(env, "equal?", p_is_equal);
+
     /* Comparison operations */
     li_define_primitive_procedure(env, "=", p_eq);
     li_define_primitive_procedure(env, "<", p_lt);
     li_define_primitive_procedure(env, ">", p_gt);
     li_define_primitive_procedure(env, "<=", p_le);
     li_define_primitive_procedure(env, ">=", p_ge);
+
     /* Booleans */
     li_define_primitive_procedure(env, "boolean?", p_is_boolean);
     li_define_primitive_procedure(env, "not", p_not);
+
     /* generic getter and setter */
     li_define_primitive_procedure(env, "ref", p_ref);
     li_define_primitive_procedure(env, "set", p_set);
     li_define_primitive_procedure(env, "length", p_length);
+
     /* builtins */
     li_define_char_functions(env);
     li_define_number_functions(env);
@@ -396,16 +417,27 @@ extern void li_setup_environment(li_environment_t *env) {
     li_define_symbol_functions(env);
     li_define_vector_functions(env);
     li_define_procedure_functions(env);
-    /* Non-standard */
-    li_define_primitive_procedure(env, "clock", p_clock);
-    li_define_primitive_procedure(env, "error", p_error);
+
+    /* process-context library procedures */
+    /* li_define_primitive_procedure(env, "command-line", p_command_line); */
     li_define_primitive_procedure(env, "exit", p_exit);
-    li_define_primitive_procedure(env, "environ", p_environ);
-    li_define_primitive_procedure(env, "getenv", p_getenv);
+    li_define_primitive_procedure(env, "emergency-exit", p_exit);
+    li_define_primitive_procedure(env, "get-environment-variable",
+            p_get_environment_variable);
+    li_define_primitive_procedure(env, "get-environment-variables",
+            p_get_environment_variables);
+
+    /* time library procedures */
+    li_define_primitive_procedure(env, "current-second", p_current_second);
+    li_define_primitive_procedure(env, "current-jiffy", p_current_jiffy);
+    li_define_primitive_procedure(env, "jiffies-per-second",
+            p_jiffies_per_second);
+
+    /* Non-standard */
+    li_define_primitive_procedure(env, "error", p_error);
     li_define_primitive_procedure(env, "setenv", p_setenv);
     li_define_primitive_procedure(env, "rand", p_rand);
     li_define_primitive_procedure(env, "remove", p_remove);
     li_define_primitive_procedure(env, "rename", p_rename);
     li_define_primitive_procedure(env, "system", p_system);
-    li_define_primitive_procedure(env, "time", p_time);
 }

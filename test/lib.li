@@ -16,15 +16,6 @@
       (cons k (iter (+ k 1)))
       null)))
 
-(define (lcm . args)
-  (define (algorithm a b)
-    (/ (abs (* a b)) (gcd a b)))
-  (cond ((null? args) 1)
-        ((null? (cdr args)) (abs (car args)))
-        (else
-          (apply lcm (cons (algorithm (car args) (cadr args))
-                           (cddr args))))))
-
 # PORTS
 
 (define (open-input-file str)

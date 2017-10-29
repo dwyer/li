@@ -24,9 +24,10 @@ static li_object *m_and(li_object *seq, li_environment_t *env) {
 }
 
 static li_object *m_assert(li_object *args, li_environment_t *env) {
-    li_assert_nargs(1, args);
-    if (li_not(li_eval(li_car(args), env)))
-        li_error("assertion violated", li_car(args));
+    li_object *expr;
+    li_parse_args(args, "o", &expr);
+    if (li_not(li_eval(expr, env)))
+        li_error("assertion violated", expr);
     return li_null;
 }
 
@@ -63,14 +64,18 @@ static li_object *m_case(li_object *exp, li_environment_t *env) {
     return li_car(exprs);
 }
 
+/* (cond (cond . clause) ... */
+/* ... (else . clause)) */
 static li_object *m_cond(li_object *seq, li_environment_t *env) {
-    for (; seq; seq = li_cdr(seq))
-        if (li_is_eq(li_caar(seq), li_symbol("else")) ||
-            !li_not(li_eval(li_caar(seq), env))) {
+    for (; seq; seq = li_cdr(seq)) {
+        li_object *cond, *clause;
+        li_parse_args(li_car(seq), "o.", &cond, &clause);
+        if (li_is_eq(cond, li_symbol("else")) || !li_not(li_eval(cond, env))) {
             for (seq = li_cdar(seq); li_cdr(seq); seq = li_cdr(seq))
                 li_eval(li_car(seq), env);
             break;
         }
+    }
     if (!seq)
         return li_false;
     return li_car(seq);
