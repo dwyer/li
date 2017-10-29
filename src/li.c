@@ -5,8 +5,8 @@
 #define ARGV_SYMBOL li_symbol("*args*")
 
 li_object *li_prompt(FILE *fin, FILE *fout, const char *s);
-void li_repl(li_object *env);
-void li_script(li_object *env);
+void li_repl(li_environment_t *env);
+void li_script(li_environment_t *env);
 
 li_object *li_prompt(FILE *fin, FILE *fout, const char *s) {
     if (isatty(0))
@@ -14,10 +14,8 @@ li_object *li_prompt(FILE *fin, FILE *fout, const char *s) {
     return li_read(fin);
 }
 
-void li_repl(li_object *env) {
-    li_object *exp;
-    li_object *var;
-
+void li_repl(li_environment_t *env) {
+    li_object *exp, *var;
     var = li_symbol("_");
     li_append_variable(var, li_null, env);
     while ((exp = li_prompt(stdin, stdout, "> ")) != li_eof) {
@@ -33,23 +31,22 @@ void li_repl(li_object *env) {
     }
 }
 
-void li_script(li_object *env) {
+void li_script(li_environment_t *env) {
     li_object *args;
-
     args = li_environment_lookup(env, ARGV_SYMBOL);
     li_load(li_string_bytes(li_to_string(li_car(args))), env);
 }
 
 int main(int argc, char *argv[]) {
-    li_object *env, *args;
+    li_environment_t *env;
+    li_object *args;
     int i, ret;
-
 #ifdef LI_OPTIONAL
     extern void li_load_bytevector(li_object *);
 #endif
     ret = 0;
     srand(time(NULL));
-    env = li_environment(li_null);
+    env = li_environment(NULL);
     li_setup_environment(env);
     for (args = li_null, i = argc - 1; i; i--)
         args = li_cons(li_string(li_string_make(argv[i])), args);
@@ -58,8 +55,9 @@ int main(int argc, char *argv[]) {
     li_load_bytevector(env);
 #endif
     ret = argc == 1 ?
-        li_try(li_repl, li_cleanup, env) :
-        li_try(li_script, NULL, env);
-    li_cleanup(li_null);
+        li_try((void (*)(li_object *))li_repl,
+                (void (*)(li_object *))li_cleanup, (li_object *)env) :
+        li_try((void (*)(li_object *))li_script, NULL, (li_object *)env);
+    li_cleanup(NULL);
     exit(ret);
 }

@@ -112,7 +112,7 @@ int push_buffer(FILE *fp)
     return ret;
 }
 
-void li_load(char *filename, li_object *env)
+void li_load(char *filename, li_environment_t *env)
 {
     char *cwd;
     li_object *exp;

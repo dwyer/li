@@ -72,11 +72,11 @@ extern void li_mark(li_object *obj)
 /*
  * Garbage collector.
  */
-extern void li_cleanup(li_object *env)
+extern void li_cleanup(li_environment_t *env)
 {
     int i, j, k = _heap.size;
     return;
-    li_mark(env);
+    li_mark((li_object *)env);
     for (i = j = 0; i < k; i++) {
         if (li_is_locked(_heap.objs[i])) {
             li_unlock(_heap.objs[i]);

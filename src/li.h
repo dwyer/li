@@ -196,7 +196,9 @@ typedef struct {
     li_character_t character;
 } li_character_obj_t;
 
-typedef struct {
+typedef struct li_environment li_environment_t;
+
+struct li_environment {
     LI_OBJ_HEAD;
     struct {
         li_object *var;
@@ -204,21 +206,21 @@ typedef struct {
     } *array;
     int size; /* TODO: change to size_t */
     int cap; /* TODO: change to size_t */
-    li_object *base;
-} li_environment_t;
+    li_environment_t *base;
+};
 
 typedef struct {
     li_object *name;
     li_object *vars;
     li_object *body;
-    li_object *env;
+    li_environment_t *env;
 } li_lambda_t;
 
 typedef struct {
     LI_OBJ_HEAD;
     li_object *vars;
     li_object *body;
-    li_object *env;
+    li_environment_t *env;
 } li_macro_t;
 
 typedef struct {
@@ -271,11 +273,11 @@ typedef struct {
  *    special form function should not evaluate the final expression before
  *    returning it.
  */
-typedef li_object *(*li_special_form_t)(li_object *, li_object *);
+typedef li_object *(li_special_form_t)(li_object *, li_environment_t *);
 
 typedef struct {
     LI_OBJ_HEAD;
-    li_special_form_t special_form;
+    li_special_form_t *special_form;
 } li_special_form_obj_t;
 
 typedef struct {
@@ -348,7 +350,7 @@ extern void li_destroy(li_object *obj);
 /*
  * Destroys all objects that cannot be reached from the given environment.
  */
-extern void li_cleanup(li_object *env);
+extern void li_cleanup(li_environment_t *env);
 
 /** Object constructors. */
 
@@ -356,15 +358,16 @@ typedef void free_func_t(void *);
 typedef void write_func_t(void *, FILE *);
 
 extern li_object *li_character(li_character_t c);
-extern li_object *li_environment(li_object *base);
+extern li_environment_t *li_environment(li_environment_t *base);
 extern li_object *li_lambda(li_object *name, li_object *vars, li_object *body,
-        li_object *env);
-extern li_object *li_macro(li_object *vars, li_object *body, li_object *env);
+        li_environment_t *env);
+extern li_object *li_macro(li_object *vars, li_object *body,
+        li_environment_t *env);
 extern li_object *li_number(li_num_t n);
 extern li_object *li_pair(li_object *car, li_object *cdr);
 extern li_object *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
-extern li_object *li_special_form(li_object *(*proc)(li_object *, li_object *));
+extern li_object *li_special_form(li_special_form_t *proc);
 extern li_object *li_string(li_string_t str);
 extern li_object *li_symbol(const char *s);
 extern li_object *li_type_obj(const li_type_t *type);
@@ -397,12 +400,12 @@ extern li_bool_t li_is_list(li_object *obj);
 extern int li_length(li_object *obj);
 
 /** Environment accessors. */
-extern int li_environment_assign(li_object *env, li_object *var,
+extern int li_environment_assign(li_environment_t *env, li_object *var,
         li_object *val);
-extern void li_environment_define(li_object *env, li_object *var,
+extern void li_environment_define(li_environment_t *env, li_object *var,
         li_object *val);
-extern li_object *li_environment_lookup(li_object *env, li_object *var);
-extern void li_setup_environment(li_object *env);
+extern li_object *li_environment_lookup(li_environment_t *env, li_object *var);
+extern void li_setup_environment(li_environment_t *env);
 
 /** Type casting. */
 #define li_to_character(obj)            ((li_character_obj_t *)(obj))->character
@@ -498,12 +501,12 @@ extern void li_stack_trace_push(li_object *expr);
 extern void li_stack_trace_pop(void);
 
 /* li_eval.c */
-extern void li_append_variable(li_object *var, li_object *val, li_object *env);
+extern void li_append_variable(li_object *var, li_object *val, li_environment_t *env);
 extern li_object *li_apply(li_object *proc, li_object *args);
-extern li_object *li_eval(li_object *exp, li_object *env);
+extern li_object *li_eval(li_object *exp, li_environment_t *env);
 
 /* li_read.y */
-extern void li_load(char *filename, li_object *env);
+extern void li_load(char *filename, li_environment_t *env);
 extern li_object *li_read(FILE *f);
 
 /* li_write.c */
