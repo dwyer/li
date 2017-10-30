@@ -89,9 +89,9 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
 out:
     va_end(ap);
     if (*s && *s != '.') {
-        li_error("too many args", seq);
-    } else if (args) {
         li_error("too few args", seq);
+    } else if (args) {
+        li_error("too many args", seq);
     }
 }
 

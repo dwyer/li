@@ -28,7 +28,8 @@ LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_eval.o li_nat.o \
 	     li_num.o li_object.o li_obj_chr.o li_obj_env.o li_obj_mac.o \
 	     li_obj_num.o li_obj_pair.o li_obj_port.o li_obj_proc.o \
 	     li_obj_spf.o li_obj_str.o li_obj_sym.o li_obj_typ.o li_obj_vec.o \
-	     li_proc.o li_rat.o li_str.o li_write.o
+	     li_proc.o li_rat.o li_str.o li_write.o \
+	     li_sock.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 LI_OPT_OBJS_=lib_bytevector.o
 LI_OPT_OBJS=$(addprefix $(OBJDIR)/, $(LI_OPT_OBJS_))
@@ -84,16 +85,27 @@ tags: src/li.h
 	ctags -f $@ $<
 
 # automatically made with 'gcc -MM src/li_*.c'
-$(OBJDIR)/li.o: src/li.c src/li.h
 $(OBJDIR)/li_chr.o: src/li_chr.c src/li.h
 $(OBJDIR)/li_error.o: src/li_error.c src/li.h
 $(OBJDIR)/li_eval.o: src/li_eval.c src/li.h
 $(OBJDIR)/li_nat.o: src/li_nat.c src/li.h
 $(OBJDIR)/li_num.o: src/li_num.c src/li.h
+$(OBJDIR)/li_obj_chr.o: src/li_obj_chr.c src/li.h
+$(OBJDIR)/li_obj_env.o: src/li_obj_env.c src/li.h
+$(OBJDIR)/li_obj_mac.o: src/li_obj_mac.c src/li.h
+$(OBJDIR)/li_obj_num.o: src/li_obj_num.c src/li.h
+$(OBJDIR)/li_obj_pair.o: src/li_obj_pair.c src/li.h
+$(OBJDIR)/li_obj_port.o: src/li_obj_port.c src/li.h
+$(OBJDIR)/li_obj_proc.o: src/li_obj_proc.c src/li.h
+$(OBJDIR)/li_obj_spf.o: src/li_obj_spf.c src/li.h
+$(OBJDIR)/li_obj_str.o: src/li_obj_str.c src/li.h
+$(OBJDIR)/li_obj_sym.o: src/li_obj_sym.c src/li.h
+$(OBJDIR)/li_obj_typ.o: src/li_obj_typ.c src/li.h
+$(OBJDIR)/li_obj_vec.o: src/li_obj_vec.c src/li.h
 $(OBJDIR)/li_object.o: src/li_object.c src/li.h
 $(OBJDIR)/li_proc.o: src/li_proc.c src/li.h
 $(OBJDIR)/li_rat.o: src/li_rat.c src/li.h
 $(OBJDIR)/li_read.o: src/li_read.c src/li.h
+$(OBJDIR)/li_sock.o: src/li_sock.c src/li.h
 $(OBJDIR)/li_str.o: src/li_str.c src/li.h
 $(OBJDIR)/li_write.o: src/li_write.c src/li.h
-$(OBJDIR)/lib_bytevector.o: src/lib_bytevector.c src/li.h

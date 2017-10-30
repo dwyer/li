@@ -198,7 +198,7 @@ static li_object *p_list(li_object *args) {
 static li_object *p_list_tail(li_object *args) {
     li_object *lst;
     int k;
-    li_parse_args(args, "lo", &lst, &k);
+    li_parse_args(args, "li", &lst, &k);
     for (; k; k--) {
         if (lst && !li_is_pair(lst))
             li_error("not a list", li_car(args));

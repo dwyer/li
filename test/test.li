@@ -545,6 +545,7 @@
 (import test-match)
 (import test-syntax)
 (import test-string)
+(import test-sock)
 (print "all tests passed!")
 (print (inexact (/ (- (current-jiffy)
                       start)
