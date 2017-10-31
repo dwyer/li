@@ -1,15 +1,22 @@
 #include "li.h"
 
-static void mark(li_object *obj)
+struct li_macro {
+    LI_OBJ_HEAD;
+    li_object *vars;
+    li_object *body;
+    li_environment_t *env;
+};
+
+static void mark(li_macro_t *obj)
 {
-    li_mark(li_to_macro(obj)->vars);
-    li_mark(li_to_macro(obj)->body);
-    li_mark((li_object *)li_to_macro(obj)->env);
+    li_mark(obj->vars);
+    li_mark(obj->body);
+    li_mark((li_object *)obj->env);
 }
 
 const li_type_t li_type_macro = {
     .name = "macro",
-    .mark = mark,
+    .mark = (void (*)(li_object *))mark,
 };
 
 extern li_object *li_macro(li_object *vars, li_object *body,
@@ -21,4 +28,15 @@ extern li_object *li_macro(li_object *vars, li_object *body,
     obj->body = body;
     obj->env = env;
     return (li_object *)obj;
+}
+
+extern li_object *li_macro_expand(li_macro_t *mac, li_object *args)
+{
+    li_environment_t *env;
+    li_object *ret, *seq;
+    ret = li_null;
+    env = li_environment_extend(mac->env, mac->vars, args);
+    for (seq = mac->body; seq; seq = li_cdr(seq))
+        ret = li_eval(li_car(seq), env);
+    return ret;
 }

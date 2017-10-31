@@ -218,12 +218,9 @@ typedef struct {
     li_environment_t *env;
 } li_lambda_t;
 
-typedef struct {
-    LI_OBJ_HEAD;
-    li_object *vars;
-    li_object *body;
-    li_environment_t *env;
-} li_macro_t;
+typedef struct li_macro li_macro_t;
+
+extern li_object *li_macro_expand(li_macro_t *mac, li_object *args);
 
 typedef struct {
     LI_OBJ_HEAD;
@@ -251,12 +248,12 @@ typedef struct {
  * The object returned will not be further evaluated by the evaluator, so it is
  * safe to return an unapplicable list.
  */
-typedef li_object *(*li_primitive_procedure_t)(li_object *);
+typedef li_object *li_primitive_procedure_t(li_object *);
 
 typedef struct {
     LI_OBJ_HEAD;
     li_lambda_t compound;
-    li_primitive_procedure_t primitive;
+    li_primitive_procedure_t *primitive;
 } li_proc_obj_t;
 
 /*
@@ -406,13 +403,16 @@ extern void li_environment_define(li_environment_t *env, li_symbol_t *var,
         li_object *val);
 extern li_object *li_environment_lookup(li_environment_t *env,
         li_symbol_t *var);
+extern void li_append_variable(li_symbol_t *var, li_object *val,
+        li_environment_t *env);
+extern li_environment_t *li_environment_extend(li_environment_t *env,
+        li_object *vars, li_object *vals);
 extern void li_setup_environment(li_environment_t *env);
 
 /** Type casting. */
 #define li_to_character(obj)            ((li_character_obj_t *)(obj))->character
 #define li_to_environment(obj)          ((li_environment_t *)(obj))
 #define li_to_integer(obj)              (li_num_to_int(li_to_number((obj))))
-#define li_to_macro(obj)                ((li_macro_t *)(obj))
 #define li_to_lambda(obj)               li_to_procedure(obj).compound
 #define li_to_number(obj)               ((li_num_obj_t *)(obj))->number
 #define li_to_pair(obj)                 ((li_pair_t *)(obj))
@@ -504,7 +504,6 @@ extern void li_stack_trace_push(li_object *expr);
 extern void li_stack_trace_pop(void);
 
 /* li_eval.c */
-extern void li_append_variable(li_symbol_t *var, li_object *val, li_environment_t *env);
 extern li_object *li_apply(li_object *proc, li_object *args);
 extern li_object *li_eval(li_object *exp, li_environment_t *env);
 

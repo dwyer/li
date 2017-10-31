@@ -15,9 +15,6 @@
     if (!(pred)) li_error("bad special form", exp)
 
 static li_object *eval_quasiquote(li_object *exp, li_environment_t *env);
-static li_object *expand_macro(li_object *mac, li_object *args);
-static li_environment_t *extend_environment(li_object *vars, li_object *vals,
-        li_environment_t *base_env);
 static li_object *list_of_values(li_object *exps, li_environment_t *env);
 
 extern li_object *li_apply(li_object *proc, li_object *args) {
@@ -62,14 +59,16 @@ extern li_object *li_eval(li_object *exp, li_environment_t *env) {
             args = li_cdr(exp);
             if (li_is_lambda(proc)) {
                 args = list_of_values(args, env);
-                env = extend_environment(li_to_lambda(proc).vars, args,
-                        li_to_lambda(proc).env);
+                env = li_environment_extend(
+                        li_to_lambda(proc).env,
+                        li_to_lambda(proc).vars,
+                        args);
                 for (seq = li_to_lambda(proc).body; seq && li_cdr(seq);
                         seq = li_cdr(seq))
                     li_eval(li_car(seq), env);
                 exp = li_car(seq);
             } else if (li_is_macro(proc)) {
-                exp = expand_macro(proc, args);
+                exp = li_macro_expand((li_macro_t *)proc, args);
             } else if (li_is_primitive_procedure(proc)) {
                 args = list_of_values(args, env);
                 exp = li_to_primitive_procedure(proc)(args);
@@ -115,36 +114,6 @@ static li_object *eval_quasiquote(li_object *exp, li_environment_t *env) {
     }
     return li_cons(eval_quasiquote(li_car(exp), env),
             eval_quasiquote(li_cdr(exp), env));
-}
-
-static li_object *expand_macro(li_object *mac, li_object *args) {
-    li_environment_t *env;
-    li_object *ret, *seq;
-
-    ret = li_null;
-    env = extend_environment(li_to_macro(mac)->vars, args,
-            li_to_macro(mac)->env);
-    for (seq = li_to_macro(mac)->body; seq; seq = li_cdr(seq))
-        ret = li_eval(li_car(seq), env);
-    return ret;
-}
-
-static li_environment_t *extend_environment(li_object *vars, li_object *vals,
-        li_environment_t *env)
-{
-    for (env = li_environment(env); vars;
-            vars = li_cdr(vars), vals = li_cdr(vals)) {
-        if (li_is_symbol(vars)) {
-            li_append_variable((li_symbol_t *)vars, vals, env);
-            return env;
-        }
-        if (!vals)
-            break;
-        li_append_variable((li_symbol_t *)li_car(vars), li_car(vals), env);
-    }
-    if (vars || vals)
-        li_error("wrong number of args", vars);
-    return env;
 }
 
 static li_object *list_of_values(li_object *exps, li_environment_t *env) {

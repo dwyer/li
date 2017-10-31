@@ -87,3 +87,21 @@ extern void li_append_variable(li_symbol_t *var, li_object *val, li_environment_
     env->array[env->size].val = val;
     env->size++;
 }
+
+extern li_environment_t *li_environment_extend(li_environment_t *env,
+        li_object *vars, li_object *vals)
+{
+    for (env = li_environment(env); vars;
+            vars = li_cdr(vars), vals = li_cdr(vals)) {
+        if (li_is_symbol(vars)) {
+            li_append_variable((li_symbol_t *)vars, vals, env);
+            return env;
+        }
+        if (!vals)
+            break;
+        li_append_variable((li_symbol_t *)li_car(vars), li_car(vals), env);
+    }
+    if (vars || vals)
+        li_error("wrong number of args", vars);
+    return env;
+}
