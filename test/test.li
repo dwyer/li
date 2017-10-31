@@ -421,7 +421,7 @@
 #                         (integer->char y)) true))
 #(define (f) (make-string 3 %\*)) # TODO: fix make-string
 #(define (g) "***")
-#(assert (equal? 
+#(assert (equal?
 #          (string-set! (f) 0 %\?) unspecified))
 #(assert (equal? (string-set! (g) 0 %\?) error))
 #(assert (equal? (string-set! (symbol->string 'immutable)

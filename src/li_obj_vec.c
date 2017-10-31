@@ -101,13 +101,8 @@ static li_object *p_is_vector(li_object *args) {
 
 static li_object *p_make_vector(li_object *args) {
     int k;
-    li_object *fill;
-    if (args && li_cdr(args)) {
-        li_parse_args(args, "io", &k, &fill);
-    } else {
-        li_parse_args(args, "i", &k);
-        fill = li_false;
-    }
+    li_object *fill = li_false;
+    li_parse_args(args, "i?o", &k, &fill);
     return li_make_vector(k, fill);
 }
 

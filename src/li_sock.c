@@ -30,27 +30,10 @@ static li_object *p_make_client_socket(li_object *args)
     struct hostent *hostent;
     int ai_family = AF_INET;
     int ai_socktype = SOCK_STREAM;
-    int ai_flags = AI_V4MAPPED | AI_ADDRCONFIG;
+    int ai_flags = AI_V4MAPPED | AI_ADDRCONFIG; /* TODO: use these flags */
     int ai_protocol = IPPROTO_IP;
-    switch (li_length(args)) {
-    case 2:
-        li_parse_args(args, "ss", &node, &service);
-        break;
-    case 3:
-        li_parse_args(args, "ssi", &node, &service, &ai_family);
-        break;
-    case 4:
-        li_parse_args(args, "ssii", &node, &service, &ai_family, &ai_socktype);
-        break;
-    case 5:
-        li_parse_args(args, "ssiii", &node, &service, &ai_family, &ai_socktype,
-                &ai_flags);
-        break;
-    default:
-        li_parse_args(args, "ssiiii", &node, &service, &ai_family, &ai_socktype,
-                &ai_flags, &ai_protocol);
-        break;
-    }
+    li_parse_args(args, "ss?iiii", &node, &service,
+            &ai_family, &ai_socktype, &ai_flags, &ai_protocol);
     hostent = gethostbyname(li_string_bytes(node));
     if (hostent == NULL)
         li_error_f("ERROR, no such host");

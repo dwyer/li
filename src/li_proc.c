@@ -16,16 +16,32 @@
  *     s = li_string_t
  *     t = li_type_obj_t
  *     v = li_object (vector)
+ *     . = the rest of the args
+ *     ? = all args after this are optional and may not be initialized
  */
+
 extern void li_parse_args(li_object *args, const char *fmt, ...)
 {
+    li_object *all_args = args;
+    const char *s = fmt;
+    int opt = 0;
     va_list ap;
-    li_object *obj, *seq;
-    const char *s;
+
     va_start(ap, fmt);
-    s = fmt;
-    seq = args;
-    while (*s && args) {
+    while (*s) {
+        li_object *obj;
+        if (*s == '.') {
+            *va_arg(ap, li_object **) = args;
+            args = NULL;
+            s++;
+            break;
+        } else if (*s == '?') {
+            opt = 1;
+            s++;
+            continue;
+        }
+        if (!args)
+            break;
         obj = li_car(args);
         switch (*s) {
         case 'e':
@@ -71,27 +87,19 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             li_assert_symbol(obj);
             *va_arg(ap, li_symbol_t **) = (li_symbol_t *)obj;
             break;
-        case '.':
-            *va_arg(ap, li_object **) = args;
-            args = NULL;
-            goto out;
         default:
-            goto out;
+            break;
         }
         if (args)
             args = li_cdr(args);
         s++;
     }
-    if (*s == '.' && !args) {
-        *va_arg(ap, li_object **) = NULL;
-        s++;
-    }
-out:
     va_end(ap);
-    if (*s && *s != '.') {
-        li_error("too few args", seq);
+
+    if (*s && !opt) {
+        li_error("too few args", all_args);
     } else if (args) {
-        li_error("too many args", seq);
+        li_error("too many args", all_args);
     }
 }
 
