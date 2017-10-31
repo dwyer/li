@@ -89,17 +89,6 @@ typedef struct li_symbol li_symbol_t;
 /* environment */
 typedef struct li_environment li_environment_t;
 
-struct li_environment {
-    LI_OBJ_HEAD;
-    struct {
-        li_symbol_t *var;
-        li_object *val;
-    } *array;
-    int size; /* TODO: change to size_t */
-    int cap; /* TODO: change to size_t */
-    li_environment_t *base;
-};
-
 extern li_environment_t *li_environment(li_environment_t *base);
 
 /* Destroys all objects that cannot be reached from the given environment. */
@@ -186,10 +175,7 @@ typedef struct {
     li_special_form_t *special_form;
 } li_special_form_obj_t;
 
-typedef struct {
-    LI_OBJ_HEAD;
-    char *bytes;
-} li_string_t;
+typedef struct li_string_t li_string_t;
 
 extern li_string_t *li_string_make(const char *s);
 extern li_string_t *li_string_copy(li_string_t *str);

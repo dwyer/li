@@ -2,6 +2,11 @@
 
 #include <string.h>
 
+struct li_string_t {
+    LI_OBJ_HEAD;
+    char *bytes;
+};
+
 static void deinit(li_object *obj)
 {
     li_string_free(li_to_string(obj));

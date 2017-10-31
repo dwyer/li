@@ -1,11 +1,22 @@
 #include "li.h"
 
+struct li_environment {
+    LI_OBJ_HEAD;
+    int len;
+    int cap;
+    struct {
+        li_symbol_t *var;
+        li_object *val;
+    } *array;
+    li_environment_t *base;
+};
+
 static void mark(li_object *obj)
 {
     li_environment_t *env = (li_environment_t *)obj;
     int i;
     for (; env; env = env->base) {
-        for (i = 0; i < env->size; i++) {
+        for (i = 0; i < env->len; i++) {
             li_mark((li_object *)env->array[i].var);
             li_mark(env->array[i].val);
         }
@@ -28,7 +39,7 @@ extern li_environment_t *li_environment(li_environment_t *base)
     li_environment_t *obj = li_allocate(NULL, 1, sizeof(*obj));
     li_object_init((li_object *)obj, &li_type_environment);
     obj->cap = 4;
-    obj->size = 0;
+    obj->len = 0;
     obj->array = li_allocate(NULL, obj->cap, sizeof(*obj->array));
     obj->base = base;
     return obj;
@@ -39,7 +50,7 @@ extern int li_environment_assign(li_environment_t *env, li_symbol_t *var,
 {
     int i;
     while (env) {
-        for (i = 0; i < env->size; i++)
+        for (i = 0; i < env->len; i++)
             if (env->array[i].var == var) {
                 env->array[i].val = val;
                 return 1;
@@ -53,7 +64,7 @@ extern void li_environment_define(li_environment_t *env, li_symbol_t *var,
         li_object *val)
 {
     int i;
-    for (i = 0; i < env->size; i++) {
+    for (i = 0; i < env->len; i++) {
         if (env->array[i].var == var) {
             env->array[i].val = val;
             return;
@@ -66,7 +77,7 @@ extern li_object *li_environment_lookup(li_environment_t *env, li_symbol_t *var)
 {
     int i;
     while (env) {
-        for (i = 0; i < env->size; i++)
+        for (i = 0; i < env->len; i++)
             if (env->array[i].var == var)
                 return env->array[i].val;
         env = env->base;
@@ -79,13 +90,13 @@ extern void li_append_variable(li_symbol_t *var, li_object *val, li_environment_
 {
     if (!li_is_symbol(var))
         li_error("not a variable", (li_object *)var);
-    if (env->size == env->cap) {
+    if (env->len == env->cap) {
         env->cap *= 2;
         env->array = li_allocate(env->array, env->cap, sizeof(*env->array));
     }
-    env->array[env->size].var = var;
-    env->array[env->size].val = val;
-    env->size++;
+    env->array[env->len].var = var;
+    env->array[env->len].val = val;
+    env->len++;
 }
 
 extern li_environment_t *li_environment_extend(li_environment_t *env,
