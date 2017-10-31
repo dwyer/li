@@ -73,7 +73,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         case 's':
             li_assert_string(obj);
-            *va_arg(ap, li_string_t *) = li_to_string(obj);
+            *va_arg(ap, li_string_t **) = li_to_string(obj);
             break;
         case 't':
             if (li_type(obj) != &li_type_type)
@@ -111,7 +111,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
  * which will be printed.
  */
 static li_object *p_error(li_object *args) {
-    li_string_t msg;
+    li_string_t *msg;
     li_object *irritants;
 
     li_parse_args(args, "s.", &msg, &irritants);
@@ -319,11 +319,11 @@ static li_object *p_exit(li_object *args)
 }
 
 static li_object *p_get_environment_variable(li_object *args) {
-    li_string_t str;
+    li_string_t *str;
     char *val;
     li_parse_args(args, "s", &str);
     if ((val = getenv(li_string_bytes(str))))
-        return li_string(li_string_make(val));
+        return (li_object *)li_string_make(val);
     else
         return li_false;
 }
@@ -338,9 +338,9 @@ static li_object *p_get_environment_variables(li_object *args) {
     head = li_null;
     while (*sp) {
         if (head)
-            tail = li_set_cdr(tail, li_cons(li_string(li_string_make(*sp)), li_null));
+            tail = li_set_cdr(tail, li_cons((li_object *)li_string_make(*sp), li_null));
         else
-            head = tail = li_cons(li_string(li_string_make(*sp)), li_null);
+            head = tail = li_cons((li_object *)li_string_make(*sp), li_null);
         sp++;
     }
     return head;

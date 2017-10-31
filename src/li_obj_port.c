@@ -48,7 +48,7 @@ static li_object *p_is_port(li_object *args) {
  */
 static li_object *p_open(li_object *args) {
     li_object *p;
-    li_string_t str_filename, str_mode;
+    li_string_t *str_filename, *str_mode;
     const char *filename, *mode;
     if (li_length(args) == 2) {
         li_parse_args(args, "ss", &str_filename, &str_mode);

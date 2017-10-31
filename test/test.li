@@ -1,4 +1,12 @@
-(define start (current-jiffy))
+(define (make-timer)
+  (let ((start (current-jiffy)))
+    (lambda ()
+      (inexact (/ (- (current-jiffy)
+                     start)
+                  (jiffies-per-second))))))
+
+(define timer (make-timer))
+
 (import lib)
 
 (define x 28)
@@ -547,7 +555,4 @@
 (import test-string)
 (import test-sock)
 (print "all tests passed!")
-(print (inexact (/ (- (current-jiffy)
-                      start)
-                   (jiffies-per-second)))
-       "seconds")
+(print (timer) "seconds")

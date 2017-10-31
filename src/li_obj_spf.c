@@ -249,7 +249,7 @@ static li_object *m_letrec(li_object *args, li_environment_t *env) {
 }
 
 static li_object *m_load(li_object *args, li_environment_t *env) {
-    li_string_t str;
+    li_string_t *str;
     li_parse_args(args, "s", &str);
     li_load(li_string_bytes(str), env);
     return li_null;

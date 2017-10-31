@@ -26,7 +26,7 @@ const li_type_t li_type_socket = {
 static li_object *p_make_client_socket(li_object *args)
 {
     li_socket_t *obj;
-    li_string_t node, service;
+    li_string_t *node, *service;
     struct hostent *hostent;
     int ai_family = AF_INET;
     int ai_socktype = SOCK_STREAM;
@@ -78,7 +78,7 @@ static li_object *p_socket_accept(li_object *args)
 static li_object *p_socket_send(li_object *args)
 {
     li_object *obj;
-    li_string_t str;
+    li_string_t *str;
     char *message;
     int bytes, sent, total;
     li_parse_args(args, "os", &obj, &str);
@@ -107,7 +107,7 @@ static li_object *p_socket_recv(li_object *args)
     if (n < 0)
         li_error_f("ERROR reading from socket");
     buf[n] = '\0';
-    return li_string(li_string_make(buf));
+    return (li_object *)li_string_make(buf);
 }
 
 static li_object *p_socket_shutdown(li_object *args)
@@ -166,3 +166,4 @@ extern void li_define_socket_functions(li_environment_t *env)
     defint(env, "*shut-wr*", SHUT_WR);
     defint(env, "*shut-rdwr*", SHUT_RDWR);
 }
+

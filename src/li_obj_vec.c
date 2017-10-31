@@ -142,7 +142,7 @@ static li_object *p_vector_to_string(li_object *args) {
         li_assert_character(li_vector_ref(vec, k));
         s[k] = li_to_character(li_vector_ref(vec, k));
     }
-    str = li_string(li_string_make(s));
+    str = (li_object *)li_string_make(s);
     free(s);
     return str;
 }

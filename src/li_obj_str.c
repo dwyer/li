@@ -1,5 +1,7 @@
 #include "li.h"
 
+#include <string.h>
+
 static void deinit(li_object *obj)
 {
     li_string_free(li_to_string(obj));
@@ -40,14 +42,70 @@ const li_type_t li_type_string = {
     .ref = ref,
 };
 
-extern li_object *li_string(li_string_t str)
+extern li_string_t *li_string_make(const char *s)
 {
-    li_string_obj_t *obj = li_allocate(NULL, 1, sizeof(*obj));
-    li_object_init((li_object *)obj, &li_type_string);
-    obj->string = str;
-    return (li_object *)obj;
+    li_string_t *str = li_allocate(NULL, 1, sizeof(*str));
+    li_object_init((li_object *)str, &li_type_string);
+    str->bytes = strdup(s);
+    return str;
 }
 
+extern li_string_t *li_string_copy(li_string_t *str)
+{
+    return li_string_make(str->bytes);
+}
+
+extern void li_string_free(li_string_t *str)
+{
+    free(str->bytes);
+}
+
+extern char *li_string_bytes(li_string_t *str)
+{
+    return str->bytes;
+}
+
+extern li_character_t li_string_ref(li_string_t *str, int idx)
+{
+    li_character_t c;
+    const char *s = str->bytes;
+    while (idx >= 0) {
+        s += li_chr_decode(&c, s);
+        idx--;
+    }
+    return c;
+}
+
+extern size_t li_string_length(li_string_t *str)
+{
+    return li_chr_count(str->bytes);
+}
+
+extern li_cmp_t li_string_cmp(li_string_t *st1, li_string_t *st2)
+{
+    int res = strcmp(st1->bytes, st2->bytes);
+    if (res < 0)
+        return LI_CMP_LT;
+    if (res > 0)
+        return LI_CMP_GT;
+    return LI_CMP_EQ;
+}
+
+extern li_string_t *li_string_append(li_string_t *str1, li_string_t *str2)
+{
+    int n1 = strlen(str1->bytes);
+    int n2 = strlen(str2->bytes);
+    char *s = li_allocate(NULL, n1+n2+1, sizeof(*s));
+    int i;
+    for (i = 0; i < n1; ++i)
+        s[i] = str1->bytes[i];
+    for (i = 0; i < n2; ++i)
+        s[n1+i] = str2->bytes[i];
+    s[n1+n2] = '\0';
+    str1 = li_string_make(s);
+    free(s);
+    return str1;
+}
 static li_object *p_make_string(li_object *args) {
     li_object *obj;
     char *s;
@@ -58,7 +116,7 @@ static li_object *p_make_string(li_object *args) {
     s = li_allocate(li_null, k, sizeof(*s));
     while (k >= 0)
         s[k--] = '\0';
-    obj = li_string(li_string_make(s));
+    obj = (li_object *)li_string_make(s);
     free(s);
     return obj;
 }
@@ -75,7 +133,7 @@ static li_object *p_string(li_object *args) {
         str[i] = li_to_character(li_car(args));
     }
     str[i] = '\0';
-    return li_string(li_string_make(str));
+    return (li_object *)li_string_make(str);
 }
 
 /*
@@ -88,7 +146,7 @@ static li_object *p_is_string(li_object *args) {
 }
 
 static li_object *p_string_append(li_object *args) {
-    li_string_t str, tmp;
+    li_string_t *str, *tmp;
     if (!args)
         li_error("wrong number of args", args);
     li_assert_string(li_car(args));
@@ -99,12 +157,12 @@ static li_object *p_string_append(li_object *args) {
         str = li_string_append(str, li_to_string(li_car(args)));
         li_string_free(tmp);
     }
-    return li_string(str);
+    return (li_object *)str;
 }
 
 static li_object *p_string_to_list(li_object *args) {
     li_object *head, *tail;
-    li_string_t str;
+    li_string_t *str;
     unsigned long i;
     li_assert_nargs(1, args);
     li_assert_string(li_car(args));
@@ -122,7 +180,7 @@ static li_object *p_string_to_list(li_object *args) {
 
 static li_object *p_string_to_vector(li_object *args) {
     li_object *head, *tail;
-    li_string_t str;
+    li_string_t *str;
     size_t i;
     li_assert_nargs(1, args);
     li_assert_string(li_car(args));

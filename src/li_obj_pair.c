@@ -220,7 +220,7 @@ static li_object *p_list_to_string(li_object *args) {
         lst = li_cdr(lst);
     }
     s[i] = '\0';
-    str = li_string(li_string_make(s));
+    str = (li_object *)li_string_make(s);
     free(s);
     return str;
 }

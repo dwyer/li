@@ -45,10 +45,6 @@ typedef struct {
     li_object *(*proc)(li_object *);
 } li_type_t;
 
-#define LI_OBJ_HEAD \
-    const li_type_t *type; \
-    li_bool_t locked
-
 extern const li_type_t li_type_character;
 extern const li_type_t li_type_environment;
 extern const li_type_t li_type_macro;
@@ -62,6 +58,20 @@ extern const li_type_t li_type_symbol;
 extern const li_type_t li_type_type;
 extern const li_type_t li_type_vector;
 
+#define LI_OBJ_HEAD \
+    const li_type_t *type; \
+    li_bool_t locked
+
+struct li_object {
+    LI_OBJ_HEAD;
+};
+
+/* Type checking. */
+#define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
+#define li_is_type(obj, type)           ((obj) && li_type(obj) == (type))
+
+/* Characters */
+
 typedef unsigned int li_character_t;
 
 extern size_t li_chr_decode(li_character_t *chr, const char *s);
@@ -73,8 +83,11 @@ typedef struct {
     li_character_t character;
 } li_character_obj_t;
 
-typedef struct li_environment li_environment_t;
+/* symbol */
 typedef struct li_symbol li_symbol_t;
+
+/* environment */
+typedef struct li_environment li_environment_t;
 
 struct li_environment {
     LI_OBJ_HEAD;
@@ -87,11 +100,30 @@ struct li_environment {
     li_environment_t *base;
 };
 
+extern li_environment_t *li_environment(li_environment_t *base);
+
+/* Destroys all objects that cannot be reached from the given environment. */
+extern void li_cleanup(li_environment_t *env);
+
+extern int li_environment_assign(li_environment_t *env, li_symbol_t *var,
+        li_object *val);
+extern void li_environment_define(li_environment_t *env, li_symbol_t *var,
+        li_object *val);
+extern li_object *li_environment_lookup(li_environment_t *env,
+        li_symbol_t *var);
+extern void li_append_variable(li_symbol_t *var, li_object *val,
+        li_environment_t *env);
+extern li_environment_t *li_environment_extend(li_environment_t *env,
+        li_object *vars, li_object *vals);
+extern void li_setup_environment(li_environment_t *env);
+
+/* macros */
+
 typedef struct li_macro li_macro_t;
 
 extern li_object *li_macro_expand(li_macro_t *mac, li_object *args);
 
-/* NUMBERS */
+/* numbers */
 
 typedef struct li_num_t li_num_t;
 
@@ -100,11 +132,15 @@ extern int li_num_to_int(li_num_t *x);
 
 extern li_bool_t li_num_is_integer(li_num_t *x);
 
+/* Pairs */
+
 typedef struct {
     LI_OBJ_HEAD;
     li_object *car;
     li_object *cdr;
 } li_pair_t;
+
+/* Ports */
 
 typedef struct {
     LI_OBJ_HEAD;
@@ -112,9 +148,7 @@ typedef struct {
     char *filename;
 } li_port_t;
 
-/*
- * PROCEDURES
- */
+/* Procedures */
 
 /*
  * A primitive procedure is represented by the following function type which
@@ -153,22 +187,20 @@ typedef struct {
 } li_special_form_obj_t;
 
 typedef struct {
+    LI_OBJ_HEAD;
     char *bytes;
 } li_string_t;
 
-extern li_string_t li_string_make(const char *s);
-extern li_string_t li_string_copy(li_string_t str);
-extern void li_string_free(li_string_t str);
-extern char *li_string_bytes(li_string_t str);
-extern li_character_t li_string_ref(li_string_t str, int k);
-extern size_t li_string_length(li_string_t str);
-extern li_cmp_t li_string_cmp(li_string_t st1, li_string_t st2);
-extern li_string_t li_string_append(li_string_t str1, li_string_t str2);
+extern li_string_t *li_string_make(const char *s);
+extern li_string_t *li_string_copy(li_string_t *str);
+extern void li_string_free(li_string_t *str);
+extern char *li_string_bytes(li_string_t *str);
+extern li_character_t li_string_ref(li_string_t *str, int k);
+extern size_t li_string_length(li_string_t *str);
+extern li_cmp_t li_string_cmp(li_string_t *st1, li_string_t *st2);
+extern li_string_t *li_string_append(li_string_t *str1, li_string_t *str2);
 
-typedef struct {
-    LI_OBJ_HEAD;
-    li_string_t string;
-} li_string_obj_t;
+typedef struct li_string_t li_string_obj_t LI_DEPRECATED;
 
 struct li_symbol {
     LI_OBJ_HEAD;
@@ -188,10 +220,6 @@ typedef struct {
     li_object **data;
     int length;
 } li_vector_t;
-
-struct li_object {
-    LI_OBJ_HEAD;
-};
 
 /* The all important null object. */
 #define li_null                 ((li_object *)NULL)
@@ -217,15 +245,9 @@ extern void li_object_init(li_object *obj, const li_type_t *type);
  */
 extern void li_destroy(li_object *obj);
 
-/*
- * Destroys all objects that cannot be reached from the given environment.
- */
-extern void li_cleanup(li_environment_t *env);
-
 /** Object constructors. */
 
 extern li_object *li_character(li_character_t c);
-extern li_environment_t *li_environment(li_environment_t *base);
 extern li_object *li_lambda(li_symbol_t *name, li_object *vars, li_object *body,
         li_environment_t *env);
 extern li_object *li_macro(li_object *vars, li_object *body,
@@ -234,7 +256,6 @@ extern li_object *li_pair(li_object *car, li_object *cdr);
 extern li_object *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
 extern li_object *li_special_form(li_special_form_t *proc);
-extern li_object *li_string(li_string_t str);
 extern li_object *li_symbol(const char *s);
 extern li_object *li_type_obj(const li_type_t *type);
 
@@ -265,24 +286,11 @@ extern li_bool_t li_is_list(li_object *obj);
 /** List accessors. */
 extern int li_length(li_object *obj);
 
-/** Environment accessors. */
-extern int li_environment_assign(li_environment_t *env, li_symbol_t *var,
-        li_object *val);
-extern void li_environment_define(li_environment_t *env, li_symbol_t *var,
-        li_object *val);
-extern li_object *li_environment_lookup(li_environment_t *env,
-        li_symbol_t *var);
-extern void li_append_variable(li_symbol_t *var, li_object *val,
-        li_environment_t *env);
-extern li_environment_t *li_environment_extend(li_environment_t *env,
-        li_object *vars, li_object *vals);
-extern void li_setup_environment(li_environment_t *env);
-
 /** Type casting. */
 #define li_to_character(obj)            ((li_character_obj_t *)(obj))->character
 #define li_to_integer(obj)              (li_num_to_int(li_to_number((obj))))
 #define li_to_number(obj)               ((li_num_t *)(obj))
-#define li_to_string(obj)               ((li_string_obj_t *)(obj))->string
+#define li_to_string(obj)               ((li_string_t *)(obj))
 #define li_to_symbol(obj)               ((li_symbol_t *)(obj))->string
 #define li_to_userdata(obj)             (obj)->data.userdata.v
 #define li_to_vector(obj)               ((li_vector_t *)(obj))
@@ -290,10 +298,6 @@ extern void li_setup_environment(li_environment_t *env);
 
 #define li_macro_primative(obj)         \
     ((li_special_form_obj_t *)(obj))->special_form
-
-/* Type checking. */
-#define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
-#define li_is_type(obj, type)           ((obj) && li_type(obj) == (type))
 
 #define li_is_character(obj)            li_is_type(obj, &li_type_character)
 #define li_is_environment(obj)          li_is_type(obj, &li_type_environment)

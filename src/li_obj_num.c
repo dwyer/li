@@ -575,11 +575,11 @@ static li_object *p_number_to_string(li_object *args) {
     li_num_t *z;
     li_parse_args(args, "n", &z);
     li_num_to_chars(z, buf, sizeof(buf));
-    return li_string(li_string_make(buf));
+    return (li_object *)li_string_make(buf);
 }
 
 static li_object *p_string_to_number(li_object *args) {
-    li_string_t str;
+    li_string_t *str;
     int radix = 10;
     if (li_length(args) == 1)
         li_parse_args(args, "s", &str);

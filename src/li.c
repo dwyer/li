@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     li_setup_environment(env);
     li_define_socket_functions(env);
     for (args = li_null, i = argc - 1; i; i--)
-        args = li_cons(li_string(li_string_make(argv[i])), args);
+        args = li_cons((li_object *)li_string_make(argv[i]), args);
     li_append_variable(ARGV_SYMBOL, args, env);
 #ifdef LI_OPTIONAL
     li_load_bytevector(env);

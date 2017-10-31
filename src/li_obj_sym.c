@@ -64,7 +64,7 @@ static li_object *p_is_symbol(li_object *args) {
 static li_object *p_symbol_to_string(li_object *args) {
     li_symbol_t *sym;
     li_parse_args(args, "y", &sym);
-    return li_string(li_string_make(li_to_symbol(sym)));
+    return (li_object *)li_string_make(li_to_symbol(sym));
 }
 
 extern void li_define_symbol_functions(li_environment_t *env)
