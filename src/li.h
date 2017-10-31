@@ -211,13 +211,6 @@ struct li_environment {
     li_environment_t *base;
 };
 
-typedef struct {
-    li_symbol_t *name;
-    li_object *vars;
-    li_object *body;
-    li_environment_t *env;
-} li_lambda_t;
-
 typedef struct li_macro li_macro_t;
 
 extern li_object *li_macro_expand(li_macro_t *mac, li_object *args);
@@ -240,6 +233,10 @@ typedef struct {
 } li_port_t;
 
 /*
+ * PROCEDURES
+ */
+
+/*
  * A primitive procedure is represented by the following function type which
  * accepts a list of arguments and returns an object.  It's up to you to assert
  * that the proper number of arguments of the correct type were passed before
@@ -250,11 +247,7 @@ typedef struct {
  */
 typedef li_object *li_primitive_procedure_t(li_object *);
 
-typedef struct {
-    LI_OBJ_HEAD;
-    li_lambda_t compound;
-    li_primitive_procedure_t *primitive;
-} li_proc_obj_t;
+typedef struct li_proc_obj li_proc_obj_t;
 
 /*
  * A special form is like a primitive procedure, except for the following:
@@ -411,20 +404,16 @@ extern void li_setup_environment(li_environment_t *env);
 
 /** Type casting. */
 #define li_to_character(obj)            ((li_character_obj_t *)(obj))->character
-#define li_to_environment(obj)          ((li_environment_t *)(obj))
 #define li_to_integer(obj)              (li_num_to_int(li_to_number((obj))))
-#define li_to_lambda(obj)               li_to_procedure(obj).compound
 #define li_to_number(obj)               ((li_num_obj_t *)(obj))->number
-#define li_to_pair(obj)                 ((li_pair_t *)(obj))
-#define li_to_port(obj)                 ((li_port_t *)(obj))
-#define li_to_procedure(obj)            (*(li_proc_obj_t *)(obj))
-#define li_to_primitive_procedure(obj)  li_to_procedure(obj).primitive
-#define li_to_special_form(obj)         ((li_special_form_obj_t *)(obj))->special_form
 #define li_to_string(obj)               ((li_string_obj_t *)(obj))->string
 #define li_to_symbol(obj)               ((li_symbol_t *)(obj))->string
 #define li_to_userdata(obj)             (obj)->data.userdata.v
 #define li_to_vector(obj)               ((li_vector_t *)(obj))
 #define li_to_type(obj)                 ((li_type_obj_t *)(obj))->val
+
+#define li_macro_primative(obj)         \
+    ((li_special_form_obj_t *)(obj))->special_form
 
 /* Type checking. */
 #define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
@@ -432,15 +421,13 @@ extern void li_setup_environment(li_environment_t *env);
 
 #define li_is_character(obj)            li_is_type(obj, &li_type_character)
 #define li_is_environment(obj)          li_is_type(obj, &li_type_environment)
-#define li_is_lambda(obj)               \
-    (li_is_procedure(obj) && li_to_primitive_procedure(obj) == NULL)
 #define li_is_macro(obj)                li_is_type(obj, &li_type_macro)
 #define li_is_number(obj)               li_is_type(obj, &li_type_number)
 #define li_is_pair(obj)                 li_is_type(obj, &li_type_pair)
 #define li_is_port(obj)                 li_is_type(obj, &li_type_port)
 #define li_is_procedure(obj)            li_is_type(obj, &li_type_procedure)
 #define li_is_primitive_procedure(obj)  \
-    (li_is_procedure(obj) && li_to_primitive_procedure(obj) != NULL)
+    (li_is_procedure(obj) && li_proc_prim(obj) != NULL)
 
 #define li_is_special_form(obj)         li_is_type(obj, &li_type_special_form)
 #define li_is_type_obj(obj)             li_is_type(obj, &li_type_type)
@@ -456,8 +443,8 @@ extern void li_setup_environment(li_environment_t *env);
 #define li_is_locked(obj)               (obj)->locked
 
 /** Accessors for pairs. */
-#define li_car(obj)                     li_to_pair(obj)->car
-#define li_cdr(obj)                     li_to_pair(obj)->cdr
+#define li_car(obj)                     ((li_pair_t *)(obj))->car
+#define li_cdr(obj)                     ((li_pair_t *)(obj))->cdr
 #define li_caar(obj)                    li_car(li_car(obj))
 #define li_cadr(obj)                    li_car(li_cdr(obj))
 #define li_cdar(obj)                    li_cdr(li_car(obj))

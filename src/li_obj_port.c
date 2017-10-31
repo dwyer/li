@@ -2,15 +2,17 @@
 
 #include <string.h>
 
+#define to_port(obj)                 ((li_port_t *)(obj))
+
 static void deinit(li_object *obj)
 {
-    fclose(li_to_port(obj)->file);
-    free(li_to_port(obj)->filename);
+    fclose(to_port(obj)->file);
+    free(to_port(obj)->filename);
 }
 
 static void write(li_object *obj, FILE *f)
 {
-    fprintf(f, "#[port \"%s\"]", li_to_port(obj)->filename);
+    fprintf(f, "#[port \"%s\"]", to_port(obj)->filename);
 }
 
 const li_type_t li_type_port = {
@@ -64,7 +66,7 @@ static li_object *p_open(li_object *args) {
 static li_object *p_close(li_object *args) {
     li_assert_nargs(1, args);
     li_assert_port(li_car(args));
-    return li_number(li_num_with_int(fclose(li_to_port(li_car(args))->file)));
+    return li_number(li_num_with_int(fclose(to_port(li_car(args))->file)));
 }
 
 /*
@@ -77,7 +79,7 @@ static li_object *p_read(li_object *args) {
     if (args) {
         li_assert_nargs(1, args);
         li_assert_port(li_car(args));
-        f = li_to_port(li_car(args))->file;
+        f = to_port(li_car(args))->file;
     }
     return li_read(f);
 }
@@ -89,7 +91,7 @@ static li_object *p_read_char(li_object *args) {
     if (args) {
         li_assert_nargs(1, args);
         li_assert_port(li_car(args));
-        f = li_to_port(li_car(args))->file;
+        f = to_port(li_car(args))->file;
     }
     if ((c = getc(f)) == '\n')
         c = getc(f);
@@ -105,7 +107,7 @@ static li_object *p_peek_char(li_object *args) {
     if (args) {
         li_assert_nargs(1, args);
         li_assert_port(li_car(args));
-        f = li_to_port(li_car(args))->file;
+        f = to_port(li_car(args))->file;
     }
     c = getc(f);
     ungetc(c, f);
@@ -127,7 +129,7 @@ static li_object *p_write(li_object *args) {
     if (li_length(args) == 2) {
         li_assert_nargs(2, args);
         li_assert_port(li_cadr(args));
-        f = li_to_port(li_cadr(args))->file;
+        f = to_port(li_cadr(args))->file;
     } else {
         li_assert_nargs(1, args);
     }
@@ -144,7 +146,7 @@ static li_object *p_display(li_object *args) {
     if (li_length(args) == 2) {
         li_assert_nargs(2, args);
         li_assert_port(li_cadr(args));
-        f = li_to_port(li_cadr(args))->file;
+        f = to_port(li_cadr(args))->file;
     } else {
         li_assert_nargs(1, args);
     }
@@ -161,7 +163,7 @@ static li_object *p_newline(li_object *args) {
     if (args) {
         li_assert_nargs(1, args);
         li_assert_port(li_car(args));
-        f = li_to_port(li_car(args))->file;
+        f = to_port(li_car(args))->file;
     }
     li_newline(f);
     return li_null;

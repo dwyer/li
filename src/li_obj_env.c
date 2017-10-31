@@ -2,9 +2,9 @@
 
 static void mark(li_object *obj)
 {
-    li_environment_t *env = li_to_environment(obj);
+    li_environment_t *env = (li_environment_t *)obj;
     int i;
-    for (; env; env = li_to_environment(env->base)) {
+    for (; env; env = env->base) {
         for (i = 0; i < env->size; i++) {
             li_mark((li_object *)env->array[i].var);
             li_mark(env->array[i].val);
@@ -14,7 +14,7 @@ static void mark(li_object *obj)
 
 static void deinit(li_object *obj)
 {
-    free(li_to_environment(obj)->array);
+    free(((li_environment_t *)obj)->array);
 }
 
 const li_type_t li_type_environment = {
@@ -44,7 +44,7 @@ extern int li_environment_assign(li_environment_t *env, li_symbol_t *var,
                 env->array[i].val = val;
                 return 1;
             }
-        env = li_to_environment(env->base);
+        env = env->base;
     }
     return 0;
 }
@@ -69,7 +69,7 @@ extern li_object *li_environment_lookup(li_environment_t *env, li_symbol_t *var)
         for (i = 0; i < env->size; i++)
             if (env->array[i].var == var)
                 return env->array[i].val;
-        env = li_to_environment(env->base);
+        env = env->base;
     }
     li_error("unbound variable", (li_object *)var);
     return li_null;

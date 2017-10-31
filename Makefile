@@ -24,7 +24,7 @@ LI_BIN=li
 LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
-LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_eval.o li_nat.o \
+LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_nat.o \
 	     li_num.o li_object.o li_obj_chr.o li_obj_env.o li_obj_mac.o \
 	     li_obj_num.o li_obj_pair.o li_obj_port.o li_obj_proc.o \
 	     li_obj_spf.o li_obj_str.o li_obj_sym.o li_obj_typ.o li_obj_vec.o \
@@ -87,7 +87,6 @@ tags: src/li.h
 # automatically made with 'gcc -MM src/li_*.c'
 $(OBJDIR)/li_chr.o: src/li_chr.c src/li.h
 $(OBJDIR)/li_error.o: src/li_error.c src/li.h
-$(OBJDIR)/li_eval.o: src/li_eval.c src/li.h
 $(OBJDIR)/li_nat.o: src/li_nat.c src/li.h
 $(OBJDIR)/li_num.o: src/li_num.c src/li.h
 $(OBJDIR)/li_obj_chr.o: src/li_obj_chr.c src/li.h
