@@ -55,11 +55,11 @@ symbol                  ({identifier}|\|[^|]*\|)
 %\\space                yylval.obj = li_character(' '); return CHARACTER;
 %\\tab                  yylval.obj = li_character('\t'); return CHARACTER;
 {decimal}               {
-    yylval.obj = li_number(li_num_with_dec(li_dec_parse(yytext)));
+    yylval.obj = (li_object *)li_num_with_dec(li_dec_parse(yytext));
     return NUMBER;
                         }
 {rational}              {
-    yylval.obj = li_number(li_num_with_rat(li_rat_parse(yytext)));
+    yylval.obj = (li_object *)li_num_with_rat(li_rat_parse(yytext));
     return NUMBER;
                         }
 {symbol}                yylval.obj = (li_object *)li_symbol(yytext); return SYMBOL;

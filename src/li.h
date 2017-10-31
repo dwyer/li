@@ -80,76 +80,6 @@ extern li_rat_t li_rat_abs(li_rat_t x);
 extern li_int_t li_rat_to_int(li_rat_t x);
 extern li_dec_t li_rat_to_dec(li_rat_t x);
 
-/* li_num.c */
-
-typedef struct {
-    li_bool_t exact;
-    union {
-        li_rat_t exact;
-        li_dec_t inexact;
-    } real;
-} li_num_t;
-
-#define li_num_is_complex(x) (LI_TRUE)
-#define li_num_is_real(x) (LI_TRUE)
-#define li_num_is_rational(x) (li_num_is_exact(x))
-extern li_bool_t li_num_is_integer(li_num_t x);
-
-#define li_num_is_exact(x) ((x).exact)
-
-extern li_cmp_t li_num_cmp(li_num_t x, li_num_t y);
-#define li_num_eq(x, y) (li_num_cmp(x, y) == LI_CMP_EQ)
-#define li_num_lt(x, y) (li_num_cmp(x, y) < LI_CMP_EQ)
-#define li_num_gt(x, y) (li_num_cmp(x, y) > LI_CMP_EQ)
-#define li_num_le(x, y) (li_num_cmp(x, y) <= LI_CMP_EQ)
-#define li_num_ge(x, y) (li_num_cmp(x, y) >= LI_CMP_EQ)
-
-#define li_num_is_zero(x) (li_num_to_dec(x) == 0)
-#define li_num_is_negative(x) (li_num_to_dec(x) < 0)
-
-extern li_num_t li_num_max(li_num_t x, li_num_t y);
-extern li_num_t li_num_min(li_num_t x, li_num_t y);
-
-extern li_num_t li_num_add(li_num_t x, li_num_t y);
-extern li_num_t li_num_mul(li_num_t x, li_num_t y);
-
-extern li_num_t li_num_sub(li_num_t x, li_num_t y);
-extern li_num_t li_num_div(li_num_t x, li_num_t y);
-
-extern li_num_t li_num_neg(li_num_t x);
-
-#define li_num_abs(x) (li_num_is_negative(x) ? li_num_neg(x) : (x))
-
-#define li_num_floor(x) (li_num_with_int(floor(li_num_to_dec(x))))
-#define li_num_ceiling(x) (li_num_with_int(ceil(li_num_to_dec(x))))
-#define li_num_truncate(x) (li_num_with_int(ceil(li_num_to_dec(x)-0.5)))
-#define li_num_round(x) (li_num_with_int(floor(li_num_to_dec(x)+0.5)))
-
-#define li_num_exp(x) (li_num_with_dec(exp(li_num_to_dec(x))))
-#define li_num_log(x) (li_num_with_dec(log(li_num_to_dec(x))))
-#define li_num_sin(x) (li_num_with_dec(sin(li_num_to_dec(x))))
-#define li_num_cos(x) (li_num_with_dec(cos(li_num_to_dec(x))))
-#define li_num_tan(x) (li_num_with_dec(tan(li_num_to_dec(x))))
-#define li_num_asin(x) (li_num_with_dec(asin(li_num_to_dec(x))))
-#define li_num_acos(x) (li_num_with_dec(acos(li_num_to_dec(x))))
-#define li_num_atan(x) (li_num_with_dec(atan(li_num_to_dec(x))))
-#define li_num_atan2(x, y) \
-    (li_num_with_dec(atan2(li_num_to_dec(x), li_num_to_dec(y))))
-
-#define li_num_sqrt(x) (li_num_with_dec(sqrt(li_num_to_dec(x))))
-#define li_num_expt(x, y) \
-    (li_num_with_dec(pow(li_num_to_dec(x), li_num_to_dec(y))))
-
-extern li_num_t li_num_with_chars(const char *s, int radix);
-extern li_num_t li_num_with_dec(li_dec_t x);
-extern li_num_t li_num_with_int(li_int_t x);
-extern li_num_t li_num_with_rat(li_rat_t x);
-
-extern size_t li_num_to_chars(li_num_t x, char *s, size_t n);
-
-extern li_dec_t li_num_to_dec(li_num_t x);
-extern li_int_t li_num_to_int(li_num_t x);
-
 /* object.c */
 
 typedef struct li_object li_object;
@@ -215,10 +145,64 @@ typedef struct li_macro li_macro_t;
 
 extern li_object *li_macro_expand(li_macro_t *mac, li_object *args);
 
-typedef struct {
-    LI_OBJ_HEAD;
-    li_num_t number;
-} li_num_obj_t;
+/* NUMBERS */
+
+typedef struct li_num_t li_num_t;
+
+#define li_num_is_complex(x) (LI_TRUE)
+#define li_num_is_real(x) (LI_TRUE)
+#define li_num_is_rational(x) (li_num_is_exact(x))
+extern li_bool_t li_num_is_integer(li_num_t *x);
+
+#define li_num_is_exact(x) ((x)->exact)
+
+extern li_cmp_t li_num_cmp(li_num_t *x, li_num_t *y);
+
+#define li_num_is_zero(x) (li_num_to_dec(x) == 0)
+#define li_num_is_negative(x) (li_num_to_dec(x) < 0)
+
+extern li_num_t *li_num_max(li_num_t *x, li_num_t *y);
+extern li_num_t *li_num_min(li_num_t *x, li_num_t *y);
+
+extern li_num_t *li_num_add(li_num_t *x, li_num_t *y);
+extern li_num_t *li_num_mul(li_num_t *x, li_num_t *y);
+
+extern li_num_t *li_num_sub(li_num_t *x, li_num_t *y);
+extern li_num_t *li_num_div(li_num_t *x, li_num_t *y);
+
+extern li_num_t *li_num_neg(li_num_t *x);
+
+#define li_num_abs(x) (li_num_is_negative(x) ? li_num_neg(x) : (x))
+
+#define li_num_floor(x) (li_num_with_int(floor(li_num_to_dec(x))))
+#define li_num_ceiling(x) (li_num_with_int(ceil(li_num_to_dec(x))))
+#define li_num_truncate(x) (li_num_with_int(ceil(li_num_to_dec(x)-0.5)))
+#define li_num_round(x) (li_num_with_int(floor(li_num_to_dec(x)+0.5)))
+
+#define li_num_exp(x) (li_num_with_dec(exp(li_num_to_dec(x))))
+#define li_num_log(x) (li_num_with_dec(log(li_num_to_dec(x))))
+#define li_num_sin(x) (li_num_with_dec(sin(li_num_to_dec(x))))
+#define li_num_cos(x) (li_num_with_dec(cos(li_num_to_dec(x))))
+#define li_num_tan(x) (li_num_with_dec(tan(li_num_to_dec(x))))
+#define li_num_asin(x) (li_num_with_dec(asin(li_num_to_dec(x))))
+#define li_num_acos(x) (li_num_with_dec(acos(li_num_to_dec(x))))
+#define li_num_atan(x) (li_num_with_dec(atan(li_num_to_dec(x))))
+#define li_num_atan2(x, y) \
+    (li_num_with_dec(atan2(li_num_to_dec(x), li_num_to_dec(y))))
+
+#define li_num_sqrt(x) (li_num_with_dec(sqrt(li_num_to_dec(x))))
+#define li_num_expt(x, y) \
+    (li_num_with_dec(pow(li_num_to_dec(x), li_num_to_dec(y))))
+
+extern li_num_t *li_num_with_chars(const char *s, int radix);
+extern li_num_t *li_num_with_dec(li_dec_t x);
+extern li_num_t *li_num_with_int(li_int_t x);
+extern li_num_t *li_num_with_rat(li_rat_t x);
+
+extern size_t li_num_to_chars(li_num_t *x, char *s, size_t n);
+
+extern li_dec_t li_num_to_dec(li_num_t *x);
+extern li_int_t li_num_to_int(li_num_t *x);
 
 typedef struct {
     LI_OBJ_HEAD;
@@ -344,16 +328,12 @@ extern void li_cleanup(li_environment_t *env);
 
 /** Object constructors. */
 
-typedef void free_func_t(void *);
-typedef void write_func_t(void *, FILE *);
-
 extern li_object *li_character(li_character_t c);
 extern li_environment_t *li_environment(li_environment_t *base);
 extern li_object *li_lambda(li_symbol_t *name, li_object *vars, li_object *body,
         li_environment_t *env);
 extern li_object *li_macro(li_object *vars, li_object *body,
         li_environment_t *env);
-extern li_object *li_number(li_num_t n);
 extern li_object *li_pair(li_object *car, li_object *cdr);
 extern li_object *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
@@ -405,7 +385,7 @@ extern void li_setup_environment(li_environment_t *env);
 /** Type casting. */
 #define li_to_character(obj)            ((li_character_obj_t *)(obj))->character
 #define li_to_integer(obj)              (li_num_to_int(li_to_number((obj))))
-#define li_to_number(obj)               ((li_num_obj_t *)(obj))->number
+#define li_to_number(obj)               ((li_num_t *)(obj))
 #define li_to_string(obj)               ((li_string_obj_t *)(obj))->string
 #define li_to_symbol(obj)               ((li_symbol_t *)(obj))->string
 #define li_to_userdata(obj)             (obj)->data.userdata.v

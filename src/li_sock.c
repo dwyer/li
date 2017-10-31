@@ -93,7 +93,7 @@ static li_object *p_socket_send(li_object *args)
             break;
         sent += bytes;
     } while (sent < total);
-    return li_number(li_num_with_int(sent));
+    return (li_object *)li_num_with_int(sent);
 }
 
 static li_object *p_socket_recv(li_object *args)
@@ -135,7 +135,7 @@ static li_object *p_socket_close(li_object *args)
     defvar(env, name, li_primitive_procedure(proc))
 
 #define defint(env, name, i) \
-    defvar(env, name, li_number(li_num_with_int(i)))
+    defvar(env, name, (li_object *)li_num_with_int(i))
 
 extern void li_define_socket_functions(li_environment_t *env)
 {

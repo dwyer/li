@@ -61,7 +61,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         case 'n':
             li_assert_number(obj);
-            *va_arg(ap, li_num_t *) = li_to_number(obj);
+            *va_arg(ap, li_num_t **) = li_to_number(obj);
             break;
         case 'o':
             *va_arg(ap, li_object **) = obj;
@@ -127,23 +127,23 @@ static li_object *p_rand(li_object *args) {
         li_assert_integer(li_car(args));
         n %= li_to_integer(li_car(args));
     }
-    return li_number(li_num_with_int(n));
+    return (li_object *)li_num_with_int(n);
 }
 
 static li_object *p_remove(li_object *args) {
     li_assert_nargs(1, args);
     li_assert_string(li_car(args));
-    return li_number(li_num_with_int(
-                remove(li_string_bytes(li_to_string(li_car(args))))));
+    return (li_object *)li_num_with_int(
+            remove(li_string_bytes(li_to_string(li_car(args)))));
 }
 
 static li_object *p_rename(li_object *args) {
     li_assert_nargs(2, args);
     li_assert_string(li_car(args));
     li_assert_string(li_cadr(args));
-    return li_number(li_num_with_int(rename(
-                    li_string_bytes(li_to_string(li_car(args))),
-                    li_string_bytes(li_to_string(li_cadr(args))))));
+    return (li_object *)li_num_with_int(rename(
+                li_string_bytes(li_to_string(li_car(args))),
+                li_string_bytes(li_to_string(li_cadr(args)))));
 }
 
 
@@ -162,7 +162,7 @@ static li_object *p_system(li_object *args) {
     li_assert_nargs(1, args);
     li_assert_string(li_car(args));
     if ((ret = system(li_string_bytes(li_to_string(li_car(args))))))
-        return li_number(li_num_with_int(ret));
+        return (li_object *)li_num_with_int(ret);
     return li_null;
 }
 
@@ -282,7 +282,7 @@ static li_object *p_length(li_object *args) {
             li_error("not a list", lst);
         ret = li_type(lst)->length(lst);
     }
-    return li_number(li_num_with_int(ret));
+    return (li_object *)li_num_with_int(ret);
 }
 
 static li_object *p_ref(li_object *args) {
@@ -347,18 +347,18 @@ static li_object *p_get_environment_variables(li_object *args) {
 
 static li_object *p_current_second(li_object *args) {
     li_parse_args(args, "");
-    return li_number(li_num_with_int(time(NULL)));
+    return (li_object *)li_num_with_int(time(NULL));
 }
 
 static li_object *p_current_jiffy(li_object *args) {
     li_parse_args(args, "");
-    return li_number(li_num_with_int(clock()));
+    return (li_object *)li_num_with_int(clock());
 }
 
 static li_object *p_jiffies_per_second(li_object *args)
 {
     li_parse_args(args, "");
-    return li_number(li_num_with_int(CLOCKS_PER_SEC));
+    return (li_object *)li_num_with_int(CLOCKS_PER_SEC);
 }
 
 static li_object *p_isa(li_object *args)

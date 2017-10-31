@@ -79,5 +79,5 @@ li_object *li_read(FILE *fp)
 
 void yyerror(char *s)
 {
-    li_error(s, li_number(li_num_with_int(yylineno)));
+    li_error(s, (li_object *)li_num_with_int(yylineno));
 }

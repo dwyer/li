@@ -66,7 +66,7 @@ static li_object *p_open(li_object *args) {
 static li_object *p_close(li_object *args) {
     li_assert_nargs(1, args);
     li_assert_port(li_car(args));
-    return li_number(li_num_with_int(fclose(to_port(li_car(args))->file)));
+    return (li_object *)li_num_with_int(fclose(to_port(li_car(args))->file));
 }
 
 /*
