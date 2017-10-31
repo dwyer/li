@@ -1,6 +1,7 @@
 %{
 
 #include "li.h"
+#include "li_num.h"
 
 #define make_tagged_list(str, obj) \
     li_cons((li_object *)li_symbol(str), li_cons(obj, li_null))

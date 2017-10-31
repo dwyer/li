@@ -3,6 +3,7 @@
 #include <libgen.h>
 #include "li.h"
 #include "li_read.h"
+#include "li_num.h"
 
 static char *buf = NULL;
 static size_t n = 0;

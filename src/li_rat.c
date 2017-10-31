@@ -1,5 +1,7 @@
-#include <assert.h>
 #include "li.h"
+#include "li_num.h"
+
+#include <assert.h>
 
 static li_rat_t li_rat_norm(li_rat_t x);
 

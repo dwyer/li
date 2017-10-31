@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_num.h"
 
 #include <math.h>
 
@@ -19,7 +20,7 @@ static void write(li_object *obj, FILE *f)
     if (!li_num_is_exact(num))
         fprintf(f, "%f", li_num_to_dec(num));
     else if (li_num_is_integer(num))
-        fprintf(f, "%ld", li_num_to_int(num));
+        fprintf(f, "%d", li_num_to_int(num));
     else
         fprintf(f, "%s%ld/%ld",
                 li_rat_is_negative(num->real.exact) ? "-" : "",
@@ -108,7 +109,7 @@ extern size_t li_num_to_chars(li_num_t *x, char *s, size_t n)
     if (!li_num_is_exact(x))
         return snprintf(s, n, "%f", li_num_to_dec(x));
     else if (li_num_is_integer(x))
-        return snprintf(s, n, "%ld", li_num_to_int(x));
+        return snprintf(s, n, "%d", li_num_to_int(x));
     else
         return snprintf(s, n, "%s%ld/%ld",
                 li_rat_is_negative(x->real.exact) ? "-" : "",
@@ -116,7 +117,7 @@ extern size_t li_num_to_chars(li_num_t *x, char *s, size_t n)
                 li_nat_to_int(li_rat_den(x->real.exact)));
 }
 
-extern li_num_t *li_num_with_int(li_int_t x)
+extern li_num_t *li_num_with_int(int x)
 {
     li_num_t *n = li_num_zero();
     n->exact = LI_TRUE;
@@ -141,7 +142,7 @@ extern li_num_t *li_num_with_chars(const char *s, int radix)
     return x == floor(x) ? li_num_with_int(x) : li_num_with_dec(x);
 }
 
-extern li_int_t li_num_to_int(li_num_t *x)
+extern int li_num_to_int(li_num_t *x)
 {
     if (li_num_is_exact(x))
         return li_rat_to_int(x->real.exact);

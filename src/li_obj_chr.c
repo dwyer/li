@@ -48,9 +48,9 @@ static li_object *p_is_char(li_object *args) {
 }
 
 static li_object *p_char_to_integer(li_object *args) {
-    li_character_t *ch;
+    li_character_t ch;
     li_parse_args(args, "c", &ch);
-    return (li_object *)li_num_with_int((int)ch);
+    return (li_object *)li_num_with_int(ch);
 }
 
 static li_object *p_integer_to_char(li_object *args) {

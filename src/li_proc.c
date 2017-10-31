@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "li.h"
+#include "li_num.h"
 
 /**
  * fmt options:
