@@ -10,6 +10,8 @@
 #define LI_DEPRECATED
 #endif
 
+#define LI_INC_CAP(x)           ((x) < 1024 ? (x) * 2 : (x) + (x) / 2)
+
 #define LI_UNUSED_VARIABLE(var) (void)var
 
 #define li_strdup(s)            \
@@ -26,18 +28,30 @@ typedef enum {
     LI_CMP_GT = 1
 } li_cmp_t;
 
-/* object.c */
-
 typedef struct li_object li_object;
 
+typedef struct li_character_obj_t li_character_obj_t;
+typedef struct li_env_t li_env_t;
+typedef struct li_macro li_macro_t;
+typedef struct li_num_t li_num_t;
+typedef struct li_pair_t li_pair_t;
+typedef struct li_port_t li_port_t;
+typedef struct li_proc_obj li_proc_obj_t;
+typedef struct li_string_t li_string_t;
+typedef struct li_symbol li_symbol_t;
+typedef struct li_syntactic_closure_t li_syntactic_closure_t;
+typedef struct li_transformer_t li_transformer_t;
+
 extern void li_mark(li_object *obj);
+
+typedef void li_write_f(li_object *, FILE *fp);
 
 typedef struct {
     const char *name;
     void (*mark)(li_object *);
     void (*deinit)(li_object *);
-    void (*write)(li_object *, FILE *);
-    void (*display)(li_object *, FILE *);
+    li_write_f *write;
+    li_write_f *display;
     li_cmp_t (*compare)(li_object *, li_object *);
     int (*length)(li_object *);
     li_object *(*ref)(li_object *, int);
@@ -81,43 +95,30 @@ extern size_t li_chr_decode(li_character_t *chr, const char *s);
 extern size_t li_chr_encode(li_character_t chr, char *s, size_t n);
 extern size_t li_chr_count(const char *s);
 
-typedef struct {
+struct li_character_obj_t {
     LI_OBJ_HEAD;
     li_character_t character;
-} li_character_obj_t;
-
-/* symbol */
-typedef struct li_symbol li_symbol_t;
+};
 
 /* environment */
-typedef struct li_environment li_environment_t;
 
-extern li_environment_t *li_environment(li_environment_t *base);
+extern li_env_t *li_env_make(li_env_t *base);
 
 /* Destroys all objects that cannot be reached from the given environment. */
-extern void li_cleanup(li_environment_t *env);
+extern void li_cleanup(li_env_t *env);
 
-extern int li_environment_assign(li_environment_t *env, li_symbol_t *var,
-        li_object *val);
-extern void li_environment_define(li_environment_t *env, li_symbol_t *var,
-        li_object *val);
-extern li_object *li_environment_lookup(li_environment_t *env,
-        li_symbol_t *var);
-extern void li_append_variable(li_symbol_t *var, li_object *val,
-        li_environment_t *env);
-extern li_environment_t *li_environment_extend(li_environment_t *env,
-        li_object *vars, li_object *vals);
-extern void li_setup_environment(li_environment_t *env);
+extern int li_env_assign(li_env_t *env, li_symbol_t *var, li_object *val);
+extern void li_env_define(li_env_t *env, li_symbol_t *var, li_object *val);
+extern li_object *li_env_lookup(li_env_t *env, li_symbol_t *var);
+extern void li_env_append(li_env_t *env, li_symbol_t *var, li_object *val);
+extern li_env_t *li_env_extend(li_env_t *env, li_object *vars, li_object *vals);
+extern void li_setup_environment(li_env_t *env);
 
 /* macros */
-
-typedef struct li_macro li_macro_t;
 
 extern li_object *li_macro_expand(li_macro_t *mac, li_object *args);
 
 /* numbers */
-
-typedef struct li_num_t li_num_t;
 
 extern li_num_t *li_num_with_int(int x);
 extern int li_num_to_int(li_num_t *x);
@@ -126,19 +127,11 @@ extern li_bool_t li_num_is_integer(li_num_t *x);
 
 /* Pairs */
 
-typedef struct {
+struct li_pair_t {
     LI_OBJ_HEAD;
     li_object *car;
     li_object *cdr;
-} li_pair_t;
-
-/* Ports */
-
-typedef struct {
-    LI_OBJ_HEAD;
-    FILE *file;
-    char *filename;
-} li_port_t;
+};
 
 /* Procedures */
 
@@ -152,8 +145,6 @@ typedef struct {
  * safe to return an unapplicable list.
  */
 typedef li_object *li_primitive_procedure_t(li_object *);
-
-typedef struct li_proc_obj li_proc_obj_t;
 
 /*
  * A special form is like a primitive procedure, except for the following:
@@ -171,14 +162,14 @@ typedef struct li_proc_obj li_proc_obj_t;
  *    special form function should not evaluate the final expression before
  *    returning it.
  */
-typedef li_object *(li_special_form_t)(li_object *, li_environment_t *);
+typedef li_object *(li_special_form_t)(li_object *, li_env_t *);
 
-typedef struct {
+typedef struct li_special_form_obj_t li_special_form_obj_t;
+
+struct li_special_form_obj_t {
     LI_OBJ_HEAD;
     li_special_form_t *special_form;
-} li_special_form_obj_t;
-
-typedef struct li_string_t li_string_t;
+};
 
 extern li_string_t *li_string_make(const char *s);
 extern li_string_t *li_string_copy(li_string_t *str);
@@ -189,8 +180,6 @@ extern size_t li_string_length(li_string_t *str);
 extern li_cmp_t li_string_cmp(li_string_t *st1, li_string_t *st2);
 extern li_string_t *li_string_append(li_string_t *str1, li_string_t *str2);
 
-typedef struct li_string_t li_string_obj_t LI_DEPRECATED;
-
 struct li_symbol {
     LI_OBJ_HEAD;
     char *string;
@@ -199,22 +188,19 @@ struct li_symbol {
     unsigned int hash;
 };
 
-typedef struct li_syntactic_closure_t li_syntactic_closure_t;
 extern li_object *li_syntactic_closure_expand(li_syntactic_closure_t *sc);
 
 struct li_syntactic_closure_t {
     LI_OBJ_HEAD;
-    li_environment_t *env;
+    li_env_t *env;
     li_object *free_names;
     li_object *form;
 };
 
-typedef struct li_transformer_t li_transformer_t;
-
 struct li_transformer_t {
     LI_OBJ_HEAD;
     li_proc_obj_t *proc;
-    li_environment_t *env;
+    li_env_t *env;
 };
 
 typedef struct {
@@ -256,11 +242,11 @@ extern void li_destroy(li_object *obj);
 
 extern li_object *li_character(li_character_t c);
 extern li_object *li_lambda(li_symbol_t *name, li_object *vars, li_object *body,
-        li_environment_t *env);
+        li_env_t *env);
 extern li_object *li_macro(li_object *vars, li_object *body,
-        li_environment_t *env);
+        li_env_t *env);
 extern li_object *li_pair(li_object *car, li_object *cdr);
-extern li_object *li_port(const char *filename, const char *mode);
+extern li_port_t *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
 extern li_object *li_special_form(li_special_form_t *proc);
 extern li_object *li_symbol(const char *s);
@@ -379,13 +365,29 @@ extern void li_stack_trace_pop(void);
 
 /* li_eval.c */
 extern li_object *li_apply(li_object *proc, li_object *args);
-extern li_object *li_eval(li_object *exp, li_environment_t *env);
+extern li_object *li_eval(li_object *exp, li_env_t *env);
 
 /* li_read.y */
-extern void li_load(char *filename, li_environment_t *env);
+extern void li_load(char *filename, li_env_t *env);
 extern li_object *li_read(FILE *f);
 
 /* li_write.c */
+
+struct li_port_t {
+    LI_OBJ_HEAD;
+    int fd;
+    FILE *fp;
+    char *name;
+};
+
+extern li_port_t *li_port_stdin;
+extern li_port_t *li_port_stdout;
+extern li_port_t *li_port_stderr;
+extern void li_port_close(li_port_t *port);
+
+extern li_object *li_port_read_obj(li_port_t *port);
+
+extern void li_port_printf(FILE *fp, const char *fmt, ...);
 extern void li_write(li_object *obj, FILE *fp);
 extern void li_display(li_object *obj, FILE *fp);
 #define li_newline(fp)                  fprintf(fp, "\n")
@@ -413,19 +415,19 @@ extern void li_display(li_object *obj, FILE *fp);
 #define li_assert_symbol(arg)           li_assert_type(symbol, arg)
 
 #define li_define_primitive_procedure(env, name, proc) \
-    li_append_variable((li_symbol_t *)li_symbol(name), \
-            li_primitive_procedure(proc), env)
+    li_env_append(env, (li_symbol_t *)li_symbol(name), \
+            li_primitive_procedure(proc))
 
 extern void li_parse_args(li_object *args, const char *fmt, ...);
 
-extern void li_define_char_functions(li_environment_t *env);
-extern void li_define_number_functions(li_environment_t *env);
-extern void li_define_pair_functions(li_environment_t *env);
-extern void li_define_port_functions(li_environment_t *env);
-extern void li_define_procedure_functions(li_environment_t *env);
-extern void li_define_primitive_macros(li_environment_t *env);
-extern void li_define_string_functions(li_environment_t *env);
-extern void li_define_symbol_functions(li_environment_t *env);
-extern void li_define_vector_functions(li_environment_t *env);
+extern void li_define_char_functions(li_env_t *env);
+extern void li_define_number_functions(li_env_t *env);
+extern void li_define_pair_functions(li_env_t *env);
+extern void li_define_port_functions(li_env_t *env);
+extern void li_define_procedure_functions(li_env_t *env);
+extern void li_define_primitive_macros(li_env_t *env);
+extern void li_define_string_functions(li_env_t *env);
+extern void li_define_symbol_functions(li_env_t *env);
+extern void li_define_vector_functions(li_env_t *env);
 
 #endif

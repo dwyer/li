@@ -18,11 +18,11 @@ static void write(li_object *obj, FILE *f)
 {
     li_num_t *num = li_to_number(obj);
     if (!li_num_is_exact(num))
-        fprintf(f, "%f", li_num_to_dec(num));
+        li_port_printf(f, "%f", li_num_to_dec(num));
     else if (li_num_is_integer(num))
-        fprintf(f, "%d", li_num_to_int(num));
+        li_port_printf(f, "%d", li_num_to_int(num));
     else
-        fprintf(f, "%s%ld/%ld",
+        li_port_printf(f, "%s%ld/%ld",
                 li_rat_is_negative(num->real.exact) ? "-" : "",
                 li_nat_to_int(li_rat_num(num->real.exact)),
                 li_nat_to_int(li_rat_den(num->real.exact)));
@@ -588,7 +588,7 @@ static li_object *p_string_to_number(li_object *args) {
     return (li_object *)li_num_with_chars(li_string_bytes(str), radix);
 }
 
-extern void li_define_number_functions(li_environment_t *env)
+extern void li_define_number_functions(li_env_t *env)
 {
     /* Numerical operations */
     li_define_primitive_procedure(env, "number?", p_is_number);

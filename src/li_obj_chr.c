@@ -59,7 +59,7 @@ static li_object *p_integer_to_char(li_object *args) {
     return li_character(i);
 }
 
-extern void li_define_char_functions(li_environment_t *env)
+extern void li_define_char_functions(li_env_t *env)
 {
     li_define_primitive_procedure(env, "char?", p_is_char);
     li_define_primitive_procedure(env, "char->integer", p_char_to_integer);

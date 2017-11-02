@@ -207,7 +207,7 @@ static li_object *p_string_to_symbol(li_object *args) {
     return li_symbol(li_string_bytes(li_to_string(li_car(args))));
 }
 
-extern void li_define_string_functions(li_environment_t *env)
+extern void li_define_string_functions(li_env_t *env)
 {
     li_define_primitive_procedure(env, "make-string", p_make_string);
     li_define_primitive_procedure(env, "string", p_string);

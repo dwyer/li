@@ -7,7 +7,7 @@
 
 /**
  * fmt options:
- *     e = li_environment_t
+ *     e = li_env_t
  *     I = li_int_t
  *     i = int
  *     l = li_object (list)
@@ -47,7 +47,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
         switch (*s) {
         case 'e':
             li_assert_type(environment, obj);
-            *va_arg(ap, li_environment_t **) = (li_environment_t *)obj;
+            *va_arg(ap, li_env_t **) = (li_env_t *)obj;
             break;
         case 'I':
             li_assert_integer(obj);
@@ -372,12 +372,12 @@ static li_object *p_isa(li_object *args)
 }
 
 #define define_var(env, name, obj) \
-    li_append_variable((li_symbol_t *)li_symbol(name), obj, env);
+    li_env_append(env, (li_symbol_t *)li_symbol(name), obj);
 
 #define define_type(env, name, type) \
     define_var(env, name, li_type_obj(type));
 
-extern void li_setup_environment(li_environment_t *env) {
+extern void li_setup_environment(li_env_t *env) {
     define_var(env, "true", li_true);
     define_var(env, "false", li_false);
     define_var(env, "null", li_null);

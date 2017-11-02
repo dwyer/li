@@ -6,14 +6,15 @@
 #define make_tagged_list(str, obj) \
     li_cons((li_object *)li_symbol(str), li_cons(obj, li_null))
 
+static void yyerror(char *s);
 extern int yylex(void);
 extern int yylineno;
+extern void yypop_buffer_state(void);
+
+extern int push_buffer(FILE *fp);
+static li_object *append(li_object *lst, li_object *obj);
 
 static li_object *obj = li_null;
-li_object *append(li_object *lst, li_object *obj);
-extern int push_buffer(FILE *fp);
-extern void yypop_buffer_state(void);
-void yyerror(char *s);
 
 %}
 
@@ -54,23 +55,20 @@ data    : { $$ = li_null; }
 
 %%
 
-li_object *append(li_object *lst, li_object *obj)
+static li_object *append(li_object *lst, li_object *obj)
 {
-    li_object *tail;
-
-    for (tail = lst; tail && li_cdr(tail); tail = li_cdr(tail))
-        ;
+    li_object *tail = lst;
+    while (tail && li_cdr(tail))
+        tail = li_cdr(tail);
     if (!tail)
         return obj;
     li_set_cdr(tail, obj);
     return lst;
 }
 
-li_object *li_read(FILE *fp)
+extern li_object *li_read(FILE *fp)
 {
-    int pop;
-
-    pop = push_buffer(fp);
+    int pop = push_buffer(fp);
     if (yyparse())
         return li_null;
     if (pop)
@@ -78,7 +76,12 @@ li_object *li_read(FILE *fp)
     return obj;
 }
 
-void yyerror(char *s)
+extern li_object *li_port_read_obj(li_port_t *port)
+{
+    return li_read(port->fp);
+}
+
+static void yyerror(char *s)
 {
     li_error(s, (li_object *)li_num_with_int(yylineno));
 }

@@ -1,5 +1,3 @@
-#include <assert.h>
-#include <stdio.h>
 #include "li.h"
 
 extern void li_write(li_object *obj, FILE *fp)

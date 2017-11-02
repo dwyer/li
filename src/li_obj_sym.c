@@ -67,7 +67,7 @@ static li_object *p_symbol_to_string(li_object *args) {
     return (li_object *)li_string_make(li_to_symbol(sym));
 }
 
-extern void li_define_symbol_functions(li_environment_t *env)
+extern void li_define_symbol_functions(li_env_t *env)
 {
     li_define_primitive_procedure(env, "symbol?", p_is_symbol);
     li_define_primitive_procedure(env, "symbol->string", p_symbol_to_string);

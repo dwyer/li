@@ -3,6 +3,6 @@
 
 #include "li.h"
 
-extern void li_define_socket_functions(li_environment_t *env);
+extern void li_define_socket_functions(li_env_t *env);
 
 #endif

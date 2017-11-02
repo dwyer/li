@@ -12,7 +12,7 @@ struct li_proc_obj {
     struct {
         li_object *vars;
         li_object *body;
-        li_environment_t *env;
+        li_env_t *env;
     } compound;
     li_primitive_procedure_t *primitive;
 };
@@ -48,7 +48,7 @@ const li_type_t li_type_procedure = {
 };
 
 extern li_object *li_lambda(li_symbol_t *name, li_object *vars, li_object *body,
-        li_environment_t *env)
+        li_env_t *env)
 {
     li_proc_obj_t *obj = li_allocate(NULL, 1, sizeof(*obj));
     li_object_init((li_object *)obj, &li_type_procedure);
@@ -153,12 +153,12 @@ static li_object *p_force(li_object *args) {
 
 static li_object *p_eval(li_object *args) {
     li_object *expr;
-    li_environment_t *env;
+    li_env_t *env;
     li_parse_args(args, "oe", &expr, &env);
     return li_eval(expr, env);
 }
 
-extern void li_define_procedure_functions(li_environment_t *env)
+extern void li_define_procedure_functions(li_env_t *env)
 {
     li_define_primitive_procedure(env, "procedure?", p_is_procedure);
     li_define_primitive_procedure(env, "apply", p_apply);
@@ -172,8 +172,8 @@ extern void li_define_procedure_functions(li_environment_t *env)
 #define quote(expr) \
     li_cons((li_object *)li_symbol("quote"), li_cons(expr, NULL));
 
-static li_object *eval_quasiquote(li_object *expr, li_environment_t *env);
-static li_object *list_of_values(li_object *exprs, li_environment_t *env);
+static li_object *eval_quasiquote(li_object *expr, li_env_t *env);
+static li_object *list_of_values(li_object *exprs, li_env_t *env);
 
 #define MAGIC(head, tail, node) \
     do { \
@@ -199,7 +199,7 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
     return li_eval(li_cons(proc, head), li_proc_env(proc));
 }
 
-static li_object *expand_syntax(li_environment_t *env, li_object *names,
+static li_object *expand_syntax(li_env_t *env, li_object *names,
         li_object *form)
 {
     if (li_is_pair(form)) {
@@ -212,7 +212,7 @@ static li_object *expand_syntax(li_environment_t *env, li_object *names,
                 return form;
             names = li_cdr(names);
         }
-        return li_environment_lookup(env, (li_symbol_t *)form);
+        return li_env_lookup(env, (li_symbol_t *)form);
     }
     return form;
 }
@@ -222,12 +222,12 @@ extern li_object *li_syntactic_closure_expand(li_syntactic_closure_t *sc)
     return expand_syntax(sc->env, sc->free_names, sc->form);
 }
 
-extern li_object *li_eval(li_object *expr, li_environment_t *env) {
+extern li_object *li_eval(li_object *expr, li_env_t *env) {
     int done = 0;
     while (!li_is_self_evaluating(expr) && !done) {
         li_stack_trace_push(expr);
         if (li_is_symbol(expr)) {
-            expr = li_environment_lookup(env, (li_symbol_t *)expr);
+            expr = li_env_lookup(env, (li_symbol_t *)expr);
             done = 1;
         } else if (li_is_list(expr)) {
             li_object *proc = li_car(expr),
@@ -246,7 +246,7 @@ extern li_object *li_eval(li_object *expr, li_environment_t *env) {
                     done = 1;
                 } else {
                     li_object *seq;
-                    env = li_environment_extend(
+                    env = li_env_extend(
                             li_proc_env(proc),
                             li_proc_vars(proc),
                             args);
@@ -306,7 +306,7 @@ static void li_list_append(li_object *lst, li_object *obj)
     li_set_cdr(lst, obj);
 }
 
-static li_object *eval_quasiquote(li_object *expr, li_environment_t *env)
+static li_object *eval_quasiquote(li_object *expr, li_env_t *env)
 {
     if (!li_is_pair(expr))
         return expr;
@@ -328,7 +328,7 @@ static li_object *eval_quasiquote(li_object *expr, li_environment_t *env)
             eval_quasiquote(li_cdr(expr), env));
 }
 
-static li_object *list_of_values(li_object *args, li_environment_t *env)
+static li_object *list_of_values(li_object *args, li_env_t *env)
 {
     li_object *head = NULL, *tail;
     while (args) {

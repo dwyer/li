@@ -147,7 +147,7 @@ static li_object *p_vector_to_string(li_object *args) {
     return str;
 }
 
-extern void li_define_vector_functions(li_environment_t *env)
+extern void li_define_vector_functions(li_env_t *env)
 {
     li_define_primitive_procedure(env, "make-vector", p_make_vector);
     li_define_primitive_procedure(env, "vector?", p_is_vector);

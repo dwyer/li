@@ -65,7 +65,7 @@ extern li_object *li_special_form(li_special_form_t *proc)
     return (li_object *)obj;
 }
 
-static li_object *m_and(li_object *seq, li_environment_t *env) {
+static li_object *m_and(li_object *seq, li_env_t *env) {
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
         if (li_not(li_eval(li_car(seq), env)))
             return li_false;
@@ -74,7 +74,7 @@ static li_object *m_and(li_object *seq, li_environment_t *env) {
     return li_car(seq);
 }
 
-static li_object *m_assert(li_object *args, li_environment_t *env) {
+static li_object *m_assert(li_object *args, li_env_t *env) {
     li_object *expr;
     li_parse_args(args, "o", &expr);
     if (li_not(li_eval(expr, env)))
@@ -82,7 +82,7 @@ static li_object *m_assert(li_object *args, li_environment_t *env) {
     return li_null;
 }
 
-static li_object *m_begin(li_object *seq, li_environment_t *env) {
+static li_object *m_begin(li_object *seq, li_env_t *env) {
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
         li_eval(li_car(seq), env);
     if (!seq)
@@ -90,7 +90,7 @@ static li_object *m_begin(li_object *seq, li_environment_t *env) {
     return li_car(seq);
 }
 
-static li_object *m_case(li_object *exp, li_environment_t *env) {
+static li_object *m_case(li_object *exp, li_env_t *env) {
     li_object *clause;
     li_object *clauses;
     li_object *data;
@@ -117,7 +117,7 @@ static li_object *m_case(li_object *exp, li_environment_t *env) {
 
 /* (cond (cond . clause) ... */
 /* ... (else . clause)) */
-static li_object *m_cond(li_object *seq, li_environment_t *env) {
+static li_object *m_cond(li_object *seq, li_env_t *env) {
     for (; seq; seq = li_cdr(seq)) {
         li_object *cond, *clause;
         li_parse_args(li_car(seq), "o.", &cond, &clause);
@@ -134,7 +134,7 @@ static li_object *m_cond(li_object *seq, li_environment_t *env) {
 
 /* (define name expr) */
 /* (define (name . args) . body) */
-static li_object *m_define(li_object *args, li_environment_t *env) {
+static li_object *m_define(li_object *args, li_env_t *env) {
     li_object *var;
     li_object *val;
     var = li_car(args);
@@ -153,25 +153,25 @@ static li_object *m_define(li_object *args, li_environment_t *env) {
         val = li_eval(li_cadr(args), env);
     }
     li_assert_symbol(var);
-    li_environment_define(env, (li_symbol_t *)var, val);
+    li_env_define(env, (li_symbol_t *)var, val);
     return li_null;
 }
 
 /* (defmacro (name . args) . body) */
-static li_object *m_defmacro(li_object *seq, li_environment_t *env) {
+static li_object *m_defmacro(li_object *seq, li_env_t *env) {
     li_symbol_t *name;
     li_object *vars, *body;
     li_parse_args(seq, "p.", &vars, &body);
     li_parse_args(vars, "y.", &name, &vars);
-    li_environment_define(env, name, li_macro(vars, body, env));
+    li_env_define(env, name, li_macro(vars, body, env));
     return li_null;
 }
 
-static li_object *m_delay(li_object *seq, li_environment_t *env) {
+static li_object *m_delay(li_object *seq, li_env_t *env) {
     return li_lambda(NULL, li_null, seq, env);
 }
 
-static li_object *m_do(li_object *seq, li_environment_t *env) {
+static li_object *m_do(li_object *seq, li_env_t *env) {
     li_object *binding;
     li_object *head;
     li_object *iter;
@@ -211,7 +211,7 @@ static li_object *m_do(li_object *seq, li_environment_t *env) {
     return head;
 }
 
-static li_object *m_if(li_object *seq, li_environment_t *env) {
+static li_object *m_if(li_object *seq, li_env_t *env) {
     if (!seq || !li_cdr(seq))
         li_error("invalid sequence", seq);
     if (!li_not(li_eval(li_car(seq), env)))
@@ -222,7 +222,7 @@ static li_object *m_if(li_object *seq, li_environment_t *env) {
         return li_false;
 }
 
-static li_object *m_import(li_object *seq, li_environment_t *env) {
+static li_object *m_import(li_object *seq, li_env_t *env) {
     char *buf;
     size_t len;
 
@@ -235,23 +235,23 @@ static li_object *m_import(li_object *seq, li_environment_t *env) {
     return li_null;
 }
 
-static li_object *m_lambda(li_object *seq, li_environment_t *env) {
+static li_object *m_lambda(li_object *seq, li_env_t *env) {
     return li_lambda(NULL, li_car(seq), li_cdr(seq), env);
 }
 
-static li_object *m_named_lambda(li_object *seq, li_environment_t *env) {
+static li_object *m_named_lambda(li_object *seq, li_env_t *env) {
     li_object *formals;
     formals = li_car(seq);
     li_assert_pair(formals);
     return li_lambda((li_symbol_t *)li_car(formals), li_cdr(formals), li_cdr(seq), env);
 }
 
-static li_object *m_let(li_object *args, li_environment_t *env) {
+static li_object *m_let(li_object *args, li_env_t *env) {
     li_symbol_t *name = NULL;
     li_object *bindings, *body, *vals, *vals_tail, *vars, *vars_tail;
     if (li_is_symbol(li_car(args))) {
         li_parse_args(args, "y.", &name, &args);
-        env = li_environment(env);
+        env = li_env_make(env);
     }
     li_parse_args(args, "l.", &bindings, &body);
     vals = vals_tail = vars = vars_tail = NULL;
@@ -269,26 +269,26 @@ static li_object *m_let(li_object *args, li_environment_t *env) {
     }
     body = li_lambda(name, vars, body, env);
     if (name)
-        li_environment_define(env, name, body);
+        li_env_define(env, name, body);
     return li_cons(body, vals);
 }
 
-static li_object *m_let_star(li_object *args, li_environment_t *env) {
+static li_object *m_let_star(li_object *args, li_env_t *env) {
     li_object *binding;
     li_object *bindings;
 
-    env = li_environment(env);
+    env = li_env_make(env);
     bindings = li_car(args);
     for (bindings = li_car(args); bindings; bindings = li_cdr(bindings)) {
         binding = li_car(bindings);
         li_assert_symbol(li_car(binding));
-        li_environment_define(env, (li_symbol_t *)li_car(binding),
+        li_env_define(env, (li_symbol_t *)li_car(binding),
                 li_eval(li_cadr(binding), env));
     }
     return li_cons(li_lambda(NULL, li_null, li_cdr(args), env), li_null);
 }
 
-static li_object *m_letrec(li_object *args, li_environment_t *env) {
+static li_object *m_letrec(li_object *args, li_env_t *env) {
     li_object *head, *iter, *tail;
 
     LI_UNUSED_VARIABLE(env);
@@ -299,7 +299,7 @@ static li_object *m_letrec(li_object *args, li_environment_t *env) {
     return head;
 }
 
-static li_object *m_load(li_object *args, li_environment_t *env) {
+static li_object *m_load(li_object *args, li_env_t *env) {
     li_string_t *str;
     li_parse_args(args, "s", &str);
     li_load(li_string_bytes(str), env);
@@ -307,11 +307,11 @@ static li_object *m_load(li_object *args, li_environment_t *env) {
 }
 
 /* (macro params . body) */
-static li_object *m_macro(li_object *seq, li_environment_t *env) {
+static li_object *m_macro(li_object *seq, li_env_t *env) {
     return li_macro(li_car(seq), li_cdr(seq), env);
 }
 
-static li_object *m_or(li_object *seq, li_environment_t *env) {
+static li_object *m_or(li_object *seq, li_env_t *env) {
     li_object *val;
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
         if (!li_not(val = li_eval(li_car(seq), env)))
@@ -321,17 +321,17 @@ static li_object *m_or(li_object *seq, li_environment_t *env) {
     return li_car(seq);
 }
 
-static li_object *m_set(li_object *args, li_environment_t *env) {
+static li_object *m_set(li_object *args, li_env_t *env) {
     li_symbol_t *var;
     li_object *val;
     li_parse_args(args, "yo", &var, &val);
-    if (!li_environment_assign(env, var, li_eval(val, env)))
+    if (!li_env_assign(env, var, li_eval(val, env)))
         li_error("unbound variable", (li_object *)var);
     return li_null;
 }
 
 static li_transformer_t *li_transformer_make(li_proc_obj_t *proc,
-        li_environment_t *env)
+        li_env_t *env)
 {
     li_transformer_t *ts = li_allocate(NULL, 1, sizeof(*ts));
     li_object_init((li_object *)ts, &li_type_transformer);
@@ -340,18 +340,18 @@ static li_transformer_t *li_transformer_make(li_proc_obj_t *proc,
     return ts;
 }
 
-static li_object *m_define_syntax(li_object *args, li_environment_t *env)
+static li_object *m_define_syntax(li_object *args, li_env_t *env)
 {
     li_symbol_t *keyword;
     li_object *tran;
     li_parse_args(args, "yo", &keyword, &tran);
     tran = li_eval(tran, env);
-    li_environment_define(env, keyword,
+    li_env_define(env, keyword,
             (li_object *)li_transformer_make((li_proc_obj_t *)tran, env));
     return NULL;
 }
 
-static li_object *m_sc_macro_transformer(li_object *args, li_environment_t *env)
+static li_object *m_sc_macro_transformer(li_object *args, li_env_t *env)
 {
     li_object *expr;
     li_transformer_t *tran;
@@ -397,7 +397,7 @@ static li_symbol_t *get_symbol(li_object *obj)
 
 static li_object *p_is_indentifier_eq(li_object *args)
 {
-    li_environment_t *env1, *env2;
+    li_env_t *env1, *env2;
     li_object *obj1, *obj2, *cell1, *cell2;
     li_symbol_t *sym1, *sym2;
     li_parse_args(args, "eoeo", &env1, &obj1, &env2, &obj2);
@@ -407,8 +407,8 @@ static li_object *p_is_indentifier_eq(li_object *args)
     sym2 = get_symbol(obj2);
     if (!sym1 || !sym2)
         li_error("not an ID", obj2);
-    cell1 = li_environment_lookup(env1, sym1);
-    cell2 = li_environment_lookup(env2, sym2);
+    cell1 = li_env_lookup(env1, sym1);
+    cell2 = li_env_lookup(env2, sym2);
     if (cell1 && li_is_eq(cell1, cell2))
         return li_true;
     if (!cell1 && !cell2 && li_is_eq(cell1, cell2))
@@ -421,17 +421,17 @@ static li_object *p_is_indentifier_eq(li_object *args)
 }
 
 #define def_macro(env, name, proc) \
-    li_append_variable((li_symbol_t *)li_symbol(name), \
-            li_special_form(proc), env);
+    li_env_append(env, (li_symbol_t *)li_symbol(name), \
+            li_special_form(proc));
 
-extern void li_define_primitive_macros(li_environment_t *env)
+extern void li_define_primitive_macros(li_env_t *env)
 {
-    li_append_variable((li_symbol_t *)li_symbol("make-syntactic-closure"),
-            li_primitive_procedure(p_make_syntactic_closure), env);
-    li_append_variable((li_symbol_t *)li_symbol("identifier?"),
-            li_primitive_procedure(p_is_indentifier), env);
-    li_append_variable((li_symbol_t *)li_symbol("identifier=?"),
-            li_primitive_procedure(p_is_indentifier_eq), env);
+    li_env_append(env, (li_symbol_t *)li_symbol("make-syntactic-closure"),
+            li_primitive_procedure(p_make_syntactic_closure));
+    li_env_append(env, (li_symbol_t *)li_symbol("identifier?"),
+            li_primitive_procedure(p_is_indentifier));
+    li_env_append(env, (li_symbol_t *)li_symbol("identifier=?"),
+            li_primitive_procedure(p_is_indentifier_eq));
     /* def_macro(env, "sc-macro-transformer",  m_sc_macro_transformer); */
     (void)m_sc_macro_transformer;
     def_macro(env, "define-syntax",         m_define_syntax);

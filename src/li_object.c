@@ -72,7 +72,7 @@ extern void li_mark(li_object *obj)
 /*
  * Garbage collector.
  */
-extern void li_cleanup(li_environment_t *env)
+extern void li_cleanup(li_env_t *env)
 {
     int i, j, k = _heap.size;
     return;

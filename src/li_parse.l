@@ -5,13 +5,14 @@
 #include "li_read.h"
 #include "li_num.h"
 
-static char *buf = NULL;
-static size_t n = 0;
-static size_t p = 256;
-
 static void bufappend(const char *s);
-
 extern int fileno(FILE *);
+
+static struct {
+    char *buf;
+    size_t len;
+    size_t cap;
+} buf = {NULL, 0, BUFSIZ};
 
 %}
 
@@ -65,7 +66,7 @@ symbol                  ({identifier}|\|[^|]*\|)
                         }
 {symbol}                yylval.obj = (li_object *)li_symbol(yytext); return SYMBOL;
 \"\"                    yylval.obj = (li_object *)li_string_make(""); return STRING;
-<INITIAL>\"             BEGIN(XSTRING); n = 0;
+<INITIAL>\"             BEGIN(XSTRING); buf.len = 0;
 <XSTRING>[^\\"]*        bufappend(yytext);
 <XSTRING>\\[\\"]        bufappend(yytext+1);
 <XSTRING>\\n            bufappend("\n");
@@ -73,10 +74,9 @@ symbol                  ({identifier}|\|[^|]*\|)
 <XSTRING>\\t            bufappend("\t");
 <XSTRING>\"             {
                             BEGIN(INITIAL);
-                            yylval.obj = (li_object *)li_string_make(buf);
-                            free(buf);
-                            buf = NULL;
-                            n = 0;
+                            yylval.obj = (li_object *)li_string_make(buf.buf);
+                            buf.buf = NULL;
+                            buf.len = 0;
                             return STRING;
                         }
 {whitespace}            ; /* ignore whitespace */
@@ -86,26 +86,25 @@ symbol                  ({identifier}|\|[^|]*\|)
 
 static void bufappend(const char *s)
 {
-    if (!buf)
-        buf = malloc(sizeof(*buf) * p);
+    if (!buf.buf)
+        buf.buf = li_allocate(NULL, buf.cap, sizeof(buf.buf));
     while (*s) {
-        buf[n++] = *s;
+        buf.buf[buf.len++] = *s;
         s++;
-        if (n == p)
-            buf = realloc(buf, sizeof(*buf) * (p *= 1.5));
+        if (buf.len == buf.cap)
+            buf.buf = li_allocate(buf.buf, buf.cap = LI_INC_CAP(buf.cap), sizeof(*buf.buf));
     }
-    buf[n] = '\0';
+    buf.buf[buf.len] = '\0';
 }
 
-int yywrap(void)
+extern int yywrap(void)
 {
     return 1;
 }
 
-int push_buffer(FILE *fp)
+extern int push_buffer(FILE *fp)
 {
     int ret;
-
     if (!yyin)
         yyin = fp;
     if ((ret = (fp != yyin)))
@@ -113,14 +112,13 @@ int push_buffer(FILE *fp)
     return ret;
 }
 
-void li_load(char *filename, li_environment_t *env)
+extern void li_load(char *filename, li_env_t *env)
 {
     char *cwd;
     li_object *exp;
     char *filepath;
     FILE *fp;
     int pop;
-
     if (!(filepath = realpath(filename, NULL)))
         li_error("could not find file", (li_object *)li_string_make(filename));
     cwd = getcwd(NULL, 0);
@@ -142,4 +140,6 @@ void li_load(char *filename, li_environment_t *env)
         li_error("could not read from directory",
                 (li_object *)li_string_make(cwd));
     free(cwd);
+    if (buf.buf)
+        free(buf.buf);
 }

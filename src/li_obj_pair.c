@@ -613,7 +613,7 @@ static li_object *p_cddddr(li_object *args) {
     return li_cddddr(lst);
 }
 
-extern void li_define_pair_functions(li_environment_t *env)
+extern void li_define_pair_functions(li_env_t *env)
 {
     /* Pairs and lists */
     li_define_primitive_procedure(env, "pair?", p_is_pair);
