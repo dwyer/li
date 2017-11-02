@@ -579,7 +579,7 @@ static li_object *p_number_to_string(li_object *args) {
 }
 
 static li_object *p_string_to_number(li_object *args) {
-    li_string_t *str;
+    li_str_t *str;
     int radix = 10;
     if (li_length(args) == 1)
         li_parse_args(args, "s", &str);

@@ -8,7 +8,7 @@
 
 struct li_proc_obj {
     LI_OBJ_HEAD;
-    li_symbol_t *name;
+    li_sym_t *name;
     struct {
         li_object *vars;
         li_object *body;
@@ -47,7 +47,7 @@ const li_type_t li_type_procedure = {
     .write = write,
 };
 
-extern li_object *li_lambda(li_symbol_t *name, li_object *vars, li_object *body,
+extern li_object *li_lambda(li_sym_t *name, li_object *vars, li_object *body,
         li_env_t *env)
 {
     li_proc_obj_t *obj = li_allocate(NULL, 1, sizeof(*obj));
@@ -212,7 +212,7 @@ static li_object *expand_syntax(li_env_t *env, li_object *names,
                 return form;
             names = li_cdr(names);
         }
-        return li_env_lookup(env, (li_symbol_t *)form);
+        return li_env_lookup(env, (li_sym_t *)form);
     }
     return form;
 }
@@ -227,7 +227,7 @@ extern li_object *li_eval(li_object *expr, li_env_t *env) {
     while (!li_is_self_evaluating(expr) && !done) {
         li_stack_trace_push(expr);
         if (li_is_symbol(expr)) {
-            expr = li_env_lookup(env, (li_symbol_t *)expr);
+            expr = li_env_lookup(env, (li_sym_t *)expr);
             done = 1;
         } else if (li_is_list(expr)) {
             li_object *proc = li_car(expr),

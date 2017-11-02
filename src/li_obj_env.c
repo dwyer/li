@@ -5,7 +5,7 @@ struct li_env_t {
     int len;
     int cap;
     struct {
-        li_symbol_t *var;
+        li_sym_t *var;
         li_object *val;
     } *array;
     li_env_t *base;
@@ -45,7 +45,7 @@ extern li_env_t *li_env_make(li_env_t *base)
     return obj;
 }
 
-extern int li_env_assign(li_env_t *env, li_symbol_t *var, li_object *val)
+extern int li_env_assign(li_env_t *env, li_sym_t *var, li_object *val)
 {
     int i;
     while (env) {
@@ -59,7 +59,7 @@ extern int li_env_assign(li_env_t *env, li_symbol_t *var, li_object *val)
     return 0;
 }
 
-extern void li_env_define(li_env_t *env, li_symbol_t *var, li_object *val)
+extern void li_env_define(li_env_t *env, li_sym_t *var, li_object *val)
 {
     int i;
     for (i = 0; i < env->len; i++) {
@@ -71,7 +71,7 @@ extern void li_env_define(li_env_t *env, li_symbol_t *var, li_object *val)
     li_env_append(env, var, val);
 }
 
-extern li_object *li_env_lookup(li_env_t *env, li_symbol_t *var)
+extern li_object *li_env_lookup(li_env_t *env, li_sym_t *var)
 {
     int i;
     while (env) {
@@ -84,7 +84,7 @@ extern li_object *li_env_lookup(li_env_t *env, li_symbol_t *var)
     return li_null;
 }
 
-extern void li_env_append(li_env_t *env, li_symbol_t *var, li_object *val)
+extern void li_env_append(li_env_t *env, li_sym_t *var, li_object *val)
 {
     if (!li_is_symbol(var))
         li_error("not a variable", (li_object *)var);
@@ -97,7 +97,7 @@ extern void li_env_append(li_env_t *env, li_symbol_t *var, li_object *val)
     env->len++;
 }
 
-extern void li_append_variable(li_symbol_t *var, li_object *val, li_env_t *env)
+extern void li_append_variable(li_sym_t *var, li_object *val, li_env_t *env)
 {
     li_env_append(env, var, val);
 }
@@ -108,7 +108,7 @@ extern li_env_t *li_env_extend(li_env_t *env, li_object *vars, li_object *vals)
     while (vars) {
         li_object *var, *val;
         if (li_is_symbol(vars)) {
-            li_env_append(env, (li_symbol_t *)vars, vals);
+            li_env_append(env, (li_sym_t *)vars, vals);
             return env;
         }
         if (!vals)
@@ -119,10 +119,10 @@ extern li_env_t *li_env_extend(li_env_t *env, li_object *vars, li_object *vals)
             li_assert_symbol(((li_syntactic_closure_t *)var)->form);
             li_env_append(
                     ((li_syntactic_closure_t *)var)->env,
-                    (li_symbol_t *)((li_syntactic_closure_t *)var)->form,
+                    (li_sym_t *)((li_syntactic_closure_t *)var)->form,
                     val);
         } else
-            li_env_append(env, (li_symbol_t *)var, val);
+            li_env_append(env, (li_sym_t *)var, val);
     }
     if (vars || vals)
         li_error("wrong number of args", vars);

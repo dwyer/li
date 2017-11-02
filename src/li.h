@@ -37,8 +37,8 @@ typedef struct li_num_t li_num_t;
 typedef struct li_pair_t li_pair_t;
 typedef struct li_port_t li_port_t;
 typedef struct li_proc_obj li_proc_obj_t;
-typedef struct li_string_t li_string_t;
-typedef struct li_symbol li_symbol_t;
+typedef struct li_str_t li_str_t;
+typedef struct li_sym_t li_sym_t;
 typedef struct li_syntactic_closure_t li_syntactic_closure_t;
 typedef struct li_transformer_t li_transformer_t;
 
@@ -107,10 +107,10 @@ extern li_env_t *li_env_make(li_env_t *base);
 /* Destroys all objects that cannot be reached from the given environment. */
 extern void li_cleanup(li_env_t *env);
 
-extern int li_env_assign(li_env_t *env, li_symbol_t *var, li_object *val);
-extern void li_env_define(li_env_t *env, li_symbol_t *var, li_object *val);
-extern li_object *li_env_lookup(li_env_t *env, li_symbol_t *var);
-extern void li_env_append(li_env_t *env, li_symbol_t *var, li_object *val);
+extern int li_env_assign(li_env_t *env, li_sym_t *var, li_object *val);
+extern void li_env_define(li_env_t *env, li_sym_t *var, li_object *val);
+extern li_object *li_env_lookup(li_env_t *env, li_sym_t *var);
+extern void li_env_append(li_env_t *env, li_sym_t *var, li_object *val);
 extern li_env_t *li_env_extend(li_env_t *env, li_object *vars, li_object *vals);
 extern void li_setup_environment(li_env_t *env);
 
@@ -171,20 +171,20 @@ struct li_special_form_obj_t {
     li_special_form_t *special_form;
 };
 
-extern li_string_t *li_string_make(const char *s);
-extern li_string_t *li_string_copy(li_string_t *str);
-extern void li_string_free(li_string_t *str);
-extern char *li_string_bytes(li_string_t *str);
-extern li_character_t li_string_ref(li_string_t *str, int k);
-extern size_t li_string_length(li_string_t *str);
-extern li_cmp_t li_string_cmp(li_string_t *st1, li_string_t *st2);
-extern li_string_t *li_string_append(li_string_t *str1, li_string_t *str2);
+extern li_str_t *li_string_make(const char *s);
+extern li_str_t *li_string_copy(li_str_t *str);
+extern void li_string_free(li_str_t *str);
+extern char *li_string_bytes(li_str_t *str);
+extern li_character_t li_string_ref(li_str_t *str, int k);
+extern size_t li_string_length(li_str_t *str);
+extern li_cmp_t li_string_cmp(li_str_t *st1, li_str_t *st2);
+extern li_str_t *li_string_append(li_str_t *str1, li_str_t *str2);
 
-struct li_symbol {
+struct li_sym_t {
     LI_OBJ_HEAD;
     char *string;
-    li_symbol_t *next;
-    li_symbol_t *prev;
+    li_sym_t *next;
+    li_sym_t *prev;
     unsigned int hash;
 };
 
@@ -241,15 +241,15 @@ extern void li_destroy(li_object *obj);
 /** Object constructors. */
 
 extern li_object *li_character(li_character_t c);
-extern li_object *li_lambda(li_symbol_t *name, li_object *vars, li_object *body,
+extern li_object *li_lambda(li_sym_t *name, li_object *vars, li_object *body,
         li_env_t *env);
 extern li_object *li_macro(li_object *vars, li_object *body,
         li_env_t *env);
-extern li_object *li_pair(li_object *car, li_object *cdr);
+extern li_pair_t *li_pair(li_object *car, li_object *cdr);
 extern li_port_t *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
 extern li_object *li_special_form(li_special_form_t *proc);
-extern li_object *li_symbol(const char *s);
+extern li_sym_t *li_symbol(const char *s);
 extern li_object *li_type_obj(const li_type_t *type);
 
 /*
@@ -264,7 +264,7 @@ extern li_object *li_vector(li_object *lst);
 #define li_boolean(p)                   ((p) ? li_true : li_false)
 
 /** Let cons be an alias for pair. */
-#define li_cons(car, cdr)               li_pair((car), (cdr))
+#define li_cons(car, cdr)               ((li_object *)li_pair((car), (cdr)))
 
 /** Predicates */
 #define li_is_eq(obj1, obj2)            ((void *)(obj1) == (void *)(obj2))
@@ -280,11 +280,12 @@ extern li_bool_t li_is_list(li_object *obj);
 extern int li_length(li_object *obj);
 
 /** Type casting. */
-#define li_to_character(obj)            ((li_character_obj_t *)(obj))->character
+#define li_chr_uint(obj)                ((li_character_obj_t *)(obj))->character
+#define li_to_character(obj)            li_chr_uint(obj)
 #define li_to_integer(obj)              (li_num_to_int(li_to_number((obj))))
 #define li_to_number(obj)               ((li_num_t *)(obj))
-#define li_to_string(obj)               ((li_string_t *)(obj))
-#define li_to_symbol(obj)               ((li_symbol_t *)(obj))->string
+#define li_to_string(obj)               ((li_str_t *)(obj))
+#define li_to_symbol(obj)               ((li_sym_t *)(obj))->string
 #define li_to_userdata(obj)             (obj)->data.userdata.v
 #define li_to_vector(obj)               ((li_vector_t *)(obj))
 #define li_to_type(obj)                 ((li_type_obj_t *)(obj))->val
@@ -415,8 +416,7 @@ extern void li_display(li_object *obj, FILE *fp);
 #define li_assert_symbol(arg)           li_assert_type(symbol, arg)
 
 #define li_define_primitive_procedure(env, name, proc) \
-    li_env_append(env, (li_symbol_t *)li_symbol(name), \
-            li_primitive_procedure(proc))
+    li_env_append(env, li_symbol(name), li_primitive_procedure(proc))
 
 extern void li_parse_args(li_object *args, const char *fmt, ...);
 

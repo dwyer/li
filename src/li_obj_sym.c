@@ -4,9 +4,9 @@
 
 #define HASHSIZE    1024
 
-static li_symbol_t *_syms[HASHSIZE] = { NULL };
+static li_sym_t *_syms[HASHSIZE] = { NULL };
 
-static void deinit(li_symbol_t *obj)
+static void deinit(li_sym_t *obj)
 {
     if (obj->next)
         obj->next->prev = obj->prev;
@@ -17,7 +17,7 @@ static void deinit(li_symbol_t *obj)
     free(li_to_symbol(obj));
 }
 
-static void write(li_symbol_t *obj, FILE *f)
+static void write(li_sym_t *obj, FILE *f)
 {
     fprintf(f, "%s", obj->string);
 }
@@ -28,27 +28,27 @@ const li_type_t li_type_symbol = {
     .write = (void (*)(li_object *, FILE *))write,
 };
 
-extern li_object *li_symbol(const char *s)
+extern li_sym_t *li_symbol(const char *s)
 {
-    li_symbol_t *obj;
+    li_sym_t *sym;
     unsigned int i, hash;
     for (i = hash = 0; s[i]; i++)
         hash = hash * 31 + s[i];
     hash = hash % HASHSIZE;
     if (_syms[hash])
-        for (obj = _syms[hash]; obj; obj = obj->next)
-            if (strcmp(li_to_symbol(obj), s) == 0)
-                return (li_object *)obj;
-    obj = li_allocate(NULL, 1, sizeof(*obj));
-    li_object_init((li_object *)obj, &li_type_symbol);
-    obj->string = li_strdup(s);
-    obj->prev = NULL;
-    obj->next = _syms[hash];
-    if (obj->next)
-        obj->next->prev = obj;
-    obj->hash = hash;
-    _syms[hash] = obj;
-    return (li_object *)obj;
+        for (sym = _syms[hash]; sym; sym = sym->next)
+            if (strcmp(li_to_symbol(sym), s) == 0)
+                return sym;
+    sym = li_allocate(NULL, 1, sizeof(*sym));
+    li_object_init((li_object *)sym, &li_type_symbol);
+    sym->string = li_strdup(s);
+    sym->prev = NULL;
+    sym->next = _syms[hash];
+    if (sym->next)
+        sym->next->prev = sym;
+    sym->hash = hash;
+    _syms[hash] = sym;
+    return sym;
 }
 
 /*
@@ -62,7 +62,7 @@ static li_object *p_is_symbol(li_object *args) {
 }
 
 static li_object *p_symbol_to_string(li_object *args) {
-    li_symbol_t *sym;
+    li_sym_t *sym;
     li_parse_args(args, "y", &sym);
     return (li_object *)li_string_make(li_to_symbol(sym));
 }

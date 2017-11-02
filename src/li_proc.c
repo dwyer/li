@@ -14,7 +14,7 @@
  *     n = li_num_t
  *     o = li_object
  *     p = li_object (pair)
- *     s = li_string_t
+ *     s = li_str_t
  *     t = li_type_obj_t
  *     v = li_object (vector)
  *     . = the rest of the args
@@ -70,11 +70,11 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         case 'p':
             li_assert_pair(obj);
-            *va_arg(ap, li_object **) = obj;
+            *va_arg(ap, li_pair_t **) = (li_pair_t *)obj;
             break;
         case 's':
             li_assert_string(obj);
-            *va_arg(ap, li_string_t **) = li_to_string(obj);
+            *va_arg(ap, li_str_t **) = li_to_string(obj);
             break;
         case 't':
             if (li_type(obj) != &li_type_type)
@@ -87,7 +87,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         case 'y':
             li_assert_symbol(obj);
-            *va_arg(ap, li_symbol_t **) = (li_symbol_t *)obj;
+            *va_arg(ap, li_sym_t **) = (li_sym_t *)obj;
             break;
         default:
             break;
@@ -112,7 +112,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
  * which will be printed.
  */
 static li_object *p_error(li_object *args) {
-    li_string_t *msg;
+    li_str_t *msg;
     li_object *irritants;
 
     li_parse_args(args, "s.", &msg, &irritants);
@@ -320,7 +320,7 @@ static li_object *p_exit(li_object *args)
 }
 
 static li_object *p_get_environment_variable(li_object *args) {
-    li_string_t *str;
+    li_str_t *str;
     char *val;
     li_parse_args(args, "s", &str);
     if ((val = getenv(li_string_bytes(str))))
@@ -372,10 +372,9 @@ static li_object *p_isa(li_object *args)
 }
 
 #define define_var(env, name, obj) \
-    li_env_append(env, (li_symbol_t *)li_symbol(name), obj);
-
+    li_env_append(env, li_symbol(name), obj)
 #define define_type(env, name, type) \
-    define_var(env, name, li_type_obj(type));
+    define_var(env, name, li_type_obj(type))
 
 extern void li_setup_environment(li_env_t *env) {
     define_var(env, "true", li_true);

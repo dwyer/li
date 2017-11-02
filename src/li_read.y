@@ -76,11 +76,6 @@ extern li_object *li_read(FILE *fp)
     return obj;
 }
 
-extern li_object *li_port_read_obj(li_port_t *port)
-{
-    return li_read(port->fp);
-}
-
 static void yyerror(char *s)
 {
     li_error(s, (li_object *)li_num_with_int(yylineno));

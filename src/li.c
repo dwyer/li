@@ -3,7 +3,7 @@
 #include "li.h"
 #include "li_sock.h"
 
-#define ARGV_SYMBOL ((li_symbol_t *)li_symbol("*args*"))
+#define ARGV_SYMBOL li_symbol("*args*")
 
 li_object *li_prompt(FILE *fin, FILE *fout, const char *s);
 void li_repl(li_env_t *env);
@@ -17,7 +17,7 @@ li_object *li_prompt(FILE *fin, FILE *fout, const char *s) {
 
 void li_repl(li_env_t *env) {
     li_object *exp;
-    li_symbol_t *var = (li_symbol_t *)li_symbol("_");
+    li_sym_t *var = (li_sym_t *)li_symbol("_");
     li_env_append(env, var, NULL);
     while ((exp = li_prompt(stdin, stdout, "> ")) != li_eof) {
         if (exp) {

@@ -36,6 +36,11 @@ extern li_port_t *li_port(const char *filename, const char *mode)
     return li_port_fp(fp);
 }
 
+extern li_object *li_port_read_obj(li_port_t *port)
+{
+    return li_read(port->fp);
+}
+
 extern void li_port_printf(FILE *port, const char *fmt, ...)
 {
     char *s = NULL;
@@ -102,7 +107,7 @@ static li_object *p_is_port(li_object *args) {
  */
 static li_object *p_open(li_object *args) {
     li_port_t *port;
-    li_string_t *str_filename, *str_mode;
+    li_str_t *str_filename, *str_mode;
     const char *filename, *mode;
     if (li_length(args) == 2) {
         li_parse_args(args, "ss", &str_filename, &str_mode);

@@ -26,7 +26,7 @@ const li_type_t li_type_socket = {
 static li_object *p_make_client_socket(li_object *args)
 {
     li_socket_t *obj;
-    li_string_t *node, *service;
+    li_str_t *node, *service;
     struct hostent *hostent;
     int ai_family = AF_INET;
     int ai_socktype = SOCK_STREAM;
@@ -78,7 +78,7 @@ static li_object *p_socket_accept(li_object *args)
 static li_object *p_socket_send(li_object *args)
 {
     li_object *obj;
-    li_string_t *str;
+    li_str_t *str;
     char *message;
     int bytes, sent, total;
     li_parse_args(args, "os", &obj, &str);
@@ -129,7 +129,7 @@ static li_object *p_socket_close(li_object *args)
 }
 
 #define li_def_var(env, name, obj) \
-    li_env_append(env, (li_symbol_t *)li_symbol(name), obj)
+    li_env_append(env, li_symbol(name), obj)
 
 #define li_def_fun(env, name, proc) \
     li_def_var(env, name, li_primitive_procedure(proc))
