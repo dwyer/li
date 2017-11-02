@@ -199,6 +199,29 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
     return li_eval(li_cons(proc, head), li_proc_env(proc));
 }
 
+static li_object *expand_syntax(li_environment_t *env, li_object *names,
+        li_object *form)
+{
+    if (li_is_pair(form)) {
+        return li_cons(
+                expand_syntax(env, names, li_car(form)),
+                expand_syntax(env, names, li_cdr(form)));
+    } else if (li_is_symbol(form)) {
+        while (names) {
+            if (li_is_eq(form, li_car(names)))
+                return form;
+            names = li_cdr(names);
+        }
+        return li_environment_lookup(env, (li_symbol_t *)form);
+    }
+    return form;
+}
+
+extern li_object *li_syntactic_closure_expand(li_syntactic_closure_t *sc)
+{
+    return expand_syntax(sc->env, sc->free_names, sc->form);
+}
+
 extern li_object *li_eval(li_object *expr, li_environment_t *env) {
     int done = 0;
     while (!li_is_self_evaluating(expr) && !done) {
@@ -240,6 +263,30 @@ extern li_object *li_eval(li_object *expr, li_environment_t *env) {
                 args = list_of_values(args, env);
                 expr = li_to_type(proc)->proc(args);
                 done = 1;
+            } else if (li_is_type(proc, &li_type_transformer)) {
+                /* fprintf(stderr, "OLD EXPR "); */
+                /* li_print(expr, stderr); */
+                expr = li_cons(expr, NULL);
+                expr = li_cons((li_object *)li_symbol("quote"), expr);
+                args = li_cons((li_object *)((li_transformer_t *)proc)->env, NULL);
+                args = li_cons((li_object *)env, args);
+                args = li_cons(expr, args);
+                expr = li_cons((li_object *)((li_transformer_t *)proc)->proc, args);
+                /* fprintf(stderr, "AUX EXPR "); */
+                /* li_print(expr, stderr); */
+                expr = li_eval(expr, env);
+                /* fprintf(stderr, "NEW EXPR "); */
+                /* li_print(expr, stderr); */
+            } else if (li_is_type(proc, &li_type_syntactic_closure)) {
+                /* fprintf(stderr, "OLD EXPR "); */
+                /* li_print(expr, stderr); */
+                proc = expand_syntax(
+                        ((li_syntactic_closure_t *)proc)->env,
+                        ((li_syntactic_closure_t *)proc)->free_names,
+                        ((li_syntactic_closure_t *)proc)->form);
+                expr = li_cons(proc, args);
+                /* fprintf(stderr, "NEW EXPR "); */
+                /* li_print(expr, stderr); */
             } else {
                 li_error("not applicable", proc);
             }
@@ -268,7 +315,7 @@ static li_object *eval_quasiquote(li_object *expr, li_environment_t *env)
     if (li_is_pair(li_car(expr))
             && li_is_eq(li_caar(expr), li_symbol("unquote-splicing"))) {
         li_object *head, *tail;
-        li_parse_args(li_cdar(expr), "l", &head);
+        li_parse_args(li_cdar(expr), "o", &head);
         head = li_eval(head, env);
         tail = eval_quasiquote(li_cdr(expr), env);
         if (!head)

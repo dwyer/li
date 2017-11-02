@@ -48,6 +48,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
         case 'e':
             li_assert_type(environment, obj);
             *va_arg(ap, li_environment_t **) = (li_environment_t *)obj;
+            break;
         case 'I':
             li_assert_integer(obj);
             *va_arg(ap, li_int_t *) = li_to_integer(obj);

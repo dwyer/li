@@ -43,6 +43,7 @@ typedef struct {
     li_object *(*ref)(li_object *, int);
     li_object *(*set)(li_object *, int, li_object *);
     li_object *(*proc)(li_object *);
+    li_object *(*apply)(li_object *, li_object *);
 } li_type_t;
 
 extern const li_type_t li_type_character;
@@ -55,6 +56,8 @@ extern const li_type_t li_type_procedure;
 extern const li_type_t li_type_special_form;
 extern const li_type_t li_type_string;
 extern const li_type_t li_type_symbol;
+extern const li_type_t li_type_syntactic_closure;
+extern const li_type_t li_type_transformer;
 extern const li_type_t li_type_type;
 extern const li_type_t li_type_vector;
 
@@ -194,6 +197,24 @@ struct li_symbol {
     li_symbol_t *next;
     li_symbol_t *prev;
     unsigned int hash;
+};
+
+typedef struct li_syntactic_closure_t li_syntactic_closure_t;
+extern li_object *li_syntactic_closure_expand(li_syntactic_closure_t *sc);
+
+struct li_syntactic_closure_t {
+    LI_OBJ_HEAD;
+    li_environment_t *env;
+    li_object *free_names;
+    li_object *form;
+};
+
+typedef struct li_transformer_t li_transformer_t;
+
+struct li_transformer_t {
+    LI_OBJ_HEAD;
+    li_proc_obj_t *proc;
+    li_environment_t *env;
 };
 
 typedef struct {

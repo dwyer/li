@@ -86,7 +86,8 @@ extern li_object *li_environment_lookup(li_environment_t *env, li_symbol_t *var)
     return li_null;
 }
 
-extern void li_append_variable(li_symbol_t *var, li_object *val, li_environment_t *env)
+extern void li_append_variable(li_symbol_t *var, li_object *val,
+        li_environment_t *env)
 {
     if (!li_is_symbol(var))
         li_error("not a variable", (li_object *)var);
@@ -102,15 +103,25 @@ extern void li_append_variable(li_symbol_t *var, li_object *val, li_environment_
 extern li_environment_t *li_environment_extend(li_environment_t *env,
         li_object *vars, li_object *vals)
 {
-    for (env = li_environment(env); vars;
-            vars = li_cdr(vars), vals = li_cdr(vals)) {
+    env = li_environment(env);
+    while (vars) {
+        li_object *var, *val;
         if (li_is_symbol(vars)) {
             li_append_variable((li_symbol_t *)vars, vals, env);
             return env;
         }
         if (!vals)
             break;
-        li_append_variable((li_symbol_t *)li_car(vars), li_car(vals), env);
+        li_parse_args(vars, "o.", &var, &vars);
+        li_parse_args(vals, "o.", &val, &vals);
+        if (li_is_type(var, &li_type_syntactic_closure)) {
+            li_assert_symbol(((li_syntactic_closure_t *)var)->form);
+            li_append_variable(
+                    (li_symbol_t *)((li_syntactic_closure_t *)var)->form,
+                    val,
+                    ((li_syntactic_closure_t *)var)->env);
+        } else
+            li_append_variable((li_symbol_t *)var, val, env);
     }
     if (vars || vals)
         li_error("wrong number of args", vars);

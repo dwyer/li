@@ -7,7 +7,7 @@ extern void li_write(li_object *obj, FILE *fp)
     if (li_type(obj)->write) {
         li_type(obj)->write(obj, fp);
     } else if (li_type(obj)->name) {
-        fprintf(fp, "#[%s]", obj->type->name);
+        fprintf(fp, "#[%s @%p]", obj->type->name, (void *)obj);
     } else {
         fprintf(fp, "#[unknown-type]");
     }
