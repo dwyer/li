@@ -27,21 +27,21 @@ static li_object *ref(li_object *str, int k)
     return li_character(li_string_ref(li_to_string(str), k));
 }
 
-static void display(li_object *obj, FILE *fp)
+static void display(li_str_t *str, li_port_t *port)
 {
-    fprintf(fp, "%s", li_string_bytes(li_to_string(obj)));
+    li_port_printf(port, "%s", li_string_bytes(str));
 }
 
-static void write(li_object *obj, FILE *fp)
+static void write(li_str_t *str, li_port_t *port)
 {
-    fprintf(fp, "\"%s\"", li_string_bytes(li_to_string(obj)));
+    li_port_printf(port, "\"%s\"", li_string_bytes(str));
 }
 
 const li_type_t li_type_string = {
     .name = "string",
     .deinit = deinit,
-    .write = write,
-    .display = display,
+    .write = (li_write_f *)write,
+    .display = (li_write_f *)display,
     .compare = compare,
     .length = length,
     .ref = ref,

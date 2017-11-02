@@ -22,18 +22,16 @@ static void mark(li_object *obj)
         li_mark(li_vector_ref(vec, k));
 }
 
-static void write(li_object *obj, FILE *fp)
+static void write(li_vector_t *vec, li_port_t *port)
 {
-    li_vector_t *vec;
     int k;
-    vec = li_to_vector(obj);
-    fprintf(fp, "[");
+    li_port_printf(port, "[");
     for (k = 0; k < li_vector_length(vec); k++) {
-        li_write(li_vector_ref(vec, k), fp);
+        li_port_write(port, li_vector_ref(vec, k));
         if (k < li_vector_length(vec) - 1)
-            fprintf(fp, " ");
+            li_port_printf(port, " ");
     }
-    fprintf(fp, "]");
+    li_port_printf(port, "]");
 }
 
 static int length(li_object *vec)
@@ -56,7 +54,7 @@ const li_type_t li_type_vector = {
     .mark = mark,
     .proc = proc,
     .deinit = deinit,
-    .write = write,
+    .write = (li_write_f *)write,
     .length = length,
     .ref = ref,
     .set = set,

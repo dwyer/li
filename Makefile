@@ -28,7 +28,7 @@ LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_nat.o li_object.o \
 	     li_obj_chr.o li_obj_env.o li_obj_mac.o li_obj_num.o li_obj_pair.o \
 	     li_obj_port.o li_obj_proc.o li_obj_spf.o li_obj_str.o \
 	     li_obj_sym.o li_obj_typ.o li_obj_vec.o li_proc.o li_rat.o \
-	     li_write.o li_sock.o
+	     li_sock.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 LI_OPT_OBJS_=lib_bytevector.o
 LI_OPT_OBJS=$(addprefix $(OBJDIR)/, $(LI_OPT_OBJS_))
@@ -105,4 +105,3 @@ $(OBJDIR)/li_rat.o: src/li_rat.c src/li.h
 $(OBJDIR)/li_read.o: src/li_read.c src/li.h
 $(OBJDIR)/li_sock.o: src/li_sock.c src/li.h
 $(OBJDIR)/li_str.o: src/li_str.c src/li.h
-$(OBJDIR)/li_write.o: src/li_write.c src/li.h

@@ -1,42 +1,31 @@
 #include "li.h"
 
-static void mark(li_object *obj)
+static void pair_mark(li_object *obj)
 {
     li_mark(li_car(obj));
     li_mark(li_cdr(obj));
 }
 
-static void write(li_object *obj, FILE *f)
+static void pair_write(li_object *obj, li_port_t *port)
 {
-    li_object *iter;
-    if (li_is_null(obj)) {
-        fprintf(f, "()");
-        return;
-    } else if (li_is_locked(obj)) {
-        fprintf(f, "...");
-        return;
-    }
-    li_lock(obj);
-    iter = obj;
-    fprintf(f, "(");
+    li_object *iter = obj;
+    li_port_printf(port, "(");
     do {
-        li_write(li_car(iter), f);
+        li_port_write(port, li_car(iter));
         iter = li_cdr(iter);
         if (iter)
-            fprintf(f, " ");
+            li_port_printf(port, " ");
     } while (li_is_pair(iter) && !li_is_locked(iter));
     if (iter) {
-        fprintf(f, ". ");
-        li_write(iter, f);
+        li_port_printf(port, ". ");
+        li_port_write(port, iter);
     }
-    fprintf(f, ")");
-    li_unlock(obj);
+    li_port_printf(port, ")");
 }
 
-static li_object *ref(li_object *lst, int k)
+static li_object *pair_ref(li_object *lst, int k)
 {
-    li_object *rst;
-    rst = lst;
+    li_object *rst = lst;
     while (k--) {
         if (rst && !li_is_pair(rst))
             li_error("not a list", lst);
@@ -45,7 +34,7 @@ static li_object *ref(li_object *lst, int k)
     return li_car(rst);
 }
 
-static li_object *set(li_object *lst, int k, li_object *obj)
+static li_object *pair_set(li_object *lst, int k, li_object *obj)
 {
     while (k-- >= 0)
         lst = li_cdr(lst);
@@ -54,11 +43,11 @@ static li_object *set(li_object *lst, int k, li_object *obj)
 
 const li_type_t li_type_pair = {
     .name = "pair",
-    .mark = mark,
-    .write = write,
+    .mark = pair_mark,
+    .write = pair_write,
     .length = li_length,
-    .ref = ref,
-    .set = set,
+    .ref = pair_ref,
+    .set = pair_set,
 };
 
 extern li_pair_t *li_pair(li_object *car, li_object *cdr)

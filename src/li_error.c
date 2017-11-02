@@ -31,17 +31,16 @@ void li_stack_trace_pop(void)
 
 void li_error(const char *msg, li_object *args) {
     int i;
-
-    fprintf(stderr, "# error: ");
+    li_port_printf(li_port_stderr, "# error: ");
     if (msg)
-        fprintf(stderr, "%s: ", msg);
+        li_port_printf(li_port_stderr, "%s: ", msg);
     if (args)
-        li_write(args, stderr);
-    li_newline(stderr);
+        li_port_write(li_port_stderr, args);
+    li_newline(li_port_stderr);
     for (i = 0; i < st.siz; i++) {
-        fprintf(stderr, "\t");
-        li_write(st.exprs[i], stderr);
-        li_newline(stderr);
+        li_port_printf(li_port_stderr, "\t");
+        li_port_write(li_port_stderr, st.exprs[i]);
+        li_newline(li_port_stderr);
     }
     st.siz = 0;
     longjmp(buf, 1);
@@ -57,11 +56,11 @@ void li_error_f(const char *msg, ...) {
         case '~':
             switch (*msg) {
             case 'a':
-                li_display(va_arg(ap, li_object *), stderr);
+                li_port_display(li_port_stderr, va_arg(ap, li_object *));
                 ++msg;
                 break;
             case 's':
-                li_write(va_arg(ap, li_object *), stderr);
+                li_port_write(li_port_stderr, va_arg(ap, li_object *));
                 ++msg;
                 break;
             default:
@@ -72,6 +71,7 @@ void li_error_f(const char *msg, ...) {
         }
     }
     va_end(ap);
+    li_newline(li_port_stderr);
     longjmp(buf, 1);
 }
 

@@ -14,15 +14,14 @@ struct li_num_t {
     } real;
 };
 
-static void write(li_object *obj, FILE *f)
+static void write(li_num_t *num, li_port_t *port)
 {
-    li_num_t *num = li_to_number(obj);
     if (!li_num_is_exact(num))
-        li_port_printf(f, "%f", li_num_to_dec(num));
+        li_port_printf(port, "%f", li_num_to_dec(num));
     else if (li_num_is_integer(num))
-        li_port_printf(f, "%d", li_num_to_int(num));
+        li_port_printf(port, "%d", li_num_to_int(num));
     else
-        li_port_printf(f, "%s%ld/%ld",
+        li_port_printf(port, "%s%ld/%ld",
                 li_rat_is_negative(num->real.exact) ? "-" : "",
                 li_nat_to_int(li_rat_num(num->real.exact)),
                 li_nat_to_int(li_rat_den(num->real.exact)));
@@ -30,7 +29,7 @@ static void write(li_object *obj, FILE *f)
 
 const li_type_t li_type_number = {
     .name = "number",
-    .write = write,
+    .write = (li_write_f *)write,
     .compare = (li_cmp_t (*)(li_object *obj1, li_object *obj2))li_num_cmp,
 };
 

@@ -2,38 +2,65 @@
 
 #include <stdarg.h>
 #include <string.h>
+#include <unistd.h>
 
 #define to_port(obj)                 ((li_port_t *)(obj))
 
-/* Ports */
+enum {
+    IO_FILE         = 0,
+    IO_TEXT         = 1,
+    IO_BIN          = 2,
+    IO_INPUT        = 4,
+    IO_OUTPUT       = 8,
+};
+
+struct li_port_t {
+    LI_OBJ_HEAD;
+    int fd;
+    FILE *fp;
+    unsigned int flags;
+    li_str_t *name;
+};
 
 static li_port_t port_std[3] = {
-    {.type = &li_type_port, .fd = 0, .name ="<stdin>"},
-    {.type = &li_type_port, .fd = 1, .name ="<stdout>"},
-    {.type = &li_type_port, .fd = 2, .name ="<stderr>"},
+    {.type = &li_type_port, .fd = 0, .flags = IO_FILE | IO_INPUT},
+    {.type = &li_type_port, .fd = 1, .flags = IO_FILE | IO_OUTPUT},
+    {.type = &li_type_port, .fd = 2, .flags = IO_FILE | IO_OUTPUT},
 };
 
 li_port_t *li_port_stdin = &port_std[0];
 li_port_t *li_port_stdout = &port_std[1];
 li_port_t *li_port_stderr = &port_std[2];
 
-extern li_port_t *li_port_fp(FILE *fp)
+static li_port_t *li_port_new(void)
 {
     li_port_t *port = li_allocate(NULL, 1, sizeof(*port));
     li_object_init((li_object *)port, &li_type_port);
-    port->fp = fp;
+    port->fp = NULL;
+    port->fd = -1;
+    port->flags = 0;
+    port->name = NULL;
     return port;
 }
 
-extern li_port_t *li_port(const char *filename, const char *mode)
+extern li_port_t *li_port_open_input_file(li_str_t *filename)
 {
-    FILE *fp = fopen(filename, mode);
-    li_port_t *port;
-    if (!fp)
-        li_error("bad filename", NULL);
-    port = li_port_fp(fp);
-    port->name = li_strdup(filename);
-    return li_port_fp(fp);
+    li_port_t *port = li_port_new();
+    if (!(port->fp = fopen(li_string_bytes(filename), "r")))
+        li_error_f("could not open input file: ~a", filename);
+    port->flags = IO_INPUT | IO_FILE;
+    port->name = filename;
+    return port;
+}
+
+extern li_port_t *li_port_open_output_file(li_str_t *filename)
+{
+    li_port_t *port = li_port_new();
+    if (!(port->fp = fopen(li_string_bytes(filename), "w")))
+        li_error_f("could not open output file: ~a", filename);
+    port->flags = IO_OUTPUT | IO_FILE;
+    port->name = filename;
+    return port;
 }
 
 extern li_object *li_port_read_obj(li_port_t *port)
@@ -41,25 +68,41 @@ extern li_object *li_port_read_obj(li_port_t *port)
     return li_read(port->fp);
 }
 
-extern void li_port_printf(FILE *port, const char *fmt, ...)
+extern void li_port_write(li_port_t *port, li_object *obj)
 {
-    char *s = NULL;
-    va_list ap;
-    va_start(ap, fmt);
-    vasprintf(&s, fmt, ap);
-    va_end(ap);
-    fprintf(port, "%s", s);
-    free(s);
+    if (obj == NULL) {
+        li_port_printf(port, "()");
+    } else if (li_type(obj)->write) {
+        li_type(obj)->write(obj, port);
+    } else if (li_type(obj)->name) {
+        li_port_printf(port, "#[%s @%p]", obj->type->name, (void *)obj);
+    } else {
+        li_port_printf(port, "#[unknown-type]");
+    }
 }
 
-extern void li_port_write(FILE *fp, li_object *obj)
+extern void li_port_display(li_port_t *port, li_object *obj)
 {
-    if (li_type(obj)->write) {
-        li_type(obj)->write(obj, fp);
-    } else if (li_type(obj)->name) {
-        fprintf(fp, "#[%s @%p]", obj->type->name, (void *)obj);
+    if (obj && li_type(obj)->display) {
+        li_type(obj)->display(obj, port);
     } else {
-        fprintf(fp, "#[unknown-type]");
+        li_port_write(port, obj);
+    }
+}
+
+extern void li_port_printf(li_port_t *port, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    va_end(ap);
+    if (port->fp) {
+        vfprintf(port->fp, fmt, ap);
+    } else if (port->fd >= 0) {
+        char *s = NULL;
+        int n;
+        n = vasprintf(&s, fmt, ap);
+        write(port->fd, s, n);
+        free(s);
     }
 }
 
@@ -68,29 +111,39 @@ extern void li_port_close(li_port_t *port)
     if (port->fp) {
         fclose(port->fp);
         port->fp = NULL;
+    } else if (port->fd > 2) {
+        close(port->fd);
+        port->fd = -1;
     }
+    port->flags &= ~IO_INPUT;
+    port->flags &= ~IO_OUTPUT;
+}
+
+static void mark(li_port_t *port)
+{
+    li_mark((li_object *)port->name);
 }
 
 static void deinit(li_port_t *port)
 {
-    if (port == li_port_stdin || port == li_port_stdout
+    if (port == li_port_stdin
+            || port == li_port_stdout
             || port == li_port_stderr) {
         li_unlock(port);
         return;
     }
-    if (port->name)
-        free(port->name);
 }
 
-static void write(li_port_t *obj, FILE *port)
+static void writer(li_port_t *obj, li_port_t *port)
 {
     li_port_printf(port, "#[port \"%s\"]", obj->name);
 }
 
 const li_type_t li_type_port = {
     .name = "port",
-    .deinit = (void (*)(li_object *))deinit,
-    .write = (li_write_f *)write,
+    .mark = (li_mark_f *)mark,
+    .deinit = (li_deinit_f *)deinit,
+    .write = (li_write_f *)writer,
 };
 
 /*
@@ -98,34 +151,62 @@ const li_type_t li_type_port = {
  * Returns true is obj is a port, false otherwise.
  */
 static li_object *p_is_port(li_object *args) {
-    li_assert_nargs(1, args);
-    return li_boolean(li_is_port(li_car(args)));
+    li_object *obj;
+    li_parse_args(args, "o", &obj);
+    return li_boolean(li_is_port(obj));
+}
+
+static li_object *p_is_input_port(li_object *args)
+{
+    li_port_t *port;
+    li_parse_args(args, "r", &port);
+    return li_boolean(port->flags & IO_INPUT);
+}
+
+static li_object *p_is_output_port(li_object *args)
+{
+    li_port_t *port;
+    li_parse_args(args, "r", &port);
+    return li_boolean(port->flags & IO_OUTPUT);
+}
+
+static li_object *p_is_input_port_open(li_object *args)
+{
+    li_port_t *port;
+    li_parse_args(args, "r", &port);
+    return li_boolean(port->flags & IO_INPUT);
+}
+
+static li_object *p_is_output_port_open(li_object *args)
+{
+    li_port_t *port;
+    li_parse_args(args, "r", &port);
+    return li_boolean(port->flags & IO_OUTPUT);
 }
 
 /*
- * (open filename mode)
+ * (open-input-file filename)
  */
-static li_object *p_open(li_object *args) {
-    li_port_t *port;
-    li_str_t *str_filename, *str_mode;
-    const char *filename, *mode;
-    if (li_length(args) == 2) {
-        li_parse_args(args, "ss", &str_filename, &str_mode);
-        mode = li_string_bytes(str_mode);
-    } else {
-        li_parse_args(args, "s", &str_filename);
-        mode = "r";
-    }
-    filename = li_string_bytes(str_filename);
-    if (!(port = li_port(li_string_bytes(str_filename), mode)))
-        li_error_f("cannot open file ~s", str_filename);
-    return (li_object *)port;
+static li_object *p_open_input_file(li_object *args) {
+    li_str_t *filename;
+    li_parse_args(args, "s", &filename);
+    return (li_object *)li_port_open_input_file(filename);
 }
 
-static li_object *p_close(li_object *args) {
+/*
+ * (open-output-file filename)
+ */
+static li_object *p_open_output_file(li_object *args) {
+    li_str_t *filename;
+    li_parse_args(args, "s", &filename);
+    return (li_object *)li_port_open_output_file(filename);
+}
+
+static li_object *p_close_port(li_object *args) {
     li_assert_nargs(1, args);
     li_assert_port(li_car(args));
-    return (li_object *)li_num_with_int(fclose(to_port(li_car(args))->fp));
+    li_port_close((li_port_t *)li_car(args));
+    return NULL;
 }
 
 /*
@@ -133,27 +214,25 @@ static li_object *p_close(li_object *args) {
  * Reads and returns the next evaluative object.
  */
 static li_object *p_read(li_object *args) {
-    FILE *port;
-    port = stdin;
+    FILE *fp = stdin;
     if (args) {
         li_assert_nargs(1, args);
         li_assert_port(li_car(args));
-        port = to_port(li_car(args))->fp;
+        fp = to_port(li_car(args))->fp;
     }
-    return li_read(port);
+    return li_read(fp);
 }
 
 static li_object *p_read_char(li_object *args) {
     int c;
-    FILE *port;
-    port = stdin;
+    FILE *fp = stdin;
     if (args) {
         li_assert_nargs(1, args);
         li_assert_port(li_car(args));
-        port = to_port(li_car(args))->fp;
+        fp = to_port(li_car(args))->fp;
     }
-    if ((c = getc(port)) == '\n')
-        c = getc(port);
+    if ((c = getc(fp)) == '\n')
+        c = getc(fp);
     if (c == EOF)
         return li_eof;
     return li_character(c);
@@ -161,15 +240,14 @@ static li_object *p_read_char(li_object *args) {
 
 static li_object *p_peek_char(li_object *args) {
     int c;
-    FILE *port;
-    port = stdin;
+    FILE *fp = stdin;
     if (args) {
         li_assert_nargs(1, args);
         li_assert_port(li_car(args));
-        port = to_port(li_car(args))->fp;
+        fp = to_port(li_car(args))->fp;
     }
-    c = getc(port);
-    ungetc(c, port);
+    c = getc(fp);
+    ungetc(c, fp);
     return li_character(c);
 }
 
@@ -184,16 +262,16 @@ static li_object *p_is_eof_object(li_object *args) {
  * Displays an li_object. Always returns null.
  */
 static li_object *p_write(li_object *args) {
-    FILE *port = stdout;
+    li_port_t *port = li_port_stdout;
     if (li_length(args) == 2) {
         li_assert_nargs(2, args);
         li_assert_port(li_cadr(args));
-        port = to_port(li_cadr(args))->fp;
+        port = (li_port_t *)li_cadr(args);
     } else {
         li_assert_nargs(1, args);
     }
-    li_write(li_car(args), port);
-    return li_null;
+    li_port_write(port, li_car(args));
+    return NULL;
 }
 
 /*
@@ -201,16 +279,16 @@ static li_object *p_write(li_object *args) {
  * Displays an object. Always returns null.
  */
 static li_object *p_display(li_object *args) {
-    FILE *port = stdout;
+    li_port_t *port = li_port_stdout;
     if (li_length(args) == 2) {
         li_assert_nargs(2, args);
         li_assert_port(li_cadr(args));
-        port = to_port(li_cadr(args))->fp;
+        port = (li_port_t *)li_cadr(args);
     } else {
         li_assert_nargs(1, args);
     }
-    li_display(li_car(args), port);
-    return li_null;
+    li_port_display(port, li_car(args));
+    return NULL;
 }
 
 /*
@@ -218,31 +296,38 @@ static li_object *p_display(li_object *args) {
  * Displays a newline.
  */
 static li_object *p_newline(li_object *args) {
-    FILE *port = stdout;
+    li_port_t *port = li_port_stdout;
     if (args) {
         li_assert_nargs(1, args);
         li_assert_port(li_car(args));
-        port = to_port(li_car(args))->fp;
+        port = (li_port_t *)li_car(args);
     }
     li_newline(port);
-    return li_null;
+    return NULL;
 }
 
 static li_object *p_print(li_object *args) {
     for (; args; args = li_cdr(args)) {
-        li_display(li_car(args), stdout);
+        li_port_display(li_port_stdout, li_car(args));
         if (li_cdr(args))
-            li_display(li_character(' '), stdout);
+            li_port_display(li_port_stdout, li_character(' '));
     }
-    li_newline(stdout);
-    return li_null;
+    li_newline(li_port_stdout);
+    return NULL;
 }
 
 extern void li_define_port_functions(li_env_t *env)
 {
     li_define_primitive_procedure(env, "port?", p_is_port);
-    li_define_primitive_procedure(env, "open", p_open);
-    li_define_primitive_procedure(env, "close", p_close);
+    li_define_primitive_procedure(env, "input-port?", p_is_input_port);
+    li_define_primitive_procedure(env, "output-port?", p_is_output_port);
+    li_define_primitive_procedure(env, "input-port-open?", p_is_input_port_open);
+    li_define_primitive_procedure(env, "output-port-open?", p_is_output_port_open);
+    li_define_primitive_procedure(env, "open-input-file", p_open_input_file);
+    li_define_primitive_procedure(env, "open-output-file", p_open_output_file);
+    li_define_primitive_procedure(env, "close-port", p_close_port);
+    li_define_primitive_procedure(env, "close-input-port", p_close_port);
+    li_define_primitive_procedure(env, "close-output-port", p_close_port);
     li_define_primitive_procedure(env, "read", p_read);
     li_define_primitive_procedure(env, "read-char", p_read_char);
     li_define_primitive_procedure(env, "peek-char", p_peek_char);

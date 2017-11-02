@@ -5,15 +5,22 @@
 #define li_quote(expr) \
     li_cons((li_object *)li_symbol("quote"), li_cons(expr, NULL))
 
-static void sc_write(li_syntactic_closure_t *sc, FILE *fp)
+static void sc_mark(li_syntactic_closure_t *sc)
 {
-    fprintf(fp, "(%s ", sc->type->name);
-    li_write((li_object *)sc->env, fp);
-    fprintf(fp, " ");
-    li_write(sc->free_names, fp);
-    fprintf(fp, " ");
-    li_write(sc->form, fp);
-    fprintf(fp, ")");
+    li_mark((li_object *)sc->env);
+    li_mark(sc->free_names);
+    li_mark(sc->form);
+}
+
+static void sc_write(li_syntactic_closure_t *sc, li_port_t *port)
+{
+    li_port_printf(port, "(%s ", sc->type->name);
+    li_port_write(port, (li_object *)sc->env);
+    li_port_printf(port, " ");
+    li_port_write(port, sc->free_names);
+    li_port_printf(port, " ");
+    li_port_write(port, sc->form);
+    li_port_printf(port, ")");
 }
 
 static li_object *ts_apply(li_transformer_t *tran, li_object *args)
@@ -23,23 +30,20 @@ static li_object *ts_apply(li_transformer_t *tran, li_object *args)
             li_cons((li_object *)tran->env,
                 li_cons((li_object *)tran->env,
                     NULL)));
-    fprintf(stderr, "=> ts_apply\n");
-    fprintf(stderr, "expr = ");
-    li_print((li_object *)expr, stderr);
-    fprintf(stderr, "tran = ");
-    li_print((li_object *)tran, stderr);
-    fprintf(stderr, "args = ");
-    li_print((li_object *)args, stderr);
-    expr = li_apply((li_object *)tran->proc, args);
-    /* li_print((li_object *)args, stderr); */
-    return expr;
+    return li_apply((li_object *)tran->proc, args);
 }
 
-static void ts_write(li_transformer_t *tran, FILE *fp)
+static void ts_mark(li_transformer_t *tran)
 {
-    fprintf(fp, "#[transformer ");
-    li_write((li_object *)tran->proc, fp);
-    fprintf(fp, "]");
+    li_mark((li_object *)tran->proc);
+    li_mark((li_object *)tran->env);
+}
+
+static void ts_write(li_transformer_t *tran, li_port_t *port)
+{
+    li_port_printf(port, "#[transformer ");
+    li_port_write(port, (li_object *)tran->proc);
+    li_port_printf(port, "]");
 }
 
 const li_type_t li_type_special_form = {
@@ -48,12 +52,14 @@ const li_type_t li_type_special_form = {
 
 const li_type_t li_type_syntactic_closure = {
     .name = "syntactic-closure",
-    .write = (void (*)(li_object *, FILE *))sc_write,
+    .mark = (li_mark_f *)sc_mark,
+    .write = (li_write_f *)sc_write,
 };
 
 const li_type_t li_type_transformer = {
     .name = "transformer",
-    .write = (void (*)(li_object *, FILE *))ts_write,
+    .mark = (li_mark_f *)ts_mark,
+    .write = (li_write_f *)ts_write,
     .apply = (li_object *(*)(li_object *, li_object *))ts_apply,
 };
 
@@ -226,7 +232,6 @@ static li_object *m_if(li_object *seq, li_env_t *env) {
 static li_object *m_import(li_object *seq, li_env_t *env) {
     char *buf;
     size_t len;
-
     li_assert_nargs(1, seq);
     len = strlen(li_to_symbol(li_car(seq))) + 4;
     buf = malloc(len * sizeof(*buf));
@@ -363,8 +368,6 @@ static li_object *m_sc_macro_transformer(li_object *args, li_env_t *env)
     expr = li_eval(expr, env);
     li_assert_procedure(expr);
     tran = li_transformer_make((li_proc_obj_t *)expr, env);
-    fprintf(stderr, "=> m_sc_macro_transformer\n");
-    li_print((li_object *)tran, stderr);
     return (li_object *)tran;
 }
 

@@ -17,15 +17,15 @@ static void deinit(li_sym_t *obj)
     free(li_to_symbol(obj));
 }
 
-static void write(li_sym_t *obj, FILE *f)
+static void write(li_sym_t *obj, li_port_t *port)
 {
-    fprintf(f, "%s", obj->string);
+    li_port_printf(port, "%s", obj->string);
 }
 
 const li_type_t li_type_symbol = {
     .name = "symbol",
-    .deinit = (void (*)(li_object *))deinit,
-    .write = (void (*)(li_object *, FILE *))write,
+    .deinit = (li_deinit_f *)deinit,
+    .write = (li_write_f *)write,
 };
 
 extern li_sym_t *li_symbol(const char *s)

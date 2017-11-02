@@ -28,23 +28,23 @@ static void mark(li_object *obj)
     }
 }
 
-static void write(li_object *obj, FILE *f)
+static void write(li_proc_obj_t *proc, li_port_t *port)
 {
-    if (li_proc_prim(obj)) {
-        fprintf(f, "#[procedure <primitive>]");
+    if (li_proc_prim(proc)) {
+        li_port_printf(port, "#[procedure <primitive>]");
     } else {
-        fprintf(f, "#[lambda %s ", li_proc_name(obj)
-                ? li_string_bytes(li_to_string(li_proc_name(obj)))
+        li_port_printf(port, "#[lambda %s ", li_proc_name(proc)
+                ? li_string_bytes(li_to_string(li_proc_name(proc)))
                 : "\b");
-        li_write(li_proc_vars(obj), f);
-        fprintf(f, "]");
+        li_port_write(port, li_proc_vars(proc));
+        li_port_printf(port, "]");
     }
 }
 
 const li_type_t li_type_procedure = {
     .name = "procedure",
     .mark = mark,
-    .write = write,
+    .write = (li_write_f *)write,
 };
 
 extern li_object *li_lambda(li_sym_t *name, li_object *vars, li_object *body,

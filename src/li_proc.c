@@ -72,6 +72,10 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             li_assert_pair(obj);
             *va_arg(ap, li_pair_t **) = (li_pair_t *)obj;
             break;
+        case 'r':
+            li_assert_port(obj);
+            *va_arg(ap, li_port_t **) = (li_port_t *)obj;
+            break;
         case 's':
             li_assert_string(obj);
             *va_arg(ap, li_str_t **) = li_to_string(obj);

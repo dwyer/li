@@ -1,8 +1,8 @@
 #include "li.h"
 
-static void write(li_object *obj, FILE *fp)
+static void write(li_type_obj_t *obj, li_port_t *port)
 {
-    fprintf(fp, "#[type %s]", ((li_type_obj_t *)obj)->val->name);
+    li_port_printf(port, "#[type %s]", obj->val->name);
 }
 
 static li_object *proc(li_object *args)
@@ -14,7 +14,7 @@ static li_object *proc(li_object *args)
 
 const li_type_t li_type_type = {
     .name = "type",
-    .write = write,
+    .write = (li_write_f *)write,
     .proc = proc,
 };
 

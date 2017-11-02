@@ -16,16 +16,15 @@ li_object *li_prompt(FILE *fin, FILE *fout, const char *s) {
 }
 
 void li_repl(li_env_t *env) {
-    li_object *exp;
+    li_object *expr;
     li_sym_t *var = (li_sym_t *)li_symbol("_");
     li_env_append(env, var, NULL);
-    while ((exp = li_prompt(stdin, stdout, "> ")) != li_eof) {
-        if (exp) {
-            exp = li_eval(exp, env);
-            li_env_assign(env, var, exp);
-            if (exp) {
-                li_write(exp, stdout);
-                li_newline(stdout);
+    while ((expr = li_prompt(stdin, stdout, "> ")) != li_eof) {
+        if (expr) {
+            expr = li_eval(expr, env);
+            li_env_assign(env, var, expr);
+            if (expr) {
+                li_print(expr, li_port_stdout);
             }
         }
         li_cleanup(env);

@@ -14,8 +14,7 @@ LI_BIN=li
 LI_OBJS=li.o
 
 LI_LIB=libli.a
-LI_LIB_OBJS=li_read.o li_parse.o li_error.o li_eval.o li_object.o li_proc.o \
-	    li_write.o
+LI_LIB_OBJS=li_read.o li_parse.o li_error.o li_eval.o li_object.o li_proc.o
 
 ALL_OBJS=$(LI_LIB_OBJS) $(LI_OBJS)
 

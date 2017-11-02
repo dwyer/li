@@ -1,17 +1,17 @@
 #include "li.h"
 
-static void display(li_object *obj, FILE *f)
+static void display(li_character_obj_t *obj, li_port_t *port)
 {
     char buf[5] = {'\0'};
     li_chr_encode(li_to_character(obj), buf, 4);
-    fprintf(f, "%s", buf);
+    li_port_printf(port, "%s", buf);
 }
 
-static void write(li_object *obj, FILE *f)
+static void write(li_character_obj_t *obj, li_port_t *port)
 {
     char buf[5] = {'\0'};
     li_chr_encode(li_to_character(obj), buf, 4);
-    fprintf(f, "%%\\%s", buf);
+    li_port_printf(port, "%%\\%s", buf);
 }
 
 static li_cmp_t compare(li_object *obj1, li_object *obj2)
@@ -28,8 +28,8 @@ static li_cmp_t compare(li_object *obj1, li_object *obj2)
 
 const li_type_t li_type_character = {
     .name = "character",
-    .write = write,
-    .display = display,
+    .write = (li_write_f *)write,
+    .display = (li_write_f *)display,
     .compare = compare,
 };
 

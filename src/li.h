@@ -28,7 +28,17 @@ typedef enum {
     LI_CMP_GT = 1
 } li_cmp_t;
 
+typedef struct li_type_t li_type_t;
+
 typedef struct li_object li_object;
+
+#define LI_OBJ_HEAD \
+    const li_type_t *type; \
+    li_bool_t locked
+
+struct li_object {
+    LI_OBJ_HEAD;
+};
 
 typedef struct li_character_obj_t li_character_obj_t;
 typedef struct li_env_t li_env_t;
@@ -41,15 +51,19 @@ typedef struct li_str_t li_str_t;
 typedef struct li_sym_t li_sym_t;
 typedef struct li_syntactic_closure_t li_syntactic_closure_t;
 typedef struct li_transformer_t li_transformer_t;
+typedef struct li_type_obj_t li_type_obj_t;
+typedef struct li_vector_t li_vector_t;
 
 extern void li_mark(li_object *obj);
 
-typedef void li_write_f(li_object *, FILE *fp);
+typedef void li_mark_f(li_object *);
+typedef void li_deinit_f(li_object *);
+typedef void li_write_f(li_object *, li_port_t *);
 
-typedef struct {
+struct li_type_t {
     const char *name;
-    void (*mark)(li_object *);
-    void (*deinit)(li_object *);
+    li_mark_f *mark;
+    li_deinit_f *deinit;
     li_write_f *write;
     li_write_f *display;
     li_cmp_t (*compare)(li_object *, li_object *);
@@ -58,7 +72,11 @@ typedef struct {
     li_object *(*set)(li_object *, int, li_object *);
     li_object *(*proc)(li_object *);
     li_object *(*apply)(li_object *, li_object *);
-} li_type_t;
+};
+
+/* Type checking. */
+#define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
+#define li_is_type(obj, type)           ((obj) && li_type(obj) == (type))
 
 extern const li_type_t li_type_character;
 extern const li_type_t li_type_environment;
@@ -74,18 +92,6 @@ extern const li_type_t li_type_syntactic_closure;
 extern const li_type_t li_type_transformer;
 extern const li_type_t li_type_type;
 extern const li_type_t li_type_vector;
-
-#define LI_OBJ_HEAD \
-    const li_type_t *type; \
-    li_bool_t locked
-
-struct li_object {
-    LI_OBJ_HEAD;
-};
-
-/* Type checking. */
-#define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
-#define li_is_type(obj, type)           ((obj) && li_type(obj) == (type))
 
 /* Characters */
 
@@ -103,10 +109,6 @@ struct li_character_obj_t {
 /* environment */
 
 extern li_env_t *li_env_make(li_env_t *base);
-
-/* Destroys all objects that cannot be reached from the given environment. */
-extern void li_cleanup(li_env_t *env);
-
 extern int li_env_assign(li_env_t *env, li_sym_t *var, li_object *val);
 extern void li_env_define(li_env_t *env, li_sym_t *var, li_object *val);
 extern li_object *li_env_lookup(li_env_t *env, li_sym_t *var);
@@ -114,8 +116,10 @@ extern void li_env_append(li_env_t *env, li_sym_t *var, li_object *val);
 extern li_env_t *li_env_extend(li_env_t *env, li_object *vars, li_object *vals);
 extern void li_setup_environment(li_env_t *env);
 
-/* macros */
+/* Destroys all objects that cannot be reached from the given environment. */
+extern void li_cleanup(li_env_t *env);
 
+/* macros */
 extern li_object *li_macro_expand(li_macro_t *mac, li_object *args);
 
 /* numbers */
@@ -203,16 +207,16 @@ struct li_transformer_t {
     li_env_t *env;
 };
 
-typedef struct {
+struct li_type_obj_t {
     LI_OBJ_HEAD;
     const li_type_t *val;
-} li_type_obj_t;
+};
 
-typedef struct {
+struct li_vector_t {
     LI_OBJ_HEAD;
     li_object **data;
     int length;
-} li_vector_t;
+};
 
 /* The all important null object. */
 #define li_null                 ((li_object *)NULL)
@@ -246,7 +250,6 @@ extern li_object *li_lambda(li_sym_t *name, li_object *vars, li_object *body,
 extern li_object *li_macro(li_object *vars, li_object *body,
         li_env_t *env);
 extern li_pair_t *li_pair(li_object *car, li_object *cdr);
-extern li_port_t *li_port(const char *filename, const char *mode);
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
 extern li_object *li_special_form(li_special_form_t *proc);
 extern li_sym_t *li_symbol(const char *s);
@@ -374,35 +377,34 @@ extern li_object *li_read(FILE *f);
 
 /* li_write.c */
 
-struct li_port_t {
-    LI_OBJ_HEAD;
-    int fd;
-    FILE *fp;
-    char *name;
-};
-
 extern li_port_t *li_port_stdin;
 extern li_port_t *li_port_stdout;
 extern li_port_t *li_port_stderr;
+
+extern li_port_t *li_port_open_input_file(li_str_t *filename);
+extern li_port_t *li_port_open_output_file(li_str_t *filename);
+
 extern void li_port_close(li_port_t *port);
 
 extern li_object *li_port_read_obj(li_port_t *port);
+extern void li_port_write(li_port_t *port, li_object *obj);
+extern void li_port_display(li_port_t *port, li_object *obj);
+extern void li_port_printf(li_port_t *port, const char *fmt, ...);
 
-extern void li_port_printf(FILE *fp, const char *fmt, ...);
-extern void li_write(li_object *obj, FILE *fp);
-extern void li_display(li_object *obj, FILE *fp);
-#define li_newline(fp)                  fprintf(fp, "\n")
-#define li_print(obj, fp)               \
-    do { li_display(obj, fp); li_newline(fp); } while (0)
+#define li_write(obj, port)             li_port_write(port, obj)
+#define li_display(obj, port)           li_port_display(port, obj)
+#define li_newline(port)                li_port_printf(port, "\n")
+#define li_print(obj, port) \
+    do { li_display(obj, port); li_newline(port); } while (0)
 
 /* TODO: standardize this */
 
-#define li_assert_nargs(n, args)           \
-    if (li_length(args) != n)          \
+#define li_assert_nargs(n, args) \
+    if (li_length(args) != n) \
         li_error("wrong number of args", args)
 
-#define li_assert_type(type, arg)       \
-    if (!li_is_##type(arg))             \
+#define li_assert_type(type, arg) \
+    if (!li_is_##type(arg)) \
         li_error("not a " #type, arg)
 
 #define li_assert_character(arg)        li_assert_type(character, arg)
