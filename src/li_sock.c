@@ -2,7 +2,6 @@
 
 #include <netdb.h> /* struct hostent, gethostbyname */
 #include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
-#include <stdlib.h> /* exit */
 #include <string.h> /* memcpy, memset */
 #include <sys/socket.h> /* socket, connect */
 #include <unistd.h> /* read, write, close */
@@ -28,10 +27,10 @@ static li_object *p_make_client_socket(li_object *args)
     li_socket_t *obj;
     li_str_t *node, *service;
     struct hostent *hostent;
-    int ai_family = AF_INET;
-    int ai_socktype = SOCK_STREAM;
-    int ai_flags = AI_V4MAPPED | AI_ADDRCONFIG; /* TODO: use these flags */
-    int ai_protocol = IPPROTO_IP;
+    int ai_family = AF_INET,
+        ai_socktype = SOCK_STREAM,
+        ai_flags = AI_V4MAPPED | AI_ADDRCONFIG, /* TODO: use these flags */
+        ai_protocol = IPPROTO_IP;
     li_parse_args(args, "ss?iiii", &node, &service,
             &ai_family, &ai_socktype, &ai_flags, &ai_protocol);
     hostent = gethostbyname(li_string_bytes(node));
@@ -80,18 +79,18 @@ static li_object *p_socket_send(li_object *args)
     li_object *obj;
     li_str_t *str;
     char *message;
-    int bytes, sent, total;
+    int sent, total;
     li_parse_args(args, "os", &obj, &str);
     message = li_string_bytes(str);
     total = strlen(message);
     sent = 0;
     do {
-        bytes = write(((li_socket_t *)obj)->fd, message + sent, total - sent);
-        if (bytes < 0)
+        int n = write(((li_socket_t *)obj)->fd, message + sent, total - sent);
+        if (n < 0)
             li_error_f("ERROR writing message to socket");
-        if (bytes == 0)
+        if (n == 0)
             break;
-        sent += bytes;
+        sent += n;
     } while (sent < total);
     return (li_object *)li_num_with_int(sent);
 }
@@ -166,4 +165,3 @@ extern void li_define_socket_functions(li_env_t *env)
     li_def_int(env, "*shut-wr*", SHUT_WR);
     li_def_int(env, "*shut-rdwr*", SHUT_RDWR);
 }
-

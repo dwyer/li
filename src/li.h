@@ -12,8 +12,6 @@
 
 #define LI_INC_CAP(x)           ((x) < 1024 ? (x) * 2 : (x) + (x) / 2)
 
-#define LI_UNUSED_VARIABLE(var) (void)var
-
 #define li_strdup(s)            \
     strcpy(li_allocate(NULL, strlen(s) + 1, sizeof(char)), s)
 
