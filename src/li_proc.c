@@ -14,6 +14,7 @@
  *     n = li_num_t
  *     o = li_object
  *     p = li_object (pair)
+ *     S = char *
  *     s = li_str_t
  *     t = li_type_obj_t
  *     v = li_object (vector)
@@ -45,6 +46,12 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         obj = li_car(args);
         switch (*s) {
+        case 'b':
+            li_assert_integer(obj);
+            if (0 > li_to_integer(obj) || li_to_integer(obj) > 255)
+                li_error("not a byte", obj);
+            *va_arg(ap, unsigned char *) = li_to_integer(obj);
+            break;
         case 'e':
             li_assert_type(environment, obj);
             *va_arg(ap, li_env_t **) = (li_env_t *)obj;
@@ -76,9 +83,13 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             li_assert_port(obj);
             *va_arg(ap, li_port_t **) = (li_port_t *)obj;
             break;
+        case 'S':
+            li_assert_string(obj);
+            *va_arg(ap, char **) = li_string_bytes((li_str_t *)obj);
+            break;
         case 's':
             li_assert_string(obj);
-            *va_arg(ap, li_str_t **) = li_to_string(obj);
+            *va_arg(ap, li_str_t **) = (li_str_t *)obj;
             break;
         case 't':
             if (li_type(obj) != &li_type_type)
@@ -115,61 +126,51 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
  * of the error.  irritants should be the objects that caused the error, each of
  * which will be printed.
  */
-static li_object *p_error(li_object *args) {
-    li_str_t *msg;
+static li_object *p_error(li_object *args)
+{
+    const char *msg;
     li_object *irritants;
-
-    li_parse_args(args, "s.", &msg, &irritants);
-    li_error(li_string_bytes(msg), irritants);
+    li_parse_args(args, "S.", &msg, &irritants);
+    li_error(msg, irritants);
     return li_null;
 }
 
-static li_object *p_rand(li_object *args) {
-    int n;
-
-    n = rand();
-    if (args) {
-        li_assert_nargs(1, args);
-        li_assert_integer(li_car(args));
-        n %= li_to_integer(li_car(args));
-    }
+static li_object *p_rand(li_object *args)
+{
+    int n = rand();
+    int p = 0;
+    li_parse_args(args, "?i", &p);
+    if (p)
+        n %= p;
     return (li_object *)li_num_with_int(n);
 }
 
-static li_object *p_remove(li_object *args) {
-    li_assert_nargs(1, args);
-    li_assert_string(li_car(args));
-    return (li_object *)li_num_with_int(
-            remove(li_string_bytes(li_to_string(li_car(args)))));
+static li_object *p_remove(li_object *args)
+{
+    const char *path;
+    li_parse_args(args, "S", &path);
+    return (li_object *)li_num_with_int(remove(path));
 }
 
-static li_object *p_rename(li_object *args) {
-    li_assert_nargs(2, args);
-    li_assert_string(li_car(args));
-    li_assert_string(li_cadr(args));
-    return (li_object *)li_num_with_int(rename(
-                li_string_bytes(li_to_string(li_car(args))),
-                li_string_bytes(li_to_string(li_cadr(args)))));
+static li_object *p_rename(li_object *args)
+{
+    const char *from, *to;
+    li_parse_args(args, "SS", &from, &to);
+    return (li_object *)li_num_with_int(rename(from, to));
 }
 
-
-static li_object *p_setenv(li_object *args) {
-    li_assert_nargs(2, args);
-    li_assert_string(li_car(args));
-    li_assert_string(li_cadr(args));
-    setenv(li_string_bytes(li_to_string(li_car(args))),
-            li_string_bytes(li_to_string(li_cadr(args))), 1);
-    return li_null;
+static li_object *p_setenv(li_object *args)
+{
+    const char *name, *value;
+    li_parse_args(args, "SS", &name, &value);
+    return (li_object *)li_num_with_int(setenv(name, value, 1));
 }
 
-static li_object *p_system(li_object *args) {
-    int ret;
-
-    li_assert_nargs(1, args);
-    li_assert_string(li_car(args));
-    if ((ret = system(li_string_bytes(li_to_string(li_car(args))))))
-        return (li_object *)li_num_with_int(ret);
-    return li_null;
+static li_object *p_system(li_object *args)
+{
+    const char *cmd;
+    li_parse_args(args, "S", &cmd);
+    return (li_object *)li_num_with_int(system(cmd));
 }
 
 /**************************
@@ -182,7 +183,8 @@ static li_object *p_system(li_object *args) {
  * address. Will always return #t for identical objects, but not necessarily for
  * numbers, strings, etc.
  */
-static li_object *p_is_eq(li_object *args) {
+static li_object *p_is_eq(li_object *args)
+{
     li_object *obj1, *obj2;
     li_parse_args(args, "oo", &obj1, &obj2);
     return li_boolean(li_is_eq(obj1, obj2));
@@ -192,7 +194,8 @@ static li_object *p_is_eq(li_object *args) {
  * (eqv? obj1 obj2)
  * Same as eq?, but guarantees #t for equivalent numbers.
  */
-static li_object *p_is_eqv(li_object *args) {
+static li_object *p_is_eqv(li_object *args)
+{
     li_object *obj1, *obj2;
     li_parse_args(args, "oo", &obj1, &obj2);
     return li_boolean(li_is_eqv(obj1, obj2));
@@ -202,7 +205,8 @@ static li_object *p_is_eqv(li_object *args) {
  * (equal? obj1 obj2)
  * Same as eqv? but guarantees #t for equivalent strings, pairs and vectors.
  */
-static li_object *p_is_equal(li_object *args) {
+static li_object *p_is_equal(li_object *args)
+{
     li_object *obj1, *obj2;
     li_parse_args(args, "oo", &obj1, &obj2);
     return li_boolean(li_is_equal(obj1, obj2));
@@ -231,23 +235,28 @@ static li_object *_cmp_helper(li_object *args, li_cmp_t a)
     return li_true;
 }
 
-static li_object *p_eq(li_object *args) {
+static li_object *p_eq(li_object *args)
+{
     return _cmp_helper(args, LI_CMP_EQ);
 }
 
-static li_object *p_lt(li_object *args) {
+static li_object *p_lt(li_object *args)
+{
     return _cmp_helper(args, LI_CMP_LT);
 }
 
-static li_object *p_gt(li_object *args) {
+static li_object *p_gt(li_object *args)
+{
     return _cmp_helper(args, LI_CMP_GT);
 }
 
-static li_object *p_le(li_object *args) {
+static li_object *p_le(li_object *args)
+{
     return li_boolean(li_not(p_gt(args)));
 }
 
-static li_object *p_ge(li_object *args) {
+static li_object *p_ge(li_object *args)
+{
     return li_boolean(li_not(p_lt(args)));
 }
 
@@ -259,7 +268,8 @@ static li_object *p_ge(li_object *args) {
  * (not obj)
  * Returns #t is obj is #f, returns #f otherwise.
  */
-static li_object *p_not(li_object *args) {
+static li_object *p_not(li_object *args)
+{
     li_object *obj;
     li_parse_args(args, "o", &obj);
     return li_boolean(li_not(obj));
@@ -268,7 +278,8 @@ static li_object *p_not(li_object *args) {
 /* (boolean? obj)
  * Return #t is the object is #t or #f, return #f otherwise.
  */
-static li_object *p_is_boolean(li_object *args) {
+static li_object *p_is_boolean(li_object *args)
+{
     li_object *obj;
     li_parse_args(args, "o", &obj);
     return li_boolean(li_is_boolean(obj));
@@ -278,7 +289,8 @@ static li_object *p_is_boolean(li_object *args) {
  * Generic accessors *
  *********************/
 
-static li_object *p_length(li_object *args) {
+static li_object *p_length(li_object *args)
+{
     int ret;
     li_object *lst;
     li_parse_args(args, "o", &lst);
@@ -291,7 +303,8 @@ static li_object *p_length(li_object *args) {
     return (li_object *)li_num_with_int(ret);
 }
 
-static li_object *p_ref(li_object *args) {
+static li_object *p_ref(li_object *args)
+{
     li_object *lst;
     int k;
     li_parse_args(args, "oi", &lst, &k);
@@ -300,7 +313,8 @@ static li_object *p_ref(li_object *args) {
     return li_type(lst)->ref(lst, k);
 }
 
-static li_object *p_set(li_object *args) {
+static li_object *p_set(li_object *args)
+{
     li_object *lst, *obj;
     int k;
     li_parse_args(args, "oio", &lst, &k, &obj);
@@ -313,50 +327,46 @@ static li_object *p_set(li_object *args) {
 
 static li_object *p_exit(li_object *args)
 {
-    if (!args) {
-        exit(0);
-    } else {
-        li_assert_nargs(1, args);
-        li_assert_integer(li_car(args));
-        exit(li_to_integer(li_car(args)));
-    }
-    return li_null;
+    int status;
+    li_parse_args(args, "?i", &status);
+    exit(status);
+    return NULL;
 }
 
-static li_object *p_get_environment_variable(li_object *args) {
-    li_str_t *str;
-    char *val;
-    li_parse_args(args, "s", &str);
-    if ((val = getenv(li_string_bytes(str))))
-        return (li_object *)li_string_make(val);
-    else
-        return li_false;
+static li_object *p_get_environment_variable(li_object *args)
+{
+    char *name, *value;
+    li_parse_args(args, "S", &name);
+    if ((value = getenv(name)))
+        return (li_object *)li_string_make(value);
+    return li_false;
 }
 
-static li_object *p_get_environment_variables(li_object *args) {
-    const char *const *sp;
-    li_object *head;
-    li_object *tail;
+static li_object *p_get_environment_variables(li_object *args)
+{
     extern const char *const *environ;
-    li_assert_nargs(0, args);
-    sp = environ;
-    head = li_null;
+    const char *const *sp = environ;
+    li_object *head = NULL,
+              *tail = NULL;
+    li_parse_args(args, "");
     while (*sp) {
         if (head)
-            tail = li_set_cdr(tail, li_cons((li_object *)li_string_make(*sp), li_null));
+            tail = li_set_cdr(tail, li_cons((li_object *)li_string_make(*sp), NULL));
         else
-            head = tail = li_cons((li_object *)li_string_make(*sp), li_null);
+            head = tail = li_cons((li_object *)li_string_make(*sp), NULL);
         sp++;
     }
     return head;
 }
 
-static li_object *p_current_second(li_object *args) {
+static li_object *p_current_second(li_object *args)
+{
     li_parse_args(args, "");
     return (li_object *)li_num_with_int(time(NULL));
 }
 
-static li_object *p_current_jiffy(li_object *args) {
+static li_object *p_current_jiffy(li_object *args)
+{
     li_parse_args(args, "");
     return (li_object *)li_num_with_int(clock());
 }
@@ -380,7 +390,8 @@ static li_object *p_isa(li_object *args)
 #define define_type(env, name, type) \
     define_var(env, name, li_type_obj(type))
 
-extern void li_setup_environment(li_env_t *env) {
+extern void li_setup_environment(li_env_t *env)
+{
     define_var(env, "true", li_true);
     define_var(env, "false", li_false);
     define_var(env, "null", li_null);
@@ -421,6 +432,7 @@ extern void li_setup_environment(li_env_t *env) {
     li_define_primitive_procedure(env, "length", p_length);
 
     /* builtins */
+    li_define_bytevector_functions(env);
     li_define_char_functions(env);
     li_define_number_functions(env);
     li_define_pair_functions(env);
@@ -453,4 +465,5 @@ extern void li_setup_environment(li_env_t *env) {
     li_define_primitive_procedure(env, "remove", p_remove);
     li_define_primitive_procedure(env, "rename", p_rename);
     li_define_primitive_procedure(env, "system", p_system);
+
 }

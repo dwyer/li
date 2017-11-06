@@ -313,7 +313,7 @@ static li_object *m_letrec(li_object *args, li_env_t *env)
 {
     li_object *head, *iter, *tail;
 
-    LI_UNUSED_VARIABLE(env);
+    (void)env;
     head = tail = li_cons((li_object *)li_symbol("begin"), NULL);
     for (iter = li_car(args); iter; iter = li_cdr(iter))
         tail = li_set_cdr(tail,

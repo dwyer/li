@@ -43,6 +43,7 @@ datum   : EOF_OBJECT { $$ = li_eof; }
         | '(' data ')' { $$ = $2; }
         | '(' data datum '.' datum ')' { $$ = append($2, li_cons($3, $5)); }
         | '[' data ']' { $$ = li_vector($2); }
+        | '{' data '}' { $$ = (li_object *)li_bytevector($2); }
         | '\'' datum { $$ = make_tagged_list("quote", $2); }
         | '`' datum { $$ = make_tagged_list("quasiquote", $2); }
         | ',' datum { $$ = make_tagged_list("unquote", $2); }

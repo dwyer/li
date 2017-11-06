@@ -25,12 +25,12 @@ LI_LIB=libli.a
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
 LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_nat.o li_object.o \
-	     li_obj_chr.o li_obj_env.o li_obj_mac.o li_obj_num.o li_obj_pair.o \
-	     li_obj_port.o li_obj_proc.o li_obj_spf.o li_obj_str.o \
-	     li_obj_sym.o li_obj_typ.o li_obj_vec.o li_proc.o li_rat.o \
-	     li_sock.o
+	     li_obj_bytevector.o li_obj_chr.o li_obj_env.o li_obj_mac.o \
+	     li_obj_num.o li_obj_pair.o li_obj_port.o li_obj_proc.o \
+	     li_obj_spf.o li_obj_str.o li_obj_sym.o li_obj_typ.o li_obj_vec.o \
+	     li_proc.o li_rat.o li_sock.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
-LI_OPT_OBJS_=lib_bytevector.o
+LI_OPT_OBJS_=
 LI_OPT_OBJS=$(addprefix $(OBJDIR)/, $(LI_OPT_OBJS_))
 ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
 

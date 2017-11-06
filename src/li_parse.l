@@ -50,7 +50,7 @@ symbol                  ({identifier}|\|[^|]*\|)
 
 %%
 
-[%()\[\].'`,@\\]        return *yytext;
+[%{}()\[\].'`,@\\]      return *yytext;
 <<EOF>>                 yylval.obj = li_eof; return EOF_OBJECT;
 {character}             yylval.obj = li_character(yytext[2]); return CHARACTER;
 %\\newline              yylval.obj = li_character('\n'); return CHARACTER;

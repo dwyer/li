@@ -38,6 +38,7 @@ struct li_object {
     LI_OBJ_HEAD;
 };
 
+typedef struct li_bytevector_t li_bytevector_t;
 typedef struct li_character_obj_t li_character_obj_t;
 typedef struct li_env_t li_env_t;
 typedef struct li_macro li_macro_t;
@@ -76,6 +77,7 @@ struct li_type_t {
 #define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
 #define li_is_type(obj, type)           ((obj) && li_type(obj) == (type))
 
+extern const li_type_t li_type_bytevector;
 extern const li_type_t li_type_character;
 extern const li_type_t li_type_environment;
 extern const li_type_t li_type_macro;
@@ -90,6 +92,14 @@ extern const li_type_t li_type_syntactic_closure;
 extern const li_type_t li_type_transformer;
 extern const li_type_t li_type_type;
 extern const li_type_t li_type_vector;
+
+/* bytevectors */
+#define li_is_bytevector(obj)           li_is_type((obj), li_type_bytevector)
+extern li_bytevector_t *li_bytevector(li_object *lst);
+extern li_bytevector_t *li_make_bytevector(int k, unsigned char byte);
+extern int li_bytevector_length(li_bytevector_t *v);
+extern unsigned char li_bytevector_get(li_bytevector_t *v, int k);
+extern void li_bytevector_set(li_bytevector_t *v, int k, unsigned char byte);
 
 /* Characters */
 
@@ -121,10 +131,8 @@ extern void li_cleanup(li_env_t *env);
 extern li_object *li_macro_expand(li_macro_t *mac, li_object *args);
 
 /* numbers */
-
 extern li_num_t *li_num_with_int(int x);
 extern int li_num_to_int(li_num_t *x);
-
 extern li_bool_t li_num_is_integer(li_num_t *x);
 
 /* Pairs */
@@ -420,6 +428,7 @@ extern void li_port_printf(li_port_t *port, const char *fmt, ...);
 
 extern void li_parse_args(li_object *args, const char *fmt, ...);
 
+extern void li_define_bytevector_functions(li_env_t *env);
 extern void li_define_char_functions(li_env_t *env);
 extern void li_define_number_functions(li_env_t *env);
 extern void li_define_pair_functions(li_env_t *env);
