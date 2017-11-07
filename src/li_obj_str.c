@@ -81,7 +81,7 @@ extern li_character_t li_string_ref(li_str_t *str, int idx)
     return c;
 }
 
-extern size_t li_string_length(li_str_t *str)
+extern int li_string_length(li_str_t *str)
 {
     return li_chr_count(str->bytes);
 }
@@ -112,18 +112,17 @@ extern li_str_t *li_string_append(li_str_t *str1, li_str_t *str2)
     return str1;
 }
 static li_object *p_make_string(li_object *args) {
-    li_object *obj;
-    char *s;
+    li_str_t *str;
+    char *bytes;
     int k;
-    li_assert_nargs(1, args);
-    li_assert_integer(li_car(args));
-    k = li_to_integer(li_car(args)) + 1;
-    s = li_allocate(li_null, k, sizeof(*s));
+    li_parse_args(args, "i", &k);
+    k++;
+    bytes = li_allocate(NULL, k, sizeof(*bytes));
     while (k >= 0)
-        s[k--] = '\0';
-    obj = (li_object *)li_string_make(s);
-    free(s);
-    return obj;
+        bytes[k--] = '\0';
+    str = li_string_make(bytes);
+    free(bytes);
+    return (li_object *)str;
 }
 
 static li_object *p_string(li_object *args) {
@@ -146,57 +145,50 @@ static li_object *p_string(li_object *args) {
  * Returns #t if the object is a string, #f otherwise.
  */
 static li_object *p_is_string(li_object *args) {
-    li_assert_nargs(1, args);
-    return li_boolean(li_is_string(li_car(args)));
+    li_object *obj;
+    li_parse_args(args, "o", &obj);
+    return li_boolean(li_is_string(obj));
 }
 
 static li_object *p_string_append(li_object *args) {
-    li_str_t *str, *tmp;
-    if (!args)
-        li_error("wrong number of args", args);
-    li_assert_string(li_car(args));
-    str = li_string_copy(li_to_string(li_car(args)));
-    for (args = li_cdr(args); args; args = li_cdr(args)) {
-        li_assert_string(li_car(args));
-        tmp = str;
-        str = li_string_append(str, li_to_string(li_car(args)));
-        li_string_free(tmp);
+    li_str_t *str;
+    li_parse_args(args, "s.", &str, &args);
+    str = li_string_copy(str);
+    for (; args; ) {
+        li_str_t *old = str, *end;
+        li_parse_args(args, "s.", &end, &args);
+        str = li_string_append(str, end);
+        li_string_free(old);
     }
     return (li_object *)str;
 }
 
 static li_object *p_string_to_list(li_object *args) {
-    li_object *head, *tail;
+    li_object *head = NULL, *tail = NULL;
     li_str_t *str;
-    unsigned long i;
-    li_assert_nargs(1, args);
-    li_assert_string(li_car(args));
-    str = li_to_string(li_car(args));
-    head = tail = li_null;
+    int i;
+    li_parse_args(args, "s", &str);
     for (i = 0; i < li_string_length(str); ++i) {
+        li_object *node = li_cons(li_character(li_string_ref(str, i)), NULL);
         if (head)
-            tail = li_set_cdr(tail, li_cons(li_character(li_string_ref(str, i)),
-                        li_null));
+            tail = li_set_cdr(tail, node);
         else
-            head = tail = li_cons(li_character(li_string_ref(str, i)), li_null);
+            head = tail = node;
     }
     return head;
 }
 
 static li_object *p_string_to_vector(li_object *args) {
-    li_object *head, *tail;
+    li_object *head = NULL, *tail = NULL;
     li_str_t *str;
-    size_t i;
-    li_assert_nargs(1, args);
-    li_assert_string(li_car(args));
-    str = li_to_string(li_car(args));
-    head = tail = li_null;
+    int i;
+    li_parse_args(args, "s", &str);
     for (i = 0; i < li_string_length(str); ++i) {
+        li_object *node = li_cons(li_character(li_string_ref(str, i)), li_null);
         if (head)
-            tail = li_set_cdr(tail, li_cons(li_character(li_string_ref(str, i)),
-                        li_null));
+            tail = li_set_cdr(tail, node);
         else
-            head = tail = li_cons(li_character(li_string_ref(str, i)), li_null);
+            head = tail = node;
     }
     return li_vector(head);
 }

@@ -1,7 +1,7 @@
-#include <assert.h>
+#include "li.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include "li.h"
 
 static struct {
     li_object **objs;

@@ -34,11 +34,11 @@ static li_object *pair_ref(li_object *lst, int k)
     return li_car(rst);
 }
 
-static li_object *pair_set(li_object *lst, int k, li_object *obj)
+static void pair_set(li_object *lst, int k, li_object *obj)
 {
     while (k-- >= 0)
         lst = li_cdr(lst);
-    return li_set_car(lst, obj);
+    li_set_car(lst, obj);
 }
 
 const li_type_t li_type_pair = {
@@ -154,30 +154,29 @@ static li_object *p_is_null(li_object *args) {
 }
 
 static li_object *p_is_list(li_object *args) {
-    li_assert_nargs(1, args);
-    for (args = li_car(args); args; args = li_cdr(args))
-        if (args && !li_is_pair(args))
+    li_object *obj;
+    li_parse_args(args, "o", &obj);
+    while (obj) {
+        if (!li_is_pair(obj))
             return li_false;
+        obj = li_cdr(obj);
+    }
     return li_true;
 }
 
 static li_object *p_make_list(li_object *args) {
     int k;
-    li_object *fill, *lst, *tail;
-    if (li_length(args) == 2) {
-        li_parse_args(args, "io", &k, &fill);
-    } else {
-        li_parse_args(args, "i", &k);
-        fill = li_false;
-    }
-    lst = tail = li_null;
+    li_object *fill = li_false, *head, *tail;
+    li_parse_args(args, "i?o", &k, &fill);
+    head = tail = NULL;
     while (k--) {
-        if (lst)
-            tail = li_set_cdr(tail, li_cons(fill, li_null));
+        li_object *node = li_cons(fill, NULL);
+        if (head)
+            tail = li_set_cdr(tail, node);
         else
-            lst = tail = li_cons(fill, li_null);
+            head = tail = node;
     }
-    return lst;
+    return head;
 }
 
 static li_object *p_list(li_object *args) {
@@ -197,27 +196,28 @@ static li_object *p_list_tail(li_object *args) {
 }
 
 static li_object *p_list_to_string(li_object *args) {
-    li_object *lst, *str;
+    li_object *lst;
+    li_str_t *str;
     int i, n;
     char *s;
     li_parse_args(args, "l", &lst);
     n = li_length(lst);
-    s = li_allocate(li_null, n + 1, sizeof(*s));
-    for (i = 0; i < n; i++) {
-        li_assert_character(li_car(lst));
-        s[i] = li_to_character(li_car(lst));
-        lst = li_cdr(lst);
+    s = li_allocate(NULL, n + 1, sizeof(*s));
+    for (i = 0; lst; i++) {
+        li_character_t c;
+        li_parse_args(lst, "c.", &c, &lst);
+        s[i] = c;
     }
     s[i] = '\0';
-    str = (li_object *)li_string_make(s);
+    str = li_string_make(s);
     free(s);
-    return str;
+    return (li_object *)str;
 }
 
 static li_object *p_list_to_vector(li_object *args) {
-    li_assert_nargs(1, args);
-    li_assert_list(li_car(args));
-    return li_vector(li_car(args));
+    li_object *lst;
+    li_parse_args(args, "l", &lst);
+    return li_vector(lst);
 }
 
 static li_object *p_append(li_object *args) {
@@ -252,20 +252,21 @@ static li_object *p_append(li_object *args) {
 }
 
 static li_object *p_filter(li_object *args) {
+    li_proc_obj_t *proc;
     li_object *iter, *head, *tail, *temp;
-    li_assert_nargs(2, args);
-    li_assert_procedure(li_car(args));
-    tail = li_null;
-    for (iter = li_cadr(args), head = temp = li_null; iter; iter = li_cdr(iter)) {
-        li_assert_pair(iter);
+    li_parse_args(args, "ol", &proc, &iter);
+    li_assert_procedure((li_object *)proc); /* XXX */
+    head = temp = tail = NULL;
+    while (iter) {
         if (temp)
             li_set_car(temp, li_car(iter));
         else
-            temp = li_cons(li_car(iter), li_null);
-        if (!li_not(li_apply(li_car(args), temp))) {
+            temp = li_cons(li_car(iter), NULL);
+        if (!li_not(li_apply((li_object *)proc, temp))) { /* XXX */
             tail = head ? li_set_cdr(tail, temp) : (head = temp);
-            temp = li_null;
+            temp = NULL;
         }
+        iter = li_cdr(iter);
     }
     return head;
 }

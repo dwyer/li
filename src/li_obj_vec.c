@@ -44,9 +44,9 @@ static li_object *ref(li_object *vec, int k)
     return li_vector_ref(li_to_vector(vec), k);
 }
 
-static li_object *set(li_object *vec, int k, li_object *obj)
+static void set(li_object *vec, int k, li_object *obj)
 {
-    return li_vector_set(li_to_vector(vec), k, obj);
+    li_vector_set(li_to_vector(vec), k, obj);
 }
 
 const li_type_t li_type_vector = {

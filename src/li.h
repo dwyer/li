@@ -68,7 +68,7 @@ struct li_type_t {
     li_cmp_t (*compare)(li_object *, li_object *);
     int (*length)(li_object *);
     li_object *(*ref)(li_object *, int);
-    li_object *(*set)(li_object *, int, li_object *);
+    void (*set)(li_object *, int, li_object *);
     li_object *(*proc)(li_object *);
     li_object *(*apply)(li_object *, li_object *);
 };
@@ -186,7 +186,7 @@ extern li_str_t *li_string_copy(li_str_t *str);
 extern void li_string_free(li_str_t *str);
 extern char *li_string_bytes(li_str_t *str);
 extern li_character_t li_string_ref(li_str_t *str, int k);
-extern size_t li_string_length(li_str_t *str);
+extern int li_string_length(li_str_t *str);
 extern li_cmp_t li_string_cmp(li_str_t *st1, li_str_t *st2);
 extern li_str_t *li_string_append(li_str_t *str1, li_str_t *str2);
 

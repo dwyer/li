@@ -7,6 +7,7 @@
 
 /**
  * fmt options:
+ *     b = unsigned char
  *     e = li_env_t
  *     I = li_int_t
  *     i = int
@@ -17,7 +18,7 @@
  *     S = char *
  *     s = li_str_t
  *     t = li_type_obj_t
- *     v = li_object (vector)
+ *     v = li_vector_t
  *     . = the rest of the args
  *     ? = all args after this are optional and may not be initialized
  */
@@ -52,6 +53,10 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
                 li_error("not a byte", obj);
             *va_arg(ap, unsigned char *) = li_to_integer(obj);
             break;
+        case 'c':
+            li_assert_character(obj);
+            *va_arg(ap, li_character_t *) = li_to_character(obj);
+            break;
         case 'e':
             li_assert_type(environment, obj);
             *va_arg(ap, li_env_t **) = (li_env_t *)obj;
@@ -70,7 +75,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         case 'n':
             li_assert_number(obj);
-            *va_arg(ap, li_num_t **) = li_to_number(obj);
+            *va_arg(ap, li_num_t **) = (li_num_t *)obj;
             break;
         case 'o':
             *va_arg(ap, li_object **) = obj;
@@ -85,7 +90,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         case 'S':
             li_assert_string(obj);
-            *va_arg(ap, char **) = li_string_bytes((li_str_t *)obj);
+            *va_arg(ap, const char **) = li_string_bytes((li_str_t *)obj);
             break;
         case 's':
             li_assert_string(obj);
@@ -98,13 +103,14 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         case 'v':
             li_assert_type(vector, obj);
-            *va_arg(ap, li_vector_t **) = li_to_vector(obj);
+            *va_arg(ap, li_vector_t **) = (li_vector_t *)obj;
             break;
         case 'y':
             li_assert_symbol(obj);
             *va_arg(ap, li_sym_t **) = (li_sym_t *)obj;
             break;
         default:
+            li_error("unknown opt", li_character(*fmt));
             break;
         }
         if (args)
@@ -322,7 +328,8 @@ static li_object *p_set(li_object *args)
         li_error("set: bad type:", lst);
     if (k < 0 || (li_type(lst)->length(lst) && k >= li_type(lst)->length(lst)))
         li_error("out of range", args);
-    return li_type(lst)->set(lst, k, obj);
+    li_type(lst)->set(lst, k, obj);
+    return NULL;
 }
 
 static li_object *p_exit(li_object *args)

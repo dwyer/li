@@ -1,7 +1,8 @@
-#include <assert.h>
-#include <ctype.h>
 #include "li.h"
 #include "li_num.h"
+
+#include <assert.h>
+#include <ctype.h>
 
 extern size_t li_nat_read(li_nat_t *dst, const char *s)
 {

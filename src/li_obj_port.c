@@ -203,9 +203,9 @@ static li_object *p_open_output_file(li_object *args) {
 }
 
 static li_object *p_close_port(li_object *args) {
-    li_assert_nargs(1, args);
-    li_assert_port(li_car(args));
-    li_port_close((li_port_t *)li_car(args));
+    li_port_t *port;
+    li_parse_args(args, "r", &port);
+    li_port_close(port);
     return NULL;
 }
 
@@ -215,22 +215,20 @@ static li_object *p_close_port(li_object *args) {
  */
 static li_object *p_read(li_object *args) {
     FILE *fp = stdin;
-    if (args) {
-        li_assert_nargs(1, args);
-        li_assert_port(li_car(args));
-        fp = to_port(li_car(args))->fp;
-    }
+    li_port_t *port = NULL;
+    li_parse_args(args, "?r", &port);
+    if (port)
+        fp = port->fp;
     return li_read(fp);
 }
 
 static li_object *p_read_char(li_object *args) {
     int c;
     FILE *fp = stdin;
-    if (args) {
-        li_assert_nargs(1, args);
-        li_assert_port(li_car(args));
-        fp = to_port(li_car(args))->fp;
-    }
+    li_port_t *port = NULL;
+    li_parse_args(args, "?r", &port);
+    if (port)
+        fp = port->fp;
     if ((c = getc(fp)) == '\n')
         c = getc(fp);
     if (c == EOF)
@@ -241,11 +239,10 @@ static li_object *p_read_char(li_object *args) {
 static li_object *p_peek_char(li_object *args) {
     int c;
     FILE *fp = stdin;
-    if (args) {
-        li_assert_nargs(1, args);
-        li_assert_port(li_car(args));
-        fp = to_port(li_car(args))->fp;
-    }
+    li_port_t *port = NULL;
+    li_parse_args(args, "?r", &port);
+    if (port)
+        fp = port->fp;
     c = getc(fp);
     ungetc(c, fp);
     return li_character(c);
@@ -262,15 +259,10 @@ static li_object *p_is_eof_object(li_object *args) {
  * Displays an li_object. Always returns null.
  */
 static li_object *p_write(li_object *args) {
+    li_object *obj;
     li_port_t *port = li_port_stdout;
-    if (li_length(args) == 2) {
-        li_assert_nargs(2, args);
-        li_assert_port(li_cadr(args));
-        port = (li_port_t *)li_cadr(args);
-    } else {
-        li_assert_nargs(1, args);
-    }
-    li_port_write(port, li_car(args));
+    li_parse_args(args, "o?r", &obj, &port);
+    li_port_write(port, obj);
     return NULL;
 }
 
@@ -279,15 +271,10 @@ static li_object *p_write(li_object *args) {
  * Displays an object. Always returns null.
  */
 static li_object *p_display(li_object *args) {
+    li_object *obj;
     li_port_t *port = li_port_stdout;
-    if (li_length(args) == 2) {
-        li_assert_nargs(2, args);
-        li_assert_port(li_cadr(args));
-        port = (li_port_t *)li_cadr(args);
-    } else {
-        li_assert_nargs(1, args);
-    }
-    li_port_display(port, li_car(args));
+    li_parse_args(args, "o?r", &obj, &port);
+    li_port_display(port, obj);
     return NULL;
 }
 
@@ -297,11 +284,7 @@ static li_object *p_display(li_object *args) {
  */
 static li_object *p_newline(li_object *args) {
     li_port_t *port = li_port_stdout;
-    if (args) {
-        li_assert_nargs(1, args);
-        li_assert_port(li_car(args));
-        port = (li_port_t *)li_car(args);
-    }
+    li_parse_args(args, "?r", &port);
     li_newline(port);
     return NULL;
 }

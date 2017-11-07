@@ -32,6 +32,7 @@ static li_object *bytevector_get(li_bytevector_t *v, int k)
 
 static void bytevector_set(li_bytevector_t *v, int k, li_object *obj)
 {
+    li_assert_integer(obj);
     li_bytevector_set(v, k, li_to_integer(obj));
 }
 
@@ -40,7 +41,7 @@ const li_type_t li_type_bytevector = {
     .write = (li_write_f *)bytevector_write,
     .length = (int (*)(li_object *))li_bytevector_length,
     .ref = (li_object *(*)(li_object *, int))bytevector_get,
-    .set = (li_object *(*)(li_object *, int, li_object *))bytevector_set,
+    .set = (void (*)(li_object *, int, li_object *))bytevector_set,
 };
 
 extern li_bytevector_t *li_make_bytevector(int k, unsigned char byte)
