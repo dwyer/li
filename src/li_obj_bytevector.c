@@ -25,7 +25,7 @@ static void bytevector_write(li_bytevector_t *v, li_port_t *port)
     li_port_printf(port, "}");
 }
 
-static li_object *bytevector_get(li_bytevector_t *v, int k)
+static li_object *bytevector_ref(li_bytevector_t *v, int k)
 {
     return (li_object *)li_num_with_int(li_bytevector_get(v, k));
 }
@@ -39,9 +39,9 @@ static void bytevector_set(li_bytevector_t *v, int k, li_object *obj)
 const li_type_t li_type_bytevector = {
     .deinit = (li_deinit_f *)bytevector_deinit,
     .write = (li_write_f *)bytevector_write,
-    .length = (int (*)(li_object *))li_bytevector_length,
-    .ref = (li_object *(*)(li_object *, int))bytevector_get,
-    .set = (void (*)(li_object *, int, li_object *))bytevector_set,
+    .length = (li_length_f *)li_bytevector_length,
+    .ref = (li_ref_f *)bytevector_ref,
+    .set = (li_set_f *)bytevector_set,
 };
 
 extern li_bytevector_t *li_make_bytevector(int k, unsigned char byte)

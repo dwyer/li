@@ -104,4 +104,4 @@
   (http-fetch *http-method-GET* url))
 
 (define (http-head url)
-  (http-fetch *http-method-GET* url))
+  (http-fetch *http-method-HEAD* url))

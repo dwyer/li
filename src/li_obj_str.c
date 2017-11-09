@@ -241,42 +241,42 @@ static li_object *p_string_to_symbol(li_object *args) {
     return (li_object *)li_symbol(li_string_bytes(str));
 }
 
+static li_object *li_list_reverse(li_object *lst)
+{
+    li_object *tsl = NULL;
+    while (lst) {
+        tsl = li_cons(li_car(lst), tsl);
+        lst = li_cdr(lst);
+    }
+    return tsl;
+}
+
 static li_object *p_string_split(li_object *args)
 {
     li_object *res = NULL;
-    li_str_t **strs = li_allocate(NULL, 1, sizeof(*strs));
-    int strs_cap = 1, strs_len = 0;
     li_str_t *str, *delim;
     int splits = -1;
-    int i = 0, j;
-    int start = 0;
-    int n, p;
+    int i;
+    int start = 0, end = 0;
+    int str_len, delim_len;
     li_parse_args(args, "ss?i", &str, &delim, &splits);
-    n = li_string_length(str);
-    p = li_string_length(delim);
-    while (i < n - p) {
-        for (j = 0; j < p; ++j) {
-            if (li_string_ref(str, i + j) != li_string_ref(delim, j))
+    str_len = li_string_length(str);
+    delim_len = li_string_length(delim);
+    while (end < str_len - delim_len + 1) {
+        for (i = 0; i < delim_len; ++i)
+            if (li_string_ref(str, end + i) != li_string_ref(delim, i))
                 goto nomatch;
-        }
-        strs[strs_len++] = li_string_copy(str, start, i);
-        if (strs_cap == strs_len) {
-            strs_cap *= 2;
-            strs = li_allocate(strs, strs_cap, sizeof(*strs));
-        }
-        i += j;
-        start = i;
+        res = li_cons((li_object *)li_string_copy(str, start, end), res);
+        end += i;
+        start = end;
         if (!--splits)
             break;
         continue;
 nomatch:
-        i++;
+        end++;
     }
-    strs[strs_len++] = li_string_copy(str, start, -1);
-    while (strs_len--)
-        res = li_cons((li_object *)strs[strs_len], res);
-    free(strs);
-    return res;
+    res = li_cons((li_object *)li_string_copy(str, start, -1), res);
+    return li_list_reverse(res);
 }
 
 extern void li_define_string_functions(li_env_t *env)

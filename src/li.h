@@ -58,6 +58,9 @@ extern void li_mark(li_object *obj);
 typedef void li_mark_f(li_object *);
 typedef void li_deinit_f(li_object *);
 typedef void li_write_f(li_object *, li_port_t *);
+typedef int li_length_f(li_object *);
+typedef li_object *li_ref_f(li_object *, int);
+typedef void li_set_f(li_object *, int, li_object *);
 
 struct li_type_t {
     const char *name;
