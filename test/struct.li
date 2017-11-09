@@ -1,0 +1,29 @@
+(define (symbol-generate)
+  # generates a random symbol that starts with a comment literal
+  (string->symbol (string-append "#" (number->string (rand))
+                                 "-" (number->string (rand))
+                                 "-" (number->string (rand))
+                                 "-" (number->string (rand)))))
+
+(defmacro (define-struct sig . body)
+  (let ((type (car sig))
+        (vars (cdr sig)))
+    (let ((make (string->symbol (string-append (symbol->string type) "-make")))
+          (msg (symbol-generate))
+          (args (symbol-generate)))
+      `(begin
+         (define (,make ,@vars)
+           ,@body
+           (lambda (,msg . ,args)
+             (case ,msg
+               ((type) ',type)
+               ,@(map (lambda (var)
+                        `((,var)
+                          (case (length ,args)
+                            ((0) ,var)
+                            ((1) (set! ,var (car ,args)))
+                            (else (error "bad args" ,msg ,args)))))
+                      vars)
+               (else (error "bad message" ,msg)))))
+         (define (,(string->symbol (string-append (symbol->string type) "?")) obj)
+           (and (procedure? obj) (obj 'type)))))))

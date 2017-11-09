@@ -111,6 +111,29 @@ static li_object *p_bytevector(li_object *args)
     return (li_object *)v;
 }
 
+static li_object *p_bytevector_to_string(li_object *args)
+{
+    li_bytevector_t *v;
+    int start = 0, end = -1;
+    li_parse_args(args, "o?ii", &v, &start, &end);
+    if (end != -1)
+        li_error_f("end arg not supported");
+    return (li_object *)li_string_make((char *)v->bytes + start);
+}
+
+static li_object *p_string_to_bytevector(li_object *args)
+{
+    li_bytevector_t *v;
+    const char *s;
+    int start = 0, end = -1;
+    li_parse_args(args, "S", &s, &start, &end);
+    if (end < 0)
+        end = strlen(s);
+    v = li_make_bytevector(end - start, 0);
+    memcpy(v->bytes, s + start, end - start);
+    return (li_object *)v;
+}
+
 #define defproc(env, name, proc) \
     li_env_define((env), li_symbol((name)), li_primitive_procedure((proc)))
 
@@ -119,4 +142,6 @@ extern void li_define_bytevector_functions(li_env_t *env)
     defproc(env, "bytevector?", p_is_bytevector);
     defproc(env, "make-bytevector", p_make_bytevector);
     defproc(env, "bytevector", p_bytevector);
+    defproc(env, "bytevector->string", p_bytevector_to_string);
+    defproc(env, "string->bytevector", p_string_to_bytevector);
 }

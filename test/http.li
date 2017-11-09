@@ -1,0 +1,107 @@
+(import struct)
+(import url)
+
+(define *http-user-agent* "li-http/0.1")
+
+(define *http-line-break* "\r\n")
+
+(define *http-version-1.0* "HTTP/1.0")
+(define *http-version-1.1* "HTTP/1.1")
+
+(define *http-method-GET* "GET")
+(define *http-method-POST* "POST")
+(define *http-method-HEAD* "HEAD")
+
+(define-struct
+  (http-request version method url headers)
+  (if (string? url)
+    (set! url (url-parse url)))
+  (assert (url? url))
+  (assert (= "http" (url 'scheme))))
+
+(define (http-request? obj) (and (procedure? obj) (obj 'type)))
+
+(define-struct (http-response version status-code status-desc headers body))
+
+(defmacro (if-let binding consequence alternative)
+  `(let (,binding)
+     (if ,(car binding)
+       ,consequence
+       ,alternative)))
+
+(define (http-response-get-header res header)
+  (if-let (p (assv header (res 'headers)))
+          (cdr p)
+          false))
+
+(define (http-response-parse result)
+  (let ((comps (string-split result
+                             (string-append *http-line-break*
+                                            *http-line-break*)
+                             1)))
+    (let ((headers-comp (string-split (car comps) *http-line-break*))
+          (body (cadr comps)))
+      (let ((status (string-split (car headers-comp) " " 2))
+            (headers (map (lambda (line)
+                            (let ((lst (string-split line ": " 1)))
+                              (cons (car lst) (cadr lst))))
+                          (cdr headers-comp))))
+        (http-response-make
+          (car status) # HTTP version
+          (string->number (cadr status)) # status code
+          (caddr status) # status desc
+          headers
+          body)))))
+
+(define (http-request-send req)
+  (assert (http-request? req))
+  (let ((sock (make-client-socket ((req 'url) 'host) ((req 'url) 'port))))
+    # send HTTP status line
+    (socket-send sock (req 'method))
+    (socket-send sock " ")
+    (socket-send sock ((req 'url) 'path))
+    (socket-send sock " ")
+    (socket-send sock (req 'version))
+    (socket-send sock *http-line-break*)
+    # send host header
+    (socket-send sock "Host: ")
+    (socket-send sock ((req 'url) 'host))
+    (socket-send sock *http-line-break*)
+    # send other headers
+    (for-each (lambda (header)
+                (socket-send sock (car header))
+                (socket-send sock ": ")
+                (socket-send sock (cdr header))
+                (socket-send sock *http-line-break*))
+              (req 'headers))
+    # send empty line
+    (socket-send sock *http-line-break*)
+    # start receiving response
+    (let* ((buffer-size 8092)
+           (buffers (let loop ((buffer (socket-recv sock buffer-size)))
+                      (if (= (length buffer) 0)
+                        (cons buffer null)
+                        (cons buffer (loop (socket-recv sock buffer-size)))))))
+      (if (= (req 'version) *http-version-1.1*)
+        (socket-shutdown sock *shut-rdwr*))
+      (socket-close sock)
+      (http-response-parse (apply string-append buffers)))))
+
+(define (http-fetch method url)
+  (let ((res (http-request-send
+               (http-request-make *http-version-1.1*
+                                  method
+                                  url
+                                  `(("User-agent" . ,*http-user-agent*)
+                                    ("Accept" . "*/*")
+                                    ("Connection" . "close"))))))
+    (case (res 'status-code)
+      ((301 302)
+       (http-get (http-response-get-header res "Location")))
+      (else res))))
+
+(define (http-get url)
+  (http-fetch *http-method-GET* url))
+
+(define (http-head url)
+  (http-fetch *http-method-GET* url))

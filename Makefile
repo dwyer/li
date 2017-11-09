@@ -21,7 +21,7 @@ TO_INCLUDE=$(PREFIX)/include
 OBJDIR=obj
 SRCDIR=src
 LI_BIN=li
-LI_LIB=libli.a
+LI_LIB=libli.so
 LI_OBJS_=li.o
 LI_OBJS=$(addprefix $(OBJDIR)/, $(LI_OBJS_))
 LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_nat.o li_object.o \
@@ -42,8 +42,7 @@ $(LI_BIN): $(LI_OBJS) $(LI_LIB)
 	$(CC) -o $@ $+ $(LDFLAGS)
 
 $(LI_LIB): $(LI_LIB_OBJS)
-	$(AR) $@ $(LI_LIB_OBJS)
-	$(RANLIB) $@
+	$(CC) -o $@ $+ $(LDFLAGS) -shared -fPIC
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@$(MKDIR) $(OBJDIR)

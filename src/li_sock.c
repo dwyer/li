@@ -6,6 +6,8 @@
 #include <sys/socket.h> /* socket, connect */
 #include <unistd.h> /* read, write, close */
 
+/* Based on https://srfi.schemers.org/srfi-106/srfi-106.html */
+
 typedef struct {
     LI_OBJ_HEAD;
     int fd;
@@ -35,12 +37,12 @@ static li_object *p_make_client_socket(li_object *args)
             &ai_family, &ai_socktype, &ai_flags, &ai_protocol);
     hostent = gethostbyname(li_string_bytes(node));
     if (hostent == NULL)
-        li_error_f("ERROR, no such host");
+        li_error_f("bad host: ~a", node);
     obj = li_allocate(NULL, 1, sizeof(*obj));
     li_object_init((li_object *)obj, &li_type_socket);
     obj->fd = socket(ai_family, ai_socktype, ai_protocol);
     if (obj->fd < 0)
-        li_error("ERROR opening socket", NULL);
+        li_error_f("ERROR opening socket");
     /* init address */
     obj->addr.sin_family = ai_family;
     obj->addr.sin_port = htons(atoi(li_string_bytes(service)));
@@ -70,7 +72,7 @@ static li_object *p_socket_accept(li_object *args)
     sock = (li_socket_t *)obj;
     len = sizeof(sock->addr);
     fd = accept(sock->fd, (struct sockaddr *)&sock->addr, &len);
-    close(fd);
+    close(fd); /* TODO finish writing this */
     return obj;
 }
 
@@ -78,14 +80,15 @@ static li_object *p_socket_send(li_object *args)
 {
     li_object *obj;
     li_str_t *str;
+    int flags = 0;
     char *message;
     int sent, total;
-    li_parse_args(args, "os", &obj, &str);
+    li_parse_args(args, "os?i", &obj, &str, &flags);
     message = li_string_bytes(str);
     total = strlen(message);
     sent = 0;
     do {
-        int n = write(((li_socket_t *)obj)->fd, message + sent, total - sent);
+        int n = send(((li_socket_t *)obj)->fd, message + sent, total - sent, flags);
         if (n < 0)
             li_error_f("ERROR writing message to socket");
         if (n == 0)
@@ -97,16 +100,23 @@ static li_object *p_socket_send(li_object *args)
 
 static li_object *p_socket_recv(li_object *args)
 {
+    li_str_t *res;
     li_object *obj;
-    int size;
+    int size, flags = 0;
     int n;
-    char buf[BUFSIZ];
-    li_parse_args(args, "oi", &obj, &size);
-    n = read(((li_socket_t *)obj)->fd, buf, size-1);
+    char _buf[BUFSIZ];
+    char *buf = _buf;
+    li_parse_args(args, "oi?i", &obj, &size, &flags);
+    if (size > BUFSIZ)
+        buf = li_allocate(NULL, size, sizeof(*buf));
+    n = recv(((li_socket_t *)obj)->fd, buf, size, flags);
     if (n < 0)
-        li_error_f("ERROR reading from socket");
+        li_error_f("couldn't read from socket");
     buf[n] = '\0';
-    return (li_object *)li_string_make(buf);
+    res = li_string_make(buf);
+    if (buf != _buf)
+        free(buf);
+    return (li_object *)res;
 }
 
 static li_object *p_socket_shutdown(li_object *args)
@@ -115,7 +125,8 @@ static li_object *p_socket_shutdown(li_object *args)
     int how;
     li_parse_args(args, "oi", &obj, &how);
     if (shutdown(((li_socket_t *)obj)->fd, how))
-        li_error("shutdown error", args);
+        /* li_error("shutdown error", args); */
+        ;
     return NULL;
 }
 

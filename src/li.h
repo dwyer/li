@@ -182,7 +182,7 @@ struct li_special_form_obj_t {
 };
 
 extern li_str_t *li_string_make(const char *s);
-extern li_str_t *li_string_copy(li_str_t *str);
+extern li_str_t *li_string_copy(li_str_t *str, int start, int end);
 extern void li_string_free(li_str_t *str);
 extern char *li_string_bytes(li_str_t *str);
 extern li_character_t li_string_ref(li_str_t *str, int k);

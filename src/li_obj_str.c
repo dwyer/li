@@ -34,7 +34,26 @@ static void display(li_str_t *str, li_port_t *port)
 
 static void write(li_str_t *str, li_port_t *port)
 {
-    li_port_printf(port, "\"%s\"", li_string_bytes(str));
+    const char *bytes = li_string_bytes(str);
+    li_port_printf(port, "\"", li_string_bytes(str));
+    while (*bytes) {
+        switch (*bytes) {
+        case '"':
+            li_port_printf(port, "\\\"");
+            break;
+        case '\n':
+            li_port_printf(port, "\\n");
+            break;
+        case '\r':
+            li_port_printf(port, "\\r");
+            break;
+        default:
+            li_port_printf(port, "%c", *bytes);
+            break;
+        }
+        bytes++;
+    }
+    li_port_printf(port, "\"", li_string_bytes(str));
 }
 
 const li_type_t li_type_string = {
@@ -55,9 +74,32 @@ extern li_str_t *li_string_make(const char *s)
     return str;
 }
 
-extern li_str_t *li_string_copy(li_str_t *str)
+extern li_str_t *li_string_copy(li_str_t *str, int start, int end)
 {
-    return li_string_make(str->bytes);
+    li_str_t *res;
+    char *bytes, *end_bytes;
+    if (start == 0 && end == -1)
+        return li_string_make(str->bytes);
+    if (end != -1 && start > end)
+        li_error_f("start must be less than end");
+    if (start > li_string_length(str) || (end != -1 && end > li_string_length(str)))
+        li_error_f("start and end are out of range");
+    bytes = str->bytes;
+    while (start) {
+        bytes += li_chr_decode(NULL, bytes);
+        start--;
+        end--;
+    }
+    if (end < 0)
+        return li_string_make(bytes);
+    bytes = strdup(bytes);
+    end_bytes = bytes;
+    while (end--)
+        end_bytes += li_chr_decode(NULL, end_bytes);
+    *end_bytes = '\0';
+    res = li_string_make(bytes);
+    free(bytes);
+    return res;
 }
 
 extern void li_string_free(li_str_t *str)
@@ -153,7 +195,7 @@ static li_object *p_is_string(li_object *args) {
 static li_object *p_string_append(li_object *args) {
     li_str_t *str;
     li_parse_args(args, "s.", &str, &args);
-    str = li_string_copy(str);
+    str = li_string_copy(str, 0, -1);
     for (; args; ) {
         li_str_t *old = str, *end;
         li_parse_args(args, "s.", &end, &args);
@@ -199,6 +241,44 @@ static li_object *p_string_to_symbol(li_object *args) {
     return (li_object *)li_symbol(li_string_bytes(str));
 }
 
+static li_object *p_string_split(li_object *args)
+{
+    li_object *res = NULL;
+    li_str_t **strs = li_allocate(NULL, 1, sizeof(*strs));
+    int strs_cap = 1, strs_len = 0;
+    li_str_t *str, *delim;
+    int splits = -1;
+    int i = 0, j;
+    int start = 0;
+    int n, p;
+    li_parse_args(args, "ss?i", &str, &delim, &splits);
+    n = li_string_length(str);
+    p = li_string_length(delim);
+    while (i < n - p) {
+        for (j = 0; j < p; ++j) {
+            if (li_string_ref(str, i + j) != li_string_ref(delim, j))
+                goto nomatch;
+        }
+        strs[strs_len++] = li_string_copy(str, start, i);
+        if (strs_cap == strs_len) {
+            strs_cap *= 2;
+            strs = li_allocate(strs, strs_cap, sizeof(*strs));
+        }
+        i += j;
+        start = i;
+        if (!--splits)
+            break;
+        continue;
+nomatch:
+        i++;
+    }
+    strs[strs_len++] = li_string_copy(str, start, -1);
+    while (strs_len--)
+        res = li_cons((li_object *)strs[strs_len], res);
+    free(strs);
+    return res;
+}
+
 extern void li_define_string_functions(li_env_t *env)
 {
     li_define_primitive_procedure(env, "make-string", p_make_string);
@@ -208,4 +288,5 @@ extern void li_define_string_functions(li_env_t *env)
     li_define_primitive_procedure(env, "string->list", p_string_to_list);
     li_define_primitive_procedure(env, "string->symbol", p_string_to_symbol);
     li_define_primitive_procedure(env, "string->vector", p_string_to_vector);
+    li_define_primitive_procedure(env, "string-split", p_string_split);
 }

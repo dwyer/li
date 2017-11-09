@@ -1,0 +1,14 @@
+(import struct)
+
+(define-struct (url scheme host port path))
+
+(define (url-parse url)
+  (let ((comps (string-split url "://")))
+    (assert (= (length comps) 2))
+    (let ((scheme (car comps))
+          (rest (cadr comps)))
+      (let ((comps (string-split (cadr comps) "/" 1)))
+        (assert (= (length comps) 2))
+        (let ((host (car comps))
+              (path (string-append "/" (cadr comps))))
+          (url-make scheme host "80" path))))))
