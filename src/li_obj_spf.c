@@ -125,6 +125,33 @@ static li_object *m_case(li_object *exp, li_env_t *env)
     return li_car(exprs);
 }
 
+static li_object *m_case_lambda(li_object *clauses, li_env_t *env)
+{
+    li_object *args = li_cons((li_object *)li_symbol("#args"), NULL);
+    li_object *length_args = li_cons((li_object *)li_symbol("length"), args);
+    li_object *lambda = li_cons((li_object *)li_string_make("wrong number of args"), args);
+    lambda = li_cons((li_object *)li_symbol("error"), lambda);
+    lambda = li_cons(lambda, NULL);
+    lambda = li_cons((li_object *)li_symbol("else"), lambda);
+    lambda = li_cons(lambda, NULL);
+    while (clauses) {
+        li_object *clause, *formals, *body;
+        li_parse_args(clauses, "l.", &clause, &clauses);
+        li_parse_args(clause, "l.", &formals, &body);
+        body = li_lambda(NULL, formals, body, env);
+        body = li_cons(body, NULL);
+        clause = li_cons((li_object *)li_num_with_int(li_length(formals)), NULL);
+        clause = li_cons(clause, body);
+        lambda = li_cons(clause, lambda);
+    }
+    lambda = li_cons(length_args, lambda);
+    lambda = li_cons((li_object *)li_symbol("case"), lambda);
+    lambda = li_cons(lambda, args);
+    lambda = li_cons((li_object *)li_symbol("apply"), lambda);
+    lambda = li_cons(lambda, NULL);
+    return li_lambda(NULL, (li_object *)li_symbol("#args"), lambda, env);
+}
+
 /* (cond (cond . clause) ... */
 /* ... (else . clause)) */
 static li_object *m_cond(li_object *seq, li_env_t *env)
@@ -161,8 +188,8 @@ static li_object *m_define(li_object *args, li_env_t *env)
             var = li_car(var);
         }
     } else {
-        li_assert_nargs(2, args);
-        val = li_eval(li_cadr(args), env);
+        li_parse_args(args, "yo", &var, &val);
+        val = li_eval(val, env);
     }
     li_assert_symbol(var);
     li_env_define(env, (li_sym_t *)var, val);
@@ -296,31 +323,32 @@ static li_object *m_let(li_object *args, li_env_t *env)
 
 static li_object *m_let_star(li_object *args, li_env_t *env)
 {
-    li_object *binding;
-    li_object *bindings;
-    env = li_env_make(env);
-    bindings = li_car(args);
-    for (bindings = li_car(args); bindings; bindings = li_cdr(bindings)) {
-        binding = li_car(bindings);
-        li_assert_symbol(li_car(binding));
-        li_env_define(env, (li_sym_t *)li_car(binding),
-                li_eval(li_cadr(binding), env));
+    li_object *bindings, *body;
+    li_parse_args(args, "l.", &bindings, &body);
+    while (bindings) {
+        li_object *binding, *val;
+        li_sym_t *var;
+        li_parse_args(bindings, "l.", &binding, &bindings);
+        li_parse_args(binding, "yo", &var, &val);
+        env = li_env_make(env);
+        li_env_define(env, var, li_eval(val, env));
     }
-    return li_cons(li_lambda(NULL, NULL, li_cdr(args), env), NULL);
+    return li_cons(li_lambda(NULL, NULL, body, env), NULL);
 }
 
 static li_object *m_letrec(li_object *args, li_env_t *env)
 {
-    li_object *head, *iter, *tail;
-
-    (void)env;
-    head = tail = li_cons((li_object *)li_symbol("begin"), NULL);
-    for (iter = li_car(args); iter; iter = li_cdr(iter))
-        tail = li_set_cdr(tail,
-                li_cons(li_cons((li_object *)li_symbol("define"),
-                        li_car(iter)), NULL));
-    li_set_cdr(tail, li_cdr(args));
-    return head;
+    li_object *bindings, *body;
+    li_parse_args(args, "l.", &bindings, &body);
+    env = li_env_make(env);
+    while (bindings) {
+        li_object *binding, *val;
+        li_sym_t *var;
+        li_parse_args(bindings, "l.", &binding, &bindings);
+        li_parse_args(binding, "yo", &var, &val);
+        li_env_define(env, var, li_eval(val, env));
+    }
+    return li_cons(li_lambda(NULL, NULL, body, env), NULL);
 }
 
 static li_object *m_load(li_object *args, li_env_t *env)
@@ -465,6 +493,7 @@ extern void li_define_primitive_macros(li_env_t *env)
     def_macro(env, "assert",                m_assert);
     def_macro(env, "begin",                 m_begin);
     def_macro(env, "case",                  m_case);
+    def_macro(env, "case-lambda",           m_case_lambda);
     def_macro(env, "cond",                  m_cond);
     def_macro(env, "define",                m_define);
     def_macro(env, "defmacro",              m_defmacro);

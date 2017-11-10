@@ -88,9 +88,17 @@ static li_object *p_is_procedure(li_object *args) {
  * procedure accepts.
  */
 static li_object *p_apply(li_object *args) {
-    li_assert_nargs(2, args);
-    li_assert_procedure(li_car(args));
-    return li_apply(li_car(args), li_cadr(args));
+    li_object *proc;
+    li_object *head = NULL, *tail = NULL;
+    li_parse_args(args, "o.", &proc, &args);
+    while (args) {
+        li_object *node = li_cdr(args) ? li_cons(li_car(args), NULL) : li_car(args);
+        tail = tail ? li_set_cdr(tail, node) : node;
+        if (!head)
+            head = tail;
+        args = li_cdr(args);
+    }
+    return li_apply(proc, head);
 }
 
 static li_object *p_map(li_object *args) {
@@ -190,7 +198,9 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
         return li_proc_prim(proc)(args);
     /* make a list of arguments with non-self-evaluating values quoted */
     while (args) {
-        li_object *arg = li_car(args);
+        li_object *arg;
+        li_assert_pair(args);
+        arg = li_car(args);
         if (!li_is_self_evaluating(arg))
             arg = quote(arg);
         MAGIC(head, tail, arg);
