@@ -11,6 +11,7 @@ struct li_bytevector_t {
 static void bytevector_deinit(li_bytevector_t *v)
 {
     free(v->bytes);
+    free(v);
 }
 
 static void bytevector_write(li_bytevector_t *v, li_port_t *port)

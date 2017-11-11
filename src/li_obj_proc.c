@@ -34,7 +34,7 @@ static void write(li_proc_obj_t *proc, li_port_t *port)
         li_port_printf(port, "#[procedure <primitive>]");
     } else {
         li_port_printf(port, "#[lambda %s ", li_proc_name(proc)
-                ? li_string_bytes(li_to_string(li_proc_name(proc)))
+                ? li_to_symbol(li_proc_name(proc))
                 : "\b");
         li_port_write(port, li_proc_vars(proc));
         li_port_printf(port, "]");

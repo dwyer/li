@@ -1,5 +1,11 @@
 #include "li.h"
 
+struct li_vector_t {
+    LI_OBJ_HEAD;
+    li_object **data;
+    int length;
+};
+
 /*
  * (vector . args)
  * Returns a vector containing the given args.
@@ -8,21 +14,20 @@ static li_object *proc(li_object *args) {
     return li_vector(args);
 }
 
-static void deinit(li_object *obj)
+static void deinit(li_vector_t *vec)
 {
-    free(li_to_vector(obj)->data);
+    free(vec->data);
+    free(vec);
 }
 
-static void mark(li_object *obj)
+static void vector_mark(li_vector_t *vec)
 {
-    li_vector_t *vec;
-    int k;
-    vec = li_to_vector(obj);
-    for (k = 0; k < li_vector_length(vec); k++)
-        li_mark(li_vector_ref(vec, k));
+    int i;
+    for (i = 0; i < li_vector_length(vec); i++)
+        li_mark(li_vector_ref(vec, i));
 }
 
-static void write(li_vector_t *vec, li_port_t *port)
+static void vector_write(li_vector_t *vec, li_port_t *port)
 {
     int k;
     li_port_printf(port, "[");
@@ -34,30 +39,30 @@ static void write(li_vector_t *vec, li_port_t *port)
     li_port_printf(port, "]");
 }
 
-static int length(li_object *vec)
+extern int li_vector_length(li_vector_t *vec)
 {
-    return li_vector_length(li_to_vector(vec));
+    return vec->length;
 }
 
-static li_object *ref(li_object *vec, int k)
+extern li_object *li_vector_ref(li_vector_t *vec, int k)
 {
-    return li_vector_ref(li_to_vector(vec), k);
+    return vec->data[k];
 }
 
-static void set(li_object *vec, int k, li_object *obj)
+extern void li_vector_set(li_vector_t *vec, int k, li_object *obj)
 {
-    li_vector_set(li_to_vector(vec), k, obj);
+    vec->data[k] = obj;
 }
 
 const li_type_t li_type_vector = {
     .name = "vector",
-    .mark = mark,
+    .mark = (li_mark_f *)vector_mark,
     .proc = proc,
-    .deinit = deinit,
-    .write = (li_write_f *)write,
-    .length = length,
-    .ref = ref,
-    .set = set,
+    .deinit = (li_deinit_f *)deinit,
+    .write = (li_write_f *)vector_write,
+    .length = (li_length_f *)li_vector_length,
+    .ref = (li_ref_f *)li_vector_ref,
+    .set = (li_set_f *)li_vector_set,
 };
 
 extern li_object *li_vector(li_object *lst)

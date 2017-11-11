@@ -56,8 +56,9 @@ extern void li_destroy(li_object *obj)
         return;
     } else if (li_type(obj)->deinit) {
         li_type(obj)->deinit(obj);
+    } else {
+        free(obj);
     }
-    free(obj);
 }
 
 extern void li_mark(li_object *obj)

@@ -7,24 +7,15 @@ struct li_str_t {
     char *bytes;
 };
 
-static void deinit(li_object *obj)
+static void deinit(li_str_t *str)
 {
-    li_string_free(li_to_string(obj));
+    li_string_free(str);
+    free(str);
 }
 
-static li_cmp_t compare(li_object *o1, li_object *o2)
+static li_object *ref(li_str_t *str, int k)
 {
-    return li_string_cmp(li_to_string(o1), li_to_string(o2));
-}
-
-static int length(li_object *str)
-{
-    return li_string_length(li_to_string(str));
-}
-
-static li_object *ref(li_object *str, int k)
-{
-    return li_character(li_string_ref(li_to_string(str), k));
+    return li_character(li_string_ref(str, k));
 }
 
 static void display(li_str_t *str, li_port_t *port)
@@ -58,12 +49,12 @@ static void write(li_str_t *str, li_port_t *port)
 
 const li_type_t li_type_string = {
     .name = "string",
-    .deinit = deinit,
+    .deinit = (li_deinit_f *)deinit,
     .write = (li_write_f *)write,
     .display = (li_write_f *)display,
-    .compare = compare,
-    .length = length,
-    .ref = ref,
+    .compare = (li_cmp_f *)li_string_cmp,
+    .length = (li_length_f *)li_string_length,
+    .ref = (li_ref_f *)ref,
 };
 
 extern li_str_t *li_string_make(const char *s)

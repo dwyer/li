@@ -16,7 +16,7 @@ static void mark(li_macro_t *obj)
 
 const li_type_t li_type_macro = {
     .name = "macro",
-    .mark = (void (*)(li_object *))mark,
+    .mark = (li_mark_f *)mark,
 };
 
 extern li_object *li_macro(li_object *vars, li_object *body,

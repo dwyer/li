@@ -30,7 +30,7 @@ static void write(li_num_t *num, li_port_t *port)
 const li_type_t li_type_number = {
     .name = "number",
     .write = (li_write_f *)write,
-    .compare = (li_cmp_t (*)(li_object *obj1, li_object *obj2))li_num_cmp,
+    .compare = (li_cmp_f *)li_num_cmp,
 };
 
 static li_num_t *li_num_zero(void)
@@ -226,19 +226,19 @@ static li_object *p_is_number(li_object *args) {
 static li_object *p_is_complex(li_object *args) {
     li_object *obj;
     li_parse_args(args, "o", &obj);
-    return li_boolean(li_is_number(obj) && li_num_is_complex(li_to_number(obj)));
+    return li_boolean(li_is_number(obj) && li_num_is_complex((li_num_t *)obj));
 }
 
 static li_object *p_is_real(li_object *args) {
     li_object *obj;
     li_parse_args(args, "o", &obj);
-    return li_boolean(li_is_number(obj) && li_num_is_real(li_to_number(obj)));
+    return li_boolean(li_is_number(obj) && li_num_is_real((li_num_t *)obj));
 }
 
 static li_object *p_is_rational(li_object *args) {
     li_object *obj;
     li_parse_args(args, "o", &obj);
-    return li_boolean(li_is_number(obj) && li_num_is_rational(li_to_number(obj)));
+    return li_boolean(li_is_number(obj) && li_num_is_rational((li_num_t *)obj));
 }
 
 /*

@@ -32,9 +32,8 @@ void li_repl(li_env_t *env) {
 }
 
 void li_script(li_env_t *env) {
-    li_object *args;
-    args = li_env_lookup(env, ARGV_SYMBOL);
-    li_load(li_string_bytes(li_to_string(li_car(args))), env);
+    li_object *args = li_env_lookup(env, ARGV_SYMBOL);
+    li_load(li_string_bytes((li_str_t *)li_car(args)), env);
 }
 
 int main(int argc, char *argv[]) {

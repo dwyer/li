@@ -26,6 +26,7 @@ static void mark(li_object *obj)
 static void deinit(li_object *obj)
 {
     free(((li_env_t *)obj)->array);
+    free(obj);
 }
 
 const li_type_t li_type_environment = {

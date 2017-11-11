@@ -6,15 +6,16 @@
 
 static li_sym_t *_syms[HASHSIZE] = { NULL };
 
-static void deinit(li_sym_t *obj)
+static void deinit(li_sym_t *sym)
 {
-    if (obj->next)
-        obj->next->prev = obj->prev;
-    if (obj->prev)
-        obj->prev->next = obj->next;
+    if (sym->next)
+        sym->next->prev = sym->prev;
+    if (sym->prev)
+        sym->prev->next = sym->next;
     else
-        _syms[obj->hash] = obj->next;
-    free(li_to_symbol(obj));
+        _syms[sym->hash] = sym->next;
+    free(sym->string);
+    free(sym);
 }
 
 static void write(li_sym_t *obj, li_port_t *port)

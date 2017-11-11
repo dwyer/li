@@ -55,6 +55,7 @@ typedef struct li_vector_t li_vector_t;
 
 extern void li_mark(li_object *obj);
 
+typedef li_cmp_t li_cmp_f(li_object *, li_object *);
 typedef void li_mark_f(li_object *);
 typedef void li_deinit_f(li_object *);
 typedef void li_write_f(li_object *, li_port_t *);
@@ -68,7 +69,7 @@ struct li_type_t {
     li_deinit_f *deinit;
     li_write_f *write;
     li_write_f *display;
-    li_cmp_t (*compare)(li_object *, li_object *);
+    li_cmp_f *compare;
     int (*length)(li_object *);
     li_object *(*ref)(li_object *, int);
     void (*set)(li_object *, int, li_object *);
@@ -222,12 +223,6 @@ struct li_type_obj_t {
     const li_type_t *val;
 };
 
-struct li_vector_t {
-    LI_OBJ_HEAD;
-    li_object **data;
-    int length;
-};
-
 /* The all important null object. */
 #define li_null                 ((li_object *)NULL)
 
@@ -295,12 +290,9 @@ extern int li_length(li_object *obj);
 /** Type casting. */
 #define li_chr_uint(obj)                ((li_character_obj_t *)(obj))->character
 #define li_to_character(obj)            li_chr_uint(obj)
-#define li_to_integer(obj)              (li_num_to_int(li_to_number((obj))))
-#define li_to_number(obj)               ((li_num_t *)(obj))
-#define li_to_string(obj)               ((li_str_t *)(obj))
+#define li_to_integer(obj)              (li_num_to_int((li_num_t *)(obj)))
 #define li_to_symbol(obj)               ((li_sym_t *)(obj))->string
 #define li_to_userdata(obj)             (obj)->data.userdata.v
-#define li_to_vector(obj)               ((li_vector_t *)(obj))
 #define li_to_type(obj)                 ((li_type_obj_t *)(obj))->val
 
 #define li_macro_primative(obj)         \
@@ -323,7 +315,7 @@ extern int li_length(li_object *obj);
 #define li_is_vector(obj)               li_is_type(obj, &li_type_vector)
 
 #define li_is_integer(obj)              \
-    (li_is_number(obj) && li_num_is_integer(li_to_number(obj)))
+    (li_is_number(obj) && li_num_is_integer((li_num_t *)(obj)))
 
 #define li_lock(obj)                    ((obj)->locked = LI_TRUE)
 #define li_unlock(obj)                  ((obj)->locked = LI_FALSE)
@@ -365,9 +357,9 @@ extern int li_length(li_object *obj);
 
 /** Vector accessors. */
 extern li_object *li_make_vector(int k, li_object *fill);
-#define li_vector_length(v)             (v)->length
-#define li_vector_ref(v, k)             (v)->data[(k)]
-#define li_vector_set(v, k, o)          ((v)->data[(k)] = (o))
+extern int li_vector_length(li_vector_t *vec);
+extern li_object *li_vector_ref(li_vector_t *vec, int k);
+extern void li_vector_set(li_vector_t *vec, int k, li_object *obj);
 
 /* li_error.c */
 extern void li_error(const char *msg, li_object *args);

@@ -132,6 +132,8 @@ static void deinit(li_port_t *port)
         li_unlock(port);
         return;
     }
+    li_port_close(port);
+    free(port);
 }
 
 static void writer(li_port_t *obj, li_port_t *port)
