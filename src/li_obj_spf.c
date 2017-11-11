@@ -220,7 +220,6 @@ static li_object *m_do(li_object *seq, li_env_t *env)
     li_object *let_args;
     li_object *let_bindings;
     li_object *tail;
-
     (void)env;
     li_assert_pair(seq);
     li_assert_pair(li_cdr(seq));
@@ -252,6 +251,16 @@ static li_object *m_do(li_object *seq, li_env_t *env)
     tail = li_set_cdr(tail,
             li_cons(li_cons((li_object *)li_symbol("#"), let_args), NULL));
     return head;
+}
+
+static li_object *m_export(li_object *seq, li_env_t *env)
+{
+    li_sym_t *var;
+    while (seq) {
+        li_parse_args(seq, "y.", &var, &seq);
+        li_env_define(li_env_base(env), var, li_env_lookup(env, var));
+    }
+    return NULL;
 }
 
 static li_object *m_if(li_object *seq, li_env_t *env)
@@ -499,6 +508,7 @@ extern void li_define_primitive_macros(li_env_t *env)
     def_macro(env, "defmacro",              m_defmacro);
     def_macro(env, "delay",                 m_delay);
     def_macro(env, "do",                    m_do);
+    def_macro(env, "export",                m_export);
     def_macro(env, "if",                    m_if);
     def_macro(env, "import",                m_import);
     def_macro(env, "lambda",                m_lambda);

@@ -45,6 +45,11 @@ extern li_env_t *li_env_make(li_env_t *base)
     return obj;
 }
 
+extern li_env_t *li_env_base(li_env_t *env)
+{
+    return env->base;
+}
+
 extern int li_env_assign(li_env_t *env, li_sym_t *var, li_object *val)
 {
     int i;

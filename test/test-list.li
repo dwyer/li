@@ -12,7 +12,6 @@
 (define e '((a 1) (b 2) (c 3)))
 
 (display 'testing-list...)
-(print)
 (test ((xcons '(b c) 'a) => (a b c))
       ((cons* 1 2 3 4) => (1 2 3 . 4))
       ((cons* 1) => 1)
@@ -142,4 +141,4 @@
       ((alist-delete 5 '((2 3) (5 7) (11 13))) => ((2 3) (11 13)))
       ((alist-delete 5 '((2 3) (5 7) (11 13)) <) => ((2 3) (5 7)))
       )
-(print 'done)
+(print 'ok)

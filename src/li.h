@@ -120,6 +120,7 @@ struct li_character_obj_t {
 /* environment */
 
 extern li_env_t *li_env_make(li_env_t *base);
+extern li_env_t *li_env_base(li_env_t *env);
 extern int li_env_assign(li_env_t *env, li_sym_t *var, li_object *val);
 extern void li_env_define(li_env_t *env, li_sym_t *var, li_object *val);
 extern li_object *li_env_lookup(li_env_t *env, li_sym_t *var);
