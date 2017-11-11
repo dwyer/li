@@ -1,0 +1,17 @@
+(let ()
+  (display "test record-type...")
+  (import record-type)
+  (define-record-type
+    pare
+    (kons x y)
+    pare?
+    (x kar set-kar!)
+    (y kdr))
+  (assert (pare? (kons 1 2)))
+  (assert (not (pare? (cons 1 2))))
+  (assert (= (kar (kons 1 2)) 1))
+  (assert (= (kdr (kons 1 2)) 2))
+  (let ((k (kons 1 2)))
+    (set-kar! k 3)
+    (assert (= (kar k) 3)))
+  (print "passed"))

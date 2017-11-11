@@ -1,0 +1,38 @@
+(let ()
+
+  (define (index field-names field-name i)
+    (let loop ((lst field-names) (i i))
+      (cond ((null? lst) (error "invalid field name" field-name))
+            ((eq? (car lst) field-name) i)
+            (else (loop (cdr lst) (+ i 1))))))
+
+  (defmacro (define-record-type name constructor pred . fields)
+    (let ((constructor-name (car constructor))
+          (field-names (cdr constructor)))
+      `(begin
+         (define ,constructor
+           (vector ',name ,@field-names))
+         (define (,pred obj)
+           (and (vector? obj)
+                (= (length obj) ,(length constructor))
+                (eq? (ref obj 0) ',name)))
+         ,@(map (lambda (field)
+                  (let ((field-name (car field))
+                        (accessor-name (cadr field))
+                        (modifier-name
+                          (case (length (cddr field))
+                            ((0) false)
+                            ((1) (caddr field))
+                            (else (error
+                                    "define-record-type: too many params to field"
+                                    field)))))
+                    (let ((i (index field-names field-name 1)))
+                      `(begin
+                         (define (,accessor-name record)
+                           (ref record ,i))
+                         ,(if modifier-name
+                            `(define (,modifier-name record value)
+                               (set record ,i value)))))))
+                fields))))
+
+  (export define-record-type))
