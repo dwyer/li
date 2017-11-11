@@ -1,4 +1,4 @@
 (import http)
 
 (let ((res (http-head "http://google.com/index.html")))
-  (print (res 'headers)))
+  (print (http-response-headers res)))

@@ -17,22 +17,15 @@
   (if (string? url)
     (set! url (url-parse url)))
   (assert (url? url))
-  (assert (= "http" (url 'scheme))))
-
-(define (http-request? obj) (and (procedure? obj) (obj 'type)))
+  (assert (= "http" (url-scheme url))))
 
 (define-struct (http-response version status-code status-desc headers body))
 
-(defmacro (if-let binding consequence alternative)
-  `(let (,binding)
-     (if ,(car binding)
-       ,consequence
-       ,alternative)))
-
-(define (http-response-get-header res header)
-  (if-let (p (assv header (res 'headers)))
-          (cdr p)
-          false))
+(define (http-response-header res header)
+  (let ((binding (assv header (http-response-headers res))))
+    (if binding
+      (cdr binding)
+      false)))
 
 (define (http-response-parse result)
   (let ((comps (string-split result
@@ -55,17 +48,18 @@
 
 (define (http-request-send req)
   (assert (http-request? req))
-  (let ((sock (make-client-socket ((req 'url) 'host) ((req 'url) 'port))))
+  (let ((sock (make-client-socket (url-host (http-request-url req))
+                                  (url-port (http-request-url req)))))
     # send HTTP status line
-    (socket-send sock (req 'method))
+    (socket-send sock (http-request-method req))
     (socket-send sock " ")
-    (socket-send sock ((req 'url) 'path))
+    (socket-send sock (url-path (http-request-url req)))
     (socket-send sock " ")
-    (socket-send sock (req 'version))
+    (socket-send sock (http-request-version req))
     (socket-send sock *http-line-break*)
     # send host header
     (socket-send sock "Host: ")
-    (socket-send sock ((req 'url) 'host))
+    (socket-send sock (url-host (http-request-url req)))
     (socket-send sock *http-line-break*)
     # send other headers
     (for-each (lambda (header)
@@ -73,7 +67,7 @@
                 (socket-send sock ": ")
                 (socket-send sock (cdr header))
                 (socket-send sock *http-line-break*))
-              (req 'headers))
+              (http-request-headers req))
     # send empty line
     (socket-send sock *http-line-break*)
     # start receiving response
@@ -82,7 +76,7 @@
                       (if (= (length buffer) 0)
                         (cons buffer null)
                         (cons buffer (loop (socket-recv sock buffer-size)))))))
-      (if (= (req 'version) *http-version-1.1*)
+      (if (= (http-request-version req) *http-version-1.1*)
         (socket-shutdown sock *shut-rdwr*))
       (socket-close sock)
       (http-response-parse (apply string-append buffers)))))
@@ -95,9 +89,9 @@
                                   `(("User-agent" . ,*http-user-agent*)
                                     ("Accept" . "*/*")
                                     ("Connection" . "close"))))))
-    (case (res 'status-code)
+    (case (http-response-status-code res)
       ((301 302)
-       (http-get (http-response-get-header res "Location")))
+       (http-get (http-response-header res "Location")))
       (else res))))
 
 (define (http-get url)

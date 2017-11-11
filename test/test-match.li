@@ -1,5 +1,5 @@
+(import list)
 (import match)
-(import range)
 
 (display 'test-match...)
 
@@ -8,7 +8,7 @@
                    (+ a b)))
            3))
 
-(let ((xs (range 100))
+(let ((xs (iota 100))
       (ys null))
   (match (for x in xs (set! ys (cons (* x x) ys)))
          ((for obj in lst expr ...)

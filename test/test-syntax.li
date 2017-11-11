@@ -1,8 +1,9 @@
+(import list)
 (import for)
 
 (display 'test-syntax...)
 
-(let ((xs (range 100))
+(let ((xs (iota 100))
       (ys null))
   (for x in xs (set! ys (cons (* x x) ys)))
   (assert (equal? (reverse xs) (gen (sqrt y) for y in ys))))

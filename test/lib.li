@@ -1,34 +1,9 @@
 (define (check condition who msg . args)
   (if (not condition)
-    (apply error (cons who (cons msg args)))))
-
-(define (cons* . xs)
-  (cond ((null? xs) null)
-        ((null? (cdr xs)) (car xs))
-        (else (cons (car xs) (apply cons* (cdr xs))))))
+    (apply error who msg args)))
 
 (define (randint start end)
   (+ start (modulo (rand) (- end start -1))))
-
-(define (range start end)
-  (let iter ((k start))
-    (if (< k end)
-      (cons k (iter (+ k 1)))
-      null)))
-
-# PORTS
-
-(define (open-input-file str)
-  (port str "r"))
-
-(define (open-binary-input-file str)
-  (port str "rb"))
-
-(define (open-output-file str)
-  (port str "w"))
-
-(define (open-binary-output-file str)
-  (port str "wb"))
 
 # STRINGS
 

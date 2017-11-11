@@ -554,6 +554,7 @@
 (import test-syntax)
 (import test-string)
 (import test-split)
-(import test-sock)
+; (import test-sock)
+(import test-list)
 (print "all tests passed!")
 (print (timer) "seconds")

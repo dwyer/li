@@ -1,0 +1,21 @@
+(define (hash-table comparator)
+  (vector 'hash-table comparator null))
+
+(define (hash-table? obj)
+  (and (vector obj) (= (length obj) 3) (eq? (ref obj 0) 'hash-table)))
+
+(define (hash-table-comparator hash-table)
+  (ref hash-table 1))
+
+(define (hash-table->alist hash-table)
+  (ref hash-table 2))
+
+(define (hash-table-ref hash-table key)
+  (let ((comparator (hash-table-comparator hash-table)))
+    (let loop ((lst (hash-table->alist hash-table)))
+      (if (null? lst)
+        false
+        (loop (cdr lst))))))
+
+(define (alist->hash-table alist comparator)
+  (vector 'hash-table comparator alist))

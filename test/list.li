@@ -1,37 +1,104 @@
-(define (any pred lst)
-  (if (null? lst)
-    false
-    (or (pred (car lst)) (any pred (cdr lst)))))
+(import values)
 
-(define (every pred lst)
+(define range
+  (case-lambda
+    ((e)
+     (range 0 e))
+    ((b e)
+     (do ((r null (cons e r))
+          (e (- e 1) (- e 1)))
+       ((< e b) r)))))
+
+(define (xcons d a)
+  (cons a d))
+
+(define (cons* . xs)
+  (cond ((null? xs) null)
+        ((null? (cdr xs)) (car xs))
+        (else (cons (car xs) (apply cons* (cdr xs))))))
+
+(define (make-list n . args)
+  (let ((fill (if (null? args) false (car args))))
+    (let loop ((n n))
+      (if (zero? n)
+        null
+        (cons fill (loop (- n 1)))))))
+
+(define (list-tabulate n init-proc)
+  (let loop ((i 0))
+    (if (< i n)
+      (cons (init-proc i) (loop (+ i 1)))
+      null)))
+
+(define (list-copy lst)
   (if (null? lst)
-    true
-    (and (pred (car lst)) (every pred (cdr lst)))))
+    null
+    (cons (car lst) (list-copy (cdr lst)))))
+
+(define (circular-list elt . elts)
+  (let ((head (cons elt elts)))
+    (let loop ((tail head))
+      (cond ((null? (cdr tail))
+             (set-cdr! tail head)
+             head)
+            (else (loop (cdr tail)))))))
 
 (define iota
   (let ()
-    (define (*iota* count start step)
-      (if (zero? count)
-        null
-        (cons start (*iota* (- count 1) (+ start step) step))))
-    (lambda args
-      (case (length args)
-        ((1) (*iota* (car args) 0 1))
-        ((3) (*iota* (car args) (cadr args) (caddr args)))
-        (else (error 'range "wrong number of args" args))))))
+    (case-lambda
+      ((count) (iota count 0 1))
+      ((count start step)
+       (let loop ((count count) (start start))
+         (if (zero? count)
+           null
+           (cons start (loop (- count 1) (+ start step)))))))))
 
-(define (last lst)
-  (if (or (null? lst) (null? (cdr lst)))
-    lst
-    (last (cdr lst))))
+(define (*list-type* x)
+  (let loop ((x x) (pairs null))
+    (cond ((null? x) 'proper)
+          ((not (pair? x)) 'dotted)
+          ((memq x pairs) 'circular)
+          (else (loop (cdr x) (cons x pairs))))))
 
-(define (some pred lst)
-  (if (null? lst)
-    false
-    (or (pred (car lst))
-        (some pred (cdr lst)))))
+(define (proper-list? x)    (eq? (*list-type* x) 'proper))
+(define (circular-list? x)  (eq? (*list-type* x) 'circular))
+(define (dotted-list? x)    (eq? (*list-type* x) 'dotted))
+(define (null-list? lst)    (cond ((null? lst) true)
+                                  ((pair? lst) false)
+                                  (else (error "not a list" lst))))
+(define (not-pair? x)       (not (pair? x)))
+
+(define (all= elt= lst)
+  (every (lambda (x)
+           (elt= x (car lst)))
+         (cdr lst)))
+
+(define (list= elt= . lists)
+  (if (< (length lists) 2)
+    true
+    (let loop ((lists lists))
+      (cond ((every null? lists) true)
+            ((all= elt= (map car lists))
+             (loop (map cdr lists)))
+            (else false)))))
+
+(define list-ref ref)
+
+(define (first lst) (ref lst 0))
+(define (second lst) (ref lst 1))
+(define (third lst) (ref lst 2))
+(define (fourth lst) (ref lst 3))
+(define (fifth lst) (ref lst 4))
+(define (sixth lst) (ref lst 5))
+(define (seventh lst) (ref lst 6))
+(define (eighth lst) (ref lst 7))
+(define (ninth lst) (ref lst 8))
+(define (tenth lst) (ref lst 9))
+
+(define (car+cdr pair) (values (car p) (cdr p)))
 
 (define (take lst i)
+  (assert (positive? i))
   (cond ((zero? i) null)
         ((null? lst) false)
         (else (let ((rest (take (cdr lst) (- i 1))))
@@ -39,18 +106,262 @@
                   (cons (car lst) rest)
                   false)))))
 
-(define (fold f id lst)
-  (if (null? lst)
-    id
-    (fold f (f (car lst) id) (cdr lst))))
+(define (drop lst i)
+  (assert (positive? i))
+  (cond ((zero? i) lst)
+        ((null? lst) false)
+        (else (drop (cdr lst) (- i 1)))))
 
-(define (fold-right f id lst)
-  (if (null? lst)
+(define (*length* lst)
+  (if (pair? lst)
+    (+ 1 (*length* (cdr lst)))
+    0))
+
+(define (take-right lst i)
+  (assert (positive? i))
+  (drop lst (- (*length* lst) i)))
+
+(define (drop-right lst i)
+  (assert (positive? i))
+  (take lst (- (*length* lst) i)))
+
+(define (take! lst k)
+  (assert (positive? k))
+  (if (zero? k)
+    lst
+    (begin
+      (let loop ((lst lst) (k k))
+        (if (= k 1)
+          (set-cdr! lst null)
+          (loop (cdr lst) (- k 1))))
+      lst)))
+
+(define (drop-right lst i)
+  (assert (positive? i))
+  (take! lst (- (*length* lst) i)))
+
+(define (split-at lst i)
+  (values (take lst i) (drop lst i)))
+
+(define (last lst)
+  (let ((lst (last-pair lst)))
+    (if lst
+      (car lst)
+      false)))
+
+(define (last-pair lst)
+  (cond ((null? lst) false)
+        ((null? (cdr lst)) lst)
+        (else (last-pair (cdr lst)))))
+
+(define (concatenate lol)
+  (apply append lol))
+
+(define (reverse lst)
+  (fold cons null lst))
+
+(define (append-reverse rev-head tail)
+  (fold cons tail rev-head))
+
+(define (zip . lists)
+  (apply map list lists))
+
+(define (*unzip* n lists)
+  (apply values (let loop ((i 0))
+                  (if (< i n)
+                    (cons (map (lambda (x)
+                                 (ref x i))
+                               lists)
+                          (loop (+ i 1)))
+                    null))))
+
+(define (unzip1 lists) (map car lists))
+(define (unzip2 lists) (*unzip* 2 lists))
+(define (unzip3 lists) (*unzip* 3 lists))
+(define (unzip4 lists) (*unzip* 4 lists))
+(define (unzip5 lists) (*unzip* 5 lists))
+
+(define (count pred . lists)
+  (if (null? lists)
+    0
+    (let loop ((lists lists))
+      (if (any null? lists)
+        0
+        (+ (if (apply pred (map car lists)) 1 0)
+           (loop (map cdr lists)))))))
+
+(define (fold f id . lists)
+  (if (any null? lists)
     id
-    (f (car lst)
-       (fold-right f id (cdr lst)))))
+    (apply fold
+           f
+           (apply f `(,@(map car lists) ,id))
+           (map cdr lists))))
+
+(define (fold-right f id . lsts)
+  (if (any null? lsts)
+    id
+    (apply f `(,@(map car lsts) ,(apply fold-right f id (map cdr lsts))))))
+
+(define (pair-fold f id . lsts)
+  (if (any null? lsts)
+    id
+    (let ((tail (map cdr lsts)))
+      (apply pair-fold f (apply f `(,@lsts ,id)) tail))))
+
+(define (pair-fold-right f id . lsts)
+  (if (any null? lsts)
+    id
+    (apply f `(,@lsts ,(apply pair-fold-right f id (map cdr lsts))))))
 
 (define (reduce f id lst)
   (if (null? lst)
     id
     (fold f (car lst) (cdr lst))))
+
+(define (reduce-right f id lst)
+  (case (length lst)
+    ((0) id)
+    ((1) (f (car lst) id))
+    (else (f (car lst) (reduce f id (cdr lst))))))
+
+(define (unfold p f g seed . rest)
+  (let ((tail-gen (case (length rest)
+                    ((0) (lambda (x) null))
+                    ((1) (car rest))
+                    (else (error "wrong number of args")))))
+    (if (p seed)
+      (tail-gen seed)
+      (cons (f seed)
+            (unfold p f g (g seed))))))
+
+(define (filter-map f . lst)
+  (if (any null? lst)
+    null
+    (let ((x (apply f (map car lst)))
+          (tail (apply filter-map f (map cdr lst))))
+      (if x
+        (cons x tail)
+        tail))))
+
+(define (filter pred lst)
+  (let loop ((lst lst))
+    (if (null? lst)
+      null
+      (let ((x (car lst))
+            (tail (loop (cdr lst))))
+        (if (pred x)
+          (cons x tail)
+          tail)))))
+
+(define (partition pred lst)
+  (let loop ((lst lst) (pos null) (neg null))
+    (if (null? lst)
+      (values pos neg)
+      (let ((x (car lst)))
+        (if (pred x)
+          (loop (cdr lst) `(,@pos ,x) neg)
+          (loop (cdr lst) pos `(,@neg ,x)))))))
+
+(define (remove pred lst)
+  (filter (lambda (x) (not (pred x))) lst))
+
+(define (find pred lst)
+  (let ((tail (find-tail pred lst)))
+    (and tail (car tail))))
+
+(define (find-tail pred lst)
+  (cond ((null? lst) false)
+        ((pred (car lst)) lst)
+        (else (find-tail pred (cdr lst)))))
+
+(define (take-while pred lst)
+  (if (or (null? lst)
+          (not (pred (car lst))))
+    null
+    (cons (car lst) (take-while pred (cdr lst)))))
+
+(define (drop-while pred lst)
+  (cond ((null? lst) null)
+        ((pred (car lst)) (drop-while pred (cdr lst)))
+        (else lst)))
+
+(define (span pred lst)
+  (values (take-while pred lst)
+          (drop-while pred lst)))
+
+(define (break pred lst)
+  (span (lambda (x) (not (pred x))) lst))
+
+(define any
+  (let ()
+    (define (%any1 pred lst)
+      (if (null? lst)
+        false
+        (or (pred (car lst))
+            (%any1 pred (cdr lst)))))
+    (lambda (pred lst . lists)
+      (if (null? lists)
+        (%any1 pred lst)
+        (let loop ((lists (cons lst lists)))
+          (if (%any1 null? lists)
+            false
+            (or (apply pred (map car lists))
+                (loop (map cdr lists)))))))))
+
+(define (every pred lst . lsts)
+  (let loop ((lsts (cons lst lsts)))
+    (if (any null? lsts)
+      true
+      (and (apply pred (map car lsts))
+           (loop (map cdr lsts))))))
+
+(define (list-index pred lst . lsts)
+  (let loop ((lsts (cons lst lsts)) (i 0))
+    (cond ((any null? lsts) false)
+          ((apply pred (map car lsts)) i)
+          (else (loop (map cdr lsts) (+ i 1))))))
+
+(define delete
+  (case-lambda
+    ((x lst)
+     (delete x lst equal?))
+    ((x lst =)
+     (if (null? lst)
+       null
+       (let ((y (car lst))
+             (zs (delete x (cdr lst) =)))
+         (if (= x y)
+           zs
+           (cons y zs)))))))
+
+(define delete-duplicates
+  (case-lambda
+    ((lst)
+     (delete-duplicates lst equal?))
+    ((lst =)
+     (if (null? lst)
+       null
+       (let ((x (car lst)))
+         (cons x (delete-duplicates (delete x (cdr lst) =) =)))))))
+
+(define (alist-cons key datum alist)
+  (cons (cons key datum) alist))
+
+(define (alist-copy alist)
+  (map (lambda (elt)
+         (cons (car elt) (cdr elt)))
+       alist))
+
+(define alist-delete
+  (case-lambda
+    ((key alist) (alist-delete key alist equal?))
+    ((key alist =)
+     (let loop ((alist alist))
+       (if (null? alist)
+         null
+         (let ((pair (car alist))
+               (tail (loop (cdr alist))))
+           (if (= key (car pair))
+             tail
+             (cons pair tail))))))))

@@ -23,9 +23,9 @@ struct li_port_t {
 };
 
 static li_port_t port_std[3] = {
-    {.type = &li_type_port, .fd = 0, .flags = IO_FILE | IO_INPUT},
-    {.type = &li_type_port, .fd = 1, .flags = IO_FILE | IO_OUTPUT},
-    {.type = &li_type_port, .fd = 2, .flags = IO_FILE | IO_OUTPUT},
+    {.type = &li_type_port, .fd = STDIN_FILENO, .flags = IO_FILE | IO_INPUT},
+    {.type = &li_type_port, .fd = STDOUT_FILENO, .flags = IO_FILE | IO_OUTPUT},
+    {.type = &li_type_port, .fd = STDERR_FILENO, .flags = IO_FILE | IO_OUTPUT},
 };
 
 li_port_t *li_port_stdin = &port_std[0];
