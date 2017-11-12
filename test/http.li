@@ -1,101 +1,104 @@
-(import struct)
-(import url)
+(let ()
+  (import struct)
+  (import url)
 
-(define *http-user-agent* "li-http/0.1")
+  (define *http-user-agent* "li-http/0.1")
 
-(define *http-line-break* "\r\n")
+  (define *http-line-break* "\r\n")
 
-(define *http-version-1.0* "HTTP/1.0")
-(define *http-version-1.1* "HTTP/1.1")
+  (define *http-version-1.0* "HTTP/1.0")
+  (define *http-version-1.1* "HTTP/1.1")
 
-(define *http-method-GET* "GET")
-(define *http-method-POST* "POST")
-(define *http-method-HEAD* "HEAD")
+  (define *http-method-GET* "GET")
+  (define *http-method-POST* "POST")
+  (define *http-method-HEAD* "HEAD")
 
-(define-struct
-  (http-request version method url headers)
-  (if (string? url)
-    (set! url (url-parse url)))
-  (assert (url? url))
-  (assert (= "http" (url-scheme url))))
+  (define-struct
+    (http-request version method url headers)
+    (if (string? url)
+      (set! url (url-parse url)))
+    (assert (url? url))
+    (assert (= "http" (url-scheme url))))
 
-(define-struct (http-response version status-code status-desc headers body))
+  (define-struct (http-response version status-code status-desc headers body))
 
-(define (http-response-header res header)
-  (let ((binding (assv header (http-response-headers res))))
-    (if binding
-      (cdr binding)
-      false)))
+  (define (http-response-header res header)
+    (let ((binding (assv header (http-response-headers res))))
+      (if binding
+        (cdr binding)
+        false)))
 
-(define (http-response-parse result)
-  (let ((comps (string-split result
-                             (string-append *http-line-break*
-                                            *http-line-break*)
-                             1)))
-    (let ((headers-comp (string-split (car comps) *http-line-break*))
-          (body (cadr comps)))
-      (let ((status (string-split (car headers-comp) " " 2))
-            (headers (map (lambda (line)
-                            (let ((lst (string-split line ": " 1)))
-                              (cons (car lst) (cadr lst))))
-                          (cdr headers-comp))))
-        (http-response-make
-          (car status) # HTTP version
-          (string->number (cadr status)) # status code
-          (caddr status) # status desc
-          headers
-          body)))))
+  (define (http-response-parse result)
+    (let ((comps (string-split result
+                               (string-append *http-line-break*
+                                              *http-line-break*)
+                               1)))
+      (let ((headers-comp (string-split (car comps) *http-line-break*))
+            (body (cadr comps)))
+        (let ((status (string-split (car headers-comp) " " 2))
+              (headers (map (lambda (line)
+                              (let ((lst (string-split line ": " 1)))
+                                (cons (car lst) (cadr lst))))
+                            (cdr headers-comp))))
+          (http-response-make
+            (car status) # HTTP version
+            (string->number (cadr status)) # status code
+            (caddr status) # status desc
+            headers
+            body)))))
 
-(define (http-request-send req)
-  (assert (http-request? req))
-  (let ((sock (make-client-socket (url-host (http-request-url req))
-                                  (url-port (http-request-url req)))))
-    # send HTTP status line
-    (socket-send sock (http-request-method req))
-    (socket-send sock " ")
-    (socket-send sock (url-path (http-request-url req)))
-    (socket-send sock " ")
-    (socket-send sock (http-request-version req))
-    (socket-send sock *http-line-break*)
-    # send host header
-    (socket-send sock "Host: ")
-    (socket-send sock (url-host (http-request-url req)))
-    (socket-send sock *http-line-break*)
-    # send other headers
-    (for-each (lambda (header)
-                (socket-send sock (car header))
-                (socket-send sock ": ")
-                (socket-send sock (cdr header))
-                (socket-send sock *http-line-break*))
-              (http-request-headers req))
-    # send empty line
-    (socket-send sock *http-line-break*)
-    # start receiving response
-    (let* ((buffer-size 8092)
-           (buffers (let loop ((buffer (socket-recv sock buffer-size)))
-                      (if (= (length buffer) 0)
-                        (cons buffer null)
-                        (cons buffer (loop (socket-recv sock buffer-size)))))))
-      (if (= (http-request-version req) *http-version-1.1*)
-        (socket-shutdown sock *shut-rdwr*))
-      (socket-close sock)
-      (http-response-parse (apply string-append buffers)))))
+  (define (http-request-send req)
+    (assert (http-request? req))
+    (let ((sock (make-client-socket (url-host (http-request-url req))
+                                    (url-port (http-request-url req)))))
+      # send HTTP status line
+      (socket-send sock (http-request-method req))
+      (socket-send sock " ")
+      (socket-send sock (url-path (http-request-url req)))
+      (socket-send sock " ")
+      (socket-send sock (http-request-version req))
+      (socket-send sock *http-line-break*)
+      # send host header
+      (socket-send sock "Host: ")
+      (socket-send sock (url-host (http-request-url req)))
+      (socket-send sock *http-line-break*)
+      # send other headers
+      (for-each (lambda (header)
+                  (socket-send sock (car header))
+                  (socket-send sock ": ")
+                  (socket-send sock (cdr header))
+                  (socket-send sock *http-line-break*))
+                (http-request-headers req))
+      # send empty line
+      (socket-send sock *http-line-break*)
+      # start receiving response
+      (let* ((buffer-size 8092)
+             (buffers (let loop ((buffer (socket-recv sock buffer-size)))
+                        (if (= (length buffer) 0)
+                          (cons buffer null)
+                          (cons buffer (loop (socket-recv sock buffer-size)))))))
+        (if (= (http-request-version req) *http-version-1.1*)
+          (socket-shutdown sock *shut-rdwr*))
+        (socket-close sock)
+        (http-response-parse (apply string-append buffers)))))
 
-(define (http-fetch method url)
-  (let ((res (http-request-send
-               (http-request-make *http-version-1.1*
-                                  method
-                                  url
-                                  `(("User-agent" . ,*http-user-agent*)
-                                    ("Accept" . "*/*")
-                                    ("Connection" . "close"))))))
-    (case (http-response-status-code res)
-      ((301 302)
-       (http-get (http-response-header res "Location")))
-      (else res))))
+  (define (http-fetch method url)
+    (let ((res (http-request-send
+                 (http-request-make *http-version-1.1*
+                                    method
+                                    url
+                                    `(("User-agent" . ,*http-user-agent*)
+                                      ("Accept" . "*/*")
+                                      ("Connection" . "close"))))))
+      (case (http-response-status-code res)
+        ((301 302)
+         (http-get (http-response-header res "Location")))
+        (else res))))
 
-(define (http-get url)
-  (http-fetch *http-method-GET* url))
+  (define (http-get url)
+    (http-fetch *http-method-GET* url))
 
-(define (http-head url)
-  (http-fetch *http-method-HEAD* url))
+  (define (http-head url)
+    (http-fetch *http-method-HEAD* url))
+
+  (export http-request))

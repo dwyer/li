@@ -1,9 +1,10 @@
-(import define-syntax)
-
-(define-syntax define-syntax-rule
-  (syntax-rules ()
-    ((_ (name args ...) expr)
-     (define-syntax name
-       (syntax-rules ()
-         ((name args ...)
-          expr))))))
+(let ()
+  (import define-syntax)
+  (define-syntax define-syntax-rule
+    (syntax-rules ()
+      ((_ (name args ...) expr)
+       (define-syntax name
+         (syntax-rules ()
+           ((name args ...)
+            expr))))))
+  (export define-syntax))

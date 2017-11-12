@@ -1,23 +1,27 @@
-(define (make-stack)
-  (let ((xs null))
-    (lambda (ys)
-      (if ys
-        (set! xs ys)
-        xs))))
+(let ()
 
-(define (stack->list stack)
-  (stack false))
+  (define (make-stack)
+    (let ((xs null))
+      (lambda (ys)
+        (if ys
+          (set! xs ys)
+          xs))))
 
-(define (stack-length stack)
-  (length (stack->list stack)))
+  (define (stack->list stack)
+    (stack false))
 
-(define (stack-push! stack x)
-  (stack (cons x (stack->list stack))))
+  (define (stack-length stack)
+    (length (stack->list stack)))
 
-(define (stack-pop! stack)
-  (let ((xs (stack->list stack)))
-    (if (null? xs)
-      (error 'stack-pop! "stack is empty")
-      (let ((x (car xs)))
-        (stack (cdr xs))
-        x))))
+  (define (stack-push! stack x)
+    (stack (cons x (stack->list stack))))
+
+  (define (stack-pop! stack)
+    (let ((xs (stack->list stack)))
+      (if (null? xs)
+        (error 'stack-pop! "stack is empty")
+        (let ((x (car xs)))
+          (stack (cdr xs))
+          x))))
+
+  (export make-stack stack->list stack-length stack-push! stack-pop!))

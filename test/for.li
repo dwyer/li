@@ -1,13 +1,17 @@
-(import define-syntax)
+(let ()
 
-(define-syntax for
-  (syntax-rules (in)
-    ((for obj in lst expr ...)
-     (for-each (lambda (obj)
-                 expr ...)
-               lst))))
+  (import define-syntax)
 
-(define-syntax gen
-  (syntax-rules (for in)
-    ((gen expr for obj in lst)
-     (map (lambda (obj) expr) lst))))
+  (define-syntax for
+    (syntax-rules (in)
+      ((for obj in lst expr ...)
+       (for-each (lambda (obj)
+                   expr ...)
+                 lst))))
+
+  (define-syntax gen
+    (syntax-rules (for in)
+      ((gen expr for obj in lst)
+       (map (lambda (obj) expr) lst))))
+
+  (export for gen))

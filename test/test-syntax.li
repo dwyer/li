@@ -1,11 +1,13 @@
-(import list)
-(import for)
+(let ()
+  (import list)
+  (import match)
+  (import for)
 
-(display 'test-syntax...)
+  (display 'test-syntax...)
 
-(let ((xs (iota 100))
-      (ys null))
-  (for x in xs (set! ys (cons (* x x) ys)))
-  (assert (equal? (reverse xs) (gen (sqrt y) for y in ys))))
+  (let ((xs (iota 100))
+        (ys null))
+    (for x in xs (set! ys (cons (* x x) ys)))
+    (assert (equal? (reverse xs) (gen (sqrt y) for y in ys))))
 
-(print 'passed)
+  (print 'passed))

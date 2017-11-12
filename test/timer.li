@@ -1,0 +1,8 @@
+(let ()
+  (define (make-timer)
+    (let ((start (current-jiffy)))
+      (lambda ()
+        (inexact (/ (- (current-jiffy)
+                       start)
+                    (jiffies-per-second))))))
+  (export make-timer))

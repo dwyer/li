@@ -1,44 +1,47 @@
 # based on https://srfi.schemers.org/srfi-132/srfi-132.html
 
-(import values)
+(let ()
+  (import values)
 
-(define (list-sorted? < lis)
-  (let loop ((lis lis))
+  (define (list-sorted? < lis)
+    (let loop ((lis lis))
+      (if (or (null? lis) (null? (cdr lis)))
+        true
+        (and (< (car lis) (cadr lis))
+             (loop (cdr lis))))))
+
+  (define (*split* lst)
+    (let loop ((lst lst)
+               (a null)
+               (b null))
+      (if (null? lst)
+        (values a b)
+        (loop (cdr lst)
+              (cons (car lst) b)
+              a))))
+
+  (define (list-sort < lis)
     (if (or (null? lis) (null? (cdr lis)))
-      true
-      (and (< (car lis) (cadr lis))
-           (loop (cdr lis))))))
+      lis
+      (let-values (((a b) (*split* lis)))
+                  (list-merge < (list-sort < a) (list-sort < b)))))
 
-(define (*split* lst)
-  (let loop ((lst lst)
-             (a null)
-             (b null))
-    (if (null? lst)
-      (values a b)
-      (loop (cdr lst)
-            (cons (car lst) b)
-            a))))
+  (define (list-merge < lst1 lst2)
+    (cond ((null? lst1) lst2)
+          ((null? lst2) lst1)
+          ((< (car lst2) (car lst1))
+           (cons (car lst2) (list-merge < lst1 (cdr lst2))))
+          (else
+            (cons (car lst1) (list-merge < (cdr lst1) lst2)))))
 
-(define (list-sort < lis)
-  (if (or (null? lis) (null? (cdr lis)))
-    lis
-    (let-values (((a b) (*split* lis)))
-                (list-merge < (list-sort < a) (list-sort < b)))))
+  (define vector-find-median
+    (case-lambda
+      ((< v knil) (vector-find-median < v knil (lambda (a b) (/ (+ (a b) 2)))))
+      ((< v knil mean)
+       (let ((n (length v)))
+         (cond ((zero? v) knil)
+               ((odd? v) (ref v (// n 2)))
+               (else (mean (ref v (- (/ n 2) 1))
+                           (ref v (/ n 2)))))))))
 
-(define (list-merge < lst1 lst2)
-  (cond ((null? lst1) lst2)
-        ((null? lst2) lst1)
-        ((< (car lst2) (car lst1))
-         (cons (car lst2) (list-merge < lst1 (cdr lst2))))
-        (else
-          (cons (car lst1) (list-merge < (cdr lst1) lst2)))))
-
-(define vector-find-median
-  (case-lambda
-    ((< v knil) (vector-find-median < v knil (lambda (a b) (/ (+ (a b) 2)))))
-    ((< v knil mean)
-     (let ((n (length v)))
-       (cond ((zero? v) knil)
-             ((odd? v) (ref v (// n 2)))
-             (else (mean (ref v (- (/ n 2) 1))
-                         (ref v (/ n 2)))))))))
+  (export list-sorted? list-sort list-merge))
