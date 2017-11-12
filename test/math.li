@@ -1,0 +1,13 @@
+(let ()
+
+  (define pi 3.14159265359)
+
+  (define *radian->degrees* (/ 180 pi))
+
+  (define (radians->degrees x)
+    (* x *radian->degrees*))
+
+  (define (degrees->radians x)
+    (/ x *radian->degrees*))
+
+  (export pi radians->degrees degrees->radians))

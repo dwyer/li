@@ -1,0 +1,287 @@
+(let ()
+  (display "test-class...")
+
+  (import class)
+  (import list)
+  (import math)
+
+  (define-class
+    ((vec . xs)
+     (assert (every number? xs)))
+    # accessors for first three xs
+    ((x) (ref xs 0))
+    ((y) (ref xs 1))
+    ((z) (ref xs 2))
+    # dimension of self
+    ((dim) (length xs))
+    # magnitude of self
+    ((mag) (sqrt (apply + (map square xs))))
+    # negative of self
+    ((neg) (apply vec (map - xs)))
+    # unit vector of self
+    ((unit) (self 'scale (/ (self 'mag))))
+    # is self equal to other
+    ((= other) (and (= (self 'dim) (other 'dim)) (every = xs (other 'xs))))
+    # add self to other
+    ((+ other)
+     (assert (= (self 'dim) (other 'dim)))
+     (apply vec (map + xs (other 'xs))))
+    # subtract other from self
+    ((- other) (self '+ (other 'neg)))
+    # scale self by s
+    ((scale s) (apply vec (map (lambda (x) (* x s)) xs)))
+    # dot product of two vectors
+    ((dot other)
+     (assert (= (self 'dim) (other 'dim)))
+     (apply + (map * xs (other 'xs))))
+    # find the angle between two vectors
+    ((angle other)
+     (assert (= (self 'dim) (other 'dim)))
+     (acos (/ (self 'dot other) (* (self 'mag) (other 'mag)))))
+    # find the cross product of two 3D vectors
+    ((cross other)
+     (assert (= 3 (self 'dim) (other 'dim)))
+     (vec (- (* (self 'y) (other 'z))
+             (* (self 'z) (other 'y)))
+          (- (* (self 'z) (other 'x))
+             (* (self 'x) (other 'z)))
+          (- (* (self 'x) (other 'y))
+             (* (self 'y) (other 'x))))))
+
+  # vector examples from https://www.mathsisfun.com/algebra/vectors.html
+
+  (let ((a (vec 8 13))
+        (b (vec 26 7))
+        (c (vec 34 20)))
+    (assert ((a '+ b) '= c)))
+
+  (let ((k (vec 4 5))
+        (v (vec 12 2))
+        (w (vec 8 -3)))
+    (assert ((v '- k) '= w)))
+
+  (let ((b (vec 6 8)))
+    (assert (= (b 'mag) 10)))
+
+  (let ((m (vec 7 3))
+        (c (vec 21 9)))
+    (assert ((m 'scale 3) '= c)))
+
+  (let ((a (vec 3 7 4))
+        (b (vec 2 9 11))
+        (c (vec 5 16 15)))
+    (assert ((a '+ b) '= c)))
+
+  (let ((w (vec 1 -2 3)))
+    (assert (= (w 'mag) (sqrt 14))))
+
+  (let ((a (vec 1 2 3 4))
+        (b (vec 3 3 3 3))
+        (c (vec 2 1 0 -1)))
+    (assert ((b '- a) '= c)))
+
+  (let ()
+
+    (define (vec2-polar->cartesian r phi)
+      (vec (* r (cos phi))
+           (* r (sin phi))))
+
+    (let ((a (vec2-polar->cartesian 200 (degrees->radians 60)))
+          (b (vec2-polar->cartesian 120 (degrees->radians -45))))
+      (let ((c (a '+ b)))
+        (assert (= 205 (round (c 'mag))))
+        (assert (= 26 (round (radians->degrees (c 'angle (vec 1 0)))))))))
+
+  # example from https://www.mathsisfun.com/algebra/vectors-dot-product.html
+
+  (let ((a (vec -6 8))
+        (b (vec 5 12)))
+    (assert (= (a 'dot b) 66)))
+
+  (let ((a (vec -12 16))
+        (b (vec 12 9)))
+    (assert (zero? (a 'dot b)))
+    (assert (= 90 (radians->degrees (a 'angle b)))))
+
+  (let ((a (vec 4 8 10))
+        (b (vec 9 2 7)))
+    (assert (= 122
+               (a 'dot b)
+               (* (a 'mag) (b 'mag) (cos (a 'angle b))))))
+
+  # example from https://www.mathsisfun.com/algebra/vectors-cross-product.html
+
+  (let ((a (vec 2 3 4))
+        (b (vec 5 6 7))
+        (c (vec -3 6 -3)))
+    (assert (c '= (a 'cross b))))
+
+  (define-class
+    ((mat rows)
+     (assert (every = (map length rows))))
+    ((cols) (apply zip rows))
+    ((transpose) (mat (self 'cols)))
+    ((row i) (ref rows i))
+    ((ref i j) (ref (self 'row i) j))
+    ((n-rows) (length rows))
+    ((n-cols) (length (car rows)))
+    ((det)
+     (assert (= (self 'n-rows) (self 'n-cols)))
+     (case (length rows)
+       ((2) (- (* (self 'ref 0 0) (self 'ref 1 1))
+               (* (self 'ref 0 1) (self 'ref 1 0))))
+       (else (apply +
+                    (map (lambda (cell j)
+                           (* (if (even? j) cell (- cell))
+                              ((mat (map (lambda (row)
+                                           (let loop ((row row) (i 0))
+                                             (if (null? row)
+                                               null
+                                               (let ((tail (loop (cdr row)
+                                                                 (+ i 1))))
+                                                 (if (= i j)
+                                                   tail
+                                                   (cons (car row) tail))))))
+                                         (cdr rows)))
+                               'det)))
+                         (self 'row 0)
+                         (iota (self 'n-cols)))))))
+    ((inv)
+     (assert (= 2 (self 'n-rows) (self 'n-cols)))
+     (let ((det (self 'det)))
+       (if (zero? det)
+         false
+         ((mat `((,(self 'ref 1 1) ,(- (self 'ref 0 1)))
+                 (,(- (self 'ref 1 0)) ,(self 'ref 0 0))))
+          '* (/ 1 det)))))
+    ((aug v)
+     (assert (= (self 'n-rows) (v 'dim)))
+     (mat (map (lambda (row x)
+                 (append row (list x)))
+               rows
+               (v 'xs))))
+    ((vecs) (map (lambda (row) (apply vec row)) rows))
+    ((neg) (mat (map (lambda (a)
+                       ((a 'neg) 'xs))
+                     (self 'vecs))))
+    ((= other) (and (= (self 'n-rows) (other 'n-rows))
+                    (every (lambda (a b)
+                             (a '= b))
+                           (self 'vecs)
+                           (other 'vecs))))
+    ((+ other) (mat (map (lambda (a b)
+                           ((a '+ b) 'xs))
+                         (self 'vecs)
+                         (other 'vecs))))
+    ((- other) (self '+ (other 'neg)))
+    ((* other)
+     (if (number? other)
+       (mat (map (lambda (a)
+                   ((a 'scale other) 'xs))
+                 (self 'vecs)))
+       (let ((bs ((other 'transpose) 'vecs)))
+         (mat (map (lambda (a)
+                     (map (lambda (b)
+                            (a 'dot b))
+                          bs))
+                   (self 'vecs))))
+       ))
+
+    )
+
+  # https://www.mathsisfun.com/algebra/matrix-introduction.html
+
+  (let ((a (mat '((3 8) (4 6))))
+        (b (mat '((4 0) (1 -9))))
+        (c (mat '((7 8) (5 -3)))))
+    (assert ((a '+ b) '= c)))
+
+  (let ((a (mat '((2 -4) (7 10))))
+        (b (mat '((-2 4) (-7 -10)))))
+    (assert ((a 'neg) '= b)))
+
+  (let ((a (mat '((3 8) (4 6))))
+        (b (mat '((4 0) (1 -9))))
+        (c (mat '((-1 8) (3 15)))))
+    (assert ((a '- b) '= c)))
+
+  (let ((a (mat '((4 0) (1 -9))))
+        (b (mat '((8 0) (2 -18)))))
+    (assert ((a '* 2) '= b)))
+
+  # https://www.mathsisfun.com/algebra/matrix-multiplying.html
+
+  (let ((a (mat '((1 2 3) (4 5 6))))
+        (b (mat '((7 8) (9 10) (11 12))))
+        (c (mat '((58 64) (139 154)))))
+    (assert ((a '* b) '= c)))
+
+  (let ((a (mat '((3 4 2))))
+        (b (mat '((13 9 7 15)
+                  (8 7 4 6)
+                  (6 4 0 3))))
+        (c (mat '((83 63 37 75)))))
+    (assert ((a '* b) '= c)))
+
+  (define (mat-id n)
+    (let ((xs (iota n)))
+      (mat (map (lambda (j)
+                  (map (lambda (i)
+                         (if (= i j)
+                           1
+                           0))
+                       xs))
+                xs))))
+
+  (let ((a (mat '((1 2 3) (4 5 6) (7 8 9))))
+        (i (mat-id 3)))
+    (assert (a '= (a '* i)))
+    (assert (a '= (i '* a))))
+
+  (let ((a (mat '((1 2) (3 4))))
+        (b (mat '((2 0) (1 2))))
+        (c (mat '((4 4) (10 8))))
+        (d (mat '((2 4) (7 10)))))
+    (assert ((a '* b) '= c))
+    (assert ((b '* a) '= d)))
+
+  (let ((a (mat '((6 4 24) (1 -9 8))))
+        (b (mat '((6 1) (4 -9) (24 8)))))
+    (assert ((a 'transpose) '= b))
+    (assert ((b 'transpose) '= a)))
+
+  # https://www.mathsisfun.com/algebra/matrix-inverse.html
+
+  (let ((a (mat '((4 7) (2 6))))
+        (b (mat '((0.6 -0.7) (-0.2 0.4))))
+        (i (mat-id 2)))
+    (assert ((a 'inv) '= b))
+    (assert ((a '* (a 'inv)) '= i))
+    (assert (((a 'inv) '* a) '= i)))
+
+  (let ((a (mat '((3 3.5) (3.2 3.6))))
+        (b (mat '((118.4 135.2))))
+        (x (mat '((16 22)))))
+    (assert ((x '* a) '= b))
+    (assert (((x '* a) '* (a 'inv)) '= (b '* (a 'inv))))
+    (assert ((x '* (mat-id 2)) '= (b '* (a 'inv))))
+    (assert ((b '* (a 'inv)) '= x))
+    (let ((a (a 'transpose))
+          (b (b 'transpose))
+          (x (x 'transpose)))
+      (assert ((a '* x) '= b))
+      (assert ((((a 'inv) '* a) '* x) '= ((a 'inv) '* b)))
+      (assert (((mat-id 2) '* x) '= ((a 'inv) '* b)))
+      (assert (x '= ((a 'inv) '* b)))))
+
+  (let ((a (mat '((3 4) (6 8)))))
+    (assert (not (a 'inv))))
+
+  (let ((c (mat '((6 1 1) (4 -2 5) (2 8 7)))))
+    (assert (= -306 (c 'det))))
+
+  (let ((m (mat '((2 -3) (4 5))))
+        (v (vec 8 1)))
+    (print (m 'aug v)))
+
+  (print "passed"))

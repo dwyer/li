@@ -1,0 +1,37 @@
+(let ()
+
+  (defmacro (define-class constructor . class-body)
+    (let ((cons-sig (car constructor))
+          (cons-body (cdr constructor)))
+      (let ((cons-name (car cons-sig))
+            (cons-args (cdr cons-sig))
+            (msg-name (string->symbol "#msg"))
+            (args-name (string->symbol "#args")))
+        (define (make-clause name args body)
+          `((,name)
+            (apply (lambda ,args
+                     ,@body)
+                   ,args-name)))
+        `(define ,cons-sig
+           (define (self ,msg-name . ,args-name)
+             (case ,msg-name
+               ,@(let loop ((cons-args cons-args))
+                   (if (null? cons-args)
+                     null
+                     (let* ((rest (and (pair? cons-args)
+                                       (loop (cdr cons-args))))
+                            (var (if rest
+                                   (car cons-args)
+                                   cons-args)))
+                       (cons (make-clause var null (list var))
+                             (or rest null)))))
+               ,@(map (lambda (method)
+                        (let ((sig (car method))
+                              (body (cdr method)))
+                          (make-clause (car sig) (cdr sig) body)))
+                      class-body)
+               (else (error "bad message" ,msg-name))))
+           ,@cons-body
+           self))))
+
+  (export define-class))

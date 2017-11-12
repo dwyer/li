@@ -538,6 +538,7 @@
 #                  (f + 10)) 20))
 
 (import test-bind)
+(import test-class)
 (import test-list)
 (import test-match)
 (import test-record-type)
