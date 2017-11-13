@@ -1,5 +1,7 @@
 (let ()
 
+  (import defmacro)
+
   (defmacro (define-class constructor . class-body)
     (let ((cons-sig (car constructor))
           (cons-body (cdr constructor)))

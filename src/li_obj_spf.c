@@ -196,14 +196,14 @@ static li_object *m_define(li_object *args, li_env_t *env)
     return NULL;
 }
 
-/* (defmacro (name . args) . body) */
-static li_object *m_defmacro(li_object *seq, li_env_t *env)
+static li_object *m_define_macro(li_object *seq, li_env_t *env)
 {
     li_sym_t *name;
-    li_object *vars, *body;
-    li_parse_args(seq, "p.", &vars, &body);
-    li_parse_args(vars, "y.", &name, &vars);
-    li_env_define(env, name, li_macro(vars, body, env));
+    li_object *val;
+    li_parse_args(seq, "yo", &name, &val);
+    val = li_eval(val, env);
+    li_assert_procedure(val);
+    li_env_define(env, name, li_macro((li_proc_obj_t *)val));
     return NULL;
 }
 
@@ -368,12 +368,6 @@ static li_object *m_load(li_object *args, li_env_t *env)
     return NULL;
 }
 
-/* (macro params . body) */
-static li_object *m_macro(li_object *seq, li_env_t *env)
-{
-    return li_macro(li_car(seq), li_cdr(seq), env);
-}
-
 static li_object *m_or(li_object *seq, li_env_t *env)
 {
     li_object *val;
@@ -505,7 +499,7 @@ extern void li_define_primitive_macros(li_env_t *env)
     def_macro(env, "case-lambda",           m_case_lambda);
     def_macro(env, "cond",                  m_cond);
     def_macro(env, "define",                m_define);
-    def_macro(env, "defmacro",              m_defmacro);
+    def_macro(env, "define-macro",          m_define_macro);
     def_macro(env, "delay",                 m_delay);
     def_macro(env, "do",                    m_do);
     def_macro(env, "export",                m_export);
@@ -516,7 +510,6 @@ extern void li_define_primitive_macros(li_env_t *env)
     def_macro(env, "let*",                  m_let_star);
     def_macro(env, "letrec",                m_letrec);
     def_macro(env, "load",                  m_load);
-    def_macro(env, "macro",                 m_macro);
     def_macro(env, "named-lambda",          m_named_lambda);
     def_macro(env, "or",                    m_or);
     def_macro(env, "set!",                  m_set);

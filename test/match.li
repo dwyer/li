@@ -1,4 +1,5 @@
 (let ()
+  (import defmacro)
   (import list)
 
   (define *bind*

@@ -319,34 +319,34 @@ static li_object *p_assoc(li_object *args) {
 }
 
 static li_object *p_memq(li_object *args) {
-    li_object *lst;
-    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
-        if (!li_is_pair(lst))
-            li_error("not a list", li_cadr(args));
-        if (li_is_eq(li_car(args), li_car(lst)))
+    li_object *obj, *lst;
+    li_parse_args(args, "ol", &obj, &lst);
+    while (lst) {
+        if (li_is_eq(obj, li_car(lst)))
             return lst;
+        lst = li_cdr(lst);
     }
     return li_false;
 }
 
 static li_object *p_memv(li_object *args) {
-    li_object *lst;
-    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
-        if (!li_is_pair(lst))
-            li_error("not a list", li_cadr(args));
-        if (li_is_eqv(li_car(args), li_car(lst)))
+    li_object *obj, *lst;
+    li_parse_args(args, "ol", &obj, &lst);
+    while (lst) {
+        if (li_is_eqv(obj, li_car(lst)))
             return lst;
+        lst = li_cdr(lst);
     }
     return li_false;
 }
 
 static li_object *p_member(li_object *args) {
-    li_object *lst;
-    for (lst = li_cadr(args); lst; lst = li_cdr(lst)) {
-        if (!li_is_pair(lst))
-            li_error("not a list", li_cadr(args));
-        if (li_is_equal(li_car(args), li_car(lst)))
+    li_object *obj, *lst;
+    li_parse_args(args, "ol", &obj, &lst);
+    while (lst) {
+        if (li_is_equal(obj, li_car(lst)))
             return lst;
+        lst = li_cdr(lst);
     }
     return li_false;
 }

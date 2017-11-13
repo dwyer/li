@@ -6,7 +6,7 @@
 #define li_proc_body(obj)               (*(li_proc_obj_t *)(obj)).compound.body
 #define li_proc_env(obj)                (*(li_proc_obj_t *)(obj)).compound.env
 
-struct li_proc_obj {
+struct li_proc_obj_t {
     LI_OBJ_HEAD;
     li_sym_t *name;
     struct {
@@ -268,7 +268,7 @@ extern li_object *li_eval(li_object *expr, li_env_t *env) {
             } else if (li_is_special_form(proc)) {
                 expr = li_macro_primative(proc)(args, env);
             } else if (li_is_macro(proc)) {
-                expr = li_macro_expand((li_macro_t *)proc, args);
+                expr = li_macro_expand((li_macro_t *)proc, expr, env);
             } else if (li_is_type_obj(proc) && li_to_type(proc)->proc) {
                 args = list_of_values(args, env);
                 expr = li_to_type(proc)->proc(args);

@@ -1,0 +1,20 @@
+(define (gensym)
+  (string->symbol (string-append "#" (number->string (rand))
+                                 "-" (number->string (rand))
+                                 "-" (number->string (rand))
+                                 "-" (number->string (rand)))))
+
+(define-macro
+  defmacro
+  (lambda (expr _)
+    (let ((sign (cadr expr))
+          (body (cddr expr)))
+      (let ((name (car sign))
+            (args (cdr sign))
+            (expr-name (gensym)))
+        `(define-macro
+           ,name
+           (lambda (,expr-name _)
+             (apply (lambda ,args
+                      ,@body)
+                    (cdr ,expr-name))))))))

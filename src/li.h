@@ -45,7 +45,7 @@ typedef struct li_macro li_macro_t;
 typedef struct li_num_t li_num_t;
 typedef struct li_pair_t li_pair_t;
 typedef struct li_port_t li_port_t;
-typedef struct li_proc_obj li_proc_obj_t;
+typedef struct li_proc_obj_t li_proc_obj_t;
 typedef struct li_str_t li_str_t;
 typedef struct li_sym_t li_sym_t;
 typedef struct li_syntactic_closure_t li_syntactic_closure_t;
@@ -133,7 +133,7 @@ extern void li_setup_environment(li_env_t *env);
 extern void li_cleanup(li_env_t *env);
 
 /* macros */
-extern li_object *li_macro_expand(li_macro_t *mac, li_object *args);
+extern li_object *li_macro_expand(li_macro_t *mac, li_object *expr, li_env_t *env);
 
 /* numbers */
 extern li_num_t *li_num_with_int(int x);
@@ -252,8 +252,7 @@ extern void li_destroy(li_object *obj);
 extern li_object *li_character(li_character_t c);
 extern li_object *li_lambda(li_sym_t *name, li_object *vars, li_object *body,
         li_env_t *env);
-extern li_object *li_macro(li_object *vars, li_object *body,
-        li_env_t *env);
+extern li_object *li_macro(li_proc_obj_t *proc);
 extern li_pair_t *li_pair(li_object *car, li_object *cdr);
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *));
 extern li_object *li_special_form(li_special_form_t *proc);

@@ -1,5 +1,7 @@
 (let ()
 
+  (import defmacro)
+
   (define (index field-names field-name i)
     (let loop ((lst field-names) (i i))
       (cond ((null? lst) (error "invalid field name" field-name))

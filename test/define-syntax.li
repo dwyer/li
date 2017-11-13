@@ -1,6 +1,12 @@
 (let ()
   (import match)
-  (defmacro (define-syntax name rules)
-    `(defmacro (,name . expr)
-       (*match* (cons ',name expr) ',(cddr rules))))
+  (define-macro
+    define-syntax
+    (lambda (expr _)
+      (let ((name (cadr expr))
+            (rules (caddr expr)))
+        `(define-macro
+           ,name
+           (lambda (expr _)
+             (*match* (cons ',name (cdr expr)) ',(cddr rules)))))))
   (export define-syntax))

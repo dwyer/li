@@ -1,6 +1,7 @@
 (let ()
   (display "testing string-split...")
   (let ()
+    (import defmacro)
     (defmacro (test a b)
       `(assert (equal? ,a ,b)))
     (test (string-split "abc" "/") '("abc"))

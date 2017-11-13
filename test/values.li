@@ -1,4 +1,6 @@
 (let ()
+  (import defmacro)
+
   (define (values x . xs)
     (if (null? xs)
       x
