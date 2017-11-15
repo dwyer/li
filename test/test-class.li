@@ -280,8 +280,8 @@
   (let ((c (mat '((6 1 1) (4 -2 5) (2 8 7)))))
     (assert (= -306 (c 'det))))
 
-  (let ((m (mat '((2 -3) (4 5))))
-        (v (vec 8 1)))
-    (print (m 'aug v)))
+  ; (let ((m (mat '((2 -3) (4 5))))
+  ;       (v (vec 8 1)))
+  ;   (print (m 'aug v)))
 
   (print "passed"))
