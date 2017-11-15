@@ -277,14 +277,17 @@ static li_object *m_if(li_object *seq, li_env_t *env)
 
 static li_object *m_import(li_object *seq, li_env_t *env)
 {
-    char *buf;
-    size_t len;
-    li_assert_nargs(1, seq);
-    len = strlen(li_to_symbol(li_car(seq))) + 4;
-    buf = malloc(len * sizeof(*buf));
-    sprintf(buf, "%s.li", li_to_symbol(li_car(seq)));
-    li_load(buf, env);
-    free(buf);
+    while (seq) {
+        li_sym_t *name;
+        char *buf;
+        size_t len;
+        li_parse_args(seq, "y.", &name, &seq);
+        len = strlen(li_to_symbol(name)) + 4;
+        buf = malloc(len * sizeof(*buf));
+        sprintf(buf, "%s.li", li_to_symbol(name));
+        li_load(buf, env);
+        free(buf);
+    }
     return NULL;
 }
 
@@ -457,22 +460,23 @@ static li_object *p_is_indentifier_eq(li_object *args)
     li_object *obj1, *obj2, *cell1, *cell2;
     li_sym_t *sym1, *sym2;
     li_parse_args(args, "eoeo", &env1, &obj1, &env2, &obj2);
+    obj1 = get_form(obj1);
+    obj2 = get_form(obj2);
     sym1 = get_symbol(obj1);
-    if (!sym1)
-        li_error("not an ID", obj1);
     sym2 = get_symbol(obj2);
-    if (!sym1 || !sym2)
-        li_error("not an ID", obj2);
-    cell1 = li_env_lookup(env1, sym1);
-    cell2 = li_env_lookup(env2, sym2);
-    if (cell1 && li_is_eq(cell1, cell2))
-        return li_true;
-    if (!cell1 && !cell2 && li_is_eq(cell1, cell2))
-        return li_true;
-    while (li_is_type(obj1, &li_type_syntactic_closure))
-        obj1 = ((li_syntactic_closure_t *)obj1)->form;
-    while (li_is_type(obj2, &li_type_syntactic_closure))
-        obj2 = ((li_syntactic_closure_t *)obj2)->form;
+    if (sym1 && sym2) {
+        int e1, e2;
+        e1 = li_env_exists(env1, sym1, &cell1);
+        e2 = li_env_exists(env2, sym2, &cell2);
+        if (e1 != e2)
+            return li_false;
+        if (!e1 && !e2)
+            return li_true;
+        if (cell1 && li_is_eq(cell1, cell2))
+            return li_true;
+        if (!cell1 && !cell2 && li_is_eq(cell1, cell2))
+            return li_true;
+    }
     return li_boolean(li_is_eq(obj1, obj2));
 }
 

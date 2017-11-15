@@ -77,8 +77,9 @@ extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *))
  * Returns #t if the object is a procedure, #f otherwise.
  */
 static li_object *p_is_procedure(li_object *args) {
-    li_assert_nargs(1, args);
-    return li_boolean(li_is_procedure(li_car(args)));
+    li_object *obj;
+    li_parse_args(args, "o", &obj);
+    return li_boolean(li_is_procedure(obj));
 }
 
 /*
@@ -141,22 +142,20 @@ static li_object *p_map(li_object *args) {
 }
 
 static li_object *p_for_each(li_object *args) {
-    li_object *proc;
-    li_assert_nargs(2, args);
-    li_assert_procedure(li_car(args));
-    proc = li_car(args);
-    args = li_cadr(args);
-    while (args) {
-        li_apply(proc, li_cons(li_car(args), li_null));
-        args = li_cdr(args);
+    li_object *proc, *lst;
+    li_parse_args(args, "ol", &proc, &lst);
+    li_assert_procedure(proc);
+    while (lst) {
+        li_apply(proc, li_cons(li_car(lst), NULL));
+        lst = li_cdr(lst);
     }
-    return li_null;
+    return NULL;
 }
 
 static li_object *p_force(li_object *args) {
-    li_assert_nargs(1, args);
-    li_assert_procedure(li_car(args));
-    return li_apply(li_car(args), li_null);
+    li_object *obj;
+    li_parse_args(args, "o", &obj);
+    return li_apply(obj, NULL);
 }
 
 static li_object *p_eval(li_object *args) {
@@ -209,29 +208,6 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
     return li_eval(li_cons(proc, head), li_proc_env(proc));
 }
 
-static li_object *expand_syntax(li_env_t *env, li_object *names,
-        li_object *form)
-{
-    if (li_is_pair(form)) {
-        return li_cons(
-                expand_syntax(env, names, li_car(form)),
-                expand_syntax(env, names, li_cdr(form)));
-    } else if (li_is_symbol(form)) {
-        while (names) {
-            if (li_is_eq(form, li_car(names)))
-                return form;
-            names = li_cdr(names);
-        }
-        return li_env_lookup(env, (li_sym_t *)form);
-    }
-    return form;
-}
-
-extern li_object *li_syntactic_closure_expand(li_syntactic_closure_t *sc)
-{
-    return expand_syntax(sc->env, sc->free_names, sc->form);
-}
-
 extern li_object *li_eval(li_object *expr, li_env_t *env) {
     int done = 0;
     while (!li_is_self_evaluating(expr) && !done) {
@@ -274,29 +250,13 @@ extern li_object *li_eval(li_object *expr, li_env_t *env) {
                 expr = li_to_type(proc)->proc(args);
                 done = 1;
             } else if (li_is_type(proc, &li_type_transformer)) {
-                /* fprintf(stderr, "OLD EXPR "); */
-                /* li_print(expr, stderr); */
                 expr = li_cons(expr, NULL);
                 expr = li_cons((li_object *)li_symbol("quote"), expr);
                 args = li_cons((li_object *)((li_transformer_t *)proc)->env, NULL);
                 args = li_cons((li_object *)env, args);
                 args = li_cons(expr, args);
                 expr = li_cons((li_object *)((li_transformer_t *)proc)->proc, args);
-                /* fprintf(stderr, "AUX EXPR "); */
-                /* li_print(expr, stderr); */
                 expr = li_eval(expr, env);
-                /* fprintf(stderr, "NEW EXPR "); */
-                /* li_print(expr, stderr); */
-            } else if (li_is_type(proc, &li_type_syntactic_closure)) {
-                /* fprintf(stderr, "OLD EXPR "); */
-                /* li_print(expr, stderr); */
-                proc = expand_syntax(
-                        ((li_syntactic_closure_t *)proc)->env,
-                        ((li_syntactic_closure_t *)proc)->free_names,
-                        ((li_syntactic_closure_t *)proc)->form);
-                expr = li_cons(proc, args);
-                /* fprintf(stderr, "NEW EXPR "); */
-                /* li_print(expr, stderr); */
             } else {
                 li_error("not applicable", proc);
             }

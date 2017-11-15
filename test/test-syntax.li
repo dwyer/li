@@ -1,4 +1,6 @@
 (let ()
+  (import define-syntax)
+  (import syntax-case)
   (import list)
   (import match)
   (import for)
@@ -9,5 +11,61 @@
         (ys null))
     (for x in xs (set! ys (cons (* x x) ys)))
     (assert (equal? (reverse xs) (gen (sqrt y) for y in ys))))
+
+  (assert (equal? (syntax-case '(let-n () (print 42))
+                               ()
+                               ((_ ((var init) ...) expr exprs ...)
+                                ((lambda (var ...) expr exprs ...) init ...)))
+                  '((lambda () (print 42)))))
+
+  (assert (equal? (syntax-case '(let-n ((x 24)) (print x))
+                               ()
+                               ((_ ((var init) ...) expr exprs ...)
+                                ((lambda (var ...) expr exprs ...) init ...)))
+                  '((lambda (x) (print x)) 24)))
+
+  (assert (equal? (syntax-case '(let-n ((x 24) (y 2)) (set! x (* x y)) (print x))
+                               ()
+                               ((_ ((var init) ...) expr exprs ...)
+                                ((lambda (var ...) expr exprs ...) init ...)))
+                  '((lambda (x y) (set! x (* x y)) (print x)) 24 2)))
+
+  (define-syntax and2
+    (lambda (x)
+      (syntax-case x
+                   ()
+                   ((_ x y)
+                    (syntax (if x y false))))))
+
+  (assert (and2 true true))
+  (assert (not (and2 true false)))
+  (assert (not (and2 false true)))
+  (assert (not (and2 false false)))
+
+  (define-syntax when
+    (lambda (x)
+      (syntax-case x ()
+                   ((_ e0 e1 e2 ...)
+                    (syntax (if e0 (begin e1 e2 ...)))))))
+
+  (define-syntax unless
+    (lambda (x)
+      (syntax-case x ()
+                   ((_ e0 e1 e2 ...)
+                    (syntax (when (not e0) e1 e2 ...))))))
+
+  (unless (= 1 1) (assert false))
+  (unless (= 1 0) (assert true))
+
+  (when true (assert true))
+  (when false (assert false))
+
+  (let ((begin list))
+    (when true (assert true)))
+
+  # XXX this test fails
+  ; (let ((not (lambda (x) x))
+  ;       (when print))
+  ;   (unless false (assert true)))
 
   (print 'passed))

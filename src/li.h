@@ -92,7 +92,6 @@ extern const li_type_t li_type_procedure;
 extern const li_type_t li_type_special_form;
 extern const li_type_t li_type_string;
 extern const li_type_t li_type_symbol;
-extern const li_type_t li_type_syntactic_closure;
 extern const li_type_t li_type_transformer;
 extern const li_type_t li_type_type;
 extern const li_type_t li_type_vector;
@@ -124,6 +123,7 @@ extern li_env_t *li_env_make(li_env_t *base);
 extern li_env_t *li_env_base(li_env_t *env);
 extern int li_env_assign(li_env_t *env, li_sym_t *var, li_object *val);
 extern void li_env_define(li_env_t *env, li_sym_t *var, li_object *val);
+extern int li_env_exists(li_env_t *env, li_sym_t *var, li_object **val);
 extern li_object *li_env_lookup(li_env_t *env, li_sym_t *var);
 extern void li_env_append(li_env_t *env, li_sym_t *var, li_object *val);
 extern li_env_t *li_env_extend(li_env_t *env, li_object *vars, li_object *vals);
@@ -202,8 +202,6 @@ struct li_sym_t {
     li_sym_t *prev;
     unsigned int hash;
 };
-
-extern li_object *li_syntactic_closure_expand(li_syntactic_closure_t *sc);
 
 struct li_syntactic_closure_t {
     LI_OBJ_HEAD;
@@ -399,10 +397,6 @@ extern void li_port_printf(li_port_t *port, const char *fmt, ...);
     do { li_display(obj, port); li_newline(port); } while (0)
 
 /* TODO: standardize this */
-
-#define li_assert_nargs(n, args) \
-    if (li_length(args) != n) \
-        li_error("wrong number of args", args)
 
 #define li_assert_type(type, arg) \
     if (!li_is_##type(arg)) \

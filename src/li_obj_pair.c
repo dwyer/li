@@ -72,12 +72,14 @@ extern int li_length(li_object *obj)
 
 extern li_bool_t li_is_list(li_object *obj)
 {
+    if (obj == NULL)
+        return LI_TRUE;
     while (obj) {
         if (!li_is_pair(obj))
-            return 0;
+            return LI_FALSE;
         obj = li_cdr(obj);
     }
-    return 1;
+    return LI_TRUE;
 }
 
 /*

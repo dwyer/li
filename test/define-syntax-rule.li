@@ -7,4 +7,4 @@
          (syntax-rules ()
            ((name args ...)
             expr))))))
-  (export define-syntax))
+  (export define-syntax-rule))

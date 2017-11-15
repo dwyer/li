@@ -66,6 +66,7 @@ void li_error_f(const char *msg, ...) {
             default:
                 break;
             }
+            break;
         default:
             fputc(ch, stderr);
         }

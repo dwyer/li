@@ -1,12 +1,44 @@
 (let ()
-  (import match)
-  (define-macro
-    define-syntax
+  (import syntax-case)
+
+  (define (random-symbol)
+    (string->symbol (string-append "#" (number->string (rand))
+                                   "#" (number->string (rand))
+                                   "#" (number->string (rand))
+                                   "#" (number->string (rand)))))
+
+  (define-macro define-syntax
     (lambda (expr _)
-      (let ((name (cadr expr))
-            (rules (caddr expr)))
-        `(define-macro
-           ,name
-           (lambda (expr _)
-             (*match* (cons ',name (cdr expr)) ',(cddr rules)))))))
-  (export define-syntax))
+      (apply (lambda (keyword transformer-spec)
+               `(define-macro
+                  ,keyword
+                  (lambda (x _)
+                    (,transformer-spec x))))
+             (cdr expr))))
+
+  (define-syntax syntax-rules
+    (lambda (x)
+      (apply (lambda (literals clauses)
+               `(lambda (x)
+                  (syntax-case x ,literals ,clauses)))
+             (cdr x))))
+
+  ; (define-syntax syntax-rules
+  ;   (lambda (x)
+  ;     (syntax-case x ()
+  ;       ((_ (lit ...) (p t) ...)
+  ;        (syntax (lambda (x)
+  ;                  (syntax-case x (lit ...)
+  ;                    (p (syntax t)) ...)))))))
+
+  (define-syntax let-syntax
+    (lambda (x)
+      (syntax-case x null
+                   ((_ ((var val) ...) e0 e1 ...)
+                    (begin
+                      (begin (define-syntax var val) ...)
+                      (begin e0 e1 ...))))))
+
+  (export define-syntax
+          syntax-rules
+          syntax-case))

@@ -1,6 +1,6 @@
 (let ()
 
-  (import define-syntax)
+  (import syntax-case)
 
   (define-syntax for
     (syntax-rules (in)

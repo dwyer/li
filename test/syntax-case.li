@@ -1,0 +1,95 @@
+(let ()
+
+  (import list record-type)
+
+  (define make-binding cons)
+  (define binding-var car)
+  (define binding-val cdr)
+
+  (define (get-val bindings var)
+    (let ((cell (assq var bindings)))
+      (if cell
+        (binding-val cell)
+        var)))
+
+  (define (get-vals bindings var)
+    (if (null? bindings)
+      null
+      (let ((binding (car bindings))
+            (vals (get-vals (cdr bindings) var)))
+        (if (eq? var (binding-var binding))
+          (cons (binding-val binding) vals)
+          vals))))
+
+  (define (ellipsis? template)
+    (let ((res (and (pair? (cdr template))
+                    (eq? (cadr template) '...))))
+      (if res
+        (assert (null? (cddr template))))
+      res))
+
+  (define (bind pattern expr literals bindings)
+    (cond ((symbol? pattern)
+           (if (memq pattern literals)
+             (if (eq? pattern expr)
+               bindings
+               false)
+             (cons (make-binding pattern expr) bindings)))
+          ((null? pattern)
+           (if (null? pattern)
+             bindings
+             false))
+          ((pair? pattern)
+           (if (ellipsis? pattern)
+             (let ((a (map (lambda (expr)
+                             (bind (car pattern) expr literals null))
+                           expr)))
+               (if (every (lambda (x) x) a)
+                 (append (apply append a) bindings)
+                 false))
+             (if (pair? expr)
+               (let ((a (bind (car pattern) (car expr) literals null))
+                     (b (bind (cdr pattern) (cdr expr) literals null)))
+                 (if (and a b)
+                   (append a b bindings)
+                   false))
+               false)))
+          (else (error "unknown" pattern expr))))
+
+  (define (match? pattern expr literals)
+    (bind pattern expr literals null))
+
+  (define (expand template bindings)
+    (let loop ((template template) (many? false))
+      (cond ((pair? template)
+             (if (ellipsis? template)
+               (loop (car template) true)
+               (cons (loop (car template) many?)
+                     (loop (cdr template) many?))))
+            ((symbol? template)
+             (if many?
+               (get-vals bindings template)
+               (get-val bindings template)))
+            (else template))))
+
+  (define (syntax-case-expand expr literals clauses)
+    (let loop ((clauses clauses))
+      (if (null? clauses)
+        (error "no match" expr)
+        (apply (lambda (pattern template)
+                 (let ((bindings (match? (cdr pattern) (cdr expr) literals)))
+                   (if bindings
+                     (expand template bindings)
+                     (loop (cdr clauses)))))
+               (car clauses)))))
+
+  (define-macro syntax-case
+                (lambda (expr _)
+                  (apply (lambda (expr literals . clauses)
+                           `(,syntax-case-expand ,expr ',literals ',clauses))
+                         (cdr expr))))
+
+  (define (syntax template)
+    template)
+
+  (export syntax syntax-case))
