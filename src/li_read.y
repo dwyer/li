@@ -20,6 +20,7 @@ static li_object *obj = li_null;
 
 %union { li_object *obj; }
 
+%token <obj> BOOLEAN
 %token <obj> CHARACTER
 %token <obj> EOF_OBJECT
 %token <obj> NUMBER
@@ -36,6 +37,7 @@ start   : datum { obj = $$ = $1; return 0; }
         ;
 
 datum   : EOF_OBJECT { $$ = li_eof; }
+        | BOOLEAN { $$ = $1; }
         | CHARACTER { $$ = $1; }
         | NUMBER { $$ = $1; }
         | STRING { $$ = $1; }

@@ -20,7 +20,7 @@ static struct {
 
 /* simple patterns, order doesn't matter */
 character               %\\[!-~]
-comment                 [#;].*$
+comment                 [;#].*$
 digit                   [0-9]
 letter                  [A-Za-z]
 peculiar_identifier     ([+-]|\.\.\.)
@@ -40,6 +40,9 @@ rational                {sign}{uinteger}(\/{uinteger})?
 suffix                  (e{sign}{uinteger_10})
 udecimal                ({uinteger_10}{suffix}|{uinteger_10}\.{uinteger_10}{suffix}?)
 decimal                 {sign}{udecimal}
+
+false                   false
+true                    true
 
 initial                 ({letter}|{special_initial})
 subsequent              ({initial}|{digit}|{special_subsequent})
@@ -64,6 +67,8 @@ symbol                  ({identifier}|\|[^|]*\|)
     yylval.obj = (li_object *)li_num_with_rat(li_rat_parse(yytext));
     return NUMBER;
                         }
+{true}                  yylval.obj = li_true; return BOOLEAN;
+{false}                 yylval.obj = li_false; return BOOLEAN;
 {symbol}                yylval.obj = (li_object *)li_symbol(yytext); return SYMBOL;
 \"\"                    yylval.obj = (li_object *)li_string_make(""); return STRING;
 <INITIAL>\"             BEGIN(XSTRING); buf.len = 0;

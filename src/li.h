@@ -38,6 +38,7 @@ struct li_object {
     LI_OBJ_HEAD;
 };
 
+typedef struct li_boolean_t li_boolean_t;
 typedef struct li_bytevector_t li_bytevector_t;
 typedef struct li_character_obj_t li_character_obj_t;
 typedef struct li_env_t li_env_t;
@@ -81,6 +82,7 @@ struct li_type_t {
 #define li_type(obj)                    ((obj) ? (obj)->type : &li_type_pair)
 #define li_is_type(obj, type)           ((obj) && li_type(obj) == (type))
 
+extern const li_type_t li_type_boolean;
 extern const li_type_t li_type_bytevector;
 extern const li_type_t li_type_character;
 extern const li_type_t li_type_environment;
@@ -262,10 +264,11 @@ extern li_object *li_type_obj(const li_type_t *type);
  */
 extern li_object *li_vector(li_object *lst);
 
-/** EOF, true and false are just special symbols. */
+/** EOF, is just a special symbol. */
 #define li_eof                          ((li_object *)li_symbol("#<eof>"))
-#define li_false                        ((li_object *)li_symbol("false"))
-#define li_true                         ((li_object *)li_symbol("true"))
+
+extern li_object *li_false;
+extern li_object *li_true;
 #define li_boolean(p)                   ((p) ? li_true : li_false)
 
 /** Let cons be an alias for pair. */
@@ -275,8 +278,6 @@ extern li_object *li_vector(li_object *lst);
 #define li_is_eq(obj1, obj2)            ((void *)(obj1) == (void *)(obj2))
 #define li_is_null(obj)                 li_is_eq((obj), li_null)
 #define li_not(obj)                     li_is_eq((obj), li_false)
-#define li_is_boolean(obj)              \
-    (li_not((obj)) || li_is_eq((obj), li_false))
 extern li_bool_t li_is_equal(li_object *obj1, li_object *obj2);
 extern li_bool_t li_is_eqv(li_object *obj1, li_object *obj2);
 extern li_bool_t li_is_list(li_object *obj);
@@ -295,6 +296,7 @@ extern int li_length(li_object *obj);
 #define li_macro_primative(obj)         \
     ((li_special_form_obj_t *)(obj))->special_form
 
+#define li_is_boolean(obj)              li_is_type(obj, &li_type_boolean)
 #define li_is_character(obj)            li_is_type(obj, &li_type_character)
 #define li_is_environment(obj)          li_is_type(obj, &li_type_environment)
 #define li_is_macro(obj)                li_is_type(obj, &li_type_macro)
@@ -417,6 +419,7 @@ extern void li_port_printf(li_port_t *port, const char *fmt, ...);
 
 extern void li_parse_args(li_object *args, const char *fmt, ...);
 
+void li_define_boolean_functions(li_env_t *env);
 extern void li_define_bytevector_functions(li_env_t *env);
 extern void li_define_char_functions(li_env_t *env);
 extern void li_define_number_functions(li_env_t *env);

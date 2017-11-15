@@ -266,35 +266,6 @@ static li_object *p_ge(li_object *args)
     return li_boolean(li_not(p_lt(args)));
 }
 
-/************
- * Booleans *
- ************/
-
-/*
- * (not obj)
- * Returns #t is obj is #f, returns #f otherwise.
- */
-static li_object *p_not(li_object *args)
-{
-    li_object *obj;
-    li_parse_args(args, "o", &obj);
-    return li_boolean(li_not(obj));
-}
-
-/* (boolean? obj)
- * Return #t is the object is #t or #f, return #f otherwise.
- */
-static li_object *p_is_boolean(li_object *args)
-{
-    li_object *obj;
-    li_parse_args(args, "o", &obj);
-    return li_boolean(li_is_boolean(obj));
-}
-
-/*********************
- * Generic accessors *
- *********************/
-
 static li_object *p_length(li_object *args)
 {
     int ret;
@@ -394,27 +365,26 @@ static li_object *p_isa(li_object *args)
 
 #define define_var(env, name, obj) \
     li_env_append(env, li_symbol(name), obj)
-#define define_type(env, name, type) \
-    define_var(env, name, li_type_obj(type))
+#define define_type(env, type) \
+    define_var(env, (type)->name, li_type_obj(type))
 
 extern void li_setup_environment(li_env_t *env)
 {
-    define_var(env, "true", li_true);
-    define_var(env, "false", li_false);
     define_var(env, "null", li_null);
 
-    define_type(env, "character", &li_type_character);
-    define_type(env, "environment", &li_type_environment);
-    define_type(env, "macro", &li_type_macro);
-    define_type(env, "number", &li_type_number);
-    define_type(env, "pair", &li_type_pair);
-    define_type(env, "port", &li_type_port);
-    define_type(env, "procedure", &li_type_procedure);
-    define_type(env, "special-form", &li_type_special_form);
-    define_type(env, "string", &li_type_string);
-    define_type(env, "symbol", &li_type_symbol);
-    define_type(env, "type", &li_type_type);
-    define_type(env, "vector", &li_type_vector);
+    define_type(env, &li_type_boolean);
+    define_type(env, &li_type_character);
+    define_type(env, &li_type_environment);
+    define_type(env, &li_type_macro);
+    define_type(env, &li_type_number);
+    define_type(env, &li_type_pair);
+    define_type(env, &li_type_port);
+    define_type(env, &li_type_procedure);
+    define_type(env, &li_type_special_form);
+    define_type(env, &li_type_string);
+    define_type(env, &li_type_symbol);
+    define_type(env, &li_type_type);
+    define_type(env, &li_type_vector);
 
     /* Equivalence predicates */
     li_define_primitive_procedure(env, "isa?", p_isa);
@@ -429,16 +399,13 @@ extern void li_setup_environment(li_env_t *env)
     li_define_primitive_procedure(env, "<=", p_le);
     li_define_primitive_procedure(env, ">=", p_ge);
 
-    /* Booleans */
-    li_define_primitive_procedure(env, "boolean?", p_is_boolean);
-    li_define_primitive_procedure(env, "not", p_not);
-
     /* generic getter and setter */
     li_define_primitive_procedure(env, "ref", p_ref);
     li_define_primitive_procedure(env, "set", p_set);
     li_define_primitive_procedure(env, "length", p_length);
 
     /* builtins */
+    li_define_boolean_functions(env);
     li_define_bytevector_functions(env);
     li_define_char_functions(env);
     li_define_number_functions(env);
