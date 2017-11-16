@@ -1,4 +1,4 @@
-LIBS=process-context.so misc.so socket.so time.so
+LIBS=cxr.so process-context.so misc.so socket.so time.so
 INCLUDE=../src
 
 CFLAGS=-I$(INCLUDE)
@@ -12,6 +12,7 @@ all: $(LIBS)
 clean:
 	$(RM) *.so
 
+cxr.so: cxr.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
 process-context.so: process-context.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
 misc.so: misc.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
 socket.so: socket.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h

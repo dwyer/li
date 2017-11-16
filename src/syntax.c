@@ -261,7 +261,7 @@ static li_object *m_do(li_object *seq, li_env_t *env)
         li_assert_pair(li_cdr(binding));
         li_assert_symbol(li_car(binding));
         if (li_cddr(binding)) {
-            let_args = li_cons(li_caddr(binding), let_args);
+            let_args = li_cons(li_car(li_cddr(binding)), let_args);
             binding = li_cons(li_car(binding), li_cons(li_cadr(binding), NULL));
         } else {
             let_args = li_cons(li_car(binding), let_args);
@@ -293,14 +293,12 @@ static li_object *m_export(li_object *seq, li_env_t *env)
 
 static li_object *m_if(li_object *seq, li_env_t *env)
 {
-    if (!seq || !li_cdr(seq))
-        li_error("invalid sequence", seq);
-    if (!li_not(li_eval(li_car(seq), env)))
-        return li_cadr(seq);
-    else if (li_cddr(seq))
-        return li_caddr(seq);
-    else
-        return li_false;
+    li_object *cond, *cons, *alt = li_false;
+    li_parse_args(seq, "oo?o", &cond, &cons, &alt);
+    cond = li_eval(cond, env);
+    if (li_not(cond))
+        return alt;
+    return cons;
 }
 
 static li_object *m_import(li_object *seq, li_env_t *env)

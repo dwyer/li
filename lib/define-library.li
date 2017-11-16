@@ -1,0 +1,27 @@
+(define-macro
+  define-library
+  (lambda (expr env)
+    (apply (lambda (name . decls)
+             (let ((exports null))
+               (let ((res
+                       `(let ()
+                             ,@(let lp ((decls decls))
+                                 (if (null? decls)
+                                   null
+                                   (let ((decl (car decls)))
+                                     (if (and (pair? decl)
+                                              (eq? (car decl) 'export))
+                                       (begin
+                                         (set! exports (cons decl exports))
+                                         (lp (cdr decls)))
+                                       (cons decl (lp (cdr decls)))))))
+                             ,@exports
+                             )))
+                 (print res)
+                 res)))
+           (cdr expr))))
+
+(define-library lib
+  (export sq)
+  (define (sq x)
+    (* x x)))
