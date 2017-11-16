@@ -129,7 +129,7 @@ extern void li_load(char *filename, li_env_t *env)
     cwd = getcwd(NULL, 0);
     if (chdir(dirname(filepath)))
         li_error("could not read from directory",
-        (li_object *)li_string_make(dirname(filepath)));
+                (li_object *)li_string_make(dirname(filepath)));
     if ((fp = fopen(basename(filename), "r")) == NULL)
         li_error("could not read file", (li_object *)li_string_make(filepath));
     free(filepath);

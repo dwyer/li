@@ -77,7 +77,7 @@ clean:
 	$(RM) -r $(OBJDIR)
 
 test: $(LI_BIN)
-	./$(LI_BIN) test/test.li
+	LD_LIBRARY_PATH=$(PWD) ./$(LI_BIN) test/test.li
 
 tags: src/li.h
 	ctags -f $@ $<
