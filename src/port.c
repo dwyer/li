@@ -25,6 +25,16 @@ struct li_port_t {
 
 extern FILE *li_port_fp(li_port_t *port)
 {
+    if (!port->fp) {
+        switch (port->fd) {
+        case STDIN_FILENO:
+            return stdin;
+        case STDOUT_FILENO:
+            return stdout;
+        case STDERR_FILENO:
+            return stderr;
+        }
+    }
     return port->fp;
 }
 
