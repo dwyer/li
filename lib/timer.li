@@ -1,4 +1,6 @@
 (let ()
+  (import time)
+
   (define (make-timer)
     (let ((start (current-jiffy)))
       (lambda ()

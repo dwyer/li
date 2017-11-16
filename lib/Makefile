@@ -1,4 +1,4 @@
-LIBS=socket.so
+LIBS=process-context.so socket.so time.so
 CFLAGS=-I../src
 LDFLAGS=-L../ -lli
 

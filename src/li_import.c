@@ -33,7 +33,7 @@ static void li_import_so(li_sym_t *name, char *path, li_env_t *env)
 {
     typedef lilib_load_f(li_env_t *);
     void *dl = dlopen(path, RTLD_LAZY);
-    char *error;
+    char *error, *s;
     int n;
     lilib_load_f *load;
     if (!dl)
@@ -42,6 +42,9 @@ static void li_import_so(li_sym_t *name, char *path, li_env_t *env)
     n = snprintf(path, PATH_MAX, "lilib_load_%s", li_to_symbol(name));
     if (!(-1 < n && n < PATH_MAX))
         li_error_f("import error: name ~s is too long", name);
+    for (s = path; *s; ++s)
+        if (*s == '-')
+            *s = '_';
     load = (lilib_load_f *)dlsym(dl, path);
     if ((error = dlerror()))
         li_error_f("import error: ~a", li_string_make(error));
