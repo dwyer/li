@@ -3,21 +3,21 @@
 
 #define ARGV_SYMBOL li_symbol("*args*")
 
-li_object *li_prompt(FILE *fin, FILE *fout, const char *s);
+li_object *li_prompt(li_port_t *pin, FILE *fout, const char *s);
 void li_repl(li_env_t *env);
 void li_script(li_env_t *env);
 
-li_object *li_prompt(FILE *fin, FILE *fout, const char *s) {
+li_object *li_prompt(li_port_t *pin, FILE *fout, const char *s) {
     if (isatty(0))
         fputs(s, fout);
-    return li_read(fin);
+    return li_read(pin);
 }
 
 void li_repl(li_env_t *env) {
     li_object *expr;
     li_sym_t *var = li_symbol("_");
     li_env_append(env, var, NULL);
-    while ((expr = li_prompt(stdin, stdout, "> ")) != li_eof) {
+    while ((expr = li_prompt(li_port_stdin, stdout, "> ")) != li_eof) {
         if (expr) {
             expr = li_eval(expr, env);
             li_env_assign(env, var, expr);

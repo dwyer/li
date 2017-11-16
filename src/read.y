@@ -4,17 +4,17 @@
 #include "li_num.h"
 
 #define make_tagged_list(str, obj) \
-    li_cons((li_object *)li_symbol(str), li_cons(obj, li_null))
+    li_cons((li_object *)li_symbol(str), li_cons(obj, NULL))
 
 static void yyerror(char *s);
 extern int yylex(void);
 extern int yylineno;
 extern void yypop_buffer_state(void);
 
-extern int push_buffer(FILE *fp);
+extern int push_buffer(li_port_t *port);
 static li_object *append(li_object *lst, li_object *obj);
 
-static li_object *obj = li_null;
+static li_object *obj = NULL;
 
 %}
 
@@ -52,8 +52,8 @@ datum   : EOF_OBJECT { $$ = li_eof; }
         | ',' '@' datum { $$ = make_tagged_list("unquote-splicing", $3); }
         ;
 
-data    : { $$ = li_null; }
-        | data datum { $$ = append($1, li_cons($2, li_null)); }
+data    : { $$ = NULL; }
+        | data datum { $$ = append($1, li_cons($2, NULL)); }
         ;
 
 %%
@@ -69,11 +69,11 @@ static li_object *append(li_object *lst, li_object *obj)
     return lst;
 }
 
-extern li_object *li_read(FILE *fp)
+extern li_object *li_read(li_port_t *port)
 {
-    int pop = push_buffer(fp);
+    int pop = push_buffer(port);
     if (yyparse())
-        return li_null;
+        return NULL;
     if (pop)
         yypop_buffer_state();
     return obj;

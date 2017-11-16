@@ -375,7 +375,7 @@ extern li_object *li_eval(li_object *exp, li_env_t *env);
 
 /* li_read.y */
 extern void li_load(char *filename, li_env_t *env);
-extern li_object *li_read(FILE *f);
+extern li_object *li_read(li_port_t *port);
 
 /* li_write.c */
 
@@ -392,6 +392,8 @@ extern li_object *li_port_read_obj(li_port_t *port);
 extern void li_port_write(li_port_t *port, li_object *obj);
 extern void li_port_display(li_port_t *port, li_object *obj);
 extern void li_port_printf(li_port_t *port, const char *fmt, ...);
+
+extern FILE *li_port_fp(li_port_t *port);
 
 #define li_write(obj, port)             li_port_write(port, obj)
 #define li_display(obj, port)           li_port_display(port, obj)

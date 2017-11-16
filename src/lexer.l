@@ -1,8 +1,10 @@
 %{
 
-#include <libgen.h>
 #include "li.h"
 #include "li_num.h"
+
+#include <libgen.h>
+#include <limits.h>
 
 #include "read.h"
 
@@ -108,8 +110,9 @@ extern int yywrap(void)
     return 1;
 }
 
-extern int push_buffer(FILE *fp)
+extern int push_buffer(li_port_t *port)
 {
+    FILE *fp = li_port_fp(port);
     int ret;
     if (!yyin)
         yyin = fp;
@@ -120,32 +123,22 @@ extern int push_buffer(FILE *fp)
 
 extern void li_load(char *filename, li_env_t *env)
 {
-    char *cwd;
+    char cwd[PATH_MAX];
     li_object *exp;
-    char *filepath;
-    FILE *fp;
+    li_port_t *port;
     int pop;
-    if (!(filepath = realpath(filename, NULL)))
-        li_error("could not find file", (li_object *)li_string_make(filename));
-    cwd = getcwd(NULL, 0);
-    if (chdir(dirname(filepath)))
-        li_error("could not read from directory",
-                (li_object *)li_string_make(dirname(filepath)));
-    if ((fp = fopen(basename(filename), "r")) == NULL)
-        li_error("could not read file", (li_object *)li_string_make(filepath));
-    free(filepath);
-    pop = push_buffer(fp);
-    while ((exp = li_read(fp)) != li_eof) {
+    port = li_port_open_input_file(li_string_make(filename));
+    getcwd(cwd, PATH_MAX);
+    chdir(dirname(filename));
+    pop = push_buffer(port);
+    while ((exp = li_read(port)) != li_eof) {
         exp = li_eval(exp, env);
         li_cleanup(env);
     }
     if (pop)
         yypop_buffer_state();
-    fclose(fp);
-    if (chdir(cwd))
-        li_error("could not read from directory",
-                (li_object *)li_string_make(cwd));
-    free(cwd);
+    li_port_close(port);
+    chdir(cwd);
     if (buf.buf)
         free(buf.buf);
 }

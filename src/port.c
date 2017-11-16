@@ -23,6 +23,11 @@ struct li_port_t {
     li_str_t *name;
 };
 
+extern FILE *li_port_fp(li_port_t *port)
+{
+    return port->fp;
+}
+
 static li_port_t port_std[3] = {
     {.type = &li_type_port, .fd = STDIN_FILENO, .flags = IO_FILE | IO_INPUT},
     {.type = &li_type_port, .fd = STDOUT_FILENO, .flags = IO_FILE | IO_OUTPUT},
@@ -66,7 +71,7 @@ extern li_port_t *li_port_open_output_file(li_str_t *filename)
 
 extern li_object *li_port_read_obj(li_port_t *port)
 {
-    return li_read(port->fp);
+    return li_read(port);
 }
 
 extern void li_port_write(li_port_t *port, li_object *obj)
@@ -217,12 +222,9 @@ static li_object *p_close_port(li_object *args) {
  * Reads and returns the next evaluative object.
  */
 static li_object *p_read(li_object *args) {
-    FILE *fp = stdin;
-    li_port_t *port = NULL;
+    li_port_t *port = li_port_stdin;
     li_parse_args(args, "?r", &port);
-    if (port)
-        fp = port->fp;
-    return li_read(fp);
+    return li_read(port);
 }
 
 static li_object *p_read_char(li_object *args) {
