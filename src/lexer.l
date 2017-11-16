@@ -2,8 +2,9 @@
 
 #include <libgen.h>
 #include "li.h"
-#include "li_read.h"
 #include "li_num.h"
+
+#include "read.h"
 
 static void bufappend(const char *s);
 extern int fileno(FILE *);

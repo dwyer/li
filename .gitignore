@@ -1,7 +1,8 @@
 *.[ao]
+*.so
 *~
 li
-li_parse.c
-li_read.[ch]
+parse.c
+read.[ch]
 misc
 tags
