@@ -1,6 +1,4 @@
 (let ()
-  (display 'test-stack...)
-
   (import list)
   (import stack)
 
@@ -10,6 +8,4 @@
     (assert (equal? (reverse xs) (stack->list s)))
     (for-each (lambda (x)
                 (assert (= x (stack-pop! s))))
-              (reverse xs)))
-
-  (print "passed"))
+              (reverse xs))) )

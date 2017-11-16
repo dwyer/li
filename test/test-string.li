@@ -1,4 +1,3 @@
-(display "testing string...")
 (let ((str "我不明白你說什麼")
       (first (lambda (str) (ref str 0))))
   (assert (equal? (ref str 0) (first "我")))
@@ -8,4 +7,3 @@
   (assert (equal? (length str) 8))
   (assert (equal? (string-append str str str) "我不明白你說什麼我不明白你說什麼我不明白你說什麼"))
   )
-(print "ok")

@@ -1,5 +1,4 @@
 (let ()
-  (display "test record-type...")
   (import record-type)
   (define-record-type
     pare
@@ -13,5 +12,4 @@
   (assert (= (kdr (kons 1 2)) 2))
   (let ((k (kons 1 2)))
     (set-kar! k 3)
-    (assert (= (kar k) 3)))
-  (print "passed"))
+    (assert (= (kar k) 3))))

@@ -1,6 +1,4 @@
 (let ()
-  (display 'test-match...)
-
   (import list)
   (import match)
 
@@ -21,4 +19,4 @@
                                    expr)
                                  lst))))))
 
-  (print 'passed))
+  )

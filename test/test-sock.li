@@ -1,6 +1,4 @@
 (let ()
-  (display "test-http...")
   (import http)
   (let ((res (http-head "http://google.com/index.html")))
-    (print (http-response-headers res)))
-  (print "passed"))
+    (print (http-response-headers res))))

@@ -1,6 +1,4 @@
 (let ()
-  (display "test-class...")
-
   (import class)
   (import list)
   (import math)
@@ -284,4 +282,4 @@
   ;       (v (vec 8 1)))
   ;   (print (m 'aug v)))
 
-  (print "passed"))
+  false)
