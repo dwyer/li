@@ -147,7 +147,7 @@ static li_object *p_socket_close(li_object *args)
 #define li_def_int(env, name, i) \
     li_def_var(env, name, (li_object *)li_num_with_int(i))
 
-extern void li_define_socket_functions(li_env_t *env)
+extern void lilib_load_socket(li_env_t *env)
 {
     li_def_fun(env, "make-client-socket", p_make_client_socket);
     li_def_fun(env, "socket?", p_is_socket);

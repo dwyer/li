@@ -28,7 +28,7 @@ LI_LIB_OBJS_=li_read.o li_parse.o li_chr.o li_error.o li_nat.o li_object.o \
 	     li_obj_bytevector.o li_obj_chr.o li_obj_env.o li_obj_mac.o \
 	     li_obj_num.o li_obj_pair.o li_obj_port.o li_obj_proc.o \
 	     li_obj_spf.o li_obj_str.o li_obj_sym.o li_obj_typ.o li_obj_vec.o \
-	     li_boolean.o li_proc.o li_rat.o li_sock.o
+	     li_boolean.o li_proc.o li_rat.o li_import.o
 LI_LIB_OBJS=$(addprefix $(OBJDIR)/, $(LI_LIB_OBJS_))
 LI_OPT_OBJS_=
 LI_OPT_OBJS=$(addprefix $(OBJDIR)/, $(LI_OPT_OBJS_))
@@ -36,7 +36,10 @@ ALL_OBJS=$(LI_OBJS) $(LI_LIB_OBJS)
 
 .PHONY: all opt debug profile install uninstall clean test tags
 
-all: $(LI_BIN)
+all: $(LI_BIN) libs
+
+libs:
+	$(MAKE) -C lib
 
 $(LI_BIN): $(LI_OBJS) $(LI_LIB)
 	$(CC) -o $@ $+ $(LDFLAGS)
@@ -75,9 +78,10 @@ uninstall:
 clean:
 	$(RM) $(LI_BIN) $(LI_LIB) src/li_parse.c src/li_read.[ch]
 	$(RM) -r $(OBJDIR)
+	$(MAKE) -C lib clean
 
-test: $(LI_BIN)
-	LD_LIBRARY_PATH=$(PWD) ./$(LI_BIN) test/test.li
+test: $(LI_BIN) libs
+	LD_LIBRARY_PATH=$(PWD)/lib ./$(LI_BIN) test/test.li
 
 tags: src/li.h
 	ctags -f $@ $<
@@ -86,6 +90,7 @@ tags: src/li.h
 $(OBJDIR)/li_boolean.o: src/li_boolean.c src/li.h
 $(OBJDIR)/li_chr.o: src/li_chr.c src/li.h
 $(OBJDIR)/li_error.o: src/li_error.c src/li.h
+$(OBJDIR)/li_import.o: src/li_import.c src/li.h
 $(OBJDIR)/li_nat.o: src/li_nat.c src/li.h src/li_num.h
 $(OBJDIR)/li_obj_bytevector.o: src/li_obj_bytevector.c src/li.h
 $(OBJDIR)/li_obj_chr.o: src/li_obj_chr.c src/li.h
@@ -104,5 +109,4 @@ $(OBJDIR)/li_object.o: src/li_object.c src/li.h
 $(OBJDIR)/li_proc.o: src/li_proc.c src/li.h src/li_num.h
 $(OBJDIR)/li_rat.o: src/li_rat.c src/li.h src/li_num.h
 $(OBJDIR)/li_read.o: src/li_read.c src/li.h src/li_num.h
-$(OBJDIR)/li_sock.o: src/li_sock.c src/li.h
 # end

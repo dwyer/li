@@ -1,4 +1,6 @@
 (let ()
+  (import defmacro)
+
   (define (object->string obj)
     (cond ((number? obj) (number->string obj))
           ((symbol? obj) (symbol->string obj))

@@ -1,8 +1,6 @@
 #include "li.h"
 
-#include <limits.h> /* PATH_MAX */
 #include <string.h>
-#include <unistd.h> /* access */
 
 #define li_quote(expr) \
     li_cons((li_object *)li_symbol("quote"), li_cons(expr, NULL))
@@ -303,25 +301,6 @@ static li_object *m_if(li_object *seq, li_env_t *env)
         return li_caddr(seq);
     else
         return li_false;
-}
-
-static void li_import(li_sym_t *name, li_env_t *env)
-{
-    char buf[PATH_MAX];
-    char *lpath;
-    char *dir = NULL;
-    if ((lpath = getenv("LD_LIBRARY_PATH"))) {
-        snprintf(lpath, PATH_MAX-1, lpath, ":");
-        for (dir = strtok(lpath, ":"); dir; dir = strtok(NULL, ":")) {
-            sprintf(buf, "%s/lib/%s.li", dir, li_to_symbol(name));
-            if (access(buf, F_OK) != -1) {
-                li_load(buf, env);
-                return;
-            }
-        }
-    }
-    snprintf(buf, PATH_MAX-1, "%s.li", li_to_symbol(name));
-    li_load(buf, env);
 }
 
 static li_object *m_import(li_object *seq, li_env_t *env)

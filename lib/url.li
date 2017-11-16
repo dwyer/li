@@ -14,4 +14,4 @@
                 (path (string-append "/" (cadr comps))))
             (url-make scheme host "80" path))))))
 
-  (export url-make url? url-scheme url-host url-port url-path))
+  (export url-make url? url-scheme url-host url-port url-path url-parse))

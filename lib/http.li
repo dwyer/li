@@ -1,4 +1,5 @@
 (let ()
+  (import socket)
   (import struct)
   (import url)
 
@@ -101,4 +102,4 @@
   (define (http-head url)
     (http-fetch *http-method-HEAD* url))
 
-  (export http-request))
+  (export http-request-make http-response-headers http-get http-head))

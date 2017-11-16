@@ -1,7 +1,6 @@
 #include <time.h>
 #include <unistd.h>
 #include "li.h"
-#include "li_sock.h"
 
 #define ARGV_SYMBOL li_symbol("*args*")
 
@@ -42,7 +41,6 @@ int main(int argc, char *argv[]) {
     int i, ret = 0;
     srand(time(NULL));
     li_setup_environment(env);
-    li_define_socket_functions(env);
     for (args = li_null, i = argc - 1; i; i--)
         args = li_cons((li_object *)li_string_make(argv[i]), args);
     li_env_append(env, ARGV_SYMBOL, args);
