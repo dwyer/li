@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 static li_object *p_exit(li_object *args)
 {
@@ -37,12 +38,9 @@ static li_object *p_get_environment_variables(li_object *args)
 
 extern void lilib_load_process_context(li_env_t *env)
 {
-    /* process-context library procedures */
-    /* li_define_primitive_procedure(env, "command-line", p_command_line); */
-    li_define_primitive_procedure(env, "exit", p_exit);
-    li_define_primitive_procedure(env, "emergency-exit", p_exit);
-    li_define_primitive_procedure(env, "get-environment-variable",
-            p_get_environment_variable);
-    li_define_primitive_procedure(env, "get-environment-variables",
-            p_get_environment_variables);
+    /* lilib_defproc(env, "command-line", p_command_line); */
+    lilib_defproc(env, "exit", p_exit);
+    lilib_defproc(env, "emergency-exit", p_exit);
+    lilib_defproc(env, "get-environment-variable", p_get_environment_variable);
+    lilib_defproc(env, "get-environment-variables", p_get_environment_variables);
 }

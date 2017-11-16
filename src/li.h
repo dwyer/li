@@ -415,9 +415,6 @@ extern void li_port_printf(li_port_t *port, const char *fmt, ...);
 #define li_assert_string(arg)           li_assert_type(string, arg)
 #define li_assert_symbol(arg)           li_assert_type(symbol, arg)
 
-#define li_define_primitive_procedure(env, name, proc) \
-    li_env_append(env, li_symbol(name), li_primitive_procedure(proc))
-
 extern void li_parse_args(li_object *args, const char *fmt, ...);
 
 void li_define_boolean_functions(li_env_t *env);

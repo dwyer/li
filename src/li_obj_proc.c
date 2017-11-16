@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 #define li_proc_prim(obj)               (*(li_proc_obj_t *)(obj)).primitive
 #define li_proc_name(obj)               (*(li_proc_obj_t *)(obj)).name
@@ -167,12 +168,12 @@ static li_object *p_eval(li_object *args) {
 
 extern void li_define_procedure_functions(li_env_t *env)
 {
-    li_define_primitive_procedure(env, "procedure?", p_is_procedure);
-    li_define_primitive_procedure(env, "apply", p_apply);
-    li_define_primitive_procedure(env, "map", p_map);
-    li_define_primitive_procedure(env, "for-each", p_for_each);
-    li_define_primitive_procedure(env, "force", p_force);
-    li_define_primitive_procedure(env, "eval", p_eval);
+    lilib_defproc(env, "procedure?", p_is_procedure);
+    lilib_defproc(env, "apply", p_apply);
+    lilib_defproc(env, "map", p_map);
+    lilib_defproc(env, "for-each", p_for_each);
+    lilib_defproc(env, "force", p_force);
+    lilib_defproc(env, "eval", p_eval);
 }
 
 #define li_is_self_evaluating(expr)  !(li_is_pair(expr) || li_is_symbol(expr))

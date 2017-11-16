@@ -86,27 +86,28 @@ test: $(LI_BIN) libs
 tags: src/li.h
 	ctags -f $@ $<
 
-# automatically made with 'gcc -MM src/li_*.c'
-$(OBJDIR)/li_boolean.o: src/li_boolean.c src/li.h
+# automatically made with: gcc -MM src/*.c | awk '{ print "$(OBJDIR)/" $0 }'
+$(OBJDIR)/li.o: src/li.c src/li.h
+$(OBJDIR)/li_boolean.o: src/li_boolean.c src/li.h src/li_lib.h
 $(OBJDIR)/li_chr.o: src/li_chr.c src/li.h
 $(OBJDIR)/li_error.o: src/li_error.c src/li.h
 $(OBJDIR)/li_import.o: src/li_import.c src/li.h
 $(OBJDIR)/li_nat.o: src/li_nat.c src/li.h src/li_num.h
 $(OBJDIR)/li_obj_bytevector.o: src/li_obj_bytevector.c src/li.h
-$(OBJDIR)/li_obj_chr.o: src/li_obj_chr.c src/li.h
+$(OBJDIR)/li_obj_chr.o: src/li_obj_chr.c src/li.h src/li_lib.h
 $(OBJDIR)/li_obj_env.o: src/li_obj_env.c src/li.h
 $(OBJDIR)/li_obj_mac.o: src/li_obj_mac.c src/li.h
-$(OBJDIR)/li_obj_num.o: src/li_obj_num.c src/li.h src/li_num.h
-$(OBJDIR)/li_obj_pair.o: src/li_obj_pair.c src/li.h
-$(OBJDIR)/li_obj_port.o: src/li_obj_port.c src/li.h
-$(OBJDIR)/li_obj_proc.o: src/li_obj_proc.c src/li.h
+$(OBJDIR)/li_obj_num.o: src/li_obj_num.c src/li.h src/li_lib.h src/li_num.h
+$(OBJDIR)/li_obj_pair.o: src/li_obj_pair.c src/li.h src/li_lib.h
+$(OBJDIR)/li_obj_port.o: src/li_obj_port.c src/li.h src/li_lib.h
+$(OBJDIR)/li_obj_proc.o: src/li_obj_proc.c src/li.h src/li_lib.h
 $(OBJDIR)/li_obj_spf.o: src/li_obj_spf.c src/li.h
-$(OBJDIR)/li_obj_str.o: src/li_obj_str.c src/li.h
-$(OBJDIR)/li_obj_sym.o: src/li_obj_sym.c src/li.h
+$(OBJDIR)/li_obj_str.o: src/li_obj_str.c src/li.h src/li_lib.h
+$(OBJDIR)/li_obj_sym.o: src/li_obj_sym.c src/li.h src/li_lib.h
 $(OBJDIR)/li_obj_typ.o: src/li_obj_typ.c src/li.h
-$(OBJDIR)/li_obj_vec.o: src/li_obj_vec.c src/li.h
+$(OBJDIR)/li_obj_vec.o: src/li_obj_vec.c src/li.h src/li_lib.h
 $(OBJDIR)/li_object.o: src/li_object.c src/li.h
-$(OBJDIR)/li_proc.o: src/li_proc.c src/li.h src/li_num.h
+$(OBJDIR)/li_proc.o: src/li_proc.c src/li.h src/li_lib.h src/li_num.h
 $(OBJDIR)/li_rat.o: src/li_rat.c src/li.h src/li_num.h
 $(OBJDIR)/li_read.o: src/li_read.c src/li.h src/li_num.h
 # end

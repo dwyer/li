@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "li.h"
+#include "li_lib.h"
 #include "li_num.h"
 
 /**
@@ -310,46 +311,41 @@ static li_object *p_isa(li_object *args)
     return li_boolean(li_is_type(obj, type));
 }
 
-#define define_var(env, name, obj) \
-    li_env_append(env, li_symbol(name), obj)
-#define define_type(env, type) \
-    define_var(env, (type)->name, li_type_obj(type))
-
 extern void li_setup_environment(li_env_t *env)
 {
-    define_var(env, "null", li_null);
+    lilib_defvar(env, "null", li_null);
 
-    define_type(env, &li_type_boolean);
-    define_type(env, &li_type_character);
-    define_type(env, &li_type_environment);
-    define_type(env, &li_type_macro);
-    define_type(env, &li_type_number);
-    define_type(env, &li_type_pair);
-    define_type(env, &li_type_port);
-    define_type(env, &li_type_procedure);
-    define_type(env, &li_type_special_form);
-    define_type(env, &li_type_string);
-    define_type(env, &li_type_symbol);
-    define_type(env, &li_type_type);
-    define_type(env, &li_type_vector);
+    lilib_deftype(env, &li_type_boolean);
+    lilib_deftype(env, &li_type_character);
+    lilib_deftype(env, &li_type_environment);
+    lilib_deftype(env, &li_type_macro);
+    lilib_deftype(env, &li_type_number);
+    lilib_deftype(env, &li_type_pair);
+    lilib_deftype(env, &li_type_port);
+    lilib_deftype(env, &li_type_procedure);
+    lilib_deftype(env, &li_type_special_form);
+    lilib_deftype(env, &li_type_string);
+    lilib_deftype(env, &li_type_symbol);
+    lilib_deftype(env, &li_type_type);
+    lilib_deftype(env, &li_type_vector);
 
     /* Equivalence predicates */
-    li_define_primitive_procedure(env, "isa?", p_isa);
-    li_define_primitive_procedure(env, "eq?", p_is_eq);
-    li_define_primitive_procedure(env, "eqv?", p_is_eqv);
-    li_define_primitive_procedure(env, "equal?", p_is_equal);
+    lilib_defproc(env, "isa?", p_isa);
+    lilib_defproc(env, "eq?", p_is_eq);
+    lilib_defproc(env, "eqv?", p_is_eqv);
+    lilib_defproc(env, "equal?", p_is_equal);
 
     /* Comparison operations */
-    li_define_primitive_procedure(env, "=", p_eq);
-    li_define_primitive_procedure(env, "<", p_lt);
-    li_define_primitive_procedure(env, ">", p_gt);
-    li_define_primitive_procedure(env, "<=", p_le);
-    li_define_primitive_procedure(env, ">=", p_ge);
+    lilib_defproc(env, "=", p_eq);
+    lilib_defproc(env, "<", p_lt);
+    lilib_defproc(env, ">", p_gt);
+    lilib_defproc(env, "<=", p_le);
+    lilib_defproc(env, ">=", p_ge);
 
     /* generic getter and setter */
-    li_define_primitive_procedure(env, "ref", p_ref);
-    li_define_primitive_procedure(env, "set", p_set);
-    li_define_primitive_procedure(env, "length", p_length);
+    lilib_defproc(env, "ref", p_ref);
+    lilib_defproc(env, "set", p_set);
+    lilib_defproc(env, "length", p_length);
 
     /* builtins */
     li_define_boolean_functions(env);
@@ -365,11 +361,11 @@ extern void li_setup_environment(li_env_t *env)
     li_define_procedure_functions(env);
 
     /* Non-standard */
-    li_define_primitive_procedure(env, "error", p_error);
-    li_define_primitive_procedure(env, "setenv", p_setenv);
-    li_define_primitive_procedure(env, "rand", p_rand);
-    li_define_primitive_procedure(env, "remove", p_remove);
-    li_define_primitive_procedure(env, "rename", p_rename);
-    li_define_primitive_procedure(env, "system", p_system);
+    lilib_defproc(env, "error", p_error);
+    lilib_defproc(env, "setenv", p_setenv);
+    lilib_defproc(env, "rand", p_rand);
+    lilib_defproc(env, "remove", p_remove);
+    lilib_defproc(env, "rename", p_rename);
+    lilib_defproc(env, "system", p_system);
 
 }

@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 struct li_vector_t {
     LI_OBJ_HEAD;
@@ -152,9 +153,9 @@ static li_object *p_vector_to_string(li_object *args) {
 
 extern void li_define_vector_functions(li_env_t *env)
 {
-    li_define_primitive_procedure(env, "make-vector", p_make_vector);
-    li_define_primitive_procedure(env, "vector?", p_is_vector);
-    li_define_primitive_procedure(env, "vector-fill!", p_vector_fill);
-    li_define_primitive_procedure(env, "vector->list", p_vector_to_list);
-    li_define_primitive_procedure(env, "vector->string", p_vector_to_string);
+    lilib_defproc(env, "make-vector", p_make_vector);
+    lilib_defproc(env, "vector?", p_is_vector);
+    lilib_defproc(env, "vector-fill!", p_vector_fill);
+    lilib_defproc(env, "vector->list", p_vector_to_list);
+    lilib_defproc(env, "vector->string", p_vector_to_string);
 }

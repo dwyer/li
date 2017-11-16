@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 #include <stdarg.h>
 #include <string.h>
@@ -303,22 +304,22 @@ static li_object *p_print(li_object *args) {
 
 extern void li_define_port_functions(li_env_t *env)
 {
-    li_define_primitive_procedure(env, "port?", p_is_port);
-    li_define_primitive_procedure(env, "input-port?", p_is_input_port);
-    li_define_primitive_procedure(env, "output-port?", p_is_output_port);
-    li_define_primitive_procedure(env, "input-port-open?", p_is_input_port_open);
-    li_define_primitive_procedure(env, "output-port-open?", p_is_output_port_open);
-    li_define_primitive_procedure(env, "open-input-file", p_open_input_file);
-    li_define_primitive_procedure(env, "open-output-file", p_open_output_file);
-    li_define_primitive_procedure(env, "close-port", p_close_port);
-    li_define_primitive_procedure(env, "close-input-port", p_close_port);
-    li_define_primitive_procedure(env, "close-output-port", p_close_port);
-    li_define_primitive_procedure(env, "read", p_read);
-    li_define_primitive_procedure(env, "read-char", p_read_char);
-    li_define_primitive_procedure(env, "peek-char", p_peek_char);
-    li_define_primitive_procedure(env, "eof-object?", p_is_eof_object);
-    li_define_primitive_procedure(env, "write", p_write);
-    li_define_primitive_procedure(env, "display", p_display);
-    li_define_primitive_procedure(env, "newline", p_newline);
-    li_define_primitive_procedure(env, "print", p_print);
+    lilib_defproc(env, "port?", p_is_port);
+    lilib_defproc(env, "input-port?", p_is_input_port);
+    lilib_defproc(env, "output-port?", p_is_output_port);
+    lilib_defproc(env, "input-port-open?", p_is_input_port_open);
+    lilib_defproc(env, "output-port-open?", p_is_output_port_open);
+    lilib_defproc(env, "open-input-file", p_open_input_file);
+    lilib_defproc(env, "open-output-file", p_open_output_file);
+    lilib_defproc(env, "close-port", p_close_port);
+    lilib_defproc(env, "close-input-port", p_close_port);
+    lilib_defproc(env, "close-output-port", p_close_port);
+    lilib_defproc(env, "read", p_read);
+    lilib_defproc(env, "read-char", p_read_char);
+    lilib_defproc(env, "peek-char", p_peek_char);
+    lilib_defproc(env, "eof-object?", p_is_eof_object);
+    lilib_defproc(env, "write", p_write);
+    lilib_defproc(env, "display", p_display);
+    lilib_defproc(env, "newline", p_newline);
+    lilib_defproc(env, "print", p_print);
 }

@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 #include "li_num.h"
 
 #include <math.h>
@@ -590,53 +591,53 @@ static li_object *p_string_to_number(li_object *args) {
 extern void li_define_number_functions(li_env_t *env)
 {
     /* Numerical operations */
-    li_define_primitive_procedure(env, "number?", p_is_number);
-    li_define_primitive_procedure(env, "complex?", p_is_complex);
-    li_define_primitive_procedure(env, "real?", p_is_real);
-    li_define_primitive_procedure(env, "rational?", p_is_rational);
-    li_define_primitive_procedure(env, "integer?", p_is_integer);
-    li_define_primitive_procedure(env, "exact?", p_is_exact);
-    li_define_primitive_procedure(env, "inexact?", p_is_inexact);
-    /* li_define_primitive_procedure(env, "finite?", p_is_finite); */
-    /* li_define_primitive_procedure(env, "infinite?", p_is_infinite); */
-    /* li_define_primitive_procedure(env, "nan?", p_is_nan); */
-    li_define_primitive_procedure(env, "zero?", p_is_zero);
-    li_define_primitive_procedure(env, "positive?", p_is_positive);
-    li_define_primitive_procedure(env, "negative?", p_is_negative);
-    li_define_primitive_procedure(env, "odd?", p_is_odd);
-    li_define_primitive_procedure(env, "even?", p_is_even);
-    li_define_primitive_procedure(env, "max", p_max);
-    li_define_primitive_procedure(env, "min", p_min);
-    li_define_primitive_procedure(env, "+", p_add);
-    li_define_primitive_procedure(env, "*", p_mul);
-    li_define_primitive_procedure(env, "-", p_sub);
-    li_define_primitive_procedure(env, "/", p_div);
-    li_define_primitive_procedure(env, "//", p_floor_div);
-    li_define_primitive_procedure(env, "abs", p_abs);
-    li_define_primitive_procedure(env, "quotient", p_quotient);
-    li_define_primitive_procedure(env, "remainder", p_remainder);
-    li_define_primitive_procedure(env, "modulo", p_modulo);
-    li_define_primitive_procedure(env, "gcd", p_gcd);
-    li_define_primitive_procedure(env, "lcm", p_lcm);
-    li_define_primitive_procedure(env, "numerator", p_numerator);
-    li_define_primitive_procedure(env, "denominator", p_denominator);
-    li_define_primitive_procedure(env, "floor", p_floor);
-    li_define_primitive_procedure(env, "ceiling", p_ceiling);
-    li_define_primitive_procedure(env, "truncate", p_truncate);
-    li_define_primitive_procedure(env, "round", p_round);
-    li_define_primitive_procedure(env, "exp", p_exp);
-    li_define_primitive_procedure(env, "log", p_log);
-    li_define_primitive_procedure(env, "sin", p_sin);
-    li_define_primitive_procedure(env, "cos", p_cos);
-    li_define_primitive_procedure(env, "tan", p_tan);
-    li_define_primitive_procedure(env, "asin", p_asin);
-    li_define_primitive_procedure(env, "acos", p_acos);
-    li_define_primitive_procedure(env, "atan", p_atan);
-    li_define_primitive_procedure(env, "square", p_square);
-    li_define_primitive_procedure(env, "sqrt", p_sqrt);
-    li_define_primitive_procedure(env, "expt", p_expt);
-    /* li_define_primitive_procedure(env, "exact", p_exact); */
-    li_define_primitive_procedure(env, "inexact", p_inexact);
-    li_define_primitive_procedure(env, "number->string", p_number_to_string);
-    li_define_primitive_procedure(env, "string->number", p_string_to_number);
+    lilib_defproc(env, "number?", p_is_number);
+    lilib_defproc(env, "complex?", p_is_complex);
+    lilib_defproc(env, "real?", p_is_real);
+    lilib_defproc(env, "rational?", p_is_rational);
+    lilib_defproc(env, "integer?", p_is_integer);
+    lilib_defproc(env, "exact?", p_is_exact);
+    lilib_defproc(env, "inexact?", p_is_inexact);
+    /* lilib_defproc(env, "finite?", p_is_finite); */
+    /* lilib_defproc(env, "infinite?", p_is_infinite); */
+    /* lilib_defproc(env, "nan?", p_is_nan); */
+    lilib_defproc(env, "zero?", p_is_zero);
+    lilib_defproc(env, "positive?", p_is_positive);
+    lilib_defproc(env, "negative?", p_is_negative);
+    lilib_defproc(env, "odd?", p_is_odd);
+    lilib_defproc(env, "even?", p_is_even);
+    lilib_defproc(env, "max", p_max);
+    lilib_defproc(env, "min", p_min);
+    lilib_defproc(env, "+", p_add);
+    lilib_defproc(env, "*", p_mul);
+    lilib_defproc(env, "-", p_sub);
+    lilib_defproc(env, "/", p_div);
+    lilib_defproc(env, "//", p_floor_div);
+    lilib_defproc(env, "abs", p_abs);
+    lilib_defproc(env, "quotient", p_quotient);
+    lilib_defproc(env, "remainder", p_remainder);
+    lilib_defproc(env, "modulo", p_modulo);
+    lilib_defproc(env, "gcd", p_gcd);
+    lilib_defproc(env, "lcm", p_lcm);
+    lilib_defproc(env, "numerator", p_numerator);
+    lilib_defproc(env, "denominator", p_denominator);
+    lilib_defproc(env, "floor", p_floor);
+    lilib_defproc(env, "ceiling", p_ceiling);
+    lilib_defproc(env, "truncate", p_truncate);
+    lilib_defproc(env, "round", p_round);
+    lilib_defproc(env, "exp", p_exp);
+    lilib_defproc(env, "log", p_log);
+    lilib_defproc(env, "sin", p_sin);
+    lilib_defproc(env, "cos", p_cos);
+    lilib_defproc(env, "tan", p_tan);
+    lilib_defproc(env, "asin", p_asin);
+    lilib_defproc(env, "acos", p_acos);
+    lilib_defproc(env, "atan", p_atan);
+    lilib_defproc(env, "square", p_square);
+    lilib_defproc(env, "sqrt", p_sqrt);
+    lilib_defproc(env, "expt", p_expt);
+    /* lilib_defproc(env, "exact", p_exact); */
+    lilib_defproc(env, "inexact", p_inexact);
+    lilib_defproc(env, "number->string", p_number_to_string);
+    lilib_defproc(env, "string->number", p_string_to_number);
 }

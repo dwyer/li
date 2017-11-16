@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 #include <string.h>
 
@@ -272,12 +273,12 @@ nomatch:
 
 extern void li_define_string_functions(li_env_t *env)
 {
-    li_define_primitive_procedure(env, "make-string", p_make_string);
-    li_define_primitive_procedure(env, "string", p_string);
-    li_define_primitive_procedure(env, "string?", p_is_string);
-    li_define_primitive_procedure(env, "string-append", p_string_append);
-    li_define_primitive_procedure(env, "string->list", p_string_to_list);
-    li_define_primitive_procedure(env, "string->symbol", p_string_to_symbol);
-    li_define_primitive_procedure(env, "string->vector", p_string_to_vector);
-    li_define_primitive_procedure(env, "string-split", p_string_split);
+    lilib_defproc(env, "make-string", p_make_string);
+    lilib_defproc(env, "string", p_string);
+    lilib_defproc(env, "string?", p_is_string);
+    lilib_defproc(env, "string-append", p_string_append);
+    lilib_defproc(env, "string->list", p_string_to_list);
+    lilib_defproc(env, "string->symbol", p_string_to_symbol);
+    lilib_defproc(env, "string->vector", p_string_to_vector);
+    lilib_defproc(env, "string-split", p_string_split);
 }

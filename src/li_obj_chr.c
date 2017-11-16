@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 static void display(li_character_obj_t *obj, li_port_t *port)
 {
@@ -61,7 +62,7 @@ static li_object *p_integer_to_char(li_object *args) {
 
 extern void li_define_char_functions(li_env_t *env)
 {
-    li_define_primitive_procedure(env, "char?", p_is_char);
-    li_define_primitive_procedure(env, "char->integer", p_char_to_integer);
-    li_define_primitive_procedure(env, "integer->char", p_integer_to_char);
+    lilib_defproc(env, "char?", p_is_char);
+    lilib_defproc(env, "char->integer", p_char_to_integer);
+    lilib_defproc(env, "integer->char", p_integer_to_char);
 }

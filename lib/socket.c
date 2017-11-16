@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 #include <netdb.h> /* struct hostent, gethostbyname */
 #include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
@@ -138,41 +139,32 @@ static li_object *p_socket_close(li_object *args)
     return obj;
 }
 
-#define li_def_var(env, name, obj) \
-    li_env_append(env, li_symbol(name), obj)
-
-#define li_def_fun(env, name, proc) \
-    li_def_var(env, name, li_primitive_procedure(proc))
-
-#define li_def_int(env, name, i) \
-    li_def_var(env, name, (li_object *)li_num_with_int(i))
-
 extern void lilib_load_socket(li_env_t *env)
 {
-    li_def_fun(env, "make-client-socket", p_make_client_socket);
-    li_def_fun(env, "socket?", p_is_socket);
-    li_def_fun(env, "socket-accept", p_socket_accept);
-    li_def_fun(env, "socket-send", p_socket_send);
-    li_def_fun(env, "socket-recv", p_socket_recv);
-    li_def_fun(env, "socket-shutdown", p_socket_shutdown);
-    li_def_fun(env, "socket-close", p_socket_close);
-    li_def_int(env, "*af-unspec*", AF_UNSPEC);
-    li_def_int(env, "*af-inet*", AF_INET);
-    li_def_int(env, "*af-inet6*", AF_INET6);
-    li_def_int(env, "*sock-stream*", SOCK_STREAM);
-    li_def_int(env, "*sock-dgram*", SOCK_DGRAM);
-    li_def_int(env, "*ai-canonname*", AI_CANONNAME);
-    li_def_int(env, "*ai-numerichost*", AI_NUMERICHOST);
-    li_def_int(env, "*ai-v4mapped*", AI_V4MAPPED);
-    li_def_int(env, "*ai-all*", AI_ALL);
-    li_def_int(env, "*ai-addrconfig*", AI_ADDRCONFIG);
-    li_def_int(env, "*ipproto-ip*", IPPROTO_IP);
-    li_def_int(env, "*ipproto-tcp*", IPPROTO_TCP);
-    li_def_int(env, "*ipproto-udp*", IPPROTO_UDP);
-    li_def_int(env, "*msg-peek*", MSG_PEEK);
-    li_def_int(env, "*msg-oob*", MSG_OOB);
-    li_def_int(env, "*msg-waitall*", MSG_WAITALL);
-    li_def_int(env, "*shut-rd*", SHUT_RD);
-    li_def_int(env, "*shut-wr*", SHUT_WR);
-    li_def_int(env, "*shut-rdwr*", SHUT_RDWR);
+    lilib_defproc(env, "make-client-socket", p_make_client_socket);
+    lilib_defproc(env, "socket?", p_is_socket);
+    lilib_defproc(env, "socket-accept", p_socket_accept);
+    lilib_defproc(env, "socket-send", p_socket_send);
+    lilib_defproc(env, "socket-recv", p_socket_recv);
+    lilib_defproc(env, "socket-shutdown", p_socket_shutdown);
+    lilib_defproc(env, "socket-close", p_socket_close);
+    lilib_defint(env, "*af-unspec*", AF_UNSPEC);
+    lilib_defint(env, "*af-inet*", AF_INET);
+    lilib_defint(env, "*af-inet6*", AF_INET6);
+    lilib_defint(env, "*sock-stream*", SOCK_STREAM);
+    lilib_defint(env, "*sock-dgram*", SOCK_DGRAM);
+    lilib_defint(env, "*ai-canonname*", AI_CANONNAME);
+    lilib_defint(env, "*ai-numerichost*", AI_NUMERICHOST);
+    lilib_defint(env, "*ai-v4mapped*", AI_V4MAPPED);
+    lilib_defint(env, "*ai-all*", AI_ALL);
+    lilib_defint(env, "*ai-addrconfig*", AI_ADDRCONFIG);
+    lilib_defint(env, "*ipproto-ip*", IPPROTO_IP);
+    lilib_defint(env, "*ipproto-tcp*", IPPROTO_TCP);
+    lilib_defint(env, "*ipproto-udp*", IPPROTO_UDP);
+    lilib_defint(env, "*msg-peek*", MSG_PEEK);
+    lilib_defint(env, "*msg-oob*", MSG_OOB);
+    lilib_defint(env, "*msg-waitall*", MSG_WAITALL);
+    lilib_defint(env, "*shut-rd*", SHUT_RD);
+    lilib_defint(env, "*shut-wr*", SHUT_WR);
+    lilib_defint(env, "*shut-rdwr*", SHUT_RDWR);
 }

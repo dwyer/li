@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 static void pair_mark(li_object *obj)
 {
@@ -608,57 +609,57 @@ static li_object *p_cddddr(li_object *args) {
 extern void li_define_pair_functions(li_env_t *env)
 {
     /* Pairs and lists */
-    li_define_primitive_procedure(env, "pair?", p_is_pair);
-    li_define_primitive_procedure(env, "cons", p_cons);
-    li_define_primitive_procedure(env, "car", p_car);
-    li_define_primitive_procedure(env, "cdr", p_cdr);
-    li_define_primitive_procedure(env, "set-car!", p_set_car);
-    li_define_primitive_procedure(env, "set-cdr!", p_set_cdr);
+    lilib_defproc(env, "pair?", p_is_pair);
+    lilib_defproc(env, "cons", p_cons);
+    lilib_defproc(env, "car", p_car);
+    lilib_defproc(env, "cdr", p_cdr);
+    lilib_defproc(env, "set-car!", p_set_car);
+    lilib_defproc(env, "set-cdr!", p_set_cdr);
 
     /* lists */
-    li_define_primitive_procedure(env, "null?", p_is_null);
-    li_define_primitive_procedure(env, "list", p_list);
-    li_define_primitive_procedure(env, "list?", p_is_list);
-    li_define_primitive_procedure(env, "list-tail", p_list_tail);
-    li_define_primitive_procedure(env, "list->string", p_list_to_string);
-    li_define_primitive_procedure(env, "list->vector", p_list_to_vector);
-    li_define_primitive_procedure(env, "make-list", p_make_list);
-    li_define_primitive_procedure(env, "append", p_append);
-    li_define_primitive_procedure(env, "filter", p_filter);
-    li_define_primitive_procedure(env, "reverse", p_reverse);
-    li_define_primitive_procedure(env, "memq", p_memq);
-    li_define_primitive_procedure(env, "memv", p_memv);
-    li_define_primitive_procedure(env, "member", p_member);
-    li_define_primitive_procedure(env, "assq", p_assq);
-    li_define_primitive_procedure(env, "assv", p_assv);
-    li_define_primitive_procedure(env, "assoc", p_assoc);
+    lilib_defproc(env, "null?", p_is_null);
+    lilib_defproc(env, "list", p_list);
+    lilib_defproc(env, "list?", p_is_list);
+    lilib_defproc(env, "list-tail", p_list_tail);
+    lilib_defproc(env, "list->string", p_list_to_string);
+    lilib_defproc(env, "list->vector", p_list_to_vector);
+    lilib_defproc(env, "make-list", p_make_list);
+    lilib_defproc(env, "append", p_append);
+    lilib_defproc(env, "filter", p_filter);
+    lilib_defproc(env, "reverse", p_reverse);
+    lilib_defproc(env, "memq", p_memq);
+    lilib_defproc(env, "memv", p_memv);
+    lilib_defproc(env, "member", p_member);
+    lilib_defproc(env, "assq", p_assq);
+    lilib_defproc(env, "assv", p_assv);
+    lilib_defproc(env, "assoc", p_assoc);
 
-    li_define_primitive_procedure(env, "caar", p_caar);
-    li_define_primitive_procedure(env, "cadr", p_cadr);
-    li_define_primitive_procedure(env, "cdar", p_cdar);
-    li_define_primitive_procedure(env, "cddr", p_cddr);
-    li_define_primitive_procedure(env, "caaar", p_caaar);
-    li_define_primitive_procedure(env, "caadr", p_caadr);
-    li_define_primitive_procedure(env, "cadar", p_cadar);
-    li_define_primitive_procedure(env, "caddr", p_caddr);
-    li_define_primitive_procedure(env, "cdaar", p_cdaar);
-    li_define_primitive_procedure(env, "cdadr", p_cdadr);
-    li_define_primitive_procedure(env, "cddar", p_cddar);
-    li_define_primitive_procedure(env, "cdddr", p_cdddr);
-    li_define_primitive_procedure(env, "caaaar", p_caaaar);
-    li_define_primitive_procedure(env, "caaadr", p_caaadr);
-    li_define_primitive_procedure(env, "caadar", p_caadar);
-    li_define_primitive_procedure(env, "caaddr", p_caaddr);
-    li_define_primitive_procedure(env, "cadaar", p_cadaar);
-    li_define_primitive_procedure(env, "cadadr", p_cadadr);
-    li_define_primitive_procedure(env, "caddar", p_caddar);
-    li_define_primitive_procedure(env, "cadddr", p_cadddr);
-    li_define_primitive_procedure(env, "cdaaar", p_cdaaar);
-    li_define_primitive_procedure(env, "cdaadr", p_cdaadr);
-    li_define_primitive_procedure(env, "cdadar", p_cdadar);
-    li_define_primitive_procedure(env, "cdaddr", p_cdaddr);
-    li_define_primitive_procedure(env, "cddaar", p_cddaar);
-    li_define_primitive_procedure(env, "cddadr", p_cddadr);
-    li_define_primitive_procedure(env, "cdddar", p_cdddar);
-    li_define_primitive_procedure(env, "cddddr", p_cddddr);
+    lilib_defproc(env, "caar", p_caar);
+    lilib_defproc(env, "cadr", p_cadr);
+    lilib_defproc(env, "cdar", p_cdar);
+    lilib_defproc(env, "cddr", p_cddr);
+    lilib_defproc(env, "caaar", p_caaar);
+    lilib_defproc(env, "caadr", p_caadr);
+    lilib_defproc(env, "cadar", p_cadar);
+    lilib_defproc(env, "caddr", p_caddr);
+    lilib_defproc(env, "cdaar", p_cdaar);
+    lilib_defproc(env, "cdadr", p_cdadr);
+    lilib_defproc(env, "cddar", p_cddar);
+    lilib_defproc(env, "cdddr", p_cdddr);
+    lilib_defproc(env, "caaaar", p_caaaar);
+    lilib_defproc(env, "caaadr", p_caaadr);
+    lilib_defproc(env, "caadar", p_caadar);
+    lilib_defproc(env, "caaddr", p_caaddr);
+    lilib_defproc(env, "cadaar", p_cadaar);
+    lilib_defproc(env, "cadadr", p_cadadr);
+    lilib_defproc(env, "caddar", p_caddar);
+    lilib_defproc(env, "cadddr", p_cadddr);
+    lilib_defproc(env, "cdaaar", p_cdaaar);
+    lilib_defproc(env, "cdaadr", p_cdaadr);
+    lilib_defproc(env, "cdadar", p_cdadar);
+    lilib_defproc(env, "cdaddr", p_cdaddr);
+    lilib_defproc(env, "cddaar", p_cddaar);
+    lilib_defproc(env, "cddadr", p_cddadr);
+    lilib_defproc(env, "cdddar", p_cdddar);
+    lilib_defproc(env, "cddddr", p_cddddr);
 }

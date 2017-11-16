@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 struct li_boolean_t {
     LI_OBJ_HEAD;
@@ -52,6 +53,6 @@ static li_object *p_is_boolean(li_object *args)
 
 void li_define_boolean_functions(li_env_t *env)
 {
-    li_define_primitive_procedure(env, "boolean?", p_is_boolean);
-    li_define_primitive_procedure(env, "not", p_not);
+    lilib_defproc(env, "boolean?", p_is_boolean);
+    lilib_defproc(env, "not", p_not);
 }
