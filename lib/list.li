@@ -18,7 +18,7 @@
         (else (cons (car xs) (apply cons* (cdr xs))))))
 
 (define (make-list n . args)
-  (let ((fill (if (null? args) false (car args))))
+  (let ((fill (if (null? args) #f (car args))))
     (let loop ((n n))
       (if (zero? n)
         null
@@ -63,8 +63,8 @@
 (define (proper-list? x)    (eq? (*list-type* x) 'proper))
 (define (circular-list? x)  (eq? (*list-type* x) 'circular))
 (define (dotted-list? x)    (eq? (*list-type* x) 'dotted))
-(define (null-list? lst)    (cond ((null? lst) true)
-                                  ((pair? lst) false)
+(define (null-list? lst)    (cond ((null? lst) #t)
+                                  ((pair? lst) #f)
                                   (else (error "not a list" lst))))
 (define (not-pair? x)       (not (pair? x)))
 
@@ -75,12 +75,12 @@
 
 (define (list= elt= . lists)
   (if (< (length lists) 2)
-    true
+    #t
     (let loop ((lists lists))
-      (cond ((every null? lists) true)
+      (cond ((every null? lists) #t)
             ((all= elt= (map car lists))
              (loop (map cdr lists)))
-            (else false)))))
+            (else #f)))))
 
 (define list-ref ref)
 
@@ -100,16 +100,16 @@
 (define (take lst i)
   (assert (positive? i))
   (cond ((zero? i) null)
-        ((null? lst) false)
+        ((null? lst) #f)
         (else (let ((rest (take (cdr lst) (- i 1))))
                 (if rest
                   (cons (car lst) rest)
-                  false)))))
+                  #f)))))
 
 (define (drop lst i)
   (assert (positive? i))
   (cond ((zero? i) lst)
-        ((null? lst) false)
+        ((null? lst) #f)
         (else (drop (cdr lst) (- i 1)))))
 
 (define (*length* lst)
@@ -147,10 +147,10 @@
   (let ((lst (last-pair lst)))
     (if lst
       (car lst)
-      false)))
+      #f)))
 
 (define (last-pair lst)
-  (cond ((null? lst) false)
+  (cond ((null? lst) #f)
         ((null? (cdr lst)) lst)
         (else (last-pair (cdr lst)))))
 
@@ -271,7 +271,7 @@
     (and tail (car tail))))
 
 (define (find-tail pred lst)
-  (cond ((null? lst) false)
+  (cond ((null? lst) #f)
         ((pred (car lst)) lst)
         (else (find-tail pred (cdr lst)))))
 
@@ -297,7 +297,7 @@
   (let ()
     (define (%any1 pred lst)
       (if (null? lst)
-        false
+        #f
         (or (pred (car lst))
             (%any1 pred (cdr lst)))))
     (lambda (pred lst . lists)
@@ -305,20 +305,20 @@
         (%any1 pred lst)
         (let loop ((lists (cons lst lists)))
           (if (%any1 null? lists)
-            false
+            #f
             (or (apply pred (map car lists))
                 (loop (map cdr lists)))))))))
 
 (define (every pred lst . lsts)
   (let loop ((lsts (cons lst lsts)))
     (if (any null? lsts)
-      true
+      #t
       (and (apply pred (map car lsts))
            (loop (map cdr lsts))))))
 
 (define (list-index pred lst . lsts)
   (let loop ((lsts (cons lst lsts)) (i 0))
-    (cond ((any null? lsts) false)
+    (cond ((any null? lsts) #f)
           ((apply pred (map car lsts)) i)
           (else (loop (map cdr lsts) (+ i 1))))))
 

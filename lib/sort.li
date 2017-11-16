@@ -1,4 +1,4 @@
-# based on https://srfi.schemers.org/srfi-132/srfi-132.html
+; based on https://srfi.schemers.org/srfi-132/srfi-132.html
 
 (let ()
   (import values)
@@ -6,7 +6,7 @@
   (define (list-sorted? < lis)
     (let loop ((lis lis))
       (if (or (null? lis) (null? (cdr lis)))
-        true
+        #t
         (and (< (car lis) (cadr lis))
              (loop (cdr lis))))))
 
@@ -17,7 +17,7 @@
       ((< v start end)
        (let lp ((i start))
          (if (= i (- end 1))
-           true
+           #t
            (and (< (ref v i) (ref v (+ i 1)))
                 (lp (+ i 1))))))))
 

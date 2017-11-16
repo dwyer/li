@@ -42,10 +42,14 @@ datum   : EOF_OBJECT { $$ = li_eof; }
         | NUMBER { $$ = $1; }
         | STRING { $$ = $1; }
         | SYMBOL { $$ = $1; }
+        /* lists */
         | '(' data ')' { $$ = $2; }
         | '(' data datum '.' datum ')' { $$ = append($2, li_cons($3, $5)); }
+        /* vectors */
         | '[' data ']' { $$ = li_vector($2); }
+        /* bytevectors */
         | '{' data '}' { $$ = (li_object *)li_bytevector($2); }
+        /* quotation */
         | '\'' datum { $$ = make_tagged_list("quote", $2); }
         | '`' datum { $$ = make_tagged_list("quasiquote", $2); }
         | ',' datum { $$ = make_tagged_list("unquote", $2); }

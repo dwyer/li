@@ -33,12 +33,12 @@
       (syntax-case x
                    ()
                    ((_ x y)
-                    (syntax (if x y false))))))
+                    (syntax (if x y #f))))))
 
-  (assert (and2 true true))
-  (assert (not (and2 true false)))
-  (assert (not (and2 false true)))
-  (assert (not (and2 false false)))
+  (assert (and2 #t #t))
+  (assert (not (and2 #t #f)))
+  (assert (not (and2 #f #t)))
+  (assert (not (and2 #f #f)))
 
   (define-syntax when
     (lambda (x)
@@ -52,18 +52,18 @@
                    ((_ e0 e1 e2 ...)
                     (syntax (when (not e0) e1 e2 ...))))))
 
-  (unless (= 1 1) (assert false))
-  (unless (= 1 0) (assert true))
+  (unless (= 1 1) (assert #f))
+  (unless (= 1 0) (assert #t))
 
-  (when true (assert true))
-  (when false (assert false))
+  (when #t (assert #t))
+  (when #f (assert #f))
 
   (let ((begin list))
-    (when true (assert true)))
+    (when #t (assert #t)))
 
-  # XXX this test fails
+  ; XXX this test fails
   ; (let ((not (lambda (x) x))
   ;       (when print))
-  ;   (unless false (assert true)))
+  ;   (unless #f (assert #t)))
 
-  false)
+  #f)

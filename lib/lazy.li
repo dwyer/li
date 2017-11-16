@@ -9,7 +9,7 @@
     (obj promise-obj promise-obj-set!))
 
   (define (make-promise obj)
-    (%make-promise false obj))
+    (%make-promise #f obj))
 
   (define-macro delay
                 (lambda (x _)
@@ -23,7 +23,7 @@
         (promise-obj promise)
         (let ((obj ((promise-obj promise))))
           (promise-obj-set! promise obj)
-          (promise-forced?-set! promise true)
+          (promise-forced?-set! promise #t)
           obj))
       promise))
 

@@ -3,7 +3,7 @@
   (import misc) ; rand
   (import sort)
   (assert (list-sorted? < (list-sort < (map (lambda _ (rand)) (iota 1000)))))
-  # test stablility
+  ; test stablility
   (assert (equal? (list-merge (lambda (x y)
                                 (< (abs x) (abs y)))
                               '(0 -2 4 8 -10)

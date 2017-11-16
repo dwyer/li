@@ -8,7 +8,7 @@
           xs))))
 
   (define (stack->list stack)
-    (stack false))
+    (stack #f))
 
   (define (stack-length stack)
     (length (stack->list stack)))

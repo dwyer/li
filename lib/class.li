@@ -7,8 +7,8 @@
           (cons-body (cdr constructor)))
       (let ((cons-name (car cons-sig))
             (cons-args (cdr cons-sig))
-            (msg-name (string->symbol "#msg"))
-            (args-name (string->symbol "#args")))
+            (msg-name (string->symbol ";msg"))
+            (args-name (string->symbol ";args")))
         (define (make-clause name args body)
           `((,name)
             (apply (lambda ,args

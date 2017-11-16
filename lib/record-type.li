@@ -24,7 +24,7 @@
                         (accessor-name (cadr field))
                         (modifier-name
                           (case (length (cddr field))
-                            ((0) false)
+                            ((0) #f)
                             ((1) (caddr field))
                             (else (error
                                     "define-record-type: too many params to field"

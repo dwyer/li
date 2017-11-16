@@ -15,7 +15,7 @@
     (let ((comparator (hash-table-comparator hash-table)))
       (let loop ((lst (hash-table->alist hash-table)))
         (if (null? lst)
-          false
+          #f
           (loop (cdr lst))))))
 
   (define (alist->hash-table alist comparator)

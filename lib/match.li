@@ -16,7 +16,7 @@
                      env
                      (cons (cons (car patt) (map car expr))
                            (iter (map cdr expr) (cdr patt))))))
-                (else false))))
+                (else #f))))
 
       (define (bind-ellipses expr patt env)
         (let iter ((newexpr expr) (n 0))
@@ -25,7 +25,7 @@
                              bind-split
                              bind-iter)
                            (take expr n) (car patt) newenv))
-                  ((null? newexpr) false)
+                  ((null? newexpr) #f)
                   (else (iter (cdr newexpr) (+ n 1)))))))
 
       (define (bind-iter expr patt env)
@@ -34,7 +34,7 @@
               ((and (not (null? (cdr patt)))
                     (eq? (cadr patt) '...))
                (bind-ellipses expr patt env))
-              ((null? expr) false)
+              ((null? expr) #f)
               (else
                 (let ((env (bind-iter (cdr expr) (cdr patt) env)))
                   (and env (bind-iter (car expr) (car patt) env))))))

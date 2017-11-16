@@ -5,7 +5,7 @@
 (define (randint start end)
   (+ start (modulo (rand) (- end start -1))))
 
-# STRINGS
+; STRINGS
 
 (define (string-copy str)
   (substring str 0 (string-length str)))

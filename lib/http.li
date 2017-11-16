@@ -28,7 +28,7 @@
     (let ((binding (assv header (http-response-headers res))))
       (if binding
         (cdr binding)
-        false)))
+        #f)))
 
   (define (http-response-parse result)
     (let ((comps (string-split result
@@ -43,9 +43,9 @@
                                 (cons (car lst) (cadr lst))))
                             (cdr headers-comp))))
           (http-response-make
-            (car status) # HTTP version
-            (string->number (cadr status)) # status code
-            (caddr status) # status desc
+            (car status) ; HTTP version
+            (string->number (cadr status)) ; status code
+            (caddr status) ; status desc
             headers
             body)))))
 
@@ -53,27 +53,27 @@
     (assert (http-request? req))
     (let ((sock (make-client-socket (url-host (http-request-url req))
                                     (url-port (http-request-url req)))))
-      # send HTTP status line
+      ; send HTTP status line
       (socket-send sock (http-request-method req))
       (socket-send sock " ")
       (socket-send sock (url-path (http-request-url req)))
       (socket-send sock " ")
       (socket-send sock (http-request-version req))
       (socket-send sock *http-line-break*)
-      # send host header
+      ; send host header
       (socket-send sock "Host: ")
       (socket-send sock (url-host (http-request-url req)))
       (socket-send sock *http-line-break*)
-      # send other headers
+      ; send other headers
       (for-each (lambda (header)
                   (socket-send sock (car header))
                   (socket-send sock ": ")
                   (socket-send sock (cdr header))
                   (socket-send sock *http-line-break*))
                 (http-request-headers req))
-      # send empty line
+      ; send empty line
       (socket-send sock *http-line-break*)
-      # start receiving response
+      ; start receiving response
       (let* ((buffer-size 8092)
              (buffers (let loop ((buffer (socket-recv sock buffer-size)))
                         (if (= (length buffer) 0)

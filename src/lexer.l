@@ -22,8 +22,8 @@ static struct {
 %option noinput nounput yylineno
 
 /* simple patterns, order doesn't matter */
-character               %\\[!-~]
-comment                 [;#].*$
+character               #\\[!-~]
+comment                 [;].*$
 digit                   [0-9]
 letter                  [A-Za-z]
 peculiar_identifier     ([+-]|\.\.\.)
@@ -44,8 +44,8 @@ suffix                  (e{sign}{uinteger_10})
 udecimal                ({uinteger_10}{suffix}|{uinteger_10}\.{uinteger_10}{suffix}?)
 decimal                 {sign}{udecimal}
 
-false                   false
-true                    true
+false                   #f
+true                    #t
 
 initial                 ({letter}|{special_initial})
 subsequent              ({initial}|{digit}|{special_subsequent})
@@ -56,7 +56,7 @@ symbol                  ({identifier}|\|[^|]*\|)
 
 %%
 
-[%{}()\[\].'`,@\\]      return *yytext;
+[{}()\[\].'`,@\\]       return *yytext;
 <<EOF>>                 yylval.obj = li_eof; return EOF_OBJECT;
 {character}             yylval.obj = li_character(yytext[2]); return CHARACTER;
 %\\newline              yylval.obj = li_character('\n'); return CHARACTER;
