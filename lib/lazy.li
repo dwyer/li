@@ -1,0 +1,31 @@
+(let ()
+  (import record-type)
+
+  (define-record-type
+    promise
+    (%make-promise forced? obj)
+    promise?
+    (forced? promise-forced? promise-forced?-set!)
+    (obj promise-obj promise-obj-set!))
+
+  (define (make-promise obj)
+    (%make-promise false obj))
+
+  (define-macro delay
+                (lambda (x _)
+                  (apply (lambda (x)
+                           `(make-promise (lambda () ,x)))
+                         (cdr x))))
+
+  (define (force promise)
+    (if (promise? promise)
+      (if (promise-forced? promise)
+        (promise-obj promise)
+        (let ((obj ((promise-obj promise))))
+          (promise-obj-set! promise obj)
+          (promise-forced?-set! promise true)
+          obj))
+      promise))
+
+  (export delay force promise? make-promise))
+

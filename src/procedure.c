@@ -153,12 +153,6 @@ static li_object *p_for_each(li_object *args) {
     return NULL;
 }
 
-static li_object *p_force(li_object *args) {
-    li_object *obj;
-    li_parse_args(args, "o", &obj);
-    return li_apply(obj, NULL);
-}
-
 static li_object *p_eval(li_object *args) {
     li_object *expr;
     li_env_t *env;
@@ -172,7 +166,6 @@ extern void li_define_procedure_functions(li_env_t *env)
     lilib_defproc(env, "apply", p_apply);
     lilib_defproc(env, "map", p_map);
     lilib_defproc(env, "for-each", p_for_each);
-    lilib_defproc(env, "force", p_force);
     lilib_defproc(env, "eval", p_eval);
 }
 

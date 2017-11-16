@@ -1,4 +1,10 @@
-LIBS=cxr.so process-context.so misc.so socket.so time.so
+LIBS=\
+     cxr.so \
+     process-context.so \
+     misc.so \
+     socket.so \
+     time.so
+
 INCLUDE=../src
 
 CFLAGS=-I$(INCLUDE)

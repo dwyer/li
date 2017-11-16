@@ -1,4 +1,5 @@
 #include "li.h"
+#include "li_lib.h"
 
 #include <string.h>
 
@@ -233,11 +234,6 @@ static li_object *m_define_macro(li_object *seq, li_env_t *env)
     li_assert_procedure(val);
     li_env_define(env, name, li_macro((li_proc_obj_t *)val));
     return NULL;
-}
-
-static li_object *m_delay(li_object *seq, li_env_t *env)
-{
-    return li_lambda(NULL, NULL, seq, env);
 }
 
 static li_object *m_do(li_object *seq, li_env_t *env)
@@ -500,41 +496,33 @@ static li_object *p_is_indentifier_eq(li_object *args)
     return li_boolean(li_is_eq(obj1, obj2));
 }
 
-#define def_macro(env, name, proc) \
-    li_env_append(env, (li_sym_t *)li_symbol(name), \
-            li_special_form(proc));
-
 extern void li_define_primitive_macros(li_env_t *env)
 {
-    li_env_append(env, (li_sym_t *)li_symbol("make-syntactic-closure"),
-            li_primitive_procedure(p_make_syntactic_closure));
-    li_env_append(env, (li_sym_t *)li_symbol("identifier?"),
-            li_primitive_procedure(p_is_indentifier));
-    li_env_append(env, (li_sym_t *)li_symbol("identifier=?"),
-            li_primitive_procedure(p_is_indentifier_eq));
-    /* def_macro(env, "sc-macro-transformer",  m_sc_macro_transformer); */
+    lilib_defproc(env, "make-syntactic-closure", p_make_syntactic_closure);
+    lilib_defproc(env, "identifier?", p_is_indentifier);
+    lilib_defproc(env, "identifier=?", p_is_indentifier_eq);
+    /* lilib_defmac(env, "sc-macro-transformer",  m_sc_macro_transformer); */
     (void)m_sc_macro_transformer;
-    def_macro(env, "define-syntax",         m_define_syntax);
+    lilib_defmac(env, "define-syntax",  m_define_syntax);
 
-    def_macro(env, "and",                   m_and);
-    def_macro(env, "assert",                m_assert);
-    def_macro(env, "begin",                 m_begin);
-    def_macro(env, "case",                  m_case);
-    def_macro(env, "case-lambda",           m_case_lambda);
-    def_macro(env, "cond",                  m_cond);
-    def_macro(env, "define",                m_define);
-    def_macro(env, "define-macro",          m_define_macro);
-    def_macro(env, "delay",                 m_delay);
-    def_macro(env, "do",                    m_do);
-    def_macro(env, "export",                m_export);
-    def_macro(env, "if",                    m_if);
-    def_macro(env, "import",                m_import);
-    def_macro(env, "lambda",                m_lambda);
-    def_macro(env, "let",                   m_let);
-    def_macro(env, "let*",                  m_let_star);
-    def_macro(env, "letrec",                m_letrec);
-    def_macro(env, "load",                  m_load);
-    def_macro(env, "named-lambda",          m_named_lambda);
-    def_macro(env, "or",                    m_or);
-    def_macro(env, "set!",                  m_set);
+    lilib_defmac(env, "and",            m_and);
+    lilib_defmac(env, "assert",         m_assert);
+    lilib_defmac(env, "begin",          m_begin);
+    lilib_defmac(env, "case",           m_case);
+    lilib_defmac(env, "case-lambda",    m_case_lambda);
+    lilib_defmac(env, "cond",           m_cond);
+    lilib_defmac(env, "define",         m_define);
+    lilib_defmac(env, "define-macro",   m_define_macro);
+    lilib_defmac(env, "do",             m_do);
+    lilib_defmac(env, "export",         m_export);
+    lilib_defmac(env, "if",             m_if);
+    lilib_defmac(env, "import",         m_import);
+    lilib_defmac(env, "lambda",         m_lambda);
+    lilib_defmac(env, "let",            m_let);
+    lilib_defmac(env, "let*",           m_let_star);
+    lilib_defmac(env, "letrec",         m_letrec);
+    lilib_defmac(env, "load",           m_load);
+    lilib_defmac(env, "named-lambda",   m_named_lambda);
+    lilib_defmac(env, "or",             m_or);
+    lilib_defmac(env, "set!",           m_set);
 }
