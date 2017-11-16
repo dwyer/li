@@ -1,11 +1,6 @@
 (let ()
   (import syntax-case)
-
-  (define (random-symbol)
-    (string->symbol (string-append "#" (number->string (rand))
-                                   "#" (number->string (rand))
-                                   "#" (number->string (rand))
-                                   "#" (number->string (rand)))))
+  (import random-symbol)
 
   (define-macro define-syntax
     (lambda (expr _)

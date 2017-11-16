@@ -1,4 +1,3 @@
-#include <time.h>
 #include <unistd.h>
 #include "li.h"
 
@@ -39,7 +38,6 @@ int main(int argc, char *argv[]) {
     li_env_t *env = li_env_make(NULL);
     li_object *args;
     int i, ret = 0;
-    srand(time(NULL));
     li_setup_environment(env);
     for (args = li_null, i = argc - 1; i; i--)
         args = li_cons((li_object *)li_string_make(argv[i]), args);

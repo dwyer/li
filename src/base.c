@@ -1,9 +1,10 @@
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include "li.h"
 #include "li_lib.h"
 #include "li_num.h"
+
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /**
  * fmt options:
@@ -139,44 +140,6 @@ static li_object *p_error(li_object *args)
     li_parse_args(args, "S.", &msg, &irritants);
     li_error(msg, irritants);
     return li_null;
-}
-
-static li_object *p_rand(li_object *args)
-{
-    int n = rand();
-    int p = 0;
-    li_parse_args(args, "?i", &p);
-    if (p)
-        n %= p;
-    return (li_object *)li_num_with_int(n);
-}
-
-static li_object *p_remove(li_object *args)
-{
-    const char *path;
-    li_parse_args(args, "S", &path);
-    return (li_object *)li_num_with_int(remove(path));
-}
-
-static li_object *p_rename(li_object *args)
-{
-    const char *from, *to;
-    li_parse_args(args, "SS", &from, &to);
-    return (li_object *)li_num_with_int(rename(from, to));
-}
-
-static li_object *p_setenv(li_object *args)
-{
-    const char *name, *value;
-    li_parse_args(args, "SS", &name, &value);
-    return (li_object *)li_num_with_int(setenv(name, value, 1));
-}
-
-static li_object *p_system(li_object *args)
-{
-    const char *cmd;
-    li_parse_args(args, "S", &cmd);
-    return (li_object *)li_num_with_int(system(cmd));
 }
 
 /**************************
@@ -347,6 +310,8 @@ extern void li_setup_environment(li_env_t *env)
     lilib_defproc(env, "set", p_set);
     lilib_defproc(env, "length", p_length);
 
+    lilib_defproc(env, "error", p_error);
+
     /* builtins */
     li_define_boolean_functions(env);
     li_define_bytevector_functions(env);
@@ -359,13 +324,4 @@ extern void li_setup_environment(li_env_t *env)
     li_define_symbol_functions(env);
     li_define_vector_functions(env);
     li_define_procedure_functions(env);
-
-    /* Non-standard */
-    lilib_defproc(env, "error", p_error);
-    lilib_defproc(env, "setenv", p_setenv);
-    lilib_defproc(env, "rand", p_rand);
-    lilib_defproc(env, "remove", p_remove);
-    lilib_defproc(env, "rename", p_rename);
-    lilib_defproc(env, "system", p_system);
-
 }

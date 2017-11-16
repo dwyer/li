@@ -1,5 +1,6 @@
 (let ()
   (import defmacro)
+  (import random-symbol)
 
   (define (object->string obj)
     (cond ((number? obj) (number->string obj))
@@ -8,10 +9,6 @@
 
   (define (append->string . args)
     (string->symbol (apply string-append (map object->string args))))
-
-  (define (symbol-generate)
-    # generates a random symbol that starts with a comment literal
-    (append->string "#" (rand) "-" (rand) "-" (rand) "-" (rand)))
 
   (defmacro (define-struct sig . body)
     (let ((name (car sig))
@@ -36,8 +33,8 @@
     (let ((type (car sig))
           (vars (cdr sig)))
       (let ((make (append->string type "-make"))
-            (msg (symbol-generate))
-            (args (symbol-generate)))
+            (msg (random-symbol))
+            (args (random-symbol)))
         `(begin
            (define (,make ,@vars)
              ,@body

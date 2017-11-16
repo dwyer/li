@@ -1,5 +1,6 @@
 (let ()
   (import list)
+  (import misc) ; rand
   (import sort)
   (display "testing sort...")
   (assert (list-sorted? < (list-sort < (map (lambda _ (rand)) (iota 1000)))))

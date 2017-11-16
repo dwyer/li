@@ -1,5 +1,7 @@
-LIBS=process-context.so socket.so time.so
-CFLAGS=-I../src
+LIBS=process-context.so misc.so socket.so time.so
+INCLUDE=../src
+
+CFLAGS=-I$(INCLUDE)
 LDFLAGS=-L../ -lli
 
 all: $(LIBS)
@@ -9,3 +11,8 @@ all: $(LIBS)
 
 clean:
 	$(RM) *.so
+
+process-context.so: process-context.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
+misc.so: misc.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
+socket.so: socket.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
+time.so: time.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h

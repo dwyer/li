@@ -1,0 +1,8 @@
+(let ()
+  (import misc)
+  (define (random-symbol)
+    (string->symbol (string-append "#" (number->string (rand))
+                                   "#" (number->string (rand))
+                                   "#" (number->string (rand))
+                                   "#" (number->string (rand)))))
+  (export random-symbol))
