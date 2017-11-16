@@ -210,7 +210,12 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
 }
 
 extern li_object *li_eval(li_object *expr, li_env_t *env) {
+    static int num_evals;
     int done = 0;
+    if (++num_evals > 100000) {
+        num_evals = 0;
+        li_cleanup(env);
+    }
     while (!li_is_self_evaluating(expr) && !done) {
         li_stack_trace_push(expr);
         if (li_is_symbol(expr)) {

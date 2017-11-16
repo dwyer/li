@@ -25,7 +25,6 @@ void li_repl(li_env_t *env) {
                 li_print(expr, li_port_stdout);
             }
         }
-        li_cleanup(env);
     }
 }
 
@@ -42,10 +41,9 @@ int main(int argc, char *argv[]) {
     for (args = li_null, i = argc - 1; i; i--)
         args = li_cons((li_object *)li_string_make(argv[i]), args);
     li_env_append(env, ARGV_SYMBOL, args);
-    ret = argc == 1 ?
-        li_try((void (*)(li_object *))li_repl,
-                (void (*)(li_object *))li_cleanup, (li_object *)env) :
-        li_try((void (*)(li_object *))li_script, NULL, (li_object *)env);
+    ret = argc == 1
+        ? li_try((void (*)(li_object *))li_repl, NULL, (li_object *)env)
+        : li_try((void (*)(li_object *))li_script, NULL, (li_object *)env);
     li_cleanup(NULL);
     return ret;
 }
