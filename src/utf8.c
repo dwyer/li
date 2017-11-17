@@ -5,8 +5,6 @@
 #define LI_RUNE_ERROR ((li_character_t)0xFFFD)
 #define LI_RUNE_MAX ((li_character_t)0x0010FFFF)
 
-typedef unsigned char li_byte_t;
-
 static li_byte_t masks[4] = {
     0x3F, /* 0011 1111 */
     0x1F, /* 0001 1111 */
@@ -143,6 +141,7 @@ extern size_t li_chr_encode(li_character_t chr, char *s, size_t n)
         else
             s[i] = t[sz] | b;
     }
+    s[i] = '\0';
     return sz;
 }
 

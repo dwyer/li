@@ -16,6 +16,7 @@
     strcpy(li_allocate(NULL, strlen(s) + 1, sizeof(char)), s)
 
 typedef int li_bool_t;
+typedef unsigned char li_byte_t;
 
 #define LI_FALSE ((li_bool_t)0)
 #define LI_TRUE (!LI_FALSE)
@@ -99,12 +100,11 @@ extern const li_type_t li_type_type;
 extern const li_type_t li_type_vector;
 
 /* bytevectors */
-#define li_is_bytevector(obj)           li_is_type((obj), li_type_bytevector)
 extern li_bytevector_t *li_bytevector(li_object *lst);
-extern li_bytevector_t *li_make_bytevector(int k, unsigned char byte);
+extern li_bytevector_t *li_make_bytevector(int k, li_byte_t byte);
 extern int li_bytevector_length(li_bytevector_t *v);
-extern unsigned char li_bytevector_get(li_bytevector_t *v, int k);
-extern void li_bytevector_set(li_bytevector_t *v, int k, unsigned char byte);
+extern li_byte_t li_bytevector_get(li_bytevector_t *v, int k);
+extern void li_bytevector_set(li_bytevector_t *v, int k, li_byte_t byte);
 
 /* Characters */
 
@@ -298,6 +298,7 @@ extern int li_length(li_object *obj);
     ((li_special_form_obj_t *)(obj))->special_form
 
 #define li_is_boolean(obj)              li_is_type(obj, &li_type_boolean)
+#define li_is_bytevector(obj)           li_is_type(obj, &li_type_bytevector)
 #define li_is_character(obj)            li_is_type(obj, &li_type_character)
 #define li_is_environment(obj)          li_is_type(obj, &li_type_environment)
 #define li_is_macro(obj)                li_is_type(obj, &li_type_macro)
@@ -383,6 +384,7 @@ extern FILE *li_port_fp(li_port_t *port);
     if (!li_is_##type(arg)) \
         li_error("not a " #type, arg)
 
+#define li_assert_bytevector(arg)       li_assert_type(bytevector, arg)
 #define li_assert_character(arg)        li_assert_type(character, arg)
 #define li_assert_integer(arg)          li_assert_type(integer, arg)
 #define li_assert_list(arg)             li_assert_type(list, arg)

@@ -521,6 +521,7 @@
             (import ,name)
             (print "passed")))
   (import-test test-bind)
+  (import-test test-bytevector)
   (import-test test-class)
   (import-test test-lazy)
   (import-test test-list)

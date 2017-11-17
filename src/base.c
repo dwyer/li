@@ -48,11 +48,15 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         obj = li_car(args);
         switch (*s) {
+        case 'B':
+            li_assert_bytevector(obj);
+            *va_arg(ap, li_bytevector_t **) = (li_bytevector_t *)obj;
+            break;
         case 'b':
             li_assert_integer(obj);
             if (0 > li_to_integer(obj) || li_to_integer(obj) > 255)
                 li_error("not a byte", obj);
-            *va_arg(ap, unsigned char *) = li_to_integer(obj);
+            *va_arg(ap, li_byte_t *) = li_to_integer(obj);
             break;
         case 'c':
             li_assert_character(obj);

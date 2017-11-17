@@ -202,6 +202,24 @@ static li_object *p_is_output_port_open(li_object *args)
     return li_boolean(port->flags & IO_OUTPUT);
 }
 
+static li_object *p_current_input_port(li_object *args)
+{
+    (void)args;
+    return (li_object *)li_port_stdin;
+}
+
+static li_object *p_current_output_port(li_object *args)
+{
+    (void)args;
+    return (li_object *)li_port_stdout;
+}
+
+static li_object *p_current_error_port(li_object *args)
+{
+    (void)args;
+    return (li_object *)li_port_stderr;
+}
+
 /*
  * (open-input-file filename)
  */
@@ -263,10 +281,17 @@ static li_object *p_peek_char(li_object *args) {
     return li_character(c);
 }
 
-static li_object *p_is_eof_object(li_object *args) {
+static li_object *p_is_eof_object(li_object *args)
+{
     li_object *obj;
     li_parse_args(args, "o", &obj);
     return li_boolean(obj == li_eof);
+}
+
+static li_object *p_eof_object(li_object *args)
+{
+    li_parse_args(args, "");
+    return li_eof;
 }
 
 /*
@@ -304,6 +329,65 @@ static li_object *p_newline(li_object *args) {
     return NULL;
 }
 
+static li_object *p_write_char(li_object *args) {
+    li_character_t c;
+    li_port_t *port = li_port_stdout;
+    char s[5];
+    li_parse_args(args, "c?r", &c, &port);
+    li_chr_encode(c, s, 5);
+    li_port_printf(port, "%s", s);
+    return NULL;
+}
+
+static li_object *p_write_string(li_object *args)
+{
+    li_str_t *str;
+    li_port_t *port = li_port_stdout;
+    int start = 0, end = -1;
+    li_parse_args(args, "s?rkk", &str, &port, &start, &end);
+    if (!start && end < 0)
+        li_port_printf(port, "%s", li_string_bytes(str));
+    else
+        /* TODO: implement this. */
+        li_error_f("unimplemented parameters: ~a", args);
+    return NULL;
+}
+
+static li_object *p_write_u8(li_object *args)
+{
+    li_byte_t b;
+    li_port_t *port = li_port_stdout;
+    li_parse_args(args, "b?rkk", &b);
+    li_port_printf(port, "%c", b);
+    return NULL;
+}
+
+static li_object *p_write_bytevector(li_object *args)
+{
+    li_bytevector_t *bv;
+    li_port_t *port = li_port_stdout;
+    int start = 0, end = -1;
+    li_parse_args(args, "B?rkk", &bv, &port, &start, &end);
+    if (end < 0)
+        end = li_bytevector_length(bv);
+    while (start < end)
+        li_port_printf(port, "%s", li_bytevector_get(bv, start));
+    return NULL;
+}
+
+static li_object *p_flush_output_port(li_object *args)
+{
+    li_port_t *port = li_port_stdout;
+    FILE *fp;
+    li_parse_args(args, "?r", &port);
+    if (!(port->flags & IO_OUTPUT))
+        return NULL;
+    fp = li_port_fp(port);
+    if (fp)
+        fflush(fp);
+    return NULL;
+}
+
 static li_object *p_print(li_object *args) {
     for (; args; args = li_cdr(args)) {
         li_port_display(li_port_stdout, li_car(args));
@@ -316,22 +400,60 @@ static li_object *p_print(li_object *args) {
 
 extern void li_define_port_functions(li_env_t *env)
 {
-    lilib_defproc(env, "port?", p_is_port);
     lilib_defproc(env, "input-port?", p_is_input_port);
     lilib_defproc(env, "output-port?", p_is_output_port);
+    /* lilib_defproc(env, "textual-port?", p_is_textual_port); */
+    /* lilib_defproc(env, "binary-port?", p_is_binary_port); */
+    lilib_defproc(env, "port?", p_is_port);
+
     lilib_defproc(env, "input-port-open?", p_is_input_port_open);
     lilib_defproc(env, "output-port-open?", p_is_output_port_open);
+
+    lilib_defproc(env, "current-input-port", p_current_input_port);
+    lilib_defproc(env, "current-output-port", p_current_output_port);
+    lilib_defproc(env, "current-error-port", p_current_error_port);
+
     lilib_defproc(env, "open-input-file", p_open_input_file);
+    /* lilib_defproc(env, "open-binary-input-file", p_open_binary_input_file); */
+
     lilib_defproc(env, "open-output-file", p_open_output_file);
+    /* lilib_defproc(env, "open-binary-output-file", p_open_binary_output_file); */
+
     lilib_defproc(env, "close-port", p_close_port);
     lilib_defproc(env, "close-input-port", p_close_port);
     lilib_defproc(env, "close-output-port", p_close_port);
+
+    /* lilib_defproc(env, "open-input-string", p_open_input_string); */
+    /* lilib_defproc(env, "open-output-string", p_open_output_string); */
+    /* lilib_defproc(env, "get-output-string", p_get_output_string); */
+
+    /* lilib_defproc(env, "open-input-bytevector", p_open_input_bytevector); */
+    /* lilib_defproc(env, "open-output-bytevector", p_open_output_bytevector); */
+    /* lilib_defproc(env, "get-output-bytevector", p_get_output_bytevector); */
+
     lilib_defproc(env, "read", p_read);
     lilib_defproc(env, "read-char", p_read_char);
     lilib_defproc(env, "peek-char", p_peek_char);
+    /* lilib_defproc(env, "read-line", p_read_line); */
     lilib_defproc(env, "eof-object?", p_is_eof_object);
+    lilib_defproc(env, "eof-object", p_eof_object);
+    /* lilib_defproc(env, "char-ready?", p_is_char_ready); */
+    /* lilib_defproc(env, "read-string", p_read_string); */
+    /* lilib_defproc(env, "read-u8", p_read_u8); */
+    /* lilib_defproc(env, "peek-u8", p_peek_u8); */
+    /* lilib_defproc(env, "read-bytevector", p_read_bytevector); */
+    /* lilib_defproc(env, "read-bytevector!", p_read_bytevector_ex); */
+
     lilib_defproc(env, "write", p_write);
+    /* lilib_defproc(env, "write-shared", p_write); */
+    /* lilib_defproc(env, "write-simple", p_write); */
     lilib_defproc(env, "display", p_display);
     lilib_defproc(env, "newline", p_newline);
+    lilib_defproc(env, "write-char", p_write_char);
+    lilib_defproc(env, "write-string", p_write_string);
+    lilib_defproc(env, "write-u8", p_write_u8);
+    lilib_defproc(env, "write-bytevector", p_write_bytevector);
+    lilib_defproc(env, "flush-output-port", p_flush_output_port);
+
     lilib_defproc(env, "print", p_print);
 }
