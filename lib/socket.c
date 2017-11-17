@@ -139,7 +139,7 @@ static li_object *p_socket_close(li_object *args)
     return obj;
 }
 
-extern void lilib_load_socket(li_env_t *env)
+extern void lilib_load(li_env_t *env)
 {
     lilib_defproc(env, "make-client-socket", p_make_client_socket);
     lilib_defproc(env, "socket?", p_is_socket);

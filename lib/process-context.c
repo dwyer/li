@@ -36,7 +36,7 @@ static li_object *p_get_environment_variables(li_object *args)
 }
 
 
-extern void lilib_load_process_context(li_env_t *env)
+extern void lilib_load(li_env_t *env)
 {
     /* lilib_defproc(env, "command-line", p_command_line); */
     lilib_defproc(env, "exit", p_exit);

@@ -41,7 +41,7 @@ static li_object *p_system(li_object *args)
     return (li_object *)li_num_with_int(system(cmd));
 }
 
-extern void lilib_load_misc(li_env_t *env)
+extern void lilib_load(li_env_t *env)
 {
     srand(time(NULL));
     lilib_defproc(env, "rand", p_rand);

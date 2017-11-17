@@ -242,7 +242,7 @@ static li_object *p_cddddr(li_object *args) {
     return li_cddddr(lst);
 }
 
-extern void lilib_load_cxr(li_env_t *env)
+extern void lilib_load(li_env_t *env)
 {
     lilib_defproc(env, "caaar", p_caaar);
     lilib_defproc(env, "caadr", p_caadr);

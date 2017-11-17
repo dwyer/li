@@ -21,7 +21,7 @@ static li_object *p_jiffies_per_second(li_object *args)
     return (li_object *)li_num_with_int(CLOCKS_PER_SEC);
 }
 
-extern void lilib_load_time(li_env_t *env)
+extern void lilib_load(li_env_t *env)
 {
     lilib_defproc(env, "current-second", p_current_second);
     lilib_defproc(env, "current-jiffy", p_current_jiffy);
