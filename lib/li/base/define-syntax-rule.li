@@ -1,5 +1,5 @@
 (let ()
-  (import define-syntax)
+  (import (scheme base/define-syntax))
   (define-syntax define-syntax-rule
     (syntax-rules ()
       ((_ (name args ...) expr)

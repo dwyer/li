@@ -1,5 +1,5 @@
 (let ()
-  (import random-symbol)
+  (import (li random-symbol))
 
   (define-macro
     defmacro

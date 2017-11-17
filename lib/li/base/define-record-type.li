@@ -1,7 +1,7 @@
 (let ()
 
-  (import cxr)
-  (import defmacro)
+  (import (scheme cxr))
+  (import (li defmacro))
 
   (define (index field-names field-name i)
     (let loop ((lst field-names) (i i))

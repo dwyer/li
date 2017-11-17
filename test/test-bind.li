@@ -1,5 +1,5 @@
 (let ()
-  (import match)
+  (import (li match))
 
   (define (test patt expr rest)
     (let ((binds (*bind* expr patt)))

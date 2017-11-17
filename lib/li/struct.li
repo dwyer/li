@@ -1,6 +1,6 @@
 (let ()
-  (import defmacro)
-  (import random-symbol)
+  (import (li defmacro))
+  (import (li random-symbol))
 
   (define (object->string obj)
     (cond ((number? obj) (number->string obj))

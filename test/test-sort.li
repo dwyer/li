@@ -1,7 +1,7 @@
 (let ()
-  (import list)
-  (import misc) ; rand
-  (import sort)
+  (import (li list))
+  (import (li misc)) ; rand
+  (import (li sort))
   (assert (list-sorted? < (list-sort < (map (lambda _ (rand)) (iota 1000)))))
   ; test stablility
   (assert (equal? (list-merge (lambda (x y)

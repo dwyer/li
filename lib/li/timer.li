@@ -1,5 +1,5 @@
 (let ()
-  (import time)
+  (import (scheme time))
 
   (define (make-timer)
     (let ((start (current-jiffy)))
@@ -7,4 +7,5 @@
         (inexact (/ (- (current-jiffy)
                        start)
                     (jiffies-per-second))))))
+
   (export make-timer))

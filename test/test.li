@@ -1,4 +1,4 @@
-(import timer)
+(import (li timer))
 (define timer (make-timer))
 
 (let ((x 28))
@@ -529,7 +529,7 @@
 ;                  (f + 10)) 20))
 
 (let ()
-  (import defmacro)
+  (import (li defmacro))
   (defmacro (import-test name)
     `(begin (display ',name)
             (display "...")

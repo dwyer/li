@@ -1,7 +1,7 @@
 (let ()
-  (import cxr)
-  (import defmacro)
-  (import list)
+  (import (scheme cxr))
+  (import (li defmacro))
+  (import (li list))
 
   (defmacro (test . clauses)
     `(begin

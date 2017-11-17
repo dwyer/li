@@ -1,9 +1,9 @@
 LIBS=\
-     cxr.so \
-     process-context.so \
-     misc.so \
-     socket.so \
-     time.so
+     li/misc.so \
+     li/socket.so \
+     scheme/cxr.so \
+     scheme/process-context.so \
+     scheme/time.so
 
 INCLUDE=../src
 
@@ -18,8 +18,8 @@ all: $(LIBS)
 clean:
 	$(RM) *.so
 
-cxr.so: cxr.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
-process-context.so: process-context.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
-misc.so: misc.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
-socket.so: socket.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
-time.so: time.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
+li/misc.so: li/misc.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
+li/socket.so: li/socket.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
+scheme/cxr.so: scheme/cxr.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
+scheme/process-context.so: scheme/process-context.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h
+scheme/time.so: scheme/time.c $(INCLUDE)/li.h $(INCLUDE)/li_lib.h

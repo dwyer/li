@@ -1,7 +1,7 @@
 (let ()
-  (import class)
-  (import list)
-  (import math)
+  (import (li class))
+  (import (li list))
+  (import (li math))
 
   (define-class
     ((vec . xs)

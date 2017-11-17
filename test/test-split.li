@@ -1,6 +1,6 @@
 (let ()
   (let ()
-    (import defmacro)
+    (import (li defmacro))
     (defmacro (test a b)
       `(assert (equal? ,a ,b)))
     (test (string-split "abc" "/") '("abc"))

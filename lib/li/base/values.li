@@ -1,5 +1,5 @@
 (let ()
-  (import defmacro)
+  (import (li defmacro))
 
   (define (values x . xs)
     (if (null? xs)

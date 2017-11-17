@@ -1,6 +1,6 @@
 (let ()
-  (import list)
-  (import stack)
+  (import (li list))
+  (import (li stack))
 
   (let ((s (make-stack))
         (xs (iota 100)))

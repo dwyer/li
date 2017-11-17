@@ -11,19 +11,13 @@ If you've used a lisp before, the syntax here is nothing new.  If not, find a
 Scheme tutorial (or better yet, read SICP) as li is almost identical to Scheme
 except for the following differences:
 
-    * Comments start with a bash (#) (semicolon (;) is supported but
-      deprecated). Because bash is reserved for comments, Scheme primitives that
-      begin with bash have been changed:
-        * Booleans are `true` and `false` rather than #t and #f.
-        * Chars begin with `%\` rather than `#\`.
-        * Vectors are of the form [...] instead of #(...).
+    * Vectors are of the form [...] instead of #(...).
     * No continuations (yet).
     * Unhygenic macros.
 
 li Reference
 ============
-A reference is coming soon, but in the meantime the supported primitive
-procedures are documented in src/li_proc.c.
+A reference is coming soon.
 
 C API Reference
 ===============

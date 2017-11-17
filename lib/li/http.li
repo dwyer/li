@@ -1,5 +1,5 @@
 (let ()
-  (import cxr)
+  (import (scheme cxr))
   (import socket)
   (import struct)
   (import url)

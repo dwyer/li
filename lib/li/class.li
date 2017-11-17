@@ -1,6 +1,6 @@
 (let ()
 
-  (import defmacro)
+  (import (li defmacro))
 
   (defmacro (define-class constructor . class-body)
     (let ((cons-sig (car constructor))

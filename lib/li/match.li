@@ -1,6 +1,6 @@
 (let ()
-  (import defmacro)
-  (import list)
+  (import (li defmacro))
+  (import (li list))
 
   (define *bind*
     (let ()

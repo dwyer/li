@@ -1,4 +1,4 @@
-(import values)
+(import (li base/values))
 
 (define range
   (case-lambda
