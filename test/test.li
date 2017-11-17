@@ -442,21 +442,6 @@
 ;(assert equal? (string-set! (symbol->string 'immutable)
 ;                             0
 ;                             #\?) error)
-(assert equal? '[0 (2 2 2 2) "Anna"] [0 (2 2 2 2) "Anna"])
-(assert equal? (vector 'a 'b 'c) [a b c])
-(assert equal? (ref '[1 1 2 3 5 8 13 21]
-                    5) 8)
-;(assert (equal? (ref '[1 1 2 3 5 8 13 21]
-;                            (let ((i (round (* 2 (acos -1)))))
-;                              (if (inexact? i)
-;                                (exact i)
-;                                i))) 13))
-(assert equal? (let ((vec (vector 0 '(2 2 2 2) "Anna")))
-                 (set vec 1 '("Sue" "Sue"))
-                 vec) [0 ("Sue" "Sue") "Anna"])
-;(assert equal? (set '[0 1 2] 1 "doe") error) ; constant vector
-(assert equal? (vector->list '[dah dah didah]) '(dah dah didah))
-(assert equal? (list->vector '(dididit dah)) [dididit dah])
 (assert equal? (procedure? car) #t)
 (assert equal? (procedure? 'car) #f)
 (assert equal? (procedure? (lambda (x) (* x x))) #t)
@@ -546,7 +531,8 @@
   (import-test test-split)
   (import-test test-stack)
   (import-test test-string)
-  (import-test test-syntax))
+  (import-test test-syntax)
+  (import-test test-vector))
 
 (print "all tests passed!")
 (print (timer) "seconds")

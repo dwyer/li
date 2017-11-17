@@ -332,7 +332,7 @@ extern int li_length(li_object *obj);
 #define li_set_cdr(obj1, obj2)          (li_cdr(obj1) = (obj2))
 
 /** Vector accessors. */
-extern li_object *li_make_vector(int k, li_object *fill);
+extern li_vector_t *li_make_vector(int k, li_object *fill);
 extern int li_vector_length(li_vector_t *vec);
 extern li_object *li_vector_ref(li_vector_t *vec, int k);
 extern void li_vector_set(li_vector_t *vec, int k, li_object *obj);

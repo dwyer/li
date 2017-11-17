@@ -217,12 +217,6 @@ static li_object *p_list_to_string(li_object *args) {
     return (li_object *)str;
 }
 
-static li_object *p_list_to_vector(li_object *args) {
-    li_object *lst;
-    li_parse_args(args, "l", &lst);
-    return li_vector(lst);
-}
-
 static li_object *p_append(li_object *args) {
     li_object *head, *tail, *list;
     if (!args)
@@ -406,7 +400,6 @@ extern void li_define_pair_functions(li_env_t *env)
     lilib_defproc(env, "list?", p_is_list);
     lilib_defproc(env, "list-tail", p_list_tail);
     lilib_defproc(env, "list->string", p_list_to_string);
-    lilib_defproc(env, "list->vector", p_list_to_vector);
     lilib_defproc(env, "make-list", p_make_list);
     lilib_defproc(env, "append", p_append);
     lilib_defproc(env, "filter", p_filter);

@@ -212,21 +212,6 @@ static li_object *p_string_to_list(li_object *args) {
     return head;
 }
 
-static li_object *p_string_to_vector(li_object *args) {
-    li_object *head = NULL, *tail = NULL;
-    li_str_t *str;
-    int i;
-    li_parse_args(args, "s", &str);
-    for (i = 0; i < li_string_length(str); ++i) {
-        li_object *node = li_cons(li_character(li_string_ref(str, i)), li_null);
-        if (head)
-            tail = li_set_cdr(tail, node);
-        else
-            head = tail = node;
-    }
-    return li_vector(head);
-}
-
 static li_object *p_string_to_symbol(li_object *args) {
     li_str_t *str;
     li_parse_args(args, "s", &str);
@@ -279,6 +264,5 @@ extern void li_define_string_functions(li_env_t *env)
     lilib_defproc(env, "string-append", p_string_append);
     lilib_defproc(env, "string->list", p_string_to_list);
     lilib_defproc(env, "string->symbol", p_string_to_symbol);
-    lilib_defproc(env, "string->vector", p_string_to_vector);
     lilib_defproc(env, "string-split", p_string_split);
 }

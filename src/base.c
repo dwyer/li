@@ -70,6 +70,12 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             li_assert_integer(obj);
             *va_arg(ap, int *) = (int)li_to_integer(obj);
             break;
+        case 'k':
+            li_assert_integer(obj);
+            if (li_to_integer(obj) < 0)
+                li_error_f("expected a positive integer: ~a", obj);
+            *va_arg(ap, int *) = (int)li_to_integer(obj);
+            break;
         case 'l':
             li_assert_list(obj);
             *va_arg(ap, li_object **) = obj;
@@ -290,7 +296,6 @@ extern void li_setup_environment(li_env_t *env)
     lilib_deftype(env, &li_type_string);
     lilib_deftype(env, &li_type_symbol);
     lilib_deftype(env, &li_type_type);
-    lilib_deftype(env, &li_type_vector);
 
     /* Equivalence predicates */
     lilib_defproc(env, "isa?", p_isa);
