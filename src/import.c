@@ -29,16 +29,16 @@ static li_dl_t *li_dl(void *handle)
     return dl;
 }
 
-static void li_import_so(const char *path, li_env_t *env)
+static void li_include_shared(const char *path, li_env_t *env)
 {
-    typedef lilib_load_f(li_env_t *);
+    typedef lilib_include_f(li_env_t *);
     void *dl = dlopen(path, RTLD_LAZY);
     char *error;
-    lilib_load_f *load;
+    lilib_include_f *load;
     if (!dl)
         li_error_f("import error: ~a", dlerror());
     /* reuse the buf for performance */
-    load = (lilib_load_f *)dlsym(dl, "lilib_load");
+    load = (lilib_include_f *)dlsym(dl, "lilib_load");
     if ((error = dlerror()))
         li_error_f("import error: ~a", li_string_make(error));
     if (load)
@@ -46,31 +46,53 @@ static void li_import_so(const char *path, li_env_t *env)
     li_env_define(env, li_symbol(path), (li_object *)li_dl(dl));
 }
 
-static int li_import_try(li_sym_t *name, const char *dir, li_env_t *env)
+static int li_import_try(li_str_t *name, const char *dir, li_env_t *env)
 {
     char path[PATH_MAX];
     int n;
-    n = snprintf(path, PATH_MAX, "%s/%s.li", dir, li_to_symbol(name));
+    n = snprintf(path, PATH_MAX, "%s/%s.li", dir, li_string_bytes(name));
     if (!(-1 < n && n < PATH_MAX))
         li_error_f("import error: name ~s is too long", name);
     if (access(path, F_OK) != -1) {
         li_load(path, env);
         return 1;
     }
-    n = snprintf(path, PATH_MAX, "%s/%s.so", dir, li_to_symbol(name));
+    n = snprintf(path, PATH_MAX, "%s/%s.so", dir, li_string_bytes(name));
     if (!(-1 < n && n < PATH_MAX))
         li_error_f("import error: name ~s is too long", name);
     if (access(path, F_OK) != -1) {
-        li_import_so(path, env);
+        li_include_shared(path, env);
         return 1;
     }
     return 0;
 }
 
-extern void li_import(li_sym_t *name, li_env_t *env)
+extern void li_import(li_object *set, li_env_t *env)
 {
+    char path[PATH_MAX];
+    li_str_t *name = NULL;
     char *lpath;
     char *dir = NULL;
+    int n = 0;
+    if (li_is_symbol(set)) {
+        snprintf(path, PATH_MAX, "%s", li_to_symbol(set));
+        name = li_string_make(path);
+    } else if (li_is_pair(set)) {
+        li_object *iter = set;
+        while (iter) {
+            li_object *obj = li_car(iter);
+            if (li_is_symbol(obj))
+                n += snprintf(path + n, PATH_MAX - n, "/%s", li_to_symbol(obj));
+            else if (li_is_integer(obj))
+                n += snprintf(path + n, PATH_MAX - n, "/%d", li_to_integer(obj));
+            else
+                goto error;
+            iter = li_cdr(iter);
+        }
+        name = li_string_make(path);
+    } else {
+        goto error;
+    }
     if (li_import_try(name, ".", env))
         return;
     if ((lpath = getenv("LD_LIBRARY_PATH"))) {
@@ -81,5 +103,6 @@ extern void li_import(li_sym_t *name, li_env_t *env)
         }
     }
     /* TODO load from standard libraries */
-    li_error_f("could not import ~a", name);
+error:
+    li_error_f("could not import ~a", set);
 }

@@ -300,8 +300,8 @@ static li_object *m_if(li_object *seq, li_env_t *env)
 static li_object *m_import(li_object *seq, li_env_t *env)
 {
     while (seq) {
-        li_sym_t *name;
-        li_parse_args(seq, "y.", &name, &seq);
+        li_object *name;
+        li_parse_args(seq, "o.", &name, &seq);
         li_import(name, env);
     }
     return NULL;
