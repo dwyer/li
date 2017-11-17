@@ -1,6 +1,6 @@
 (let ()
   (import (li list))
-  (import (li match))
+  (import match)
 
   (assert (= (match (cons 1 2)
                     ((cons a b)

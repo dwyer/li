@@ -2,8 +2,8 @@
   (import (li base/define-syntax))
   (import (li base/syntax-case))
   (import (li list))
-  (import (li match))
-  (import (li for))
+  (import for)
+  (import match)
 
   (let ((xs (iota 100))
         (ys null))
