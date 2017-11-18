@@ -83,11 +83,11 @@
                      (loop (cdr clauses)))))
                (car clauses)))))
 
-  (define-macro syntax-case
-                (lambda (expr _)
-                  (apply (lambda (expr literals . clauses)
-                           `(,syntax-case-expand ,expr ',literals ',clauses))
-                         (cdr expr))))
+  (define-syntax syntax-case
+    (lambda (expr)
+      (apply (lambda (expr literals . clauses)
+               `(,syntax-case-expand ,expr ',literals ',clauses))
+             (cdr expr))))
 
   (define (syntax template)
     template)

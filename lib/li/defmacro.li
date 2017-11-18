@@ -1,17 +1,15 @@
 (let ()
   (import (li random-symbol))
 
-  (define-macro
-    defmacro
-    (lambda (expr _)
+  (define-syntax defmacro
+    (lambda (expr)
       (let ((sign (cadr expr))
             (body (cddr expr)))
         (let ((name (car sign))
               (args (cdr sign))
               (expr-name (random-symbol)))
-          `(define-macro
-             ,name
-             (lambda (,expr-name _)
+          `(define-syntax ,name
+             (lambda (,expr-name)
                (apply (lambda ,args
                         ,@body)
                       (cdr ,expr-name))))))))

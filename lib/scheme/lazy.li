@@ -11,11 +11,11 @@
   (define (make-promise obj)
     (%make-promise #f obj))
 
-  (define-macro delay
-                (lambda (x _)
-                  (apply (lambda (x)
-                           `(make-promise (lambda () ,x)))
-                         (cdr x))))
+  (define-syntax delay
+    (lambda (x)
+      (apply (lambda (x)
+               `(make-promise (lambda () ,x)))
+             (cdr x))))
 
   (define (force promise)
     (if (promise? promise)

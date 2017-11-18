@@ -73,8 +73,8 @@
       x
       (list->vector `(values ,x ,@xs))))
 
-  (define-macro let-values
-    (lambda (x _)
+  (define-syntax let-values
+    (lambda (x)
       (apply (lambda (bindings . body)
                (car `,(map (lambda (binding)
                              (apply (lambda (formals init)
@@ -96,9 +96,8 @@
 
   ;; RECORD TYPES
 
-  (define-macro
-    define-record-type
-    (lambda (x _)
+  (define-syntax define-record-type
+    (lambda (x)
       (apply
         (lambda (name constructor pred . fields)
           (let ((constructor-name (car constructor))
@@ -132,6 +131,6 @@
                                `(define (,modifier-name record value)
                                   (vector-set! record ,i value)))))))
                    fields))))
-             (cdr x))))
+        (cdr x))))
 
   (export define-record-type))

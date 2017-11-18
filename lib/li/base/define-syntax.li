@@ -2,15 +2,6 @@
   (import (li base/syntax-case))
   (import (li random-symbol))
 
-  (define-macro define-syntax
-    (lambda (expr _)
-      (apply (lambda (keyword transformer-spec)
-               `(define-macro
-                  ,keyword
-                  (lambda (x _)
-                    (,transformer-spec x))))
-             (cdr expr))))
-
   (define-syntax syntax-rules
     (lambda (x)
       (apply (lambda (literals clauses)
@@ -34,6 +25,4 @@
                       (begin (define-syntax var val) ...)
                       (begin e0 e1 ...))))))
 
-  (export define-syntax
-          syntax-rules
-          syntax-case))
+  (export syntax-rules syntax-case))

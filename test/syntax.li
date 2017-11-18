@@ -219,8 +219,7 @@
            `(quote ,datum))
           (else (map compile s))))))
 
-  (define-macro
-    call/env
+  (define-syntax call/env
     (lambda (x env)
       `(,(cadr x) ,env)))
 

@@ -1,5 +1,4 @@
-(define-macro
-  define-library
+(define-syntax define-library
   (lambda (expr env)
     (apply (lambda (name . decls)
              (let ((exports null))

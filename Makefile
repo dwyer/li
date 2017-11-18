@@ -31,7 +31,6 @@ LI_LIB_OBJS_=read.o \
 	     environment.o \
 	     error.o \
 	     import.o \
-	     macro.o \
 	     nat.o \
 	     number.o \
 	     object.o \
@@ -105,7 +104,6 @@ $(OBJDIR)/environment.o: src/environment.c src/li.h
 $(OBJDIR)/error.o: src/error.c src/li.h
 $(OBJDIR)/import.o: src/import.c src/li.h
 $(OBJDIR)/li.o: src/li.c src/li.h
-$(OBJDIR)/macro.o: src/macro.c src/li.h
 $(OBJDIR)/nat.o: src/nat.c src/li.h src/li_num.h
 $(OBJDIR)/number.o: src/number.c src/li.h src/li_lib.h src/li_num.h
 $(OBJDIR)/object.o: src/object.c src/li.h

@@ -16,7 +16,7 @@ static void li_add_to_heap(li_object *obj)
     if (!_heap.objs) {
         _heap.cap = 1024;
         _heap.size = 0;
-        _heap.objs = li_allocate(li_null, _heap.cap, sizeof(*_heap.objs));
+        _heap.objs = li_allocate(NULL, _heap.cap, sizeof(*_heap.objs));
     } else if (_heap.size == _heap.cap) {
         _heap.cap *= 2;
         _heap.objs = li_allocate(_heap.objs, _heap.cap, sizeof(*_heap.objs));
@@ -32,7 +32,7 @@ extern void *li_allocate(void *ptr, size_t count, size_t size)
     else
         ptr = calloc(count, size);
     if (!ptr)
-        li_error("out of memory", li_null);
+        li_error("out of memory", NULL);
     return ptr;
 }
 
@@ -45,7 +45,11 @@ extern void li_object_init(li_object *obj, const li_type_t *type)
 
 extern li_object *li_create(const li_type_t *type)
 {
-    li_object *obj = li_allocate(li_null, 1, sizeof(*obj));
+    li_object *obj;
+    if (!type->size)
+        li_error_f("programmer error: type ~s has no size data",
+                li_string_make(type->name));
+    obj = li_allocate(NULL, 1, type->size);
     li_object_init(obj, type);
     return obj;
 }

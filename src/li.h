@@ -43,14 +43,13 @@ typedef struct li_boolean_t li_boolean_t;
 typedef struct li_bytevector_t li_bytevector_t;
 typedef struct li_character_obj_t li_character_obj_t;
 typedef struct li_env_t li_env_t;
-typedef struct li_macro li_macro_t;
+typedef struct li_macro_t li_macro_t;
 typedef struct li_num_t li_num_t;
 typedef struct li_pair_t li_pair_t;
 typedef struct li_port_t li_port_t;
 typedef struct li_proc_obj_t li_proc_obj_t;
 typedef struct li_str_t li_str_t;
 typedef struct li_sym_t li_sym_t;
-typedef struct li_syntactic_closure_t li_syntactic_closure_t;
 typedef struct li_transformer_t li_transformer_t;
 typedef struct li_type_obj_t li_type_obj_t;
 typedef struct li_vector_t li_vector_t;
@@ -67,6 +66,7 @@ typedef void li_set_f(li_object *, int, li_object *);
 
 struct li_type_t {
     const char *name;
+    size_t size;
     li_mark_f *mark;
     li_deinit_f *deinit;
     li_write_f *write;
@@ -76,7 +76,6 @@ struct li_type_t {
     li_object *(*ref)(li_object *, int);
     void (*set)(li_object *, int, li_object *);
     li_object *(*proc)(li_object *);
-    li_object *(*apply)(li_object *, li_object *);
 };
 
 /* Type checking. */
@@ -95,7 +94,6 @@ extern const li_type_t li_type_procedure;
 extern const li_type_t li_type_special_form;
 extern const li_type_t li_type_string;
 extern const li_type_t li_type_symbol;
-extern const li_type_t li_type_transformer;
 extern const li_type_t li_type_type;
 extern const li_type_t li_type_vector;
 
@@ -182,10 +180,9 @@ typedef li_object *li_primitive_procedure_t(li_object *);
  */
 typedef li_object *(li_special_form_t)(li_object *, li_env_t *);
 
-typedef struct li_special_form_obj_t li_special_form_obj_t;
-
-struct li_special_form_obj_t {
+struct li_macro_t {
     LI_OBJ_HEAD;
+    li_proc_obj_t *proc;
     li_special_form_t *special_form;
 };
 
@@ -204,13 +201,6 @@ struct li_sym_t {
     li_sym_t *next;
     li_sym_t *prev;
     unsigned int hash;
-};
-
-struct li_syntactic_closure_t {
-    LI_OBJ_HEAD;
-    li_env_t *env;
-    li_object *free_names;
-    li_object *form;
 };
 
 struct li_transformer_t {
@@ -240,7 +230,7 @@ extern void *li_allocate(void *ptr, size_t count, size_t size);
  * Allocates and returns an uninitialized object of the given type and throws it
  * on the heap.
  */
-extern li_object *li_create(const li_type_t *type) LI_DEPRECATED;
+extern li_object *li_create(const li_type_t *type);
 extern void li_object_init(li_object *obj, const li_type_t *type);
 
 /*
@@ -294,8 +284,7 @@ extern int li_length(li_object *obj);
 #define li_to_userdata(obj)             (obj)->data.userdata.v
 #define li_to_type(obj)                 ((li_type_obj_t *)(obj))->val
 
-#define li_macro_primative(obj)         \
-    ((li_special_form_obj_t *)(obj))->special_form
+#define li_macro_primitive(obj)         ((li_macro_t *)(obj))->special_form
 
 #define li_is_boolean(obj)              li_is_type(obj, &li_type_boolean)
 #define li_is_bytevector(obj)           li_is_type(obj, &li_type_bytevector)
@@ -309,7 +298,6 @@ extern int li_length(li_object *obj);
 #define li_is_primitive_procedure(obj)  \
     (li_is_procedure(obj) && li_proc_prim(obj) != NULL)
 
-#define li_is_special_form(obj)         li_is_type(obj, &li_type_special_form)
 #define li_is_type_obj(obj)             li_is_type(obj, &li_type_type)
 #define li_is_string(obj)               li_is_type(obj, &li_type_string)
 #define li_is_symbol(obj)               li_is_type(obj, &li_type_symbol)
@@ -404,7 +392,6 @@ extern void li_define_number_functions(li_env_t *env);
 extern void li_define_pair_functions(li_env_t *env);
 extern void li_define_port_functions(li_env_t *env);
 extern void li_define_procedure_functions(li_env_t *env);
-extern void li_define_primitive_macros(li_env_t *env);
 extern void li_define_string_functions(li_env_t *env);
 extern void li_define_symbol_functions(li_env_t *env);
 extern void li_define_vector_functions(li_env_t *env);

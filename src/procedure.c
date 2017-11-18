@@ -18,7 +18,7 @@ struct li_proc_obj_t {
     li_primitive_procedure_t *primitive;
 };
 
-static void mark(li_object *obj)
+static void proc_mark(li_object *obj)
 {
     if (li_proc_name(obj))
         li_mark((li_object *)li_proc_name(obj));
@@ -29,7 +29,7 @@ static void mark(li_object *obj)
     }
 }
 
-static void write(li_proc_obj_t *proc, li_port_t *port)
+static void proc_write(li_proc_obj_t *proc, li_port_t *port)
 {
     if (li_proc_prim(proc)) {
         li_port_printf(port, "#[procedure <primitive>]");
@@ -44,15 +44,15 @@ static void write(li_proc_obj_t *proc, li_port_t *port)
 
 const li_type_t li_type_procedure = {
     .name = "procedure",
-    .mark = mark,
-    .write = (li_write_f *)write,
+    .size = sizeof(li_proc_obj_t),
+    .mark = proc_mark,
+    .write = (li_write_f *)proc_write,
 };
 
 extern li_object *li_lambda(li_sym_t *name, li_object *vars, li_object *body,
         li_env_t *env)
 {
-    li_proc_obj_t *obj = li_allocate(NULL, 1, sizeof(*obj));
-    li_object_init((li_object *)obj, &li_type_procedure);
+    li_proc_obj_t *obj = (li_proc_obj_t *)li_create(&li_type_procedure);
     obj->name = name;
     obj->compound.vars = vars;
     obj->compound.body = body;
@@ -63,8 +63,7 @@ extern li_object *li_lambda(li_sym_t *name, li_object *vars, li_object *body,
 
 extern li_object *li_primitive_procedure(li_object *(*proc)(li_object *))
 {
-    li_proc_obj_t *obj = li_allocate(NULL, 1, sizeof(*obj));
-    li_object_init((li_object *)obj, &li_type_procedure);
+    li_proc_obj_t *obj = (li_proc_obj_t *)li_create(&li_type_procedure);
     obj->name = NULL;
     obj->compound.vars = NULL;
     obj->compound.body = NULL;
@@ -188,22 +187,16 @@ extern li_object *li_eval(li_object *expr, li_env_t *env) {
                         li_eval(li_car(seq), env);
                     expr = li_car(seq);
                 }
-            } else if (li_is_special_form(proc)) {
-                expr = li_macro_primative(proc)(args, env);
             } else if (li_is_macro(proc)) {
-                expr = li_macro_expand((li_macro_t *)proc, expr, env);
+                if (li_macro_primitive(proc)) {
+                    expr = li_macro_primitive(proc)(args, env);
+                } else {
+                    expr = li_macro_expand((li_macro_t *)proc, expr, env);
+                }
             } else if (li_is_type_obj(proc) && li_to_type(proc)->proc) {
                 args = list_of_values(args, env);
                 expr = li_to_type(proc)->proc(args);
                 done = 1;
-            } else if (li_is_type(proc, &li_type_transformer)) {
-                expr = li_cons(expr, NULL);
-                expr = li_cons((li_object *)li_symbol("quote"), expr);
-                args = li_cons((li_object *)((li_transformer_t *)proc)->env, NULL);
-                args = li_cons((li_object *)env, args);
-                args = li_cons(expr, args);
-                expr = li_cons((li_object *)((li_transformer_t *)proc)->proc, args);
-                expr = li_eval(expr, env);
             } else {
                 li_error("not applicable", proc);
             }
@@ -213,6 +206,22 @@ extern li_object *li_eval(li_object *expr, li_env_t *env) {
         li_stack_trace_pop();
     }
     return expr;
+}
+
+extern li_object *li_macro_expand(li_macro_t *mac, li_object *expr, li_env_t *env)
+{
+    li_object *args = NULL;
+    switch (li_length(li_proc_vars(mac->proc))) {
+    case 2:
+        args = li_cons((li_object *)env, args);
+    case 1:
+        args = li_cons(expr, args);
+        break;
+    default:
+        li_error("macro transformer take 1 or 2 args", NULL);
+        break;
+    }
+    return li_apply((li_object *)mac->proc, args);
 }
 
 /* TODO: extern this and put it in the list library. */

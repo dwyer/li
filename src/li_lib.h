@@ -5,8 +5,7 @@
     lilib_defvar(env, name, (li_object *)li_num_with_int(i))
 
 #define lilib_defmac(env, name, proc) \
-    li_env_append(env, (li_sym_t *)li_symbol(name), \
-            li_special_form(proc));
+    li_env_append(env, (li_sym_t *)li_symbol(name), li_special_form(proc));
 
 #define lilib_defproc(env, name, proc) \
     li_env_append(env, li_symbol(name), li_primitive_procedure(proc))

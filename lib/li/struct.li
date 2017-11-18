@@ -2,9 +2,8 @@
 
   (import (li base))
 
-  (define-macro
-    struct
-    (lambda (x _)
+  (define-syntax struct
+    (lambda (x)
       (apply (lambda (name fields)
                `(,define-record-type
                   ,name
