@@ -9,14 +9,6 @@
                   (syntax-case x ,literals ,clauses)))
              (cdr x))))
 
-  ; (define-syntax syntax-rules
-  ;   (lambda (x)
-  ;     (syntax-case x ()
-  ;       ((_ (lit ...) (p t) ...)
-  ;        (syntax (lambda (x)
-  ;                  (syntax-case x (lit ...)
-  ;                    (p (syntax t)) ...)))))))
-
   (define-syntax let-syntax
     (lambda (x)
       (syntax-case x null

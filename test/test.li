@@ -535,6 +535,7 @@
   (import-test test-stack)
   (import-test test-string)
   (import-test test-syntax)
+  (import-test test-syntax-case)
   (import-test test-vector))
 
 (print "all tests passed!")

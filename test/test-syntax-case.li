@@ -1,5 +1,4 @@
 (let ()
-  (import (li base/define-syntax))
   (import (li base/syntax-case))
   (import (li list))
   (import for)
