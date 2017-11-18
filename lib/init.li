@@ -3,9 +3,11 @@
 ;; BSD-style license: http://synthcode.com/license.txt
 
 (let ()
+
   (define (make-syntactic-closure env free form) form)
   (define (identifier->symbol o) o)
   (define (identifier=? e1 i1 e2 i2) (eq? i1 i2))
+  (define (identifier? o) (symbol? o))
 
   (define (strip-syntactic-closures source) source)
   (define *features* null)
@@ -572,4 +574,4 @@
                   ((let-optionals* tmp tail . body)
                    (let ((tail tmp)) . body))))
 
-  (export syntax-rules))
+  (export syntax-rules er-macro-transformer cons-source))

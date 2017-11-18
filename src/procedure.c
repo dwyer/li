@@ -212,6 +212,8 @@ extern li_object *li_macro_expand(li_macro_t *mac, li_object *expr, li_env_t *en
 {
     li_object *args = NULL;
     switch (li_length(li_proc_vars(mac->proc))) {
+    case 3:
+        args = li_cons((li_object *)mac->proc->compound.env, args);
     case 2:
         args = li_cons((li_object *)env, args);
     case 1:
