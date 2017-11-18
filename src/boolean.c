@@ -7,8 +7,8 @@ struct li_boolean_t {
 };
 
 static li_boolean_t booleans[2] = {
-    { .type = &li_type_boolean, .name = "false", },
-    { .type = &li_type_boolean, .name = "true", },
+    { .type = &li_type_boolean, .name = "#f", },
+    { .type = &li_type_boolean, .name = "#t", },
 };
 
 li_object *li_false = (li_object *)&booleans[0];
