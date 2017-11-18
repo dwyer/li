@@ -1,7 +1,8 @@
 *.[ao]
 *.so
 *~
-./li
+li
+!lib/li
 parse.c
 read.[ch]
 misc
