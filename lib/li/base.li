@@ -1,0 +1,70 @@
+(define (%any-1 proc lst)
+  (if (null? lst)
+    #f
+    (if (proc (car lst))
+      #t
+      (%any-1 proc (cdr lst)))))
+
+(define map
+  (let ()
+
+    (define (%map-1 proc lst)
+      (if (null? lst)
+        '()
+        (cons (proc (car lst))
+              (%map-1 proc (cdr lst)))))
+
+    (define (%map-n proc lsts)
+      (if (or (null? lsts) (%any-1 null? lsts))
+        '()
+        (cons (apply proc (%map-1 car lsts))
+              (%map-n proc (%map-1 cdr lsts)))))
+
+    (lambda (proc lst . lsts)
+      (if (null? lsts)
+        (%map-1 proc lst)
+        (%map-n proc (cons lst lsts))))))
+
+(define for-each
+  (let ()
+
+    (define (%for-each-1 proc lst)
+      (if (null? lst)
+        '()
+        (begin (proc (car lst))
+               (%for-each-1 proc (cdr lst)))))
+
+    (define (%for-each-n proc lsts)
+      (if (or (null? lsts) (%any-1 null? lsts))
+        '()
+        (begin (apply proc (map car lsts))
+               (%for-each-n proc (map cdr lsts)))))
+
+    (lambda (proc lst . lsts)
+      (if (null? lsts)
+        (%for-each-1 proc lst)
+        (%for-each-n proc (cons lst lsts))))))
+
+(define (check condition who msg . args)
+  (if (not condition)
+    (apply error who msg args)))
+
+(define (randint start end)
+  (+ start (modulo (rand) (- end start -1))))
+
+; STRINGS
+
+(define (string-copy str)
+  (substring str 0 (string-length str)))
+
+(define (string-reverse str)
+  (list->string (reverse (string->list str))))
+
+(define (substring str start end)
+  (let* ((len (- end start))
+         (sub (make-string len)))
+    (let iter ((k 0))
+      (cond ((< k len)
+             (string-set! sub k (string-ref str (+ start k)))
+             (iter (+ k 1)))
+            (else sub)))))

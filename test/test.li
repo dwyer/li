@@ -1,6 +1,8 @@
 (import (li timer))
 (define timer (make-timer))
 
+(import (li base))
+
 (let ((x 28))
   (assert = x 28))
 (assert equal? (quote a) 'a)

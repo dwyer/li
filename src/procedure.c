@@ -103,56 +103,6 @@ static li_object *p_apply(li_object *args) {
     return li_apply(proc, head);
 }
 
-static li_object *p_map(li_object *args) {
-    li_object *proc, *clists, *clists_iter;
-    li_object *list, *list_iter;
-    li_object *cars, *cars_iter;
-    int loop;
-    proc = li_car(args);
-    clists = li_cdr(args);
-    list = list_iter = li_null;
-    li_assert_procedure(proc);
-    /* iterate clists */
-    loop = 1;
-    while (loop) {
-        cars = cars_iter = li_null;
-        for (clists_iter = clists; clists_iter; clists_iter = li_cdr(clists_iter)) {
-            /* get clist */
-            if (!li_car(clists_iter)) {
-                loop = 0;
-                break;
-            }
-            li_assert_pair(li_car(clists_iter));
-            /* get cars */
-            if (cars)
-                cars_iter = li_set_cdr(cars_iter, li_cons(li_caar(clists_iter),
-                            li_null));
-            else
-                cars = cars_iter = li_cons(li_caar(clists_iter), li_null);
-            li_set_car(clists_iter, li_cdar(clists_iter));
-        }
-        if (loop) {
-            if (list)
-                list_iter = li_set_cdr(list_iter, li_cons(li_apply(proc, cars),
-                            li_null));
-            else
-                list = list_iter = li_cons(li_apply(proc, cars), li_null);
-        }
-    }
-    return list;
-}
-
-static li_object *p_for_each(li_object *args) {
-    li_object *proc, *lst;
-    li_parse_args(args, "ol", &proc, &lst);
-    li_assert_procedure(proc);
-    while (lst) {
-        li_apply(proc, li_cons(li_car(lst), NULL));
-        lst = li_cdr(lst);
-    }
-    return NULL;
-}
-
 static li_object *p_eval(li_object *args) {
     li_object *expr;
     li_env_t *env;
@@ -164,8 +114,6 @@ extern void li_define_procedure_functions(li_env_t *env)
 {
     lilib_defproc(env, "procedure?", p_is_procedure);
     lilib_defproc(env, "apply", p_apply);
-    lilib_defproc(env, "map", p_map);
-    lilib_defproc(env, "for-each", p_for_each);
     lilib_defproc(env, "eval", p_eval);
 }
 
