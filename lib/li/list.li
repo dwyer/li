@@ -1,5 +1,4 @@
 (import (li base))
-(import (li base/values))
 (import (scheme cxr))
 
 (define range

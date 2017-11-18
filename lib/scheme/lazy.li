@@ -1,5 +1,5 @@
 (let ()
-  (import (li base/define-record-type))
+  (import (li base))
 
   (define-record-type
     promise

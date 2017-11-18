@@ -1,70 +1,137 @@
-(define (%any-1 proc lst)
-  (if (null? lst)
-    #f
-    (if (proc (car lst))
-      #t
-      (%any-1 proc (cdr lst)))))
+(let ()
 
-(define map
-  (let ()
+  (define (%any-1 proc lst)
+    (if (null? lst)
+      #f
+      (if (proc (car lst))
+        #t
+        (%any-1 proc (cdr lst)))))
 
-    (define (%map-1 proc lst)
-      (if (null? lst)
-        '()
-        (cons (proc (car lst))
-              (%map-1 proc (cdr lst)))))
+  (define map
+    (let ()
 
-    (define (%map-n proc lsts)
-      (if (or (null? lsts) (%any-1 null? lsts))
-        '()
-        (cons (apply proc (%map-1 car lsts))
-              (%map-n proc (%map-1 cdr lsts)))))
+      (define (%map-1 proc lst)
+        (if (null? lst)
+          '()
+          (cons (proc (car lst))
+                (%map-1 proc (cdr lst)))))
 
-    (lambda (proc lst . lsts)
-      (if (null? lsts)
-        (%map-1 proc lst)
-        (%map-n proc (cons lst lsts))))))
+      (define (%map-n proc lsts)
+        (if (or (null? lsts) (%any-1 null? lsts))
+          '()
+          (cons (apply proc (%map-1 car lsts))
+                (%map-n proc (%map-1 cdr lsts)))))
 
-(define for-each
-  (let ()
+      (lambda (proc lst . lsts)
+        (if (null? lsts)
+          (%map-1 proc lst)
+          (%map-n proc (cons lst lsts))))))
 
-    (define (%for-each-1 proc lst)
-      (if (null? lst)
-        '()
-        (begin (proc (car lst))
-               (%for-each-1 proc (cdr lst)))))
+  (define for-each
+    (let ()
 
-    (define (%for-each-n proc lsts)
-      (if (or (null? lsts) (%any-1 null? lsts))
-        '()
-        (begin (apply proc (map car lsts))
-               (%for-each-n proc (map cdr lsts)))))
+      (define (%for-each-1 proc lst)
+        (if (null? lst)
+          '()
+          (begin (proc (car lst))
+                 (%for-each-1 proc (cdr lst)))))
 
-    (lambda (proc lst . lsts)
-      (if (null? lsts)
-        (%for-each-1 proc lst)
-        (%for-each-n proc (cons lst lsts))))))
+      (define (%for-each-n proc lsts)
+        (if (or (null? lsts) (%any-1 null? lsts))
+          '()
+          (begin (apply proc (map car lsts))
+                 (%for-each-n proc (map cdr lsts)))))
 
-(define (check condition who msg . args)
-  (if (not condition)
-    (apply error who msg args)))
+      (lambda (proc lst . lsts)
+        (if (null? lsts)
+          (%for-each-1 proc lst)
+          (%for-each-n proc (cons lst lsts))))))
 
-(define (randint start end)
-  (+ start (modulo (rand) (- end start -1))))
+  (export map for-each)
 
-; STRINGS
+  ; STRINGS
 
-(define (string-copy str)
-  (substring str 0 (string-length str)))
+  (define (string-copy str)
+    (substring str 0 (string-length str)))
 
-(define (string-reverse str)
-  (list->string (reverse (string->list str))))
+  (define (string-reverse str)
+    (list->string (reverse (string->list str))))
 
-(define (substring str start end)
-  (let* ((len (- end start))
-         (sub (make-string len)))
-    (let iter ((k 0))
-      (cond ((< k len)
-             (string-set! sub k (string-ref str (+ start k)))
-             (iter (+ k 1)))
-            (else sub)))))
+  (define (substring str start end)
+    (let* ((len (- end start))
+           (sub (make-string len)))
+      (let iter ((k 0))
+        (cond ((< k len)
+               (string-set! sub k (string-ref str (+ start k)))
+               (iter (+ k 1)))
+              (else sub)))))
+
+  ;; VALUES
+
+  (define (values x . xs)
+    (if (null? xs)
+      x
+      (list->vector `(values ,x ,@xs))))
+
+  (define-macro let-values
+    (lambda (x _)
+      (apply (lambda (bindings . body)
+               (car `,(map (lambda (binding)
+                             (apply (lambda (formals init)
+                                      `(let ((init ,init))
+                                         ,(append `(let ,(let loop ((formals formals)
+                                                                    (count 1))
+                                                           (if (null? formals)
+                                                             null
+                                                             (cons `(,(car formals)
+                                                                      (ref init ,count))
+                                                                   (loop (cdr formals)
+                                                                         (+ count 1))))))
+                                                  body)))
+                                    binding))
+                           bindings)))
+             (cdr x))))
+
+  (export values let-values)
+
+  ;; RECORD TYPES
+
+  (define-macro
+    define-record-type
+    (lambda (x _)
+      (apply
+        (lambda (name constructor pred . fields)
+          (let ((constructor-name (car constructor))
+                (field-names (cdr constructor)))
+            `(begin
+               (define ,constructor
+                 (vector ',name ,@field-names))
+               (define (,pred obj)
+                 (and (vector? obj)
+                      (= (length obj) ,(length constructor))
+                      (eq? (ref obj 0) ',name)))
+               ,@(map
+                   (lambda (field)
+                     (let ((field-name (car field))
+                           (accessor-name (cadr field))
+                           (modifier-name
+                             (case (length (cddr field))
+                               ((0) #f)
+                               ((1) (car (cddr field)))
+                               (else (error
+                                       "define-record-type: too many params to field"
+                                       field)))))
+                       (let ((i (let lp ((lst field-names) (i 1))
+                                  (cond ((null? lst) (error "invalid field name" field-name))
+                                        ((eq? (car lst) field-name) i)
+                                        (else (lp (cdr lst) (+ i 1)))))))
+                         `(begin
+                            (define (,accessor-name record)
+                              (ref record ,i))
+                            ,(if modifier-name
+                               `(define (,modifier-name record value)
+                                  (vector-set! record ,i value)))))))
+                   fields))))
+             (cdr x))))
+
+  (export define-record-type))

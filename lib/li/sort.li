@@ -1,7 +1,7 @@
 ; based on https://srfi.schemers.org/srfi-132/srfi-132.html
 
 (let ()
-  (import (li base/values))
+  (import (li base))
 
   (define (list-sorted? < lis)
     (let loop ((lis lis))

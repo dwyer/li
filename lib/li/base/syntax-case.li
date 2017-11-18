@@ -1,7 +1,6 @@
 (let ()
 
-  (import (li base/define-record-type)
-          (li list))
+  (import (li base) (li list))
 
   (define make-binding cons)
   (define binding-var car)
