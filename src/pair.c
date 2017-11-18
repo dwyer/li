@@ -1,6 +1,18 @@
 #include "li.h"
 #include "li_lib.h"
 
+extern li_object *li_car(li_object *obj)
+{
+    li_assert_pair(obj);
+    return ((li_pair_t *)(obj))->car;
+}
+
+extern li_object *li_cdr(li_object *obj)
+{
+    li_assert_pair(obj);
+    return ((li_pair_t *)(obj))->cdr;
+}
+
 static void pair_mark(li_object *obj)
 {
     li_mark(li_car(obj));
@@ -29,7 +41,7 @@ static li_object *pair_ref(li_object *lst, int k)
     li_object *rst = lst;
     while (k--) {
         if (rst && !li_is_pair(rst))
-            li_error("not a list", lst);
+            li_error_fmt("not a list: ~a", lst);
         rst = li_cdr(rst);
     }
     return li_car(rst);
@@ -53,7 +65,7 @@ const li_type_t li_type_pair = {
 
 extern li_pair_t *li_pair(li_object *car, li_object *cdr)
 {
-    li_pair_t *obj = li_allocate(li_null, 1, sizeof(*obj));
+    li_pair_t *obj = li_allocate(NULL, 1, sizeof(*obj));
     li_object_init((li_object *)obj, &li_type_pair);
     obj->car = car;
     obj->cdr = cdr;
@@ -131,7 +143,7 @@ static li_object *p_set_car(li_object *args) {
     li_object *lst, *obj;
     li_parse_args(args, "po", &lst, &obj);
     li_set_car(lst, obj);
-    return li_null;
+    return NULL;
 }
 
 /*
@@ -142,7 +154,7 @@ static li_object *p_set_cdr(li_object *args) {
     li_object *lst, *obj;
     li_parse_args(args, "po", &lst, &obj);
     li_set_cdr(lst, obj);
-    return li_null;
+    return NULL;
 }
 
 /*
@@ -191,9 +203,7 @@ static li_object *p_list_tail(li_object *args) {
     int k;
     li_parse_args(args, "li", &lst, &k);
     for (; k; k--) {
-        if (lst && !li_is_pair(lst))
-            li_error("not a list", li_car(args));
-        lst = li_cdr(lst);
+        lst = li_cdr(lst); /* XXX TODO error check */
     }
     return lst;
 }
@@ -220,27 +230,27 @@ static li_object *p_list_to_string(li_object *args) {
 static li_object *p_append(li_object *args) {
     li_object *head, *tail, *list;
     if (!args)
-        return li_null;
+        return NULL;
     else if (!li_cdr(args))
         return li_car(args);
-    head = tail = list = li_null;
+    head = tail = list = NULL;
     while (args) {
         list = li_car(args);
         while (list) {
             if (li_is_pair(list)) {
                 if (head)
-                    tail = li_set_cdr(tail, li_cons(li_car(list), li_null));
+                    tail = li_set_cdr(tail, li_cons(li_car(list), NULL));
                 else
-                    head = tail = li_cons(li_car(list), li_null);
+                    head = tail = li_cons(li_car(list), NULL);
                 list = li_cdr(list);
             } else if (!li_cdr(args)) {
                 if (head)
                     tail = li_set_cdr(tail, list);
                 else
                     head = tail = list;
-                list = li_null;
+                list = NULL;
             } else {
-                li_error("not a list", list);
+                li_error_fmt("not a list: ~a", list);
             }
         }
         args = li_cdr(args);
@@ -271,9 +281,7 @@ static li_object *p_filter(li_object *args) {
 static li_object *p_reverse(li_object *args) {
     li_object *lst, *tsl;
     li_parse_args(args, "l", &lst);
-    for (tsl = li_null; lst; lst = li_cdr(lst)) {
-        if (!li_is_pair(lst))
-            li_error("not a list", li_car(args));
+    for (tsl = NULL; lst; lst = li_cdr(lst)) {
         tsl = li_cons(li_car(lst), tsl);
     }
     return tsl;
@@ -283,8 +291,6 @@ static li_object *p_assq(li_object *args) {
     li_object *key, *lst;
     li_parse_args(args, "ol", &key, &lst);
     for (; lst; lst = li_cdr(lst)) {
-        if (!li_is_pair(lst))
-            li_error("not a list", li_cadr(args));
         if (li_is_eq(key, li_caar(lst)))
             return li_car(lst);
     }
@@ -295,8 +301,6 @@ static li_object *p_assv(li_object *args) {
     li_object *key, *lst;
     li_parse_args(args, "ol", &key, &lst);
     for (; lst; lst = li_cdr(lst)) {
-        if (!li_is_pair(lst))
-            li_error("not a list", li_cadr(args));
         if (li_is_eqv(key, li_caar(lst)))
             return li_car(lst);
     }
@@ -307,8 +311,6 @@ static li_object *p_assoc(li_object *args) {
     li_object *key, *lst;
     li_parse_args(args, "ol", &key, &lst);
     for (; lst; lst = li_cdr(lst)) {
-        if (!li_is_pair(lst))
-            li_error("not a list", li_cadr(args));
         if (li_is_equal(key, li_caar(lst)))
             return li_car(lst);
     }
@@ -356,7 +358,7 @@ static li_object *p_caar(li_object *args) {
     li_object *lst;
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~a", lst);
     return li_caar(lst);
 }
 
@@ -364,7 +366,7 @@ static li_object *p_cadr(li_object *args) {
     li_object *lst;
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~a", lst);
     return li_cadr(lst);
 }
 
@@ -372,7 +374,7 @@ static li_object *p_cdar(li_object *args) {
     li_object *lst;
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~a", lst);
     return li_cdar(lst);
 }
 
@@ -380,7 +382,7 @@ static li_object *p_cddr(li_object *args) {
     li_object *lst;
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~a", lst);
     return li_cddr(lst);
 }
 

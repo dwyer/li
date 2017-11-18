@@ -36,11 +36,11 @@ static void li_include_shared(const char *path, li_env_t *env)
     char *error;
     lilib_include_f *load;
     if (!dl)
-        li_error_f("import error: ~a", dlerror());
+        li_error_fmt("import error: ~a", dlerror());
     /* reuse the buf for performance */
     load = (lilib_include_f *)dlsym(dl, "lilib_load");
     if ((error = dlerror()))
-        li_error_f("import error: ~a", li_string_make(error));
+        li_error_fmt("import error: ~a", li_string_make(error));
     if (load)
         load(env);
     li_env_define(env, li_symbol(path), (li_object *)li_dl(dl));
@@ -52,14 +52,14 @@ static int li_import_try(li_str_t *name, const char *dir, li_env_t *env)
     int n;
     n = snprintf(path, PATH_MAX, "%s/%s.li", dir, li_string_bytes(name));
     if (!(-1 < n && n < PATH_MAX))
-        li_error_f("import error: name ~s is too long", name);
+        li_error_fmt("import error: name ~s is too long", name);
     if (access(path, F_OK) != -1) {
         li_load(path, env);
         return 1;
     }
     n = snprintf(path, PATH_MAX, "%s/%s.so", dir, li_string_bytes(name));
     if (!(-1 < n && n < PATH_MAX))
-        li_error_f("import error: name ~s is too long", name);
+        li_error_fmt("import error: name ~s is too long", name);
     if (access(path, F_OK) != -1) {
         li_include_shared(path, env);
         return 1;
@@ -104,5 +104,5 @@ extern void li_import(li_object *set, li_env_t *env)
     }
     /* TODO load from standard libraries */
 error:
-    li_error_f("could not import ~a", set);
+    li_error_fmt("could not import ~a", set);
 }

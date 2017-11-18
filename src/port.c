@@ -63,7 +63,7 @@ extern li_port_t *li_port_open_input_file(li_str_t *filename)
 {
     li_port_t *port = li_port_new();
     if (!(port->fp = fopen(li_string_bytes(filename), "r")))
-        li_error_f("could not open input file: ~a", filename);
+        li_error_fmt("could not open input file: ~a", filename);
     port->flags = IO_INPUT | IO_FILE;
     port->name = filename;
     return port;
@@ -73,7 +73,7 @@ extern li_port_t *li_port_open_output_file(li_str_t *filename)
 {
     li_port_t *port = li_port_new();
     if (!(port->fp = fopen(li_string_bytes(filename), "w")))
-        li_error_f("could not open output file: ~a", filename);
+        li_error_fmt("could not open output file: ~a", filename);
     port->flags = IO_OUTPUT | IO_FILE;
     port->name = filename;
     return port;
@@ -349,7 +349,7 @@ static li_object *p_write_string(li_object *args)
         li_port_printf(port, "%s", li_string_bytes(str));
     else
         /* TODO: implement this. */
-        li_error_f("unimplemented parameters: ~a", args);
+        li_error_fmt("unimplemented parameters: ~a", args);
     return NULL;
 }
 

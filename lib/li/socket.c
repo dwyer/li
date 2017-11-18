@@ -38,12 +38,12 @@ static li_object *p_make_client_socket(li_object *args)
             &ai_family, &ai_socktype, &ai_flags, &ai_protocol);
     hostent = gethostbyname(li_string_bytes(node));
     if (hostent == NULL)
-        li_error_f("bad host: ~a", node);
+        li_error_fmt("bad host: ~a", node);
     obj = li_allocate(NULL, 1, sizeof(*obj));
     li_object_init((li_object *)obj, &li_type_socket);
     obj->fd = socket(ai_family, ai_socktype, ai_protocol);
     if (obj->fd < 0)
-        li_error_f("ERROR opening socket");
+        li_error_fmt("ERROR opening socket");
     /* init address */
     obj->addr.sin_family = ai_family;
     obj->addr.sin_port = htons(atoi(li_string_bytes(service)));
@@ -51,7 +51,7 @@ static li_object *p_make_client_socket(li_object *args)
     memset(&obj->addr.sin_zero, 0, sizeof(obj->addr.sin_zero));
     /* connect the socket */
     if (connect(obj->fd, (struct sockaddr *)&obj->addr, sizeof(obj->addr)) < 0)
-        li_error_f("ERROR connecting");
+        li_error_fmt("ERROR connecting");
     /* create the object */
     return (li_object *)obj;
 }
@@ -91,7 +91,7 @@ static li_object *p_socket_send(li_object *args)
     do {
         int n = send(((li_socket_t *)obj)->fd, message + sent, total - sent, flags);
         if (n < 0)
-            li_error_f("ERROR writing message to socket");
+            li_error_fmt("ERROR writing message to socket");
         if (n == 0)
             break;
         sent += n;
@@ -112,7 +112,7 @@ static li_object *p_socket_recv(li_object *args)
         buf = li_allocate(NULL, size, sizeof(*buf));
     n = recv(((li_socket_t *)obj)->fd, buf, size, flags);
     if (n < 0)
-        li_error_f("couldn't read from socket");
+        li_error_fmt("couldn't read from socket");
     buf[n] = '\0';
     res = li_string_make(buf);
     if (buf != _buf)

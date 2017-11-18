@@ -55,7 +55,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
         case 'b':
             li_assert_integer(obj);
             if (0 > li_to_integer(obj) || li_to_integer(obj) > 255)
-                li_error("not a byte", obj);
+                li_error_fmt("not a byte: ~a", obj);
             *va_arg(ap, li_byte_t *) = li_to_integer(obj);
             break;
         case 'c':
@@ -77,7 +77,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
         case 'k':
             li_assert_integer(obj);
             if (li_to_integer(obj) < 0)
-                li_error_f("expected a positive integer: ~a", obj);
+                li_error_fmt("expected a positive integer: ~a", obj);
             *va_arg(ap, int *) = (int)li_to_integer(obj);
             break;
         case 'l':
@@ -109,7 +109,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             break;
         case 't':
             if (li_type(obj) != &li_type_type)
-                li_error("not a type", obj);
+                li_error_fmt("not a type: ~a", obj);
             *va_arg(ap, const li_type_t **) = li_to_type(obj);
             break;
         case 'v':
@@ -121,7 +121,7 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
             *va_arg(ap, li_sym_t **) = (li_sym_t *)obj;
             break;
         default:
-            li_error("unknown opt", li_character(*fmt));
+            li_error_fmt("unknown opt: ~a", li_character(*fmt));
             break;
         }
         if (args)
@@ -131,9 +131,9 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
     va_end(ap);
 
     if (*s && !opt) {
-        li_error("too few args", all_args);
+        li_error_fmt("too few args: ~a", all_args);
     } else if (args) {
-        li_error("too many args", all_args);
+        li_error_fmt("too many args: ~a", all_args);
     }
 }
 
@@ -158,7 +158,7 @@ static li_object *m_assert(li_object *seq, li_env_t *env)
         li_parse_args(seq, "o", &seq);
     default:
         if (li_not(li_eval(seq, env)))
-            li_error("assertion violated", seq);
+            li_error_fmt("assertion violated: ~a", seq);
         break;
     }
     return NULL;
@@ -469,7 +469,7 @@ static li_object *m_set(li_object *args, li_env_t *env)
     li_object *val;
     li_parse_args(args, "yo", &var, &val);
     if (!li_env_assign(env, var, li_eval(val, env)))
-        li_error("unbound variable", (li_object *)var);
+        li_error_fmt("unbound variable: ~a", var);
     return NULL;
 }
 
@@ -481,11 +481,11 @@ static li_object *m_set(li_object *args, li_env_t *env)
  */
 static li_object *p_error(li_object *args)
 {
-    const char *msg;
+    li_str_t *msg;
     li_object *irritants;
-    li_parse_args(args, "S.", &msg, &irritants);
-    li_error(msg, irritants);
-    return li_null;
+    li_parse_args(args, "s.", &msg, &irritants);
+    li_error_fmt("~a: ~a", msg, irritants);
+    return NULL;
 }
 
 /**************************
@@ -583,7 +583,7 @@ static li_object *p_length(li_object *args)
     ret = 0;
     if (lst) {
         if (!li_type(lst)->length)
-            li_error("not a list", lst);
+            li_error_fmt("not a list: ~a", lst);
         ret = li_type(lst)->length(lst);
     }
     return (li_object *)li_num_with_int(ret);
@@ -595,7 +595,7 @@ static li_object *p_ref(li_object *args)
     int k;
     li_parse_args(args, "oi", &lst, &k);
     if (!li_type(lst)->ref)
-        li_error("set: no ref", lst);
+        li_error_fmt("set: no ref: ~a", lst);
     return li_type(lst)->ref(lst, k);
 }
 
@@ -605,9 +605,9 @@ static li_object *p_set(li_object *args)
     int k;
     li_parse_args(args, "oio", &lst, &k, &obj);
     if (!lst || !li_type(lst)->set)
-        li_error("set: bad type:", lst);
+        li_error_fmt("set: bad type: ~a", lst);
     if (k < 0 || (li_type(lst)->length(lst) && k >= li_type(lst)->length(lst)))
-        li_error("out of range", args);
+        li_error_fmt("out of range: ~a", args);
     li_type(lst)->set(lst, k, obj);
     return NULL;
 }

@@ -97,14 +97,14 @@ extern li_object *li_env_lookup(li_env_t *env, li_sym_t *var)
     li_object *val;
     if (li_env_exists(env, var, &val))
         return val;
-    li_error("unbound variable", (li_object *)var);
-    return li_null;
+    li_error_fmt("unbound variable: ~a", var);
+    return NULL;
 }
 
 extern void li_env_append(li_env_t *env, li_sym_t *var, li_object *val)
 {
     if (!li_is_symbol(var))
-        li_error("not a variable", (li_object *)var);
+        li_error_fmt("not a variable: ~a", var);
     if (env->len == env->cap) {
         env->cap *= 2;
         env->array = li_allocate(env->array, env->cap, sizeof(*env->array));
@@ -137,6 +137,6 @@ extern li_env_t *li_env_extend(li_env_t *env, li_object *vars, li_object *vals)
         li_env_append(env, (li_sym_t *)var, val);
     }
     if (vars || vals)
-        li_error_f("wrong number of args: expected ~s, got ~s", orig_vars, orig_vals);
+        li_error_fmt("wrong number of args: expected ~s, got ~s", orig_vars, orig_vals);
     return env;
 }

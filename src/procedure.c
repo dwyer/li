@@ -198,10 +198,10 @@ extern li_object *li_eval(li_object *expr, li_env_t *env) {
                 expr = li_to_type(proc)->proc(args);
                 done = 1;
             } else {
-                li_error("not applicable", proc);
+                li_error_fmt("not applicable: ~a", proc);
             }
         } else {
-            li_error("unknown expression type", expr);
+            li_error_fmt("unknown expression type: ~a", expr);
         }
         li_stack_trace_pop();
     }
@@ -218,7 +218,7 @@ extern li_object *li_macro_expand(li_macro_t *mac, li_object *expr, li_env_t *en
         args = li_cons(expr, args);
         break;
     default:
-        li_error("macro transformer take 1 or 2 args", NULL);
+        li_error_fmt("macro transformer take 1 or 2 args");
         break;
     }
     return li_apply((li_object *)mac->proc, args);

@@ -191,7 +191,7 @@ static li_object *p_bytevector_to_string(li_object *args)
     int start = 0, end = -1;
     li_parse_args(args, "B?kk", &v, &start, &end);
     if (end >= 0)
-        li_error_f("end arg not supported");
+        li_error_fmt("end arg not supported");
     return (li_object *)li_string_make((char *)v->bytes + start);
 }
 

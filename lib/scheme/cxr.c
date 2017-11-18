@@ -31,7 +31,7 @@ static li_object *p_caaar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_caaar(lst);
 }
 
@@ -40,7 +40,7 @@ static li_object *p_caadr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_caadr(lst);
 }
 
@@ -49,7 +49,7 @@ static li_object *p_cadar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cadar(lst);
 }
 
@@ -58,7 +58,7 @@ static li_object *p_caddr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_caddr(lst);
 }
 
@@ -67,7 +67,7 @@ static li_object *p_cdaar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cdaar(lst);
 }
 
@@ -76,7 +76,7 @@ static li_object *p_cdadr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cdadr(lst);
 }
 
@@ -85,7 +85,7 @@ static li_object *p_cddar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cddar(lst);
 }
 
@@ -94,7 +94,7 @@ static li_object *p_cdddr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cdddr(lst);
 }
 
@@ -103,7 +103,7 @@ static li_object *p_caaaar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_caaaar(lst);
 }
 
@@ -112,7 +112,7 @@ static li_object *p_caaadr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_caaadr(lst);
 }
 
@@ -121,7 +121,7 @@ static li_object *p_caadar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_caadar(lst);
 }
 
@@ -130,7 +130,7 @@ static li_object *p_caaddr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_caaddr(lst);
 }
 
@@ -139,7 +139,7 @@ static li_object *p_cadaar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cadaar(lst);
 }
 
@@ -148,7 +148,7 @@ static li_object *p_cadadr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cadadr(lst);
 }
 
@@ -157,7 +157,7 @@ static li_object *p_caddar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_caddar(lst);
 }
 
@@ -166,7 +166,7 @@ static li_object *p_cadddr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cadddr(lst);
 }
 
@@ -175,7 +175,7 @@ static li_object *p_cdaaar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cdaaar(lst);
 }
 
@@ -184,7 +184,7 @@ static li_object *p_cdaadr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cdaadr(lst);
 }
 
@@ -193,7 +193,7 @@ static li_object *p_cdadar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cdadar(lst);
 }
 
@@ -202,7 +202,7 @@ static li_object *p_cdaddr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cdaddr(lst);
 }
 
@@ -211,7 +211,7 @@ static li_object *p_cddaar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cddaar(lst);
 }
 
@@ -220,7 +220,7 @@ static li_object *p_cddadr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cddadr(lst);
 }
 
@@ -229,7 +229,7 @@ static li_object *p_cdddar(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cdddar(lst);
 }
 
@@ -238,7 +238,7 @@ static li_object *p_cddddr(li_object *args) {
     li_parse_args(args, "p", &lst);
     if (!li_is_pair(lst) && !li_is_pair(li_cdr(lst)) &&
         !li_is_pair(li_cddr(lst)) && !li_is_pair(li_cdddr(lst)))
-        li_error("list is too short", lst);
+        li_error_fmt("list is too short: ~s", lst);
     return li_cddddr(lst);
 }
 

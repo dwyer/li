@@ -311,14 +311,14 @@ extern int li_length(li_object *obj);
 #define li_is_locked(obj)               (obj)->locked
 
 /** Accessors for pairs. */
-#define li_car(obj)                     ((li_pair_t *)(obj))->car
-#define li_cdr(obj)                     ((li_pair_t *)(obj))->cdr
+extern li_object *li_car(li_object *obj);
+extern li_object *li_cdr(li_object *obj);
 #define li_caar(obj)                    li_car(li_car(obj))
 #define li_cadr(obj)                    li_car(li_cdr(obj))
 #define li_cdar(obj)                    li_cdr(li_car(obj))
 #define li_cddr(obj)                    li_cdr(li_cdr(obj))
-#define li_set_car(obj1, obj2)          (li_car(obj1) = (obj2))
-#define li_set_cdr(obj1, obj2)          (li_cdr(obj1) = (obj2))
+#define li_set_car(obj1, obj2)          (((li_pair_t *)(obj1))->car = (obj2))
+#define li_set_cdr(obj1, obj2)          (((li_pair_t *)(obj1))->cdr = (obj2))
 
 /** Vector accessors. */
 extern li_vector_t *li_make_vector(int k, li_object *fill);
@@ -327,8 +327,7 @@ extern li_object *li_vector_ref(li_vector_t *vec, int k);
 extern void li_vector_set(li_vector_t *vec, int k, li_object *obj);
 
 /* li_error.c */
-extern void li_error(const char *msg, li_object *args);
-extern void li_error_f(const char *msg, ...);
+extern void li_error_fmt(const char *msg, ...);
 extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *),
         li_object *arg);
 extern void li_stack_trace_push(li_object *expr);
@@ -370,7 +369,7 @@ extern FILE *li_port_fp(li_port_t *port);
 
 #define li_assert_type(type, arg) \
     if (!li_is_##type(arg)) \
-        li_error("not a " #type, arg)
+        li_error_fmt("expected a " # type ", got ~a", arg)
 
 #define li_assert_bytevector(arg)       li_assert_type(bytevector, arg)
 #define li_assert_character(arg)        li_assert_type(character, arg)

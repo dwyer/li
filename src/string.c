@@ -73,9 +73,9 @@ extern li_str_t *li_string_copy(li_str_t *str, int start, int end)
     if (start == 0 && end == -1)
         return li_string_make(str->bytes);
     if (end != -1 && start > end)
-        li_error_f("start must be less than end");
+        li_error_fmt("start must be less than end");
     if (start > li_string_length(str) || (end != -1 && end > li_string_length(str)))
-        li_error_f("start and end are out of range");
+        li_error_fmt("start and end are out of range");
     bytes = str->bytes;
     while (start) {
         bytes += li_chr_decode(NULL, bytes);
@@ -162,11 +162,11 @@ static li_object *p_make_string(li_object *args) {
 static li_object *p_string(li_object *args) {
     char *str;
     int i;
-    str = li_allocate(li_null, li_length(args)+1, sizeof(char));
+    str = li_allocate(NULL, li_length(args)+1, sizeof(char));
     for (i = 0; args; i++, args = li_cdr(args)) {
         if (!li_is_character(li_car(args))) {
             free(str);
-            li_error("not a character", li_car(args));
+            li_error_fmt("not a character: ~s", li_car(args));
         }
         str[i] = li_to_character(li_car(args));
     }

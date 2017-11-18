@@ -11,7 +11,6 @@ static struct {
     int siz;
 } trace = { NULL, 0, 0 };
 
-
 void li_stack_trace_push(li_object *expr)
 {
     /* TODO: Free stack trace. */
@@ -26,28 +25,11 @@ void li_stack_trace_push(li_object *expr)
 void li_stack_trace_pop(void)
 {
     if (trace.siz == 0)
-        li_error("attempting to pop from empty stack", li_null);
+        li_error_fmt("attempting to pop from empty stack");
     trace.siz--;
 }
 
-void li_error(const char *msg, li_object *args) {
-    int i;
-    li_port_printf(li_port_stderr, "# error: ");
-    if (msg)
-        li_port_printf(li_port_stderr, "%s: ", msg);
-    if (args)
-        li_port_write(li_port_stderr, args);
-    li_newline(li_port_stderr);
-    for (i = 0; i < trace.siz; i++) {
-        li_port_printf(li_port_stderr, "\t");
-        li_port_write(li_port_stderr, trace.exprs[i]);
-        li_newline(li_port_stderr);
-    }
-    trace.siz = 0;
-    longjmp(buf, 1);
-}
-
-void li_error_f(const char *msg, ...) {
+void li_error_fmt(const char *msg, ...) {
     va_list ap;
     int ch;
     va_start(ap, msg);

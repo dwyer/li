@@ -85,5 +85,5 @@ extern li_object *li_read(li_port_t *port)
 
 static void yyerror(char *s)
 {
-    li_error(s, (li_object *)li_num_with_int(yylineno));
+    li_error_fmt("read: ~a: line ~a", li_string_make(s), li_num_with_int(yylineno));
 }

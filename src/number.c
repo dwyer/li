@@ -137,7 +137,7 @@ extern li_num_t *li_num_with_chars(const char *s, int radix)
 {
     li_dec_t x;
     if (radix != 10)
-        li_error("only radix of 10 is supported", NULL);
+        li_error_fmt("only radix of 10 is supported");
     x = li_dec_parse(s);
     return x == floor(x) ? li_num_with_int(x) : li_num_with_dec(x);
 }
@@ -380,7 +380,7 @@ static li_object *p_quotient(li_object *args) {
     li_int_t x, y;
     li_parse_args(args, "II", &x, &y);
     if (y == 0)
-        li_error_f("arg2 must be non-zero");
+        li_error_fmt("arg2 must be non-zero");
     return (li_object *)li_num_with_int(x / y);
 }
 
@@ -388,7 +388,7 @@ static li_object *p_remainder(li_object *args) {
     li_int_t x, y;
     li_parse_args(args, "II", &x, &y);
     if (y == 0)
-        li_error_f("arg2 must be non-zero");
+        li_error_fmt("arg2 must be non-zero");
     return (li_object *)li_num_with_int(x % y);
 }
 
@@ -396,7 +396,7 @@ static li_object *p_modulo(li_object *args) {
     li_int_t x, y, z;
     li_parse_args(args, "II", &x, &y);
     if (y == 0)
-        li_error_f("arg2 must be non-zero");
+        li_error_fmt("arg2 must be non-zero");
     z = x % y;
     if (z * y < 0)
         z += y;
@@ -448,7 +448,7 @@ static li_object *p_numerator(li_object *args) {
     li_num_t *q;
     li_parse_args(args, "n", &q);
     if (!q->exact)
-        li_error("not exact", args); /* TODO: support inexact numbers */
+        li_error_fmt("not exact: ~a", args); /* TODO: support inexact numbers */
     q->real.exact.den = li_nat_with_int(1);
     return (li_object *)q;
 }
@@ -457,7 +457,7 @@ static li_object *p_denominator(li_object *args) {
     li_num_t *q;
     li_parse_args(args, "n", &q);
     if (!q->exact)
-        li_error("not exact", args); /* TODO: support inexact numbers */
+        li_error_fmt("not exact: ~a", args); /* TODO: support inexact numbers */
     q->real.exact.neg = LI_FALSE;
     q->real.exact.num = q->real.exact.den;
     q->real.exact.den = li_nat_with_int(1);

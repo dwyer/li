@@ -32,7 +32,7 @@ extern void *li_allocate(void *ptr, size_t count, size_t size)
     else
         ptr = calloc(count, size);
     if (!ptr)
-        li_error("out of memory", NULL);
+        li_error_fmt("out of memory");
     return ptr;
 }
 
@@ -47,7 +47,7 @@ extern li_object *li_create(const li_type_t *type)
 {
     li_object *obj;
     if (!type->size)
-        li_error_f("programmer error: type ~s has no size data",
+        li_error_fmt("programmer error: type ~s has no size data",
                 li_string_make(type->name));
     obj = li_allocate(NULL, 1, type->size);
     li_object_init(obj, type);

@@ -149,9 +149,7 @@
           variable)
 
   (let ((transformer (lambda (x) x)))
-    (assert equal? 
+    (assert equal?
       (env-lookup (env-extend empty-env loc/a transformer)
                   loc/a)
-      transformer))
-
-    (print 'passed))
+      transformer)))
