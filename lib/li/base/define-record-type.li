@@ -35,7 +35,7 @@
                            (ref record ,i))
                          ,(if modifier-name
                             `(define (,modifier-name record value)
-                               (set record ,i value)))))))
+                               (vector-set! record ,i value)))))))
                 fields))))
 
   (export define-record-type))

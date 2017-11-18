@@ -1,0 +1,249 @@
+;; based on https://www.youtube.com/watch?v=Or_yKiI3Ha4
+
+(let ()
+  (import (li hash))
+  (import (li list))
+  (import (li set))
+  (import (li struct))
+  (import (scheme process-context)) ; exit
+
+  (struct syntax (e scopes))
+  (define identifier? syntax?)
+
+  (struct scope ())
+
+  (define scope
+    (let ((n 0))
+      (lambda ()
+        (set! n (+ n 1))
+        (vector 'scope n))))
+
+  (define (datum->syntax v)
+    (cond ((syntax? v) v)
+          ((symbol? v) (syntax v (set)))
+          ((list? v) (map datum->syntax v))
+          (else v)))
+
+  (define (syntax->datum s)
+    (cond ((syntax? s) (syntax-e s))
+          ((symbol? s) s)
+          ((list? s) (map syntax->datum s))
+          (else s)))
+
+  (define (adjust-scope s sc f)
+    (cond ((syntax? s)
+           (syntax (syntax-e s)
+                   (f (syntax-scopes s) sc)))
+          ((list? s)
+           (map (lambda (e) (adjust-scope e sc f)) s))
+          (else s)))
+
+  (define (add-scope s sc)
+    (adjust-scope s sc set-add))
+
+  (define (flip-scope s sc)
+    (adjust-scope s sc set-flip))
+
+  (define (set-flip s e)
+    (if (set-member? s e)
+      (set-remove s e)
+      (set-add s e)))
+
+  (define all-bindings (make-hash))
+  (define (add-binding! id binding)
+    (hash-set! all-bindings id binding))
+
+  (define ((compose f g) x)
+    (f (g x)))
+
+  (define (max x . xs)
+    (if (or (null? xs)
+            (> x (car xs)))
+      x
+      (apply max xs)))
+
+  (define (argmax f l)
+    (let* ((xs (map f l))
+           (x (apply max xs)))
+      (let lp ((xs xs) (l l))
+        (if (= x (car xs))
+          (car l)
+          (lp (cdr xs) (cdr l))))))
+
+  (define (resolve id)
+    (define candidate-ids
+      (find-all-matching-bindings id))
+    (cond ((pair? candidate-ids)
+           (define max-id
+             (argmax (compose set-count syntax-scopes)
+                     candidate-ids))
+           (check-unambiguous max-id candidate-ids)
+           (hash-ref all-bindings max-id))
+          (else #f)))
+
+  (define (find-all-matching-bindings id)
+    (filter (lambda (c-id)
+              (and (eq? (syntax-e c-id) (syntax-e id))
+                   (subset? (syntax-scopes c-id)
+                            (syntax-scopes id))))
+            (hash-keys all-bindings)))
+
+  (define (check-unambiguous max-id candidate-ids)
+    (for-each (lambda (c-id)
+                (if (not (subset? (syntax-scopes c-id)
+                                  (syntax-scopes max-id)))
+                  (error "ambiguous:" max-id)))
+              candidate-ids))
+
+  (define core-scope (scope))
+  (define core-forms (set 'lambda 'let-syntax 'quote 'quote-syntax))
+  (define core-primitives (set 'datum->syntax 'syntax->datum 'syntax-e
+                               'list 'cons 'first 'second 'rest 'map))
+
+  (for-each (lambda (sym)
+              (add-binding! (syntax sym (set core-scope)) sym))
+            (set-union core-forms core-primitives))
+
+  (define (introduce s)
+    (add-scope s core-scope))
+
+  (define empty-env (hash))
+
+  (define (env-extend env key val)
+    (hash-set env key val))
+
+  (define (env-lookup env binding)
+    (hash-ref env binding #f))
+
+  (define variable (gensym 'variable))
+
+  (define expand
+    (case-lambda
+      ((s) (expand s empty-env))
+      ((s env)
+       (cond ((identifier? s)
+              (expand-identifier s env))
+             ((and (pair? s)
+                   (identifier? (first s)))
+              (expand-id-application-form s env))
+             ((list? s)
+              (expand-app s env))
+             (else (error "expand: bad syntax" s))))))
+
+  (define (expand-identifier s env)
+    (define binding (resolve s))
+    (cond
+      ((not binding) (error "free variable" s))
+      ((set-member? core-primitives binding) s)
+      ((set-member? core-forms binding) (error "expand-identifier: bad syntax: core form" s))
+      (else
+        (define v (env-lookup env binding))
+        (cond
+          ((eq? v variable) s)
+          ((not v) (error "out of context" s))
+          (else (error "expand-identifier: bad syntax" s v))))))
+
+  (define (expand-id-application-form s env)
+    (define binding (resolve (first s)))
+    (case binding
+      ((lambda) (expand-lambda s env))
+      ((let-syntax) (expand-let-syntax s env))
+      ((quote s) s)
+      ((quote-syntax s) s)
+      (else
+        (define v (env-lookup env binding))
+        (cond
+          ((procedure? v)
+           (expand (apply-transformer v s) env))
+          (else (expand-app s env))))))
+
+  (define (apply-transformer t s)
+    (define intro-scope (scope))
+    (define intro-s (add-scope s intro-scope))
+    (define transformed-s (t intro-s))
+    (flip-scope transformed-s intro-scope))
+
+  (define (expand-app s env)
+    (map (lambda (sub-s) (expand sub-s env)) s))
+
+  (define (expand-lambda s env)
+    ; (match-define `(,lambda-id (,arg-id) ,body) s)
+    (define lambda-id (first s))
+    (define arg-ids (second s))
+    (define body (cddr s))
+    (define sc (scope))
+    (define ids (map (lambda (arg-id)
+                       (add-scope arg-id sc))
+                     arg-ids))
+    (define binding (gensym))
+    (for-each (lambda (id)
+                (add-binding! id binding))
+              ids)
+    (define body-env (env-extend env binding variable))
+    (define exp-body (map (lambda (e)
+                            (expand (add-scope e sc) body-env))
+                          body))
+    `(,lambda-id ,ids ,@exp-body))
+
+  (define (expand-let-syntax s env)
+    ; (match-define `(,let-syntax-id ((,lhs-id ,rhs)) ,body) s)
+    (define let-syntax-id (first s))
+    (define lhs-id (first (first (second s))))
+    (define rhs (second (first (second s))))
+    (define body (third s))
+    (define sc (scope))
+    (define id (add-scope lhs-id sc))
+    (define binding (gensym))
+    (add-binding! id binding)
+    (define rhs-val (eval-for-syntax-binding rhs))
+    (define body-env (env-extend env binding rhs-val))
+    (expand (add-scope body sc) body-env))
+
+  (define (eval-for-syntax-binding rhs)
+    (eval-compiled (compile (expand rhs empty-env))))
+
+  (define (compile s)
+    (cond
+      ((identifier? s) (resolve s))
+      (else
+        (case (and (identifier? (first s)) (resolve (first s)))
+          ((lambda)
+           (define ids (cadr s))
+           (define body (cddr s))
+           `(lambda ,(map resolve ids) ,@(map compile body)))
+          ((quote)
+           (define datum (second s))
+           `(quote ,(syntax->datum datum)))
+          ((quote-syntax)
+           (define datum (second s))
+           `(quote ,datum))
+          (else (map compile s))))))
+
+  (define-macro
+    call/env
+    (lambda (x env)
+      `(,(cadr x) ,env)))
+
+  (define (eval-compiled s)
+    (call/env (lambda (env)
+                (eval s env))))
+
+  (export syntax
+          syntax?
+          scope
+          add-scope
+          flip-scope
+          datum->syntax
+          syntax->datum
+          add-binding!
+          find-all-matching-bindings
+          check-unambiguous
+          resolve
+          core-scope
+          introduce
+          empty-env
+          env-extend
+          env-lookup
+          variable
+          expand
+          ))

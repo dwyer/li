@@ -1,0 +1,22 @@
+(let ()
+
+  (import (li list))
+
+  (define (list->set l) (delete-duplicates l))
+  (define (set . l) (list->set l))
+  (define (set-add s e) (list->set (append s (list e))))
+  (define (set-count s) (length s))
+  (define (set-member? s e) (member e s))
+  (define (set-remove s e) (delete e s equal?))
+  (define (set-union s t) (list->set (append s t)))
+  (define (subset? s t)
+    (if (null? s)
+      #t
+      (and (member (car s) t)
+           (subset? (cdr s) t))))
+
+  (define (set-equal? s t)
+    (and (= (length s) (length t))
+         (subset? s t)))
+
+  (export list->set set set-add set-count set-union set-member? set-remove subset? set-equal?))

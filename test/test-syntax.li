@@ -1,69 +1,157 @@
 (let ()
-  (import (li base/define-syntax))
-  (import (li base/syntax-case))
-  (import (li list))
-  (import for)
-  (import match)
+  (import (li set))
+  (import (li misc))
+  (import (li gensym))
+  (import syntax)
 
-  (let ((xs (iota 100))
-        (ys null))
-    (for x in xs (set! ys (cons (* x x) ys)))
-    (assert (equal? (reverse xs) (gen (sqrt y) for y in ys))))
+  (define sc1 (scope))
+  (define sc2 (scope))
 
-  (assert (equal? (syntax-case '(let-n () (print 42))
-                               ()
-                               ((_ ((var init) ...) expr exprs ...)
-                                ((lambda (var ...) expr exprs ...) init ...)))
-                  '((lambda () (print 42)))))
+  (assert equal? (syntax 'x (set)) (syntax 'x (set)))
+  (assert (syntax? (syntax 'x (set))))
+  (assert not (syntax? 'x))
 
-  (assert (equal? (syntax-case '(let-n ((x 24)) (print x))
-                               ()
-                               ((_ ((var init) ...) expr exprs ...)
-                                ((lambda (var ...) expr exprs ...) init ...)))
-                  '((lambda (x) (print x)) 24)))
+  (assert equal? (datum->syntax 'a) (syntax 'a (set)))
+  (assert = (datum->syntax 1) 1)
+  (assert equal?
+          (datum->syntax '(a b c))
+          (list (syntax 'a (set))
+                (syntax 'b (set))
+                (syntax 'c (set))))
+  (assert equal?
+         (datum->syntax (list 'a (syntax 'b (set sc1)) 'c))
+         (list (syntax 'a (set))
+               (syntax 'b (set sc1))
+               (syntax 'c (set))))
 
-  (assert (equal? (syntax-case '(let-n ((x 24) (y 2)) (set! x (* x y)) (print x))
-                               ()
-                               ((_ ((var init) ...) expr exprs ...)
-                                ((lambda (var ...) expr exprs ...) init ...)))
-                  '((lambda (x y) (set! x (* x y)) (print x)) 24 2)))
+  (assert eq? sc1 sc1)
 
-  (define-syntax and2
-    (lambda (x)
-      (syntax-case x
-                   ()
-                   ((_ x y)
-                    (syntax (if x y #f))))))
+  (assert equal?
+          (add-scope (syntax 'x (set)) sc1)
+          (syntax 'x (set sc1)))
+  (assert equal?
+          (add-scope (datum->syntax '(x (y))) sc1)
+          (list (syntax 'x (set sc1)) (list (syntax 'y (set sc1)))))
+  (assert equal?
+          (add-scope (syntax 'x (set sc1)) sc1)
+          (syntax 'x (set sc1)))
+  (assert equal?
+          (flip-scope (syntax 'x (set sc1)) sc2)
+          (syntax 'x (set sc1 sc2)))
+  (assert equal?
+          (flip-scope (syntax 'x (set sc1 sc2)) sc2)
+          (syntax 'x (set sc1)))
 
-  (assert (and2 #t #t))
-  (assert (not (and2 #t #f)))
-  (assert (not (and2 #f #t)))
-  (assert (not (and2 #f #f)))
+  (define loc/a (gensym))
 
-  (define-syntax when
-    (lambda (x)
-      (syntax-case x ()
-                   ((_ e0 e1 e2 ...)
-                    (syntax (if e0 (begin e1 e2 ...)))))))
+  (add-binding! (syntax 'a (set sc1)) loc/a)
 
-  (define-syntax unless
-    (lambda (x)
-      (syntax-case x ()
-                   ((_ e0 e1 e2 ...)
-                    (syntax (when (not e0) e1 e2 ...))))))
+  (define loc/b-out (gensym))
+  (define loc/b-in (gensym))
 
-  (unless (= 1 1) (assert #f))
-  (unless (= 1 0) (assert #t))
+  (add-binding! (syntax 'b (set sc1)) loc/b-out)
+  (add-binding! (syntax 'b (set sc1 sc2)) loc/b-in)
 
-  (when #t (assert #t))
-  (when #f (assert #f))
+  (define loc/c1 (gensym))
+  (define loc/c2 (gensym))
 
-  (let ((begin list))
-    (when #t (assert #t)))
+  (add-binding! (syntax 'c (set sc1)) loc/c1)
+  (add-binding! (syntax 'c (set sc2)) loc/c2)
 
-  ; XXX this test fails
-  ; (let ((not (lambda (x) x))
-  ;       (when print))
-  ;   (unless #f (assert #t)))
+  (assert equal?
+          (list (syntax 'a (set sc1)))
+          (list->set (find-all-matching-bindings (syntax 'a (set sc1)))))
 
-  #f)
+  (assert equal?
+          '()
+          (list->set (find-all-matching-bindings (syntax 'a (set sc2)))))
+
+  (assert equal?
+         (list->set (find-all-matching-bindings (syntax 'a (set sc1 sc2))))
+         (list (syntax 'a (set sc1))))
+
+  (assert set-equal?
+          (list->set (find-all-matching-bindings (syntax 'b (set sc1 sc2))))
+          (set (syntax 'b (set sc1))
+               (syntax 'b (set sc1 sc2))))
+
+  (assert set-equal?
+          (list->set (find-all-matching-bindings (syntax 'c (set sc1 sc2))))
+          (set (syntax 'c (set sc1))
+               (syntax 'c (set sc2))))
+
+  (check-unambiguous
+    (syntax 'b (set sc1 sc2))
+    (list (syntax 'b (set sc1))
+          (syntax 'b (set sc1 sc2))))
+
+  ; (check-unambiguous
+  ;   (syntax 'c (set sc2))
+  ;   (list (syntax 'c (set sc1))
+  ;         (syntax 'c (set sc2))))
+
+  (assert not (resolve (datum->syntax 'lambda)))
+  (assert eq?
+          (resolve (add-scope (datum->syntax 'lambda) core-scope))
+          'lambda)
+  (assert eq?
+          (resolve (add-scope (datum->syntax 'cons) core-scope))
+          'cons)
+
+  (assert equal?
+          (introduce (datum->syntax 'cons))
+          (syntax 'cons (set core-scope)))
+
+  (define one-prog
+    (introduce
+      (datum->syntax
+        '(let-syntax ((one (lambda (stx)
+                             (quote-syntax '1))))
+           (one)))))
+
+  (assert equal?
+          one-prog
+          `(,(syntax 'let-syntax (set core-scope))
+             ((,(syntax 'one (set core-scope))
+                (,(syntax 'lambda (set core-scope))
+                  (,(syntax 'stx (set core-scope)))
+                  (,(syntax 'quote-syntax (set core-scope))
+                    (,(syntax 'quote (set core-scope)) 1)))))
+             (,(syntax 'one (set core-scope)))))
+
+  (assert equal?
+          (syntax->datum one-prog)
+         '(let-syntax ((one (lambda (stx)
+                              (quote-syntax '1))))
+            (one)))
+
+  (assert equal?
+          (expand
+            (introduce
+              (datum->syntax '(list '1 '2))))
+          (list
+            (syntax 'list (set core-scope))
+            (list (syntax 'quote (set core-scope)) 1)
+            (list (syntax 'quote (set core-scope)) 2)))
+
+  ; (print (expand one-prog))
+  (assert equal? (syntax->datum (expand one-prog)) ''1)
+
+  ; (print (expand (introduce (datum->syntax '(lambda (x) x)))))
+  (assert equal?
+          (syntax->datum (expand (introduce (datum->syntax '(lambda (x) x)))))
+          '(lambda (x) x))
+
+  (assert not (env-lookup empty-env loc/a))
+  (assert eq?
+          (env-lookup (env-extend empty-env loc/a variable)
+                      loc/a)
+          variable)
+
+  (let ((transformer (lambda (x) x)))
+    (assert equal? 
+      (env-lookup (env-extend empty-env loc/a transformer)
+                  loc/a)
+      transformer))
+
+    (print 'passed))

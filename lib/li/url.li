@@ -1,5 +1,5 @@
 (let ()
-  (import struct)
+  (import define-struct)
 
   (define-struct (url scheme host port path))
 

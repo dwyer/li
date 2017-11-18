@@ -1,0 +1,12 @@
+(define gensym
+  (let ((n 0))
+    (case-lambda
+      (() (gensym 'gensym))
+      ((v)
+      (set! n (+ n 1))
+      (string->symbol
+        (string-append
+          ";"
+          (symbol->string v)
+          "."
+          (number->string n)))))))

@@ -1,0 +1,69 @@
+(let ()
+  (import (li base/define-syntax))
+  (import (li base/syntax-case))
+  (import (li list))
+  (import for)
+  (import match)
+
+  (let ((xs (iota 100))
+        (ys null))
+    (for x in xs (set! ys (cons (* x x) ys)))
+    (assert (equal? (reverse xs) (gen (sqrt y) for y in ys))))
+
+  (assert (equal? (syntax-case '(let-n () (print 42))
+                               ()
+                               ((_ ((var init) ...) expr exprs ...)
+                                ((lambda (var ...) expr exprs ...) init ...)))
+                  '((lambda () (print 42)))))
+
+  (assert (equal? (syntax-case '(let-n ((x 24)) (print x))
+                               ()
+                               ((_ ((var init) ...) expr exprs ...)
+                                ((lambda (var ...) expr exprs ...) init ...)))
+                  '((lambda (x) (print x)) 24)))
+
+  (assert (equal? (syntax-case '(let-n ((x 24) (y 2)) (set! x (* x y)) (print x))
+                               ()
+                               ((_ ((var init) ...) expr exprs ...)
+                                ((lambda (var ...) expr exprs ...) init ...)))
+                  '((lambda (x y) (set! x (* x y)) (print x)) 24 2)))
+
+  (define-syntax and2
+    (lambda (x)
+      (syntax-case x
+                   ()
+                   ((_ x y)
+                    (syntax (if x y #f))))))
+
+  (assert (and2 #t #t))
+  (assert (not (and2 #t #f)))
+  (assert (not (and2 #f #t)))
+  (assert (not (and2 #f #f)))
+
+  (define-syntax when
+    (lambda (x)
+      (syntax-case x ()
+                   ((_ e0 e1 e2 ...)
+                    (syntax (if e0 (begin e1 e2 ...)))))))
+
+  (define-syntax unless
+    (lambda (x)
+      (syntax-case x ()
+                   ((_ e0 e1 e2 ...)
+                    (syntax (when (not e0) e1 e2 ...))))))
+
+  (unless (= 1 1) (assert #f))
+  (unless (= 1 0) (assert #t))
+
+  (when #t (assert #t))
+  (when #f (assert #f))
+
+  (let ((begin list))
+    (when #t (assert #t)))
+
+  ; XXX this test fails
+  ; (let ((not (lambda (x) x))
+  ;       (when print))
+  ;   (unless #f (assert #t)))
+
+  #f)

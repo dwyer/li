@@ -1,0 +1,36 @@
+(let ()
+
+  (import (li struct))
+
+  (struct hash (alist))
+
+  (define %hash hash)
+
+  (define (make-hash)
+    (%hash '()))
+
+  (set! hash make-hash)
+
+  (define hash-ref
+    (case-lambda
+      ((hash key) (hash-ref hash key error))
+      ((hash key default)
+       (assert hash? hash)
+       (cond ((assoc key (hash-alist hash)) => cadr)
+             ((eq? default error) (error "bad key" key))
+             (else default)))))
+
+  (define (hash-set hash key val)
+    (assert hash? hash)
+    (%hash (cons (list key val) (hash-alist hash))))
+
+  (define (hash-set! hash key val)
+    (assert hash? hash)
+    (hash-alist-set! hash (cons (list key val) (hash-alist hash)))
+    hash)
+
+  (define (hash-keys hash)
+    (assert hash? hash)
+    (map car (hash-alist hash)))
+
+  (export make-hash hash hash-ref hash-set hash-set! hash-keys))

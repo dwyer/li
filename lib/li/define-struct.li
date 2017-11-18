@@ -1,0 +1,57 @@
+(let ()
+  ;; deprecated: use struct instead.
+
+  (import (li defmacro))
+  (import (li random-symbol))
+
+  (define (object->string obj)
+    (cond ((number? obj) (number->string obj))
+          ((symbol? obj) (symbol->string obj))
+          (else obj)))
+
+  (define (append->string . args)
+    (string->symbol (apply string-append (map object->string args))))
+
+  (defmacro (define-struct sig . body)
+    (let ((name (car sig))
+          (vars (cdr sig))
+          (i 0))
+      `(begin
+         (define (,(append->string name "-make") ,@vars)
+           ,@body
+           (vector ',name ,@vars))
+         (define (,(append->string name "?") obj)
+           (and (vector? obj) (= (length obj) ,(length sig)) (eq? (ref obj 0) ',name)))
+         ,@(map (lambda (var)
+                  (set! i (+ i 1))
+                  `(begin
+                     (define (,(append->string name "-" var) ,name)
+                       (ref ,name ,i))
+                     (define (,(append->string name "-set-" var "!") ,name val)
+                       (set ,name ,i val))))
+                vars))))
+
+  (defmacro (define-messenger sig . body)
+    (let ((type (car sig))
+          (vars (cdr sig)))
+      (let ((make (append->string type "-make"))
+            (msg (random-symbol))
+            (args (random-symbol)))
+        `(begin
+           (define (,make ,@vars)
+             ,@body
+             (lambda (,msg . ,args)
+               (case ,msg
+                 ((type) ',type)
+                 ,@(map (lambda (var)
+                          `((,var)
+                            (case (length ,args)
+                              ((0) ,var)
+                              ((1) (set! ,var (car ,args)))
+                              (else (error "bad args" ,msg ,args)))))
+                        vars)
+                 (else (error "bad message" ,msg)))))
+           (define (,(append->string type "?") obj)
+             (and (procedure? obj) (obj 'type)))))))
+
+  (export define-struct))
