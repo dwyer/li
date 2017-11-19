@@ -49,6 +49,7 @@ extern void li_vector_set(li_vector_t *vec, int k, li_object *obj)
 
 const li_type_t li_type_vector = {
     .name = "vector",
+    .size = sizeof(li_vector_t),
     .mark = (li_mark_f *)vector_mark,
     .proc = li_vector,
     .deinit = (li_deinit_f *)deinit,
@@ -60,25 +61,21 @@ const li_type_t li_type_vector = {
 
 extern li_object *li_vector(li_object *lst)
 {
-    li_vector_t *obj;
-    li_object *iter;
-    int k;
-    for (k = 0, iter = lst; iter; k++, iter = li_cdr(iter))
-        ;
-    obj = li_allocate(li_null, 1, sizeof(*obj));
-    li_object_init((li_object *)obj, &li_type_vector);
-    obj->data = li_allocate(li_null, k, sizeof(*obj->data));
-    obj->length = k;
-    for (k = 0, iter = lst; iter; k++, iter = li_cdr(iter))
-        li_vector_set(obj, k, li_car(iter));
-    return (li_object *)obj;
+    li_vector_t *vec;
+    int i = li_length(lst);
+    vec = (li_vector_t *)li_create(&li_type_vector);
+    vec->data = li_allocate(NULL, i, sizeof(*vec->data));
+    vec->length = i;
+    for (i = 0; i < vec->length; ++i, lst = li_cdr(lst))
+        vec->data[i] = li_car(lst);
+    return (li_object *)vec;
 }
 
 extern li_vector_t *li_make_vector(int k, li_object *fill)
 {
-    li_vector_t *vec = li_allocate(li_null, 1, sizeof(*vec));
+    li_vector_t *vec = li_allocate(NULL, 1, sizeof(*vec));
     li_object_init((li_object *)vec, &li_type_vector);
-    vec->data = li_allocate(li_null, k, sizeof(*vec->data));
+    vec->data = li_allocate(NULL, k, sizeof(*vec->data));
     vec->length = k;
     while (--k >= 0)
         li_vector_set(vec, k, fill);
@@ -111,7 +108,7 @@ static li_object *p_make_vector(li_object *args)
     return (li_object *)li_make_vector(k, fill);
 }
 
-/* 
+/*
  * (vector-length vector) procedure
  * Returns the number of elements in vector as an exact integer.
  */

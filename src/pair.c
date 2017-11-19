@@ -165,7 +165,7 @@ static li_object *p_set_cdr(li_object *args) {
 static li_object *p_is_null(li_object *args) {
     li_object *obj;
     li_parse_args(args, "o", &obj);
-    return li_boolean(li_is_null(obj));
+    return li_boolean(obj == NULL);
 }
 
 static li_object *p_is_list(li_object *args) {

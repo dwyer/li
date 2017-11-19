@@ -36,6 +36,9 @@ typedef struct {
 } li_rat_t;
 
 extern li_rat_t li_rat_make(li_bool_t neg, li_nat_t num, li_nat_t den);
+extern li_rat_t li_rat_with_int(int x);
+extern li_rat_t li_rat_with_nat(li_nat_t z);
+
 extern li_bool_t li_rat_is_negative(li_rat_t x);
 extern li_nat_t li_rat_num(li_rat_t x);
 extern li_nat_t li_rat_den(li_rat_t x);

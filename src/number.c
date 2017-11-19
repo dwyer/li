@@ -6,13 +6,21 @@
 
 #define are_exact(x, y) ((x)->exact && (y)->exact)
 
+#define CACHE_SIZE 256
+
+static li_num_t *cache;
+static li_num_t *li_zero;
+static li_num_t *li_one;
+
+union part {
+    li_rat_t exact;
+    li_dec_t inexact;
+};
+
 struct li_num_t {
     LI_OBJ_HEAD;
-    li_bool_t exact;
-    union {
-        li_rat_t exact;
-        li_dec_t inexact;
-    } real;
+    const li_bool_t exact;
+    const union part real;
 };
 
 static void write(li_num_t *num, li_port_t *port)
@@ -30,27 +38,32 @@ static void write(li_num_t *num, li_port_t *port)
 
 const li_type_t li_type_number = {
     .name = "number",
+    .size = sizeof(li_num_t),
     .write = (li_write_f *)write,
     .compare = (li_cmp_f *)li_num_cmp,
 };
 
-static li_num_t *li_num_zero(void)
+static li_num_t *make_num(li_bool_t exactness, li_rat_t *exact, li_dec_t *inexact)
 {
-    li_num_t *n = li_allocate(NULL, 1, sizeof(*n));
-    li_object_init((li_object *)n, &li_type_number);
-    n->exact = 1;
-    n->real.exact = li_rat_make(LI_FALSE, li_nat_with_int(0), li_nat_with_int(1));
+    li_num_t *n = (li_num_t *)li_create(&li_type_number);
+    *(li_bool_t *)&n->exact = exactness;
+    if (exact)
+        (*(union part *)&n->real).exact = *exact;
+    else
+        (*(union part *)&n->real).inexact = *inexact;
     return n;
 }
 
-static li_num_t *li_num_copy(li_num_t *x)
+static li_num_t *make_exact(li_rat_t exact)
 {
-    li_num_t *n = li_num_zero();
-    if ((n->exact = x->exact))
-        n->real.exact = x->real.exact;
-    else
-        n->real.inexact = x->real.inexact;
-    return n;
+    if (!exact.neg && exact.num.data < CACHE_SIZE && exact.den.data == 1)
+        return &cache[exact.num.data];
+    return make_num(LI_TRUE, &exact, NULL);
+}
+
+static li_num_t *make_inexact(li_dec_t inexact)
+{
+    return make_num(LI_FALSE, NULL, &inexact);
 }
 
 extern li_bool_t li_num_is_integer(li_num_t *x)
@@ -72,15 +85,20 @@ extern li_cmp_t li_num_cmp(li_num_t *x, li_num_t *y)
     return z < 0 ?  LI_CMP_LT : LI_CMP_GT;
 }
 
+static li_num_t *li_num_exact_to_inexact(li_num_t *x)
+{
+    if (x->exact)
+        return make_inexact(li_rat_to_dec(x->real.exact));
+    return x;
+}
+
 extern li_num_t *li_num_max(li_num_t *x, li_num_t *y)
 {
     li_bool_t exact = are_exact(x, y);
     if (li_num_cmp(x, y) == LI_CMP_LT)
         x = y;
-    if (!exact && x->exact) {
-        x->real.inexact = li_rat_to_dec(x->real.exact);
-        x->exact = LI_FALSE;
-    }
+    if (!exact && x->exact)
+        return li_num_exact_to_inexact(x);
     return x;
 }
 
@@ -89,19 +107,14 @@ extern li_num_t *li_num_min(li_num_t *x, li_num_t *y)
     li_bool_t exact = are_exact(x, y);
     if (li_num_cmp(x, y) == LI_CMP_GT)
         x = y;
-    if (!exact && x->exact) {
-        x->real.inexact = li_rat_to_dec(x->real.exact);
-        x->exact = LI_FALSE;
-    }
+    if (!exact && x->exact)
+        return li_num_exact_to_inexact(x);
     return x;
 }
 
 extern li_num_t *li_num_with_dec(li_dec_t x)
 {
-    li_num_t *n = li_num_zero();
-    n->exact = LI_FALSE;
-    n->real.inexact = x;
-    return n;
+    return make_inexact(x);
 }
 
 extern size_t li_num_to_chars(li_num_t *x, char *s, size_t n)
@@ -119,18 +132,12 @@ extern size_t li_num_to_chars(li_num_t *x, char *s, size_t n)
 
 extern li_num_t *li_num_with_int(int x)
 {
-    li_num_t *n = li_num_zero();
-    n->exact = LI_TRUE;
-    n->real.exact = li_rat_make(x < 0, li_nat_with_int(x), li_nat_with_int(1));
-    return n;
+    return make_exact(li_rat_with_int(x));
 }
 
 extern li_num_t *li_num_with_rat(li_rat_t x)
 {
-    li_num_t *n = li_num_zero();
-    n->exact = LI_TRUE;
-    n->real.exact = x;
-    return n;
+    return make_exact(x);
 }
 
 extern li_num_t *li_num_with_chars(const char *s, int radix)
@@ -158,60 +165,37 @@ extern li_dec_t li_num_to_dec(li_num_t *x)
 
 extern li_num_t *li_num_add(li_num_t *x, li_num_t *y)
 {
-    x = li_num_copy(x);
-    if (are_exact(x, y)) {
-        x->real.exact = li_rat_add(x->real.exact, y->real.exact);
-    } else {
-        x->real.inexact = li_num_to_dec(x) + li_num_to_dec(y);
-        x->exact = LI_FALSE;
-    }
-    return x;
+    if (are_exact(x, y))
+        return make_exact(li_rat_add(x->real.exact, y->real.exact));
+    return make_inexact(li_num_to_dec(x) + li_num_to_dec(y));
 }
 
 extern li_num_t *li_num_sub(li_num_t *x, li_num_t *y)
 {
-    x = li_num_copy(x);
-    if (are_exact(x, y)) {
-        x->real.exact = li_rat_sub(x->real.exact, y->real.exact);
-    } else {
-        x->real.inexact = li_num_to_dec(x) - li_num_to_dec(y);
-        x->exact = LI_FALSE;
-    }
-    return x;
+    if (are_exact(x, y))
+        return make_exact(li_rat_sub(x->real.exact, y->real.exact));
+    return make_inexact(li_num_to_dec(x) - li_num_to_dec(y));
 }
 
 extern li_num_t *li_num_mul(li_num_t *x, li_num_t *y)
 {
-    x = li_num_copy(x);
-    if (are_exact(x, y)) {
-        x->real.exact = li_rat_mul(x->real.exact, y->real.exact);
-    } else {
-        x->real.inexact = li_num_to_dec(x) * li_num_to_dec(y);
-        x->exact = LI_FALSE;
-    }
-    return x;
+    if (are_exact(x, y))
+        return make_exact(li_rat_mul(x->real.exact, y->real.exact));
+    return make_inexact(li_num_to_dec(x) * li_num_to_dec(y));
 }
 
 extern li_num_t *li_num_div(li_num_t *x, li_num_t *y)
 {
-    x = li_num_copy(x);
-    if (are_exact(x, y)) {
-        x->real.exact = li_rat_div(x->real.exact, y->real.exact);
-    } else {
-        x->real.inexact = li_num_to_dec(x) / li_num_to_dec(y);
-        x->exact = LI_FALSE;
-    }
-    return x;
+    if (are_exact(x, y))
+        return make_exact(li_rat_div(x->real.exact, y->real.exact));
+    return make_inexact(li_num_to_dec(x) / li_num_to_dec(y));
 }
 
 extern li_num_t *li_num_neg(li_num_t *x)
 {
-    x = li_num_copy(x);
     if (li_num_is_exact(x))
-        x->real.exact = li_rat_neg(x->real.exact);
-    else
-        x->real.inexact = -x->real.inexact;
-    return x;
+        return make_exact(li_rat_neg(x->real.exact));
+    return make_inexact(-x->real.inexact);
 }
 
 /*
@@ -319,7 +303,7 @@ static li_object *p_min(li_object *args) {
 static li_object *p_add(li_object *args) {
     li_num_t *x, *y;
     if (!args)
-        return (li_object *)li_num_with_int(0);
+        return (li_object *)li_zero;
     li_parse_args(args, "n.", &x, &args);
     while (args) {
         li_parse_args(args, "n.", &y, &args);
@@ -343,7 +327,7 @@ static li_object *p_sub(li_object *args) {
 static li_object *p_mul(li_object *args) {
     li_num_t *x, *y;
     if (!args)
-        return (li_object *)li_num_with_int(1);
+        return (li_object *)li_one;
     li_parse_args(args, "n.", &x, &args);
     while (args) {
         li_parse_args(args, "n.", &y, &args);
@@ -356,7 +340,7 @@ static li_object *p_div(li_object *args) {
     li_num_t *x, *y;
     li_parse_args(args, "n.", &x, &args);
     if (!args)
-        x = li_num_div(li_num_with_int(1), x);
+        x = li_num_div(li_one, x);
     while (args) {
         li_parse_args(args, "n.", &y, &args);
         x = li_num_div(x, y);
@@ -423,7 +407,7 @@ static li_int_t li_int_lcm(li_int_t a, li_int_t b)
 static li_object *p_gcd(li_object *args) {
     li_int_t a, b; /* TODO: support li_num_t */
     if (!args)
-        return (li_object *)li_num_with_int(0);
+        return (li_object *)li_zero;
     li_parse_args(args, "I.", &a, &args);
     while (args) {
         li_parse_args(args, "I.", &b, &args);
@@ -435,7 +419,7 @@ static li_object *p_gcd(li_object *args) {
 static li_object *p_lcm(li_object *args) {
     li_int_t a, b; /* TODO: support li_num_t */
     if (!args)
-        return (li_object *)li_num_with_int(1);
+        return (li_object *)li_one;
     li_parse_args(args, "I.", &a, &args);
     while (args) {
         li_parse_args(args, "I.", &b, &args);
@@ -449,8 +433,7 @@ static li_object *p_numerator(li_object *args) {
     li_parse_args(args, "n", &q);
     if (!q->exact)
         li_error_fmt("not exact: ~a", args); /* TODO: support inexact numbers */
-    q->real.exact.den = li_nat_with_int(1);
-    return (li_object *)q;
+    return (li_object *)make_exact(li_rat_with_nat(q->real.exact.num));
 }
 
 static li_object *p_denominator(li_object *args) {
@@ -458,10 +441,7 @@ static li_object *p_denominator(li_object *args) {
     li_parse_args(args, "n", &q);
     if (!q->exact)
         li_error_fmt("not exact: ~a", args); /* TODO: support inexact numbers */
-    q->real.exact.neg = LI_FALSE;
-    q->real.exact.num = q->real.exact.den;
-    q->real.exact.den = li_nat_with_int(1);
-    return (li_object *)q;
+    return (li_object *)make_exact(li_rat_with_nat(q->real.exact.den));
 }
 
 static li_object *p_floor(li_object *args) {
@@ -563,11 +543,7 @@ static li_object *p_expt(li_object *args) {
 static li_object *p_inexact(li_object *args) {
     li_num_t *z;
     li_parse_args(args, "n", &z);
-    if (!z->exact)
-        return li_car(args);
-    z->real.inexact = li_rat_to_dec(z->real.exact);
-    z->exact = LI_FALSE;
-    return (li_object *)z;
+    return (li_object *)li_num_exact_to_inexact(z);
 }
 
 static li_object *p_number_to_string(li_object *args) {
@@ -641,3 +617,266 @@ extern void li_define_number_functions(li_env_t *env)
     lilib_defproc(env, "number->string", p_number_to_string);
     lilib_defproc(env, "string->number", p_string_to_number);
 }
+
+static li_num_t _cache[CACHE_SIZE] = {
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=0}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=1}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=2}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=3}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=4}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=5}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=6}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=7}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=8}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=9}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=10}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=11}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=12}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=13}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=14}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=15}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=16}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=17}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=18}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=19}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=20}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=21}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=22}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=23}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=24}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=25}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=26}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=27}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=28}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=29}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=30}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=31}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=32}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=33}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=34}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=35}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=36}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=37}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=38}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=39}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=40}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=41}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=42}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=43}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=44}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=45}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=46}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=47}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=48}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=49}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=50}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=51}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=52}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=53}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=54}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=55}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=56}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=57}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=58}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=59}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=60}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=61}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=62}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=63}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=64}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=65}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=66}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=67}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=68}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=69}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=70}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=71}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=72}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=73}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=74}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=75}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=76}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=77}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=78}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=79}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=80}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=81}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=82}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=83}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=84}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=85}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=86}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=87}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=88}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=89}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=90}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=91}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=92}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=93}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=94}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=95}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=96}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=97}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=98}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=99}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=100}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=101}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=102}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=103}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=104}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=105}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=106}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=107}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=108}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=109}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=110}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=111}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=112}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=113}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=114}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=115}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=116}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=117}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=118}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=119}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=120}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=121}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=122}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=123}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=124}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=125}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=126}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=127}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=128}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=129}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=130}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=131}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=132}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=133}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=134}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=135}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=136}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=137}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=138}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=139}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=140}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=141}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=142}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=143}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=144}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=145}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=146}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=147}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=148}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=149}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=150}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=151}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=152}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=153}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=154}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=155}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=156}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=157}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=158}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=159}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=160}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=161}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=162}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=163}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=164}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=165}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=166}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=167}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=168}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=169}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=170}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=171}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=172}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=173}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=174}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=175}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=176}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=177}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=178}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=179}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=180}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=181}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=182}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=183}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=184}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=185}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=186}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=187}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=188}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=189}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=190}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=191}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=192}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=193}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=194}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=195}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=196}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=197}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=198}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=199}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=200}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=201}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=202}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=203}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=204}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=205}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=206}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=207}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=208}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=209}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=210}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=211}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=212}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=213}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=214}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=215}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=216}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=217}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=218}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=219}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=220}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=221}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=222}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=223}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=224}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=225}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=226}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=227}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=228}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=229}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=230}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=231}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=232}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=233}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=234}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=235}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=236}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=237}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=238}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=239}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=240}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=241}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=242}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=243}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=244}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=245}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=246}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=247}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=248}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=249}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=250}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=251}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=252}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=253}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=254}, .den={.data=1}}}},
+    {.type=&li_type_number, .exact=1, .real={.exact={.num={.data=255}, .den={.data=1}}}},
+};
+
+static li_num_t *cache = _cache;
+static li_num_t *li_zero = &_cache[0];
+static li_num_t *li_one = &_cache[1];

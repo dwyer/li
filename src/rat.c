@@ -31,6 +31,16 @@ extern li_rat_t li_rat_make(li_bool_t neg, li_nat_t num, li_nat_t den)
     return li_rat_norm(x);
 }
 
+extern li_rat_t li_rat_with_nat(li_nat_t z)
+{
+    return li_rat_make(LI_FALSE, z, li_nat_with_int(1));
+}
+
+extern li_rat_t li_rat_with_int(int x)
+{
+    return li_rat_make(x < 0, li_nat_with_int(abs(x)), li_nat_with_int(1));
+}
+
 extern li_rat_t li_rat_parse(const char *s)
 {
     li_rat_t x;

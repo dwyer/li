@@ -29,6 +29,7 @@ static li_cmp_t compare(li_object *obj1, li_object *obj2)
 
 const li_type_t li_type_character = {
     .name = "character",
+    .size = sizeof(li_character_obj_t *),
     .write = (li_write_f *)write,
     .display = (li_write_f *)display,
     .compare = compare,
@@ -36,8 +37,7 @@ const li_type_t li_type_character = {
 
 extern li_object *li_character(li_character_t c)
 {
-    li_character_obj_t *obj = li_allocate(li_null, 1, sizeof(*obj));
-    li_object_init((li_object *)obj, &li_type_character);
+    li_character_obj_t *obj = (li_character_obj_t *)li_create(&li_type_character);
     obj->character = c;
     return (li_object *)obj;
 }
