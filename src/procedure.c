@@ -158,8 +158,7 @@ extern void li_define_procedure_functions(li_env_t *env)
 }
 
 #define li_is_self_evaluating(expr)  !(li_is_pair(expr) || li_is_symbol(expr))
-#define quote(expr) \
-    li_cons((li_object *)li_symbol("quote"), li_cons(expr, NULL));
+#define quote(expr)         li_cons(li_symbol("quote"), li_cons(expr, NULL))
 
 static li_object *eval_quasiquote(li_object *expr, li_env_t *env);
 static li_object *list_of_values(li_object *exprs, li_env_t *env);
@@ -310,12 +309,13 @@ extern li_object *li_eval(li_object *expr, li_env_t *env)
                     expr = li_proc_prim(proc)(args);
                     done = 1;
                 } else {
-                    env = li_env_extend(
-                            li_proc_env(proc),
-                            li_proc_vars(proc),
+                    env = li_env_extend(li_proc_env(proc), li_proc_vars(proc),
                             args);
                     expr = li_proc_body(proc);
-                    expr = li_cons(li_symbol("begin"), expr);
+                    if (expr && !li_cdr(expr))
+                        expr = li_car(expr);
+                    else if (expr && li_cdr(expr))
+                        expr = li_cons(li_symbol("begin"), expr);
                 }
             } else if (li_is_macro(proc)) {
                 if (li_macro_primitive(proc)) {
@@ -350,9 +350,9 @@ extern li_object *li_macro_expand(li_macro_t *mac, li_object *expr, li_env_t *en
     li_object *args = NULL;
     switch (li_length(li_proc_vars(mac->proc))) {
     case 3:
-        args = li_cons((li_object *)mac->proc->compound.env, args);
+        args = li_cons(mac->proc->compound.env, args);
     case 2:
-        args = li_cons((li_object *)env, args);
+        args = li_cons(env, args);
     case 1:
         args = li_cons(expr, args);
         break;

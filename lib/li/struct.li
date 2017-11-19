@@ -7,22 +7,23 @@
       (apply (lambda (name fields)
                `(,define-record-type
                   ,name
-                  (,name ,@fields)
+                  (,name . ,fields)
                   ,(string->symbol (string-append (symbol->string name) "?"))
-                  ,@(map (lambda (field)
-                           `(,field
-                              ,(string->symbol
-                                 (string-append
-                                   (symbol->string name)
-                                   "-"
-                                   (symbol->string field)))
-                              ,(string->symbol
-                                 (string-append
-                                   (symbol->string name)
-                                   "-"
-                                   (symbol->string field)
-                                   "-set!"))))
-                         fields)))
+                  .
+                  ,(map (lambda (field)
+                            `(,field
+                               ,(string->symbol
+                                  (string-append
+                                    (symbol->string name)
+                                    "-"
+                                    (symbol->string field)))
+                               ,(string->symbol
+                                  (string-append
+                                    (symbol->string name)
+                                    "-"
+                                    (symbol->string field)
+                                    "-set!"))))
+                          fields)))
 
              (cdr x))))
 

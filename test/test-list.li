@@ -5,11 +5,11 @@
 
   (defmacro (test . clauses)
     `(begin
-       ,@(map (lambda (clause)
-                (let ((expr (car clause))
-                      (res (caddr clause)))
-                  `(assert (equal? ,expr ',res))))
-              clauses)))
+       . ,(map (lambda (clause)
+                 (let ((expr (car clause))
+                       (res (caddr clause)))
+                   `(assert (equal? ,expr ',res))))
+               clauses)))
 
   (define (identity x) x)
   (define e '((a 1) (b 2) (c 3)))

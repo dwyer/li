@@ -7,7 +7,7 @@
   (import (li struct))
   (import (scheme process-context)) ; exit
 
-  (struct syntax (e scopes))
+  ; (struct syntax (e scopes))
   (define identifier? syntax?)
 
   (struct scope ())
@@ -183,7 +183,7 @@
     (define exp-body (map (lambda (e)
                             (expand (add-scope e sc) body-env))
                           body))
-    `(,lambda-id ,ids ,@exp-body))
+    `(,lambda-id ,ids . ,exp-body))
 
   (define (expand-let-syntax s env)
     ; (match-define `(,let-syntax-id ((,lhs-id ,rhs)) ,body) s)
@@ -210,7 +210,7 @@
           ((lambda)
            (define ids (cadr s))
            (define body (cddr s))
-           `(lambda ,(map resolve ids) ,@(map compile body)))
+           `(lambda ,(map resolve ids) . ,(map compile body)))
           ((quote)
            (define datum (second s))
            `(quote ,(syntax->datum datum)))

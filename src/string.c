@@ -243,7 +243,7 @@ static li_object *p_string_split(li_object *args)
         for (i = 0; i < delim_len; ++i)
             if (li_string_ref(str, end + i) != li_string_ref(delim, i))
                 goto nomatch;
-        res = li_cons((li_object *)li_string_copy(str, start, end), res);
+        res = li_cons(li_string_copy(str, start, end), res);
         end += i;
         start = end;
         if (!--splits)
@@ -252,7 +252,7 @@ static li_object *p_string_split(li_object *args)
 nomatch:
         end++;
     }
-    res = li_cons((li_object *)li_string_copy(str, start, -1), res);
+    res = li_cons(li_string_copy(str, start, -1), res);
     return li_list_reverse(res);
 }
 

@@ -14,7 +14,7 @@
                                          (set! exports (cons decl exports))
                                          (lp (cdr decls)))
                                        (cons decl (lp (cdr decls)))))))
-                             ,@exports
+                             . ,exports
                              )))
                  (print res)
                  res)))

@@ -29,7 +29,8 @@
       res))
 
   (define (bind pattern expr literals bindings)
-    (cond ((symbol? pattern)
+    (cond ((eq? pattern '_) bindings)
+          ((symbol? pattern)
            (if (memq pattern literals)
              (if (eq? pattern expr)
                bindings

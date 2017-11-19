@@ -17,19 +17,19 @@
           (vars (cdr sig))
           (i 0))
       `(begin
-         (define (,(append->string name "-make") ,@vars)
+         (define (,(append->string name "-make") . ,vars)
            ,@body
-           (vector ',name ,@vars))
+           (vector ',name . ,vars))
          (define (,(append->string name "?") obj)
            (and (vector? obj) (= (length obj) ,(length sig)) (eq? (ref obj 0) ',name)))
-         ,@(map (lambda (var)
-                  (set! i (+ i 1))
-                  `(begin
-                     (define (,(append->string name "-" var) ,name)
-                       (ref ,name ,i))
-                     (define (,(append->string name "-set-" var "!") ,name val)
-                       (set ,name ,i val))))
-                vars))))
+         . ,(map (lambda (var)
+                   (set! i (+ i 1))
+                   `(begin
+                      (define (,(append->string name "-" var) ,name)
+                        (ref ,name ,i))
+                      (define (,(append->string name "-set-" var "!") ,name val)
+                        (set ,name ,i val))))
+                 vars))))
 
   (defmacro (define-messenger sig . body)
     (let ((type (car sig))
@@ -38,7 +38,7 @@
             (msg (random-symbol))
             (args (random-symbol)))
         `(begin
-           (define (,make ,@vars)
+           (define (,make . ,vars)
              ,@body
              (lambda (,msg . ,args)
                (case ,msg

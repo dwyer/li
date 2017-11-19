@@ -11,7 +11,7 @@
           `(define-syntax ,name
              (lambda (,expr-name)
                (apply (lambda ,args
-                        ,@body)
+                        . ,body)
                       (cdr ,expr-name))))))))
 
   (export defmacro))

@@ -11,8 +11,7 @@
             (args-name (string->symbol ";args")))
         (define (make-clause name args body)
           `((,name)
-            (apply (lambda ,args
-                     ,@body)
+            (apply (lambda ,args . ,body)
                    ,args-name)))
         `(define ,cons-sig
            (define (self ,msg-name . ,args-name)

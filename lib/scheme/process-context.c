@@ -27,9 +27,9 @@ static li_object *p_get_environment_variables(li_object *args)
     li_parse_args(args, "");
     while (*sp) {
         if (head)
-            tail = li_set_cdr(tail, li_cons((li_object *)li_string_make(*sp), NULL));
+            tail = li_set_cdr(tail, li_cons(li_string_make(*sp), NULL));
         else
-            head = tail = li_cons((li_object *)li_string_make(*sp), NULL);
+            head = tail = li_cons(li_string_make(*sp), NULL);
         sp++;
     }
     return head;
