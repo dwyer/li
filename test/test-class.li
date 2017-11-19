@@ -134,7 +134,7 @@
                               ((mat (map (lambda (row)
                                            (let loop ((row row) (i 0))
                                              (if (null? row)
-                                               null
+                                               '()
                                                (let ((tail (loop (cdr row)
                                                                  (+ i 1))))
                                                  (if (= i j)

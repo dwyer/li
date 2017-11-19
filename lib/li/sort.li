@@ -23,8 +23,8 @@
 
   (define (*split* lst)
     (let loop ((lst lst)
-               (a null)
-               (b null))
+               (a '())
+               (b '()))
       (if (null? lst)
         (values a b)
         (loop (cdr lst)

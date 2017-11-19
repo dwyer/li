@@ -14,7 +14,7 @@
 
   (define (get-vals bindings var)
     (if (null? bindings)
-      null
+      '()
       (let ((binding (car bindings))
             (vals (get-vals (cdr bindings) var)))
         (if (eq? var (binding-var binding))
@@ -43,14 +43,14 @@
           ((pair? pattern)
            (if (ellipsis? pattern)
              (let ((a (map (lambda (expr)
-                             (bind (car pattern) expr literals null))
+                             (bind (car pattern) expr literals '()))
                            expr)))
                (if (every (lambda (x) x) a)
                  (append (apply append a) bindings)
                  #f))
              (if (pair? expr)
-               (let ((a (bind (car pattern) (car expr) literals null))
-                     (b (bind (cdr pattern) (cdr expr) literals null)))
+               (let ((a (bind (car pattern) (car expr) literals '()))
+                     (b (bind (cdr pattern) (cdr expr) literals '())))
                  (if (and a b)
                    (append a b bindings)
                    #f))
@@ -58,7 +58,7 @@
           (else (error "unknown" pattern expr))))
 
   (define (match? pattern expr literals)
-    (bind pattern expr literals null))
+    (bind pattern expr literals '()))
 
   (define (expand template bindings)
     (let loop ((template template) (many? #f))

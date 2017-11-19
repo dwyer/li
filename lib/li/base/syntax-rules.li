@@ -11,7 +11,7 @@
 
   (define-syntax let-syntax
     (lambda (x)
-      (syntax-case x null
+      (syntax-case x ()
                    ((_ ((var val) ...) e0 e1 ...)
                     (begin
                       (begin (define-syntax var val) ...)

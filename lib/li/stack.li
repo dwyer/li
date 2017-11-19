@@ -1,7 +1,7 @@
 (let ()
 
   (define (make-stack)
-    (let ((xs null))
+    (let ((xs '()))
       (lambda (ys)
         (if ys
           (set! xs ys)

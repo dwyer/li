@@ -1,6 +1,6 @@
 (let ()
   (define (hash-table comparator)
-    (vector 'hash-table comparator null))
+    (vector 'hash-table comparator '()))
 
   (define (hash-table? obj)
     (and (vector obj) (= (length obj) 3) (eq? (ref obj 0) 'hash-table)))

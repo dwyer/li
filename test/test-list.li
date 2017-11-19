@@ -86,7 +86,7 @@
         ((fold (lambda (s max-len) (max max-len (length s))) 0
                '("the" "quick" "brown" "fox" "jumps" "over" "the" "lazy" "dog"))
          => 5)
-        ((fold cons* null '(a b c) '(1 2 3 4 5)) => (c 3 b 2 a 1))
+        ((fold cons* '() '(a b c) '(1 2 3 4 5)) => (c 3 b 2 a 1))
         ((fold-right cons '() '(1 2 3 4)) => (1 2 3 4))
         ((fold-right (lambda (x l) (if (even? x) (cons x l) l)) '()
                      '(1 2 3 4 5 6))

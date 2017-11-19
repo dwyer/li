@@ -18,14 +18,14 @@
              (case ,msg-name
                ,@(let loop ((cons-args cons-args))
                    (if (null? cons-args)
-                     null
+                     '()
                      (let* ((rest (and (pair? cons-args)
                                        (loop (cdr cons-args))))
                             (var (if rest
                                    (car cons-args)
                                    cons-args)))
-                       (cons (make-clause var null (list var))
-                             (or rest null)))))
+                       (cons (make-clause var '() (list var))
+                             (or rest '())))))
                ,@(map (lambda (method)
                         (let ((sig (car method))
                               (body (cdr method)))

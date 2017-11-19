@@ -1,12 +1,12 @@
 (define-syntax define-library
   (lambda (expr env)
     (apply (lambda (name . decls)
-             (let ((exports null))
+             (let ((exports '()))
                (let ((res
                        `(let ()
                              ,@(let lp ((decls decls))
                                  (if (null? decls)
-                                   null
+                                   '()
                                    (let ((decl (car decls)))
                                      (if (and (pair? decl)
                                               (eq? (car decl) 'export))

@@ -10,7 +10,7 @@
   (define (identifier? o) (symbol? o))
 
   (define (strip-syntactic-closures source) source)
-  (define *features* null)
+  (define *features* '())
   (define length* length)
   (define vector-set! set)
 

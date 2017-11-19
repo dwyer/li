@@ -20,7 +20,7 @@
   ;   (define (stream-filter? p? s)
   ;     (delay-force
   ;       (if (null? (force s))
-  ;         (delay null)
+  ;         (delay '())
   ;         (let ((h (car (force s)))
   ;               (t (cdr (force s))))
   ;           (if (p? h)
@@ -45,4 +45,4 @@
   ;(assert equal? (+ (delay (* 3 7)) 13) 34)
   ;(assert equal? (+ (delay (* 3 7)) 13) 34)
   ;(assert equal? (+ (delay (* 3 7)) 13) 34)
-  null)
+  '())

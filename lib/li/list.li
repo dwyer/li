@@ -6,7 +6,7 @@
     ((e)
      (range 0 e))
     ((b e)
-     (do ((r null (cons e r))
+     (do ((r '() (cons e r))
           (e (- e 1) (- e 1)))
        ((< e b) r)))))
 
@@ -14,7 +14,7 @@
   (cons a d))
 
 (define (cons* . xs)
-  (cond ((null? xs) null)
+  (cond ((null? xs) '())
         ((null? (cdr xs)) (car xs))
         (else (cons (car xs) (apply cons* (cdr xs))))))
 
@@ -22,18 +22,18 @@
   (let ((fill (if (null? args) #f (car args))))
     (let loop ((n n))
       (if (zero? n)
-        null
+        '()
         (cons fill (loop (- n 1)))))))
 
 (define (list-tabulate n init-proc)
   (let loop ((i 0))
     (if (< i n)
       (cons (init-proc i) (loop (+ i 1)))
-      null)))
+      '())))
 
 (define (list-copy lst)
   (if (null? lst)
-    null
+    '()
     (cons (car lst) (list-copy (cdr lst)))))
 
 (define (circular-list elt . elts)
@@ -51,11 +51,11 @@
       ((count start step)
        (let loop ((count count) (start start))
          (if (zero? count)
-           null
+           '()
            (cons start (loop (- count 1) (+ start step)))))))))
 
 (define (*list-type* x)
-  (let loop ((x x) (pairs null))
+  (let loop ((x x) (pairs '()))
     (cond ((null? x) 'proper)
           ((not (pair? x)) 'dotted)
           ((memq x pairs) 'circular)
@@ -100,7 +100,7 @@
 
 (define (take lst i)
   (assert (positive? i))
-  (cond ((zero? i) null)
+  (cond ((zero? i) '())
         ((null? lst) #f)
         (else (let ((rest (take (cdr lst) (- i 1))))
                 (if rest
@@ -133,7 +133,7 @@
     (begin
       (let loop ((lst lst) (k k))
         (if (= k 1)
-          (set-cdr! lst null)
+          (set-cdr! lst '())
           (loop (cdr lst) (- k 1))))
       lst)))
 
@@ -159,7 +159,7 @@
   (apply append lol))
 
 (define (reverse lst)
-  (fold cons null lst))
+  (fold cons '() lst))
 
 (define (append-reverse rev-head tail)
   (fold cons tail rev-head))
@@ -174,7 +174,7 @@
                                  (ref x i))
                                lists)
                           (loop (+ i 1)))
-                    null))))
+                    '()))))
 
 (define (unzip1 lists) (map car lists))
 (define (unzip2 lists) (*unzip* 2 lists))
@@ -228,7 +228,7 @@
 
 (define (unfold p f g seed . rest)
   (let ((tail-gen (case (length rest)
-                    ((0) (lambda (x) null))
+                    ((0) (lambda (x) '()))
                     ((1) (car rest))
                     (else (error "wrong number of args")))))
     (if (p seed)
@@ -238,7 +238,7 @@
 
 (define (filter-map f . lst)
   (if (any null? lst)
-    null
+    '()
     (let ((x (apply f (map car lst)))
           (tail (apply filter-map f (map cdr lst))))
       (if x
@@ -248,7 +248,7 @@
 (define (filter pred lst)
   (let loop ((lst lst))
     (if (null? lst)
-      null
+      '()
       (let ((x (car lst))
             (tail (loop (cdr lst))))
         (if (pred x)
@@ -256,7 +256,7 @@
           tail)))))
 
 (define (partition pred lst)
-  (let loop ((lst lst) (pos null) (neg null))
+  (let loop ((lst lst) (pos '()) (neg '()))
     (if (null? lst)
       (values pos neg)
       (let ((x (car lst)))
@@ -279,11 +279,11 @@
 (define (take-while pred lst)
   (if (or (null? lst)
           (not (pred (car lst))))
-    null
+    '()
     (cons (car lst) (take-while pred (cdr lst)))))
 
 (define (drop-while pred lst)
-  (cond ((null? lst) null)
+  (cond ((null? lst) '())
         ((pred (car lst)) (drop-while pred (cdr lst)))
         (else lst)))
 
@@ -329,7 +329,7 @@
      (delete x lst equal?))
     ((x lst =)
      (if (null? lst)
-       null
+       '()
        (let ((y (car lst))
              (zs (delete x (cdr lst) =)))
          (if (= x y)
@@ -342,7 +342,7 @@
      (delete-duplicates lst equal?))
     ((lst =)
      (if (null? lst)
-       null
+       '()
        (let ((x (car lst)))
          (cons x (delete-duplicates (delete x (cdr lst) =) =)))))))
 
@@ -360,7 +360,7 @@
     ((key alist =)
      (let loop ((alist alist))
        (if (null? alist)
-         null
+         '()
          (let ((pair (car alist))
                (tail (loop (cdr alist))))
            (if (= key (car pair))

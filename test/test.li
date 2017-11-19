@@ -344,12 +344,12 @@
   (define y x)
   (assert equal? y '(a b c))
   (assert eq? (list? y) #t)
-  (assert eq? (set-cdr! x 4) null)
+  (assert eq? (set-cdr! x 4) '())
   (assert equal? x '(a . 4))
   (assert eq? (eqv? x y) #t)
   (assert equal? y '(a . 4))
   (assert eq? (list? y) #f)
-  ;(assert (equal? (set-cdr! x x) null)) ; TODO: fix inf loop
+  ;(assert (equal? (set-cdr! x x) '())) ; TODO: fix inf loop
   (assert eq? (list? x) #f))
 (assert eq? (pair? '(a . b)) #t)
 (assert eq? (pair? '(a b c)) #t)
@@ -370,7 +370,7 @@
 (let ()
   (define (f) (list 'not-a-constant-list))
   (define (g) '(constant-list))
-  (assert (equal? (set-car! (f) 3) null))
+  (assert (equal? (set-car! (f) 3) '()))
   ;(assert (equal? (set-car! (g) 3) error))
   )
 (assert eq? (list? '(a b c)) #t)

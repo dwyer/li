@@ -39,7 +39,7 @@
                 (let ((env (bind-iter (cdr expr) (cdr patt) env)))
                   (and env (bind-iter (car expr) (car patt) env))))))
 
-      (lambda (expr patt) (bind-iter expr patt null))))
+      (lambda (expr patt) (bind-iter expr patt '()))))
 
   (define (*expand* body bindings)
     (cond ((symbol? body)

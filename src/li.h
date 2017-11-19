@@ -214,9 +214,6 @@ struct li_type_obj_t {
     const li_type_t *val;
 };
 
-/* The all important null object. */
-#define li_null                 ((li_object *)NULL)
-
 /*
  * Creating, destroying and garbage collecting objects.
  */
@@ -268,7 +265,6 @@ extern li_object *li_true;
 
 /** Predicates */
 #define li_is_eq(obj1, obj2)            ((void *)(obj1) == (void *)(obj2))
-#define li_is_null(obj)                 li_is_eq((obj), li_null)
 #define li_not(obj)                     li_is_eq((obj), li_false)
 extern li_bool_t li_is_equal(li_object *obj1, li_object *obj2);
 extern li_bool_t li_is_eqv(li_object *obj1, li_object *obj2);

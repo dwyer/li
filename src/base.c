@@ -622,8 +622,6 @@ static li_object *p_isa(li_object *args)
 
 extern void li_setup_environment(li_env_t *env)
 {
-    lilib_defvar(env, "null", li_null);
-
     lilib_defmac(env, "and",            m_and);
     lilib_defmac(env, "assert",         m_assert);
     lilib_defmac(env, "begin",          m_begin);

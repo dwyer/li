@@ -5,7 +5,7 @@
   (import match)
 
   (let ((xs (iota 100))
-        (ys null))
+        (ys '()))
     (for x in xs (set! ys (cons (* x x) ys)))
     (assert (equal? (reverse xs) (gen (sqrt y) for y in ys))))
 

@@ -77,7 +77,7 @@
       (let* ((buffer-size 8092)
              (buffers (let loop ((buffer (socket-recv sock buffer-size)))
                         (if (= (length buffer) 0)
-                          (cons buffer null)
+                          (cons buffer '())
                           (cons buffer (loop (socket-recv sock buffer-size)))))))
         (if (= (http-request-version req) *http-version-1.1*)
           (socket-shutdown sock *shut-rdwr*))

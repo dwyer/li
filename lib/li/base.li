@@ -87,7 +87,7 @@
                                   ,(append `(let ,(let loop ((formals formals)
                                                              (count 1))
                                                     (if (null? formals)
-                                                      null
+                                                      '()
                                                       (cons `(,(car formals)
                                                                (ref init ,count))
                                                             (loop (cdr formals)

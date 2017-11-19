@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     li_object *args;
     int i, ret = 0;
     li_setup_environment(env);
-    for (args = li_null, i = argc - 1; i; i--)
+    for (args = NULL, i = argc - 1; i; i--)
         args = li_cons(li_string_make(argv[i]), args);
     li_env_append(env, ARGV_SYMBOL, args);
     ret = argc == 1
