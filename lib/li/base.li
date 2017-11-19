@@ -66,6 +66,11 @@
                (iter (+ k 1)))
               (else sub)))))
 
+  ;; TRANSFORMERS
+
+  (define ((%args-transformer f) x)
+    (apply f (cdr x)))
+
   ;; VALUES
 
   (define (values x . xs)
@@ -74,64 +79,73 @@
       (list->vector `(values ,x . ,xs))))
 
   (define-syntax let-values
-    (lambda (x)
-      (apply (lambda (bindings . body)
-               (car `,(map (lambda (binding)
-                             (apply (lambda (formals init)
-                                      `(let ((init ,init))
-                                         ,(append `(let ,(let loop ((formals formals)
-                                                                    (count 1))
-                                                           (if (null? formals)
-                                                             null
-                                                             (cons `(,(car formals)
-                                                                      (ref init ,count))
-                                                                   (loop (cdr formals)
-                                                                         (+ count 1))))))
-                                                  body)))
-                                    binding))
-                           bindings)))
-             (cdr x))))
+    (%args-transformer
+      (lambda (bindings . body)
+        (car `,(map (lambda (binding)
+                      (apply (lambda (formals init)
+                               `(let ((init ,init))
+                                  ,(append `(let ,(let loop ((formals formals)
+                                                             (count 1))
+                                                    (if (null? formals)
+                                                      null
+                                                      (cons `(,(car formals)
+                                                               (ref init ,count))
+                                                            (loop (cdr formals)
+                                                                  (+ count 1))))))
+                                           body)))
+                             binding))
+                    bindings)))))
 
   (export values let-values)
 
   ;; RECORD TYPES
 
   (define-syntax define-record-type
-    (lambda (x)
-      (apply
-        (lambda (name constructor pred . fields)
-          (let ((constructor-name (car constructor))
-                (field-names (cdr constructor)))
-            `(begin
-               (define ,constructor
-                 (vector ',name . ,field-names))
-               (define (,pred obj)
-                 (and (vector? obj)
-                      (= (length obj) ,(length constructor))
-                      (eq? (ref obj 0) ',name)))
-               .
-               ,(map
-                  (lambda (field)
-                    (let ((field-name (car field))
-                          (accessor-name (cadr field))
-                          (modifier-name
-                            (case (length (cddr field))
-                              ((0) #f)
-                              ((1) (car (cddr field)))
-                              (else (error
-                                      "define-record-type: too many params to field"
-                                      field)))))
-                      (let ((i (let lp ((lst field-names) (i 1))
-                                 (cond ((null? lst) (error "invalid field name" field-name))
-                                       ((eq? (car lst) field-name) i)
-                                       (else (lp (cdr lst) (+ i 1)))))))
-                        `(begin
-                           (define (,accessor-name record)
-                             (ref record ,i))
-                           ,(if modifier-name
-                              `(define (,modifier-name record value)
-                                 (vector-set! record ,i value)))))))
-                  fields))))
-        (cdr x))))
+    (%args-transformer
+      (lambda (name constructor pred . fields)
+        (let ((constructor-name (car constructor))
+              (field-names (cdr constructor)))
+          `(begin
+             (define ,constructor
+               (vector ',name . ,field-names))
+             (define (,pred obj)
+               (and (vector? obj)
+                    (= (length obj) ,(length constructor))
+                    (eq? (ref obj 0) ',name)))
+             .
+             ,(map
+                (lambda (field)
+                  (let ((field-name (car field))
+                        (accessor-name (cadr field))
+                        (modifier-name
+                          (case (length (cddr field))
+                            ((0) #f)
+                            ((1) (car (cddr field)))
+                            (else (error
+                                    "define-record-type: too many params to field"
+                                    field)))))
+                    (let ((i (let lp ((lst field-names) (i 1))
+                               (cond ((null? lst) (error "invalid field name" field-name))
+                                     ((eq? (car lst) field-name) i)
+                                     (else (lp (cdr lst) (+ i 1)))))))
+                      `(begin
+                         (define (,accessor-name record)
+                           (ref record ,i))
+                         ,(if modifier-name
+                            `(define (,modifier-name record value)
+                               (vector-set! record ,i value)))))))
+                fields))))))
 
-  (export define-record-type))
+  (export define-record-type)
+
+  (define-syntax when
+    (%args-transformer
+      (lambda (test expr . expr*)
+        `(,if ,test (,begin ,expr . ,expr*)))))
+
+  (define-syntax unless
+    (%args-transformer
+      (lambda (test expr . expr*)
+        `(,if (,not ,test) (,begin ,expr . ,expr*)))))
+
+  (export when unless))
