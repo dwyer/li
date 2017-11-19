@@ -96,11 +96,16 @@ extern void li_import(li_object *set, li_env_t *env)
     if (li_import_try(name, ".", env))
         return;
     if ((lpath = getenv("LD_LIBRARY_PATH"))) {
-        snprintf(lpath, PATH_MAX-1, lpath, ":");
+        snprintf(lpath, PATH_MAX, lpath, ":");
         for (dir = strtok(lpath, ":"); dir; dir = strtok(NULL, ":")) {
             if (li_import_try(name, dir, env))
                 return;
         }
+    }
+    lpath = "/usr/local/lib/li";
+    for (dir = strtok(lpath, ":"); dir; dir = strtok(NULL, ":")) {
+        if (li_import_try(name, dir, env))
+            return;
     }
     /* TODO load from standard libraries */
 error:

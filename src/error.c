@@ -5,31 +5,31 @@
 
 static jmp_buf buf;
 
-static struct {
-    li_object **exprs;
-    int cap;
-    int siz;
-} trace = { NULL, 0, 0 };
+static li_object *stack;
 
-void li_stack_trace_push(li_object *expr)
+extern void li_stack_trace_push(li_object *expr, li_env_t *env)
 {
     /* TODO: Free stack trace. */
-    if (!trace.exprs)
-        trace.exprs = li_allocate(NULL, trace.cap = 100, sizeof(*trace.exprs));
-    else if (trace.siz == trace.cap)
-        trace.exprs = li_allocate(trace.exprs,
-                trace.cap = LI_INC_CAP(trace.cap), sizeof(*trace.exprs));
-    trace.exprs[trace.siz++] = expr;
+    stack = li_cons(li_cons(env, li_cons(expr, NULL)), stack);
 }
 
-void li_stack_trace_pop(void)
+extern void li_stack_trace_pop(void)
 {
-    if (trace.siz == 0)
-        li_error_fmt("attempting to pop from empty stack");
-    trace.siz--;
+    stack = li_cdr(stack);
 }
 
-void li_error_fmt(const char *msg, ...) {
+extern void li_stack_trace_clear(void)
+{
+    stack = NULL;
+}
+
+extern li_object *li_stack_trace(void)
+{
+    return stack;
+}
+
+extern void li_error_fmt(const char *msg, ...)
+{
     va_list ap;
     int ch;
     va_start(ap, msg);
@@ -55,10 +55,17 @@ void li_error_fmt(const char *msg, ...) {
     }
     va_end(ap);
     li_newline(li_port_stderr);
+    while (stack) {
+        li_port_printf(li_port_stderr, "\t");
+        li_port_write(li_port_stderr, li_cadr(li_car(stack)));
+        li_newline(li_port_stderr);
+        stack = li_cdr(stack);
+    }
     longjmp(buf, 1);
 }
 
-int li_try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg) {
+extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *), li_object *arg)
+{
     int ret = setjmp(buf);
     if (ret) {
         if (f2)

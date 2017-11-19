@@ -1,0 +1,73 @@
+; https://www.scheme.com/tspl4/further.html#g63
+
+(assert (= 20 (call/cc (lambda (k) (* 5 4)))))
+
+(assert (= 4 (call/cc
+              (lambda (k)
+                (* 5 (k 4))))))
+
+(assert (= 6 (+ 2
+                (call/cc
+                  (lambda (k)
+                    (* 5 (k 4)))))))
+
+(define product
+  (lambda (ls)
+    ; (error "fuck")
+    (call/cc
+      (lambda (break)
+        (let f ((ls ls))
+          (cond
+            ((null? ls) 1)
+            ((= (car ls) 0) (break 0))
+            (else (* (car ls) (f (cdr ls))))))))))
+
+(assert (= 120 (product '(1 2 3 4 5))))
+(assert (= 0 (product '(7 3 8 0 1 9 5))))
+
+(assert (eqv? "hi" (let ((x (call/cc (lambda (k) k))))
+                     (x (lambda (ignore) "hi")))))
+
+(assert (eqv? "HEY!"
+              (((call/cc (lambda (k) k)) (lambda (x) x)) "HEY!")))
+
+(define retry #f)
+
+(define factorial
+  (lambda (x)
+    (if (= x 0)
+        (call/cc (lambda (k) (set! retry k) 1))
+        (* x (factorial (- x 1))))))
+
+(factorial 4)
+(retry 1)
+(retry 2)
+(retry 2)
+(retry 5)
+
+(define lwp-list '())
+(define lwp
+  (lambda (thunk)
+    (set! lwp-list (append lwp-list (list thunk)))))
+
+(define start
+  (lambda ()
+    (let ((p (car lwp-list)))
+      (set! lwp-list (cdr lwp-list))
+      (p))))
+
+(define pause
+  (lambda ()
+    (call/cc
+      (lambda (k)
+        (lwp (lambda () (k #f)))
+        (start)))))
+
+(lwp (lambda () (let f () (pause) (display "h") (f))))
+(lwp (lambda () (let f () (pause) (display "e") (f))))
+(lwp (lambda () (let f () (pause) (display "y") (f))))
+(lwp (lambda () (let f () (pause) (display "!") (f))))
+(lwp (lambda () (let f () (pause) (newline) (f))))
+(start)
+
+(print "passed")

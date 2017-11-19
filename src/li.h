@@ -263,7 +263,8 @@ extern li_object *li_true;
 #define li_boolean(p)                   ((p) ? li_true : li_false)
 
 /** Let cons be an alias for pair. */
-#define li_cons(car, cdr)               ((li_object *)li_pair((car), (cdr)))
+#define li_cons(car, cdr)               \
+    ((li_object *)li_pair((li_object *)(car), (li_object *)(cdr)))
 
 /** Predicates */
 #define li_is_eq(obj1, obj2)            ((void *)(obj1) == (void *)(obj2))
@@ -330,8 +331,11 @@ extern void li_vector_set(li_vector_t *vec, int k, li_object *obj);
 extern void li_error_fmt(const char *msg, ...);
 extern int li_try(void (*f1)(li_object *), void (*f2)(li_object *),
         li_object *arg);
-extern void li_stack_trace_push(li_object *expr);
+extern void li_stack_trace_push(li_object *expr, li_env_t *env);
+extern void li_stack_trace_clear(void);
+extern li_object *li_stack_trace(void);
 extern void li_stack_trace_pop(void);
+extern li_object *li_stack_get(void);
 
 /* li_eval.c */
 extern li_object *li_apply(li_object *proc, li_object *args);
@@ -394,5 +398,6 @@ extern void li_define_procedure_functions(li_env_t *env);
 extern void li_define_string_functions(li_env_t *env);
 extern void li_define_symbol_functions(li_env_t *env);
 extern void li_define_vector_functions(li_env_t *env);
+extern void li_init_syntax(li_env_t *env);
 
 #endif

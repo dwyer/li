@@ -12,7 +12,6 @@ Scheme tutorial (or better yet, read SICP) as li is almost identical to Scheme
 except for the following differences:
 
     * Vectors are of the form [...] instead of #(...).
-    * No continuations (yet).
     * Unhygenic macros.
 
 li Reference

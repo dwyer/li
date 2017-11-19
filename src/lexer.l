@@ -131,8 +131,17 @@ extern void li_load(char *filename, li_env_t *env)
     getcwd(cwd, PATH_MAX);
     chdir(dirname(filename));
     pop = push_buffer(port);
-    while ((exp = li_read(port)) != li_eof)
-        li_eval(exp, env);
+    while ((exp = li_read(port)) != li_eof) {
+        /* li_port_printf(li_port_stderr, "> "); */
+        /* li_write(exp, li_port_stderr); */
+        /* li_newline(li_port_stderr); */
+        exp = li_eval(exp, env);
+        if (exp) {
+            /* li_port_printf(li_port_stderr, "=> "); */
+            /* li_write(exp, li_port_stderr); */
+            /* li_newline(li_port_stderr); */
+        }
+    }
     if (pop)
         yypop_buffer_state();
     li_port_close(port);
