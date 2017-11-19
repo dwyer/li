@@ -143,7 +143,7 @@ static li_object *p_set_car(li_object *args) {
     li_object *lst, *obj;
     li_parse_args(args, "po", &lst, &obj);
     li_set_car(lst, obj);
-    return NULL;
+    return li_void;
 }
 
 /*
@@ -154,7 +154,7 @@ static li_object *p_set_cdr(li_object *args) {
     li_object *lst, *obj;
     li_parse_args(args, "po", &lst, &obj);
     li_set_cdr(lst, obj);
-    return NULL;
+    return li_void;
 }
 
 /*

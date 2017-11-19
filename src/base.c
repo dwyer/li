@@ -161,7 +161,7 @@ static li_object *m_assert(li_object *seq, li_env_t *env)
             li_error_fmt("assertion violated: ~a", seq);
         break;
     }
-    return NULL;
+    return li_void;
 }
 
 static li_object *m_begin(li_object *seq, li_env_t *env)
@@ -171,7 +171,7 @@ static li_object *m_begin(li_object *seq, li_env_t *env)
         seq = li_cdr(seq);
     }
     if (!seq)
-        return NULL;
+        return li_void;
     return li_car(seq);
 }
 
@@ -287,7 +287,7 @@ static li_object *m_define(li_object *args, li_env_t *env)
     }
     li_assert_symbol(var);
     li_env_define(env, (li_sym_t *)var, val);
-    return NULL;
+    return li_void;
 }
 
 static li_object *m_define_syntax(li_object *seq, li_env_t *env)
@@ -298,7 +298,7 @@ static li_object *m_define_syntax(li_object *seq, li_env_t *env)
     val = li_eval(val, env);
     li_assert_procedure(val);
     li_env_define(env, name, li_macro((li_proc_obj_t *)val));
-    return NULL;
+    return li_void;
 }
 
 static li_object *m_do(li_object *seq, li_env_t *env)
@@ -349,7 +349,7 @@ static li_object *m_export(li_object *seq, li_env_t *env)
         li_parse_args(seq, "y.", &var, &seq);
         li_env_define(li_env_base(env), var, li_env_lookup(env, var));
     }
-    return NULL;
+    return li_void;
 }
 
 static li_object *m_if(li_object *seq, li_env_t *env)
@@ -369,7 +369,7 @@ static li_object *m_import(li_object *seq, li_env_t *env)
         li_parse_args(seq, "o.", &name, &seq);
         li_import(name, env);
     }
-    return NULL;
+    return li_void;
 }
 
 static li_object *m_lambda(li_object *seq, li_env_t *env)
@@ -449,7 +449,7 @@ static li_object *m_load(li_object *args, li_env_t *env)
     li_str_t *str;
     li_parse_args(args, "s", &str);
     li_load(li_string_bytes(str), env);
-    return NULL;
+    return li_void;
 }
 
 static li_object *m_or(li_object *seq, li_env_t *env)
@@ -470,7 +470,7 @@ static li_object *m_set(li_object *args, li_env_t *env)
     li_parse_args(args, "yo", &var, &val);
     if (!li_env_assign(env, var, li_eval(val, env)))
         li_error_fmt("unbound variable: ~a", var);
-    return NULL;
+    return li_void;
 }
 
 /*
@@ -485,7 +485,7 @@ static li_object *p_error(li_object *args)
     li_object *irritants;
     li_parse_args(args, "s.", &msg, &irritants);
     li_error_fmt("~a: ~a", msg, irritants);
-    return NULL;
+    return li_void;
 }
 
 /**************************
@@ -609,7 +609,7 @@ static li_object *p_put(li_object *args)
     if (k < 0 || (li_type(lst)->length(lst) && k >= li_type(lst)->length(lst)))
         li_error_fmt("out of range: ~a", args);
     li_type(lst)->set(lst, k, obj);
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_isa(li_object *args)

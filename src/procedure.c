@@ -157,7 +157,7 @@ extern void li_define_procedure_functions(li_env_t *env)
     lilib_defproc(env, "call/cc", p_call_with_current_continuation);
 }
 
-#define li_is_self_evaluating(expr)  !(li_is_pair(expr) || li_is_symbol(expr))
+#define li_is_self_evaluating(expr)  !(!expr || li_is_pair(expr) || li_is_symbol(expr))
 #define quote(expr)         li_cons(li_symbol("quote"), li_cons(expr, NULL))
 
 static li_object *eval_quasiquote(li_object *expr, li_env_t *env);
@@ -285,7 +285,9 @@ extern li_object *li_eval(li_object *expr, li_env_t *env)
     }
     while (!li_is_self_evaluating(expr) && !done) {
         li_stack_trace_push(expr, env);
-        if (li_is_symbol(expr)) {
+        if (!expr) {
+            li_error_fmt("empty list in source");
+        } else if (li_is_symbol(expr)) {
             expr = li_env_lookup(env, (li_sym_t *)expr);
             done = 1;
         } else if (li_is_list(expr)) {

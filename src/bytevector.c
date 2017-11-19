@@ -130,7 +130,7 @@ static li_object *p_bytevector_u8_set(li_object *args)
     int k, b;
     li_parse_args(args, "Bkk", &vec, &k, &b);
     li_bytevector_set(vec, k, b);
-    return NULL;
+    return li_void;
 }
 
 static li_bytevector_t *bytevector_copy(

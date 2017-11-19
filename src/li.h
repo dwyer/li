@@ -257,6 +257,7 @@ extern li_object *li_vector(li_object *lst);
 
 extern li_object *li_false;
 extern li_object *li_true;
+extern li_object *li_void;
 #define li_boolean(p)                   ((p) ? li_true : li_false)
 
 /** Let cons be an alias for pair. */

@@ -6,7 +6,7 @@ static li_object *p_exit(li_object *args)
     int status;
     li_parse_args(args, "?i", &status);
     exit(status);
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_get_environment_variable(li_object *args)

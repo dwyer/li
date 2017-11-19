@@ -242,7 +242,7 @@ static li_object *p_close_port(li_object *args) {
     li_port_t *port;
     li_parse_args(args, "r", &port);
     li_port_close(port);
-    return NULL;
+    return li_void;
 }
 
 /*
@@ -303,7 +303,7 @@ static li_object *p_write(li_object *args) {
     li_port_t *port = li_port_stdout;
     li_parse_args(args, "o?r", &obj, &port);
     li_port_write(port, obj);
-    return NULL;
+    return li_void;
 }
 
 /*
@@ -315,7 +315,7 @@ static li_object *p_display(li_object *args) {
     li_port_t *port = li_port_stdout;
     li_parse_args(args, "o?r", &obj, &port);
     li_port_display(port, obj);
-    return NULL;
+    return li_void;
 }
 
 /*
@@ -326,7 +326,7 @@ static li_object *p_newline(li_object *args) {
     li_port_t *port = li_port_stdout;
     li_parse_args(args, "?r", &port);
     li_newline(port);
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_write_char(li_object *args) {
@@ -336,7 +336,7 @@ static li_object *p_write_char(li_object *args) {
     li_parse_args(args, "c?r", &c, &port);
     li_chr_encode(c, s, 5);
     li_port_printf(port, "%s", s);
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_write_string(li_object *args)
@@ -350,7 +350,7 @@ static li_object *p_write_string(li_object *args)
     else
         /* TODO: implement this. */
         li_error_fmt("unimplemented parameters: ~a", args);
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_write_u8(li_object *args)
@@ -359,7 +359,7 @@ static li_object *p_write_u8(li_object *args)
     li_port_t *port = li_port_stdout;
     li_parse_args(args, "b?rkk", &b);
     li_port_printf(port, "%c", b);
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_write_bytevector(li_object *args)
@@ -372,7 +372,7 @@ static li_object *p_write_bytevector(li_object *args)
         end = li_bytevector_length(bv);
     while (start < end)
         li_port_printf(port, "%s", li_bytevector_get(bv, start));
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_flush_output_port(li_object *args)
@@ -381,11 +381,11 @@ static li_object *p_flush_output_port(li_object *args)
     FILE *fp;
     li_parse_args(args, "?r", &port);
     if (!(port->flags & IO_OUTPUT))
-        return NULL;
+        return li_void;
     fp = li_port_fp(port);
     if (fp)
         fflush(fp);
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_print(li_object *args) {
@@ -395,7 +395,7 @@ static li_object *p_print(li_object *args) {
             li_port_display(li_port_stdout, li_character(' '));
     }
     li_newline(li_port_stdout);
-    return NULL;
+    return li_void;
 }
 
 extern void li_define_port_functions(li_env_t *env)

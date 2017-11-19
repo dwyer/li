@@ -33,6 +33,7 @@ extern void li_error_fmt(const char *msg, ...)
     va_list ap;
     int ch;
     va_start(ap, msg);
+    fprintf(stderr, "; ERROR: ");
     while ((ch = *msg++)) {
         switch (ch) {
         case '~':

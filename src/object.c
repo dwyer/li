@@ -3,6 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+static void void_free(li_object *_) { (void)_; }
+static const li_type_t type_void = { .name = "void", .deinit = void_free };
+static struct { LI_OBJ_HEAD; } _void = { .type = &type_void };
+li_object *li_void = (li_object *)&_void;
+
 static struct {
     li_object **objs;
     size_t size;

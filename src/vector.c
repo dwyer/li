@@ -134,7 +134,7 @@ static li_object *p_vector_set(li_object *args)
     li_object *obj;
     li_parse_args(args, "vko", &vec, &k, &obj);
     li_vector_set(vec, k, obj);
-    return NULL;
+    return li_void;
 }
 
 /*  (vector->list vector) procedure

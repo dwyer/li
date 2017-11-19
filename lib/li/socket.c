@@ -128,7 +128,7 @@ static li_object *p_socket_shutdown(li_object *args)
     if (shutdown(((li_socket_t *)obj)->fd, how))
         /* li_error("shutdown error", args); */
         ;
-    return NULL;
+    return li_void;
 }
 
 static li_object *p_socket_close(li_object *args)
