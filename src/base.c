@@ -599,7 +599,7 @@ static li_object *p_ref(li_object *args)
     return li_type(lst)->ref(lst, k);
 }
 
-static li_object *p_set(li_object *args)
+static li_object *p_put(li_object *args)
 {
     li_object *lst, *obj;
     int k;
@@ -670,7 +670,7 @@ extern void li_setup_environment(li_env_t *env)
 
     /* generic getter and setter */
     lilib_defproc(env, "ref", p_ref);
-    lilib_defproc(env, "set", p_set);
+    lilib_defproc(env, "put!", p_put);
     lilib_defproc(env, "length", p_length);
 
     lilib_defproc(env, "error", p_error);
