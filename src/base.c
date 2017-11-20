@@ -137,8 +137,9 @@ extern void li_parse_args(li_object *args, const char *fmt, ...)
     }
 }
 
-static li_object *m_and(li_object *seq, li_env_t *env)
+static li_object *m_and(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     while (seq && li_cdr(seq)) {
         if (li_not(li_eval(li_car(seq), env)))
             return li_false;
@@ -149,8 +150,9 @@ static li_object *m_and(li_object *seq, li_env_t *env)
     return li_car(seq);
 }
 
-static li_object *m_assert(li_object *seq, li_env_t *env)
+static li_object *m_assert(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     switch (li_length(seq)) {
     case 0:
         break;
@@ -164,8 +166,9 @@ static li_object *m_assert(li_object *seq, li_env_t *env)
     return li_void;
 }
 
-static li_object *m_begin(li_object *seq, li_env_t *env)
+static li_object *m_begin(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     while (seq && li_cdr(seq)) {
         li_eval(li_car(seq), env);
         seq = li_cdr(seq);
@@ -175,8 +178,9 @@ static li_object *m_begin(li_object *seq, li_env_t *env)
     return li_car(seq);
 }
 
-static li_object *m_case(li_object *exp, li_env_t *env)
+static li_object *m_case(li_object *expr, li_env_t *env)
 {
+    li_object *exp = li_cdr(expr);
     li_object *key, *clauses, *results = NULL;
     li_parse_args(exp, "o.", &key, &clauses);
     key = li_eval(key, env);
@@ -211,8 +215,9 @@ exit:
     return li_car(results);
 }
 
-static li_object *m_case_lambda(li_object *clauses, li_env_t *env)
+static li_object *m_case_lambda(li_object *expr, li_env_t *env)
 {
+    li_object *clauses = li_cdr(expr);
     li_object *args = li_cons(li_symbol("#args"), NULL);
     li_object *length_args = li_cons(li_symbol("length"), args);
     li_object *lambda = li_cons(li_string_make("wrong number of args"), args);
@@ -240,8 +245,9 @@ static li_object *m_case_lambda(li_object *clauses, li_env_t *env)
 
 /* (cond (cond . results) ... */
 /*       (else . clause)) */
-static li_object *m_cond(li_object *clauses, li_env_t *env)
+static li_object *m_cond(li_object *expr, li_env_t *env)
 {
+    li_object *clauses = li_cdr(expr);
     li_object *cond, *results = NULL;
     while (clauses) {
         li_parse_args(li_car(clauses), "o.", &cond, &results);
@@ -266,8 +272,9 @@ static li_object *m_cond(li_object *clauses, li_env_t *env)
 
 /* (define name expr) */
 /* (define (name . args) . body) */
-static li_object *m_define(li_object *args, li_env_t *env)
+static li_object *m_define(li_object *expr, li_env_t *env)
 {
+    li_object *args = li_cdr(expr);
     li_object *var;
     li_object *val;
     var = li_car(args);
@@ -290,8 +297,9 @@ static li_object *m_define(li_object *args, li_env_t *env)
     return li_void;
 }
 
-static li_object *m_define_syntax(li_object *seq, li_env_t *env)
+static li_object *m_define_syntax(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     li_sym_t *name;
     li_object *val;
     li_parse_args(seq, "yo", &name, &val);
@@ -301,8 +309,9 @@ static li_object *m_define_syntax(li_object *seq, li_env_t *env)
     return li_void;
 }
 
-static li_object *m_do(li_object *seq, li_env_t *env)
+static li_object *m_do(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     li_object *binding;
     li_object *head;
     li_object *iter;
@@ -362,8 +371,9 @@ static li_object *m_if(li_object *seq, li_env_t *env)
     return cons;
 }
 
-static li_object *m_import(li_object *seq, li_env_t *env)
+static li_object *m_import(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     while (seq) {
         li_object *name;
         li_parse_args(seq, "o.", &name, &seq);
@@ -372,13 +382,15 @@ static li_object *m_import(li_object *seq, li_env_t *env)
     return li_void;
 }
 
-static li_object *m_lambda(li_object *seq, li_env_t *env)
+static li_object *m_lambda(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     return li_lambda(NULL, li_car(seq), li_cdr(seq), env);
 }
 
-static li_object *m_named_lambda(li_object *seq, li_env_t *env)
+static li_object *m_named_lambda(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     li_sym_t *name;
     li_object *formals, *args, *body;
     li_parse_args(seq, "p.", &formals, &body);
@@ -386,8 +398,9 @@ static li_object *m_named_lambda(li_object *seq, li_env_t *env)
     return li_lambda(name, args, body, env);
 }
 
-static li_object *m_let(li_object *args, li_env_t *env)
+static li_object *m_let(li_object *expr, li_env_t *env)
 {
+    li_object *args = li_cdr(expr);
     li_sym_t *name = NULL;
     li_object *bindings, *body, *vals, *vals_tail, *vars, *vars_tail;
     if (li_is_symbol(li_car(args))) {
@@ -414,8 +427,9 @@ static li_object *m_let(li_object *args, li_env_t *env)
     return li_cons(body, vals);
 }
 
-static li_object *m_let_star(li_object *args, li_env_t *env)
+static li_object *m_let_star(li_object *expr, li_env_t *env)
 {
+    li_object *args = li_cdr(expr);
     li_object *bindings, *body;
     li_parse_args(args, "l.", &bindings, &body);
     while (bindings) {
@@ -429,8 +443,9 @@ static li_object *m_let_star(li_object *args, li_env_t *env)
     return li_cons(li_lambda(NULL, NULL, body, env), NULL);
 }
 
-static li_object *m_letrec(li_object *args, li_env_t *env)
+static li_object *m_letrec(li_object *expr, li_env_t *env)
 {
+    li_object *args = li_cdr(expr);
     li_object *bindings, *body;
     li_parse_args(args, "l.", &bindings, &body);
     env = li_env_make(env);
@@ -444,16 +459,18 @@ static li_object *m_letrec(li_object *args, li_env_t *env)
     return li_cons(li_lambda(NULL, NULL, body, env), NULL);
 }
 
-static li_object *m_load(li_object *args, li_env_t *env)
+static li_object *m_load(li_object *expr, li_env_t *env)
 {
+    li_object *args = li_cdr(expr);
     li_str_t *str;
     li_parse_args(args, "s", &str);
     li_load(li_string_bytes(str), env);
     return li_void;
 }
 
-static li_object *m_or(li_object *seq, li_env_t *env)
+static li_object *m_or(li_object *expr, li_env_t *env)
 {
+    li_object *seq = li_cdr(expr);
     li_object *val;
     for (; seq && li_cdr(seq); seq = li_cdr(seq))
         if (!li_not(val = li_eval(li_car(seq), env)))
@@ -463,8 +480,9 @@ static li_object *m_or(li_object *seq, li_env_t *env)
     return li_car(seq);
 }
 
-static li_object *m_set(li_object *args, li_env_t *env)
+static li_object *m_set(li_object *expr, li_env_t *env)
 {
+    li_object *args = li_cdr(expr);
     li_sym_t *var;
     li_object *val;
     li_parse_args(args, "yo", &var, &val);

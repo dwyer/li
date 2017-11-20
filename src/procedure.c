@@ -321,7 +321,7 @@ extern li_object *li_eval(li_object *expr, li_env_t *env)
                 }
             } else if (li_is_macro(proc)) {
                 if (li_macro_primitive(proc)) {
-                    expr = li_macro_primitive(proc)(args, env);
+                    expr = li_macro_primitive(proc)(expr, env);
                 } else {
                     expr = li_macro_expand((li_macro_t *)proc, expr, env);
                 }
