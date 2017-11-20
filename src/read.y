@@ -3,7 +3,8 @@
 #include "li.h"
 #include "li_num.h"
 
-#define make_tagged_list(str, obj)  li_cons(li_symbol(str), li_cons(obj, NULL))
+#define make_tagged_list(str, obj) \
+    cons((li_object *)li_symbol(str), cons(obj, NULL))
 
 static void yyerror(char *s);
 extern int yylex(void);
@@ -12,8 +13,10 @@ extern void yypop_buffer_state(void);
 
 extern int push_buffer(li_port_t *port);
 static li_object *append(li_object *lst, li_object *obj);
+static li_object *cons(li_object *car, li_object *cdr);
 
 static li_object *obj = NULL;
+const char *yyfilename = NULL;
 
 %}
 
@@ -43,7 +46,7 @@ datum   : EOF_OBJECT { $$ = li_eof; }
         | SYMBOL { $$ = $1; }
         /* lists */
         | '(' data ')' { $$ = $2; }
-        | '(' data datum '.' datum ')' { $$ = append($2, li_cons($3, $5)); }
+        | '(' data datum '.' datum ')' { $$ = append($2, cons($3, $5)); }
         /* vectors */
         | '[' data ']' { $$ = li_vector($2); }
         /* bytevectors */
@@ -56,10 +59,18 @@ datum   : EOF_OBJECT { $$ = li_eof; }
         ;
 
 data    : { $$ = NULL; }
-        | data datum { $$ = append($1, li_cons($2, NULL)); }
+        | data datum { $$ = append($1, cons($2, NULL)); }
         ;
 
 %%
+
+static li_object *cons(li_object *car, li_object *cdr)
+{
+    li_pair_t *pair = (li_pair_t *)li_pair(car, cdr);
+    pair->lineno = yylineno;
+    pair->filename = yyfilename;
+    return (li_object *)pair;
+}
 
 static li_object *append(li_object *lst, li_object *obj)
 {

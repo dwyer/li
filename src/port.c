@@ -23,6 +23,13 @@ struct li_port_t {
     li_str_t *name;
 };
 
+extern const char *li_port_name(li_port_t *port)
+{
+    if (port->name)
+        return li_string_bytes(port->name);
+    return NULL;
+}
+
 extern FILE *li_port_fp(li_port_t *port)
 {
     if (!port->fp) {

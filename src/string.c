@@ -218,16 +218,6 @@ static li_object *p_string_to_symbol(li_object *args) {
     return (li_object *)li_symbol(li_string_bytes(str));
 }
 
-static li_object *li_list_reverse(li_object *lst)
-{
-    li_object *tsl = NULL;
-    while (lst) {
-        tsl = li_cons(li_car(lst), tsl);
-        lst = li_cdr(lst);
-    }
-    return tsl;
-}
-
 static li_object *p_string_split(li_object *args)
 {
     li_object *res = NULL;

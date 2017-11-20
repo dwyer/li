@@ -69,6 +69,8 @@ extern li_pair_t *li_pair(li_object *car, li_object *cdr)
     li_object_init((li_object *)obj, &li_type_pair);
     obj->car = car;
     obj->cdr = cdr;
+    obj->filename = NULL;
+    obj->lineno = 0;
     return obj;
 }
 
@@ -93,6 +95,16 @@ extern li_bool_t li_is_list(li_object *obj)
         obj = li_cdr(obj);
     }
     return LI_TRUE;
+}
+
+extern li_object *li_list_reverse(li_object *lst)
+{
+    li_object *tsl = NULL;
+    while (lst) {
+        tsl = li_cons(li_car(lst), tsl);
+        lst = li_cdr(lst);
+    }
+    return tsl;
 }
 
 /*

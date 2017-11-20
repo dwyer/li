@@ -189,16 +189,6 @@ extern li_object *li_apply(li_object *proc, li_object *args) {
     return li_eval(li_cons(proc, head), li_proc_env(proc));
 }
 
-static li_object *reverse(li_object *lst)
-{
-    li_object *tsl = NULL;
-    while (lst) {
-        tsl = li_cons(li_car(lst), tsl);
-        lst = li_cdr(lst);
-    }
-    return tsl;
-}
-
 static int contains(li_object *lst, li_object *obj)
 {
     if (lst == obj)
@@ -259,7 +249,7 @@ static li_object *unwind(li_object *stack, li_object *karg)
     li_env_t *env;
     li_object *expr;
     (void)print_stack;
-    stack = reverse(stack);
+    stack = li_list_reverse(stack);
     /* print_stack(stack); */
     li_parse_args(li_car(stack), "eo", &env, &expr);
     stack = replace(env, expr, li_cdr(stack), karg);

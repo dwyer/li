@@ -9,7 +9,7 @@
 #include "read.h"
 
 static void bufappend(const char *s);
-extern int fileno(FILE *);
+extern const char *yyfilename;
 
 static struct {
     char *buf;
@@ -123,6 +123,8 @@ extern int push_buffer(li_port_t *port)
 
 extern void li_load(char *filename, li_env_t *env)
 {
+    const char *old_filename;
+    int old_line;
     char cwd[PATH_MAX];
     li_object *exp;
     li_port_t *port;
@@ -131,6 +133,10 @@ extern void li_load(char *filename, li_env_t *env)
     getcwd(cwd, PATH_MAX);
     chdir(dirname(filename));
     pop = push_buffer(port);
+    old_filename = yyfilename;
+    old_line = yylineno;
+    yyfilename = filename;
+    yylineno = 1;
     while ((exp = li_read(port)) != li_eof) {
         /* li_port_printf(li_port_stderr, "> "); */
         /* li_write(exp, li_port_stderr); */
@@ -142,6 +148,8 @@ extern void li_load(char *filename, li_env_t *env)
             /* li_newline(li_port_stderr); */
         }
     }
+    yyfilename = old_filename;
+    yylineno = old_line;
     if (pop)
         yypop_buffer_state();
     li_port_close(port);

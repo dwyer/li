@@ -28,11 +28,43 @@ extern li_object *li_stack_trace(void)
     return stack;
 }
 
+static int get_metadata(li_object *expr, const char **filename, int *lineno)
+{
+    li_pair_t *p;
+    if (!li_is_pair(expr))
+        return 0;
+    p = (li_pair_t *)expr;
+    if (p->lineno) {
+        *filename = p->filename;
+        *lineno = p->lineno;
+        return 1;
+    }
+    return get_metadata(li_cdr(expr), filename, lineno);
+}
+
+static void print_stack_trace(void)
+{
+    stack = li_list_reverse(stack);
+    fprintf(stderr, "Error:\n");
+    while (stack) {
+        li_object *expr = li_cadr(li_car(stack));
+        const char *filename;
+        int lineno;
+        if (get_metadata(expr, &filename, &lineno))
+            fprintf(stderr, "  File \"%s\", line %d\n", filename, lineno);
+        li_port_printf(li_port_stderr, "    ");
+        li_port_write(li_port_stderr, expr);
+        li_newline(li_port_stderr);
+        stack = li_cdr(stack);
+    }
+}
+
 extern void li_error_fmt(const char *msg, ...)
 {
     va_list ap;
     int ch;
     va_start(ap, msg);
+    print_stack_trace();
     fprintf(stderr, "; ERROR: ");
     while ((ch = *msg++)) {
         switch (ch) {
@@ -56,12 +88,6 @@ extern void li_error_fmt(const char *msg, ...)
     }
     va_end(ap);
     li_newline(li_port_stderr);
-    while (stack) {
-        li_port_printf(li_port_stderr, "\t");
-        li_port_write(li_port_stderr, li_cadr(li_car(stack)));
-        li_newline(li_port_stderr);
-        stack = li_cdr(stack);
-    }
     longjmp(buf, 1);
 }
 

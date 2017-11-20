@@ -147,6 +147,8 @@ struct li_pair_t {
     LI_OBJ_HEAD;
     li_object *car;
     li_object *cdr;
+    const char *filename;
+    int lineno;
 };
 
 /* Procedures */
@@ -274,6 +276,8 @@ extern li_bool_t li_is_list(li_object *obj);
 /** List accessors. */
 extern int li_length(li_object *obj);
 
+extern li_object *li_list_reverse(li_object *lst);
+
 /** Type casting. */
 #define li_chr_uint(obj)                ((li_character_obj_t *)(obj))->character
 #define li_to_character(obj)            li_chr_uint(obj)
@@ -359,6 +363,7 @@ extern void li_port_display(li_port_t *port, li_object *obj);
 extern void li_port_printf(li_port_t *port, const char *fmt, ...);
 
 extern FILE *li_port_fp(li_port_t *port);
+extern const char *li_port_name(li_port_t *port);
 
 #define li_write(obj, port)             li_port_write(port, obj)
 #define li_display(obj, port)           li_port_display(port, obj)
