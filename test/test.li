@@ -529,7 +529,6 @@
   (import-test test-list)
   (import-test test-match)
   (import-test test-record-type)
-  ; (import-test test-sock)
   (import-test test-sort)
   (import-test test-split)
   (import-test test-stack)

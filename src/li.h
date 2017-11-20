@@ -129,6 +129,7 @@ extern void li_env_append(li_env_t *env, li_sym_t *var, li_object *val);
 extern li_env_t *li_env_extend(li_env_t *env, li_object *vars, li_object *vals);
 extern void li_setup_environment(li_env_t *env);
 extern void li_import(li_object *name, li_env_t *env);
+extern void li_include_shared(const char *name, li_env_t *env);
 
 /* Destroys all objects that cannot be reached from the given environment. */
 extern void li_cleanup(li_env_t *env);

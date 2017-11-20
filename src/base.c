@@ -382,6 +382,15 @@ static li_object *m_import(li_object *expr, li_env_t *env)
     return li_void;
 }
 
+static li_object *m_include_shared(li_object *expr, li_env_t *env)
+{
+    li_sym_t *_;
+    const char *name;
+    li_parse_args(expr, "yS", &_, &name);
+    li_include_shared(name, env);
+    return li_void;
+}
+
 static li_object *m_lambda(li_object *expr, li_env_t *env)
 {
     li_object *seq = li_cdr(expr);
@@ -652,6 +661,7 @@ extern void li_setup_environment(li_env_t *env)
     lilib_defmac(env, "export",         m_export);
     lilib_defmac(env, "if",             m_if);
     lilib_defmac(env, "import",         m_import);
+    lilib_defmac(env, "include-shared", m_include_shared);
     lilib_defmac(env, "lambda",         m_lambda);
     lilib_defmac(env, "let",            m_let);
     lilib_defmac(env, "let*",           m_let_star);

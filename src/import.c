@@ -29,15 +29,19 @@ static li_dl_t *li_dl(void *handle)
     return dl;
 }
 
-static void li_include_shared(const char *path, li_env_t *env)
+extern void li_include_shared(const char *name, li_env_t *env)
 {
+    static const char *const EXT = "so"; /* TODO handle other extensions */
+    char path[PATH_MAX];
     typedef lilib_include_f(li_env_t *);
-    void *dl = dlopen(path, RTLD_LAZY);
+    void *dl;
     char *error;
     lilib_include_f *load;
+    getcwd(path, PATH_MAX);
+    snprintf(path, PATH_MAX, "%s/%s.%s", path, name, EXT);
+    dl = dlopen(path, RTLD_LAZY);
     if (!dl)
-        li_error_fmt("import error: ~a", dlerror());
-    /* reuse the buf for performance */
+        li_error_fmt("import error: ~a", li_string_make(dlerror()));
     load = (lilib_include_f *)dlsym(dl, "lilib_load");
     if ((error = dlerror()))
         li_error_fmt("import error: ~a", li_string_make(error));
@@ -55,13 +59,6 @@ static int li_import_try(li_str_t *name, const char *dir, li_env_t *env)
         li_error_fmt("import error: name ~s is too long", name);
     if (access(path, F_OK) != -1) {
         li_load(path, env);
-        return 1;
-    }
-    n = snprintf(path, PATH_MAX, "%s/%s.so", dir, li_string_bytes(name));
-    if (!(-1 < n && n < PATH_MAX))
-        li_error_fmt("import error: name ~s is too long", name);
-    if (access(path, F_OK) != -1) {
-        li_include_shared(path, env);
         return 1;
     }
     return 0;
