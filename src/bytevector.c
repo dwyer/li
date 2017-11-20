@@ -38,6 +38,8 @@ static void bytevector_set(li_bytevector_t *v, int k, li_object *obj)
 }
 
 const li_type_t li_type_bytevector = {
+    .name = "bytevector",
+    .size = sizeof(li_bytevector_t),
     .deinit = (li_deinit_f *)bytevector_deinit,
     .write = (li_write_f *)bytevector_write,
     .length = (li_length_f *)li_bytevector_length,
@@ -47,12 +49,25 @@ const li_type_t li_type_bytevector = {
 
 extern li_bytevector_t *li_make_bytevector(int k, li_byte_t byte)
 {
-    li_bytevector_t *v = li_allocate(NULL, 1, sizeof(*v));
-    li_object_init((li_object *)v, &li_type_bytevector);
-    v->bytes = li_allocate(NULL, k, sizeof(*v->bytes));
+    li_bytevector_t *v = (li_bytevector_t *)li_create(&li_type_bytevector);
+    v->bytes = li_allocate(NULL, k + 1, sizeof(*v->bytes));
     v->length = k;
     memset(v->bytes, byte, k * sizeof(*v->bytes));
+    v->bytes[k] = 0;
     return v;
+}
+
+extern li_bytevector_t *li_bytevector_with_chars(const char *s)
+{
+    li_bytevector_t *v = (li_bytevector_t *)li_create(&li_type_bytevector);
+    v->length = strlen(s);
+    v->bytes = (li_byte_t *)s;
+    return v;
+}
+
+extern const char *li_bytevector_chars(li_bytevector_t *v)
+{
+    return (const char *)v->bytes;
 }
 
 extern li_bytevector_t *li_bytevector(li_object *lst)

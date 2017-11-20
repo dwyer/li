@@ -104,6 +104,9 @@ extern int li_bytevector_length(li_bytevector_t *v);
 extern li_byte_t li_bytevector_get(li_bytevector_t *v, int k);
 extern void li_bytevector_set(li_bytevector_t *v, int k, li_byte_t byte);
 
+extern li_bytevector_t *li_bytevector_with_chars(const char *s);
+extern const char *li_bytevector_chars(li_bytevector_t *v);
+
 /* Characters */
 
 typedef unsigned int li_character_t;
@@ -376,7 +379,7 @@ extern const char *li_port_name(li_port_t *port);
 
 #define li_assert_type(type, arg) \
     if (!li_is_##type(arg)) \
-        li_error_fmt("expected a " # type ", got ~a", arg)
+        li_error_fmt("expected a " # type ", got ~s", arg)
 
 #define li_assert_bytevector(arg)       li_assert_type(bytevector, arg)
 #define li_assert_character(arg)        li_assert_type(character, arg)

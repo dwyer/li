@@ -51,38 +51,40 @@
 
   (define (http-request-send req)
     (assert (http-request? req))
-    (let ((sock (make-client-socket (url-host (http-request-url req))
-                                    (url-port (http-request-url req)))))
-      ; send HTTP status line
-      (socket-send sock (http-request-method req))
-      (socket-send sock " ")
-      (socket-send sock (url-path (http-request-url req)))
-      (socket-send sock " ")
-      (socket-send sock (http-request-version req))
-      (socket-send sock *http-line-break*)
-      ; send host header
-      (socket-send sock "Host: ")
-      (socket-send sock (url-host (http-request-url req)))
-      (socket-send sock *http-line-break*)
-      ; send other headers
-      (for-each (lambda (header)
-                  (socket-send sock (car header))
-                  (socket-send sock ": ")
-                  (socket-send sock (cdr header))
-                  (socket-send sock *http-line-break*))
-                (http-request-headers req))
-      ; send empty line
-      (socket-send sock *http-line-break*)
-      ; start receiving response
-      (let* ((buffer-size 8092)
-             (buffers (let loop ((buffer (socket-recv sock buffer-size)))
-                        (if (= (length buffer) 0)
-                          (cons buffer '())
-                          (cons buffer (loop (socket-recv sock buffer-size)))))))
-        (if (= (http-request-version req) *http-version-1.1*)
-          (socket-shutdown sock *shut-rdwr*))
-        (socket-close sock)
-        (http-response-parse (apply string-append buffers)))))
+    (call-with-socket
+      (make-client-socket (url-host (http-request-url req))
+                          (url-port (http-request-url req)))
+      (lambda (sock)
+        ; send HTTP status line
+        (socket-send sock (http-request-method req))
+        (socket-send sock " ")
+        (socket-send sock (url-path (http-request-url req)))
+        (socket-send sock " ")
+        (socket-send sock (http-request-version req))
+        (socket-send sock *http-line-break*)
+        ; send host header
+        (socket-send sock "Host: ")
+        (socket-send sock (url-host (http-request-url req)))
+        (socket-send sock *http-line-break*)
+        ; send other headers
+        (for-each (lambda (header)
+                    (socket-send sock (car header))
+                    (socket-send sock ": ")
+                    (socket-send sock (cdr header))
+                    (socket-send sock *http-line-break*))
+                  (http-request-headers req))
+        ; send empty line
+        (socket-send sock *http-line-break*)
+        ; start receiving response
+        (let* ((buffer-size 8092)
+               (buffers (let lp ((buffer (socket-recv sock buffer-size)))
+                          (if (zero? (length buffer))
+                            '()
+                            (cons (utf8->string buffer)
+                                  (lp (socket-recv sock buffer-size)))))))
+          (if (= (http-request-version req) *http-version-1.1*)
+            (socket-shutdown sock (shutdown-method read write)))
+          (http-response-parse (apply string-append buffers))))))
 
   (define (http-fetch method url)
     (let ((res (http-request-send
